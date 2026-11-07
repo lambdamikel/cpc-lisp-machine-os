@@ -33,7 +33,9 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   fit: Lisp-2 (`#'`, `funcall`), symbols upcased, lexical closures, special
   variables (`defvar`), `defmacro` + backquote, `block`/`return-from`,
   `catch`/`throw`, `labels`/`flet`, `setf` on the usual places, `&optional`
-  `&rest` `&body` `&aux` and destructuring. No `&key` yet.
+  `&rest` `&body` `&key` `&aux` and destructuring. Unknown keys are
+  ignored (as with `&allow-other-keys`); a plain key var X matches :X by
+  name, so binding interns nothing.
 * **Objects**: 16-bit words, tag in the low bits. Fixnums are 15-bit
   (-16384..16383). Symbols live in a fixed region (&0500-&14FF, 512 slots);
   cells (4 bytes) above; strings in a compacted block space; characters and
@@ -94,7 +96,7 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   ~D ~C ~% ~& ~~, with a width (~5D pads left, ~8A right). `nil` prints
   into TOKBUF through `to_string_ix` (255 characters at most). On the
   screen a lone LF in output is a new line (`putc` adds the CR).
-* **Still to come**: vectors, `&key`, `unwind-protect`,
+* **Still to come**: vectors, `unwind-protect`,
   the 6128's extra RAM, speed; maybe `*print-case*` (all output is upper
   case, as in CL).
 
