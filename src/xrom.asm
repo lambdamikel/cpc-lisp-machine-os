@@ -24,8 +24,8 @@
 ;;                              to fill, carry set for ENTER, clear for ESC)
 ;;
 ;; A symbol entry: [next][kind][min][max][address][length][name...]
-;;   kind 1 native (address = code), 2 autoload (address = text), 3 a
-;;   variable a boot form defines (only so that it counts as the library's)
+;;   kind 1 native (address = code), 2 autoload (address = text); other
+;;   kinds are skipped
 
 LIBHDR            equ #C010
 LE_KIND           equ 2
@@ -213,7 +213,7 @@ lib_find:
     cp 1
     jr z,.native
     cp 2
-    jr nz,.none                 ; a variable the library defines: no function
+    jr nz,.none
     ld hl,LE_ADDR
     add hl,de
     call lib_word               ; DE = the text
@@ -237,7 +237,8 @@ lib_find:
 
 ;; lib_eval_text: HL = text in the library -> reads one form from it and
 ;; evaluates it. The reader's own state is put back first, so this can
-;; happen in the middle of reading something else.
+;; happen in the middle of reading something else. Whatever the form
+;; defines is marked as the library's (V_LIBDEF, mark_def).
 lib_eval_text:
     ld de,(V_SRCPTR)
     push de
@@ -259,7 +260,14 @@ lib_eval_text:
     ld (V_PEEK),a
     pop de
     ld (V_SRCPTR),de
-    jp eval
+    ld a,(V_LIBDEF)             ; what it defines is the library's
+    push af
+    ld a,1
+    ld (V_LIBDEF),a
+    call eval
+    pop af
+    ld (V_LIBDEF),a
+    ret
 
 ;; resolve_fn: HL = a function cell's contents, DE = its symbol. An
 ;; AUTOLOAD is loaded first. DE kept.

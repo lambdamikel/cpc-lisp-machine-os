@@ -66,7 +66,11 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
 * **Files** (`lib/disc.asm`): `(load "name")`, `(save "name" [symbols])`
   -- everything the user defined if none are named, pretty-printed --
   and `(dir)`, through the CAS vectors (AMSDOS, Parados, the card, tape).
-  ".LSP" is added to a name without a ".". The reader reads the open input
+  ".LSP" is added to a name without a ".". "Defined by the user" means not
+  by library text: `lib_eval_text` sets `V_LIBDEF` while it evaluates, and
+  `defun`/`defmacro`/`defvar` record that per symbol in the `LIBDEFS`
+  bitmap (so a user's `TEST` is saved, an autoloaded `REMOVE` is not). The
+  reader reads the open input
   file (`V_INSRC` 3), `putc` writes the output file (`V_OUTMODE` 3); the 2
   KB buffer is lent like the editor's, and toplevel abandons open files.
 * **The function editor** (`lib/fed.asm`, Mike's idea): `(ed 'foo)` shows

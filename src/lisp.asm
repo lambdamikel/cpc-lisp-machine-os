@@ -306,6 +306,7 @@ toplevel:
     ld (V_EDDEPTH),a
     ld (V_EDSTR),a
     ld (V_OUTMODE),a
+    ld (V_LIBDEF),a
     ld a,(V_FILES)              ; a file left open by an error
     rra
     call c,CAS_IN_ABANDON

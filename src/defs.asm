@@ -39,8 +39,8 @@ KEY_ESC           equ 66            ; KM TEST KEY number
 ;; ---------------------------------------------------------------------------
 ;; MEMORY MAP
 ;;
-;;   &0040-&04FF  low system area: mark stack, symbol hash table. The firmware
-;;                sees its ROM here, so nothing the firmware reads goes here.
+;;   &0040-&04FF  low system area: mark stack, symbol hash table, LIBDEFS.
+;;                The firmware sees its ROM here, so nothing the firmware reads goes here.
 ;;                Words below &0500 are also the immediates (characters,
 ;;                markers, headers), which is why no object lives here.
 ;;   &0500-&14FF  symbols: 512 slots of 8 bytes
@@ -56,10 +56,13 @@ MARKSTK_END       equ #0240
 OBARRAY           equ #0240         ; NBUCKETS words, each a list of symbols
 NBUCKETS          equ 64
 OBARRAY_END       equ OBARRAY+2*NBUCKETS
+LIBDEFS           equ OBARRAY_END   ; NSYMS bits: the symbol's definition came
+LIBDEFS_END       equ LIBDEFS+NSYMS/8 ;   from library text (SAVE leaves it out)
 
 SYM_LO            equ #0500
 NSYMS             equ 512
 SYM_HI            equ SYM_LO+8*NSYMS   ; #1500
+                  assert LIBDEFS_END <= SYM_LO
 CELL_LO           equ SYM_HI
 
 STACK_SIZE        equ 4096
@@ -133,6 +136,7 @@ V_OUTEND          defs 2            ;   and where it must stop
 V_OUTCNT          defs 2            ;   characters printed (memory and count)
 V_OUTCOL          defs 1            ;   the column, from 0, kept in every mode
 V_BLKSAVE         defs 2            ; V_BLKHI while space is lent out, else 0
+V_LIBDEF          defs 1            ; 1 while library text is evaluated
 V_S1              defs 2            ; scratch for routines that call nothing
 V_S2              defs 2
 V_S3              defs 2

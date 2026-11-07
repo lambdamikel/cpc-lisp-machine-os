@@ -15,10 +15,9 @@ bucket it would itself use. An entry is
 
     [next][kind][min][max][address][length][name]
 
-kind 1 native (address = code), 2 autoload (address = text), 3 a variable
-that a boot form DEFVARs or DEFPARAMETERs (no function; listed so that SAVE
-knows it for the library's). A name the core already has is an error: the
-core's would always win.
+kind 1 native (address = code), 2 autoload (address = text). A name the
+core already has is an error: the core's would always win; so is a name
+defined twice, counting the variables boot forms define.
 """
 import re, sys
 
@@ -146,9 +145,7 @@ def main():
         entries.append((name, 1, mn, mx, label))
     for k, (name, form, p, line) in enumerate(autoloads):
         entries.append((name, 2, 0, 0, f'lt_{k}'))
-    for name in variables:
-        entries.append((name, 3, 0, 0, '0'))
-    for e in entries:
+    for e in entries + [(v,) for v in variables]:
         if e[0] in core:
             sys.exit(f'mklib: {e[0]} is a core builtin already')
         if e[0] in seen:

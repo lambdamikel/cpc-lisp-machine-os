@@ -20,6 +20,7 @@ FL_BUF        equ 2048
 fl_m_open:    db "cannot open",0
 fl_m_busy:    db "a file buffer is in use already",0
 fl_m_name:    db "bad file name:",0
+fl_m_none:    db "nothing to save",0
 
 ;; fl_name: HL = a string -> TOKBUF holds the file name, B = its length
 fl_name:
@@ -173,6 +174,12 @@ lf_save:
     jr .have
 .all:
     call fl_user_symbols
+    ld a,h
+    or l
+    jr nz,.have
+    ld hl,fl_m_none             ; no file made for nothing
+    ld de,UNBOUND
+    jp lib_error
 .have:
     ex (sp),hl                  ; the symbols on the stack, HL = the name
     push hl
@@ -324,7 +331,9 @@ fl_user_symbols:
     ld hl,(V_T3)
     ret
 
-;; fl_is_user: HL = a symbol -> Z if the user defined it. HL kept.
+;; fl_is_user: HL = a symbol -> Z if the user defined it: not a builtin,
+;; with a function or a special variable's value, which library text did not
+;; define (LIBDEFS: a library name the user redefined is the user's). HL kept.
 fl_is_user:
     ld de,SYM_LO+2+8*NBUILTIN
     or a
@@ -334,7 +343,7 @@ fl_is_user:
     push hl
     call fl_has_fn
     pop hl
-    jr z,.notlib
+    jr z,.def
     push hl                     ; a special variable with a value?
     dec hl
     dec hl
@@ -351,78 +360,16 @@ fl_is_user:
     sbc hl,de
     pop hl
     jr z,.no
-.notlib:
-    call fl_libname
-    jr z,.no                    ; the library's
-    cp a
-    ret
-.no:
-    or 1
-    ret
-
-;; fl_libname: HL = a symbol -> Z if the library has a name like it. HL kept.
-fl_libname:
+.def:
     push hl
-    LDHLI                       ; its name: [length][characters]
-    ld c,(hl)
-    inc hl
-    ld b,(hl)
-    inc hl
-    ld a,b
-    or a
-    jr nz,.no
-    ld b,c
-    push hl
-    push bc
-    CORE hash_name              ; A = its bucket
-    pop bc
-    pop de                      ; DE = the characters, B = how many
-    ld l,a
-    ld h,0
-    add hl,hl
-    push de
-    ld de,lib_buckets
-    add hl,de
-    pop de
-    LDHLI                       ; the bucket's first entry
-.walk:
-    ld a,h
-    or l
-    jr z,.no
-    push hl
-    ld a,l
-    add a,LE_LEN
-    ld l,a
-    jr nc,.nc
-    inc h
-.nc:
+    CORE libdef_bit
     ld a,(hl)
-    cp b
-    jr nz,.next
-    push de
-    push bc
-.c:
-    inc hl
-    ld a,(de)
-    cp (hl)
-    jr nz,.ne
-    inc de
-    djnz .c
-    pop bc
-    pop de
+    and c
     pop hl
-    pop hl
+    jr nz,.no                   ; the library's
     cp a
     ret
-.ne:
-    pop bc
-    pop de
-.next:
-    pop hl
-    LDHLI                       ; the next entry
-    jr .walk
 .no:
-    pop hl
     or 1
     ret
 

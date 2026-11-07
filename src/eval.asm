@@ -1359,11 +1359,59 @@ defun_common:
     inc hl
     ld (hl),d
     pop hl
+    call mark_def
     jp ev_done
 .bad:
     ex de,hl
     ld hl,m_notsym
     jp error
+
+;; mark_def: HL = a symbol just defined -> its LIBDEFS bit set if library
+;; text defined it (V_LIBDEF), cleared if anything else did. AF lost.
+mark_def:
+    push bc
+    push hl
+    call libdef_bit
+    ld a,(V_LIBDEF)
+    or a
+    ld a,c
+    jr z,.user
+    or (hl)
+    jr .put
+.user:
+    cpl
+    and (hl)
+.put:
+    ld (hl),a
+    pop hl
+    pop bc
+    ret
+
+;; libdef_bit: HL = a symbol -> HL = its byte in LIBDEFS, C = its bit.
+;; DE kept.
+libdef_bit:
+    push de
+    ld de,-(SYM_LO+2)
+    add hl,de                   ; 8 * the slot number
+    ld a,l
+    rrca
+    rrca
+    rrca
+    and 7
+    inc a
+    ld b,a
+    ld c,#80
+.bit:
+    rlc c
+    djnz .bit                   ; C = 1 << (slot and 7)
+    add hl,hl
+    add hl,hl                   ; H = the slot / 8
+    ld e,h
+    ld d,0
+    ld hl,LIBDEFS
+    add hl,de
+    pop de
+    ret
 
 ;; tree_has: HL = tree, DE = an atom -> Z if it occurs in the tree
 tree_has:
@@ -1440,6 +1488,7 @@ defvar_common:
     inc hl
     ld (hl),d
     pop hl
+    call mark_def
     ld a,c
     cp 2
     jr nz,.done
