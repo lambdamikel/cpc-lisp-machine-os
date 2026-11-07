@@ -11,6 +11,10 @@
 --               core's EDHOOK, a RET in RAM; tools/run.sh finds it)
 --   LISP_TIMES  optional file: for each line, the frames (1/50 s of CPC
 --               time) from the end of its typing to the next EDIT
+--   LISP_PROF   optional file: a profile -- every instruction executed
+--               while a line runs, counted by address ("addr rom count",
+--               rom = core, lib1, lib2, or ram/firmware). tools/profile.py
+--               reads it. Slow.
 --
 -- Output is caught by tapping opcode fetches at &BB5A, the TXT OUTPUT
 -- vector: whoever prints through the firmware passes there, and A holds the
@@ -72,10 +76,34 @@ TAPE = MEM:install_read_tap(EDITV, EDITV, "edit", function(offset, data, mask)
   if pc == EDITV or pc == EDITV + 1 then
     WAITING = true
     EDITS = EDITS + 1
+    ANSWERED = true
     if T0 then TIMES[#TIMES + 1] = (F - T0) .. "\t" .. LINES[NEXT - 1]; T0 = nil end
   end
   return data
 end)
+
+PROFF = getenv("LISP_PROF", nil)
+PROF = {}
+if PROFF then
+  local function load(p) local f = io.open(p, "rb"); local d = f:read("a"); f:close(); return d end
+  ROMS = { { "core", load("build/LISP.ROM") }, { "lib1", load("build/LISPLIB.ROM") },
+           { "lib2", load("build/LISPLIB2.ROM") } }
+  -- an opcode fetch is a read at PC; above &C000 the byte read tells the
+  -- ROMs apart (the same byte in two of them is rare enough)
+  TAPP = MEM:install_read_tap(0x0000, 0xFFFF, "prof", function(offset, data, mask)
+    if T0 and offset == CPU.state["PC"].value then
+      local key = offset
+      if offset >= 0xC000 then
+        local b = data & 0xFF
+        for i, r in ipairs(ROMS) do
+          if r[2]:byte(offset - 0xBFFF) == b then key = i * 0x10000 + offset; break end
+        end
+      end
+      PROF[key] = (PROF[key] or 0) + 1
+    end
+    return data
+  end)
+end
 
 -- the key matrix: CPC key number -> its field
 KEYFIELD = {}
@@ -132,6 +160,15 @@ local function finish(why)
   if TIMESF then
     local f = io.open(TIMESF, "w"); f:write(table.concat(TIMES, "\n") .. "\n"); f:close()
   end
+  if PROFF then
+    local f = io.open(PROFF, "w")
+    for k, n in pairs(PROF) do
+      local rom = k >> 16
+      f:write(string.format("%04X %s %d\n", k & 0xFFFF,
+        rom > 0 and ROMS[rom][1] or (k < 0x4000 and "firmware" or "ram"), n))
+    end
+    f:close()
+  end
   io.stderr:write("repl.lua: " .. why .. " after " .. F .. " frames\n")
   manager.machine:exit()
 end
@@ -141,7 +178,9 @@ NOTIFY = emu.add_machine_frame_notifier(function()
   F = F + 1
   if F >= MAXF then finish("TIMEOUT") return end
   if TYPED and not NK.is_posting then
-    TYPED, T0 = false, F
+    -- a quick line may be answered before the typing is seen to end
+    TYPED = false
+    if ANSWERED then TIMES[#TIMES + 1] = "0\t" .. LINES[NEXT - 1] else T0 = F end
     if PENDING then
       local t = F
       for _, a in ipairs(PENDING) do
@@ -181,7 +220,7 @@ NOTIFY = emu.add_machine_frame_notifier(function()
         local l = LINES[NEXT]; NEXT = NEXT + 1
         OUT[#OUT + 1] = l       -- the ROM's own newline follows
         NK:post_coded(" " .. coded(l) .. "{ENTER}")
-        TYPED = true
+        TYPED, ANSWERED = true, false
         local d = directives()
         if #d > 0 then PENDING = d end
       end

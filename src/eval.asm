@@ -100,28 +100,7 @@ ev_loop:
     jr c,ev_done                ; character
     cp SYM_HI >> 8
     jr nc,ev_done               ; string, function...
-    ; a symbol: lexical binding, else global value
-    push hl
-    call env_lookup
-    ld a,h
-    or l
-    jr z,.global
-    pop de
-    CDRHL
-    jr ev_done
-.global:
-    pop hl
-    push hl
-    inc hl
-    inc hl
-    LDHLI
-    pop de
-    ld a,h
-    cp UNBOUND >> 8
-    jr nz,ev_done
-    ld a,l
-    cp UNBOUND and #FF
-    jr z,err_unbound
+    call sym_value
 ev_done:
     pop de
     ld (V_ENV),de
@@ -130,6 +109,49 @@ ev_done:
 err_unbound:
     ld hl,m_unbound
     jp error
+
+;; sym_value: HL = a symbol -> HL = its value: its lexical binding, else its
+;; global value (an error if it has none). DE = the symbol; BC corrupt.
+sym_value:
+    ex de,hl
+    ld hl,(V_ENV)
+.walk:
+    ld a,h
+    or l
+    jr z,.global
+    ld c,(hl)
+    inc hl
+    ld b,(hl)                   ; BC = an entry (symbol . value)
+    inc hl
+    ld a,(bc)
+    cp e
+    jr nz,.next
+    inc bc
+    ld a,(bc)
+    cp d
+    jr z,.found
+.next:
+    LDHLI
+    jr .walk
+.found:
+    inc bc
+    ld a,(bc)
+    ld l,a
+    inc bc
+    ld a,(bc)
+    ld h,a
+    ret
+.global:
+    ld hl,SY_VALUE
+    add hl,de
+    LDHLI
+    ld a,h
+    cp UNBOUND >> 8
+    ret nz
+    ld a,l
+    cp UNBOUND and #FF
+    ret nz
+    jr err_unbound
 
 ;; env_lookup: HL = symbol -> HL = its binding (symbol . value) in V_ENV, or
 ;; NIL. BC, DE kept.
@@ -212,10 +234,32 @@ ev_cons:
     ld c,(hl)
     inc hl
     ld b,(hl)                   ; BC = argument forms
-    ex de,hl
-    call is_symbol
-    ex de,hl
-    jr nz,.notsym
+    ld a,e                      ; a symbol? (is_symbol)
+    and 7
+    cp 2
+    jp nz,.notsym
+    ld a,d
+    cp SYM_LO >> 8
+    jp c,.notsym
+    cp SYM_HI >> 8
+    jp nc,.notsym
+    ; a local function (flet, labels) -- if it ever was one: FNBOUND
+    sub SYM_LO >> 8
+    ld h,a
+    ld a,e
+    srl h
+    rra
+    srl h
+    rra
+    srl h
+    rra
+    ld l,a
+    ld a,h
+    add a,FNBOUND >> 8
+    ld h,a
+    ld a,(hl)
+    or a
+    jr z,.global
     call env_fn_entry
     ld a,h
     or l
@@ -226,9 +270,7 @@ ev_cons:
     ld hl,SY_FUNC
     add hl,de
     LDHLI
-    push bc
-    call resolve_fn
-    pop bc
+.fn:
     ld a,h
     cp #C0
     jr c,.notrom
@@ -248,13 +290,22 @@ ev_cons:
 .notrom:
     cp CELL_LO >> 8
     jr c,.undef
-    push hl
     dec hl
     dec hl
     ld a,(hl)
-    pop hl
+    inc hl
+    inc hl
+    cp HDR_CLOSURE and #FF
+    jr z,.call
     cp HDR_MACRO and #FF
+    jr z,.macro
+    cp HDR_AUTOLOAD and #FF
     jr nz,.call
+    push bc                     ; Lisp text in the library: read it first
+    call resolve_fn
+    pop bc
+    jr .fn
+.macro:
     ; a macro: expand, and evaluate the expansion here
     LDHLI                       ; its closure
     ld e,c
@@ -299,10 +350,31 @@ ev_cons:
     ld d,(hl)
     inc hl
     LDHLI                       ; DE = form, HL = rest
+    ; what evaluates to itself, and a variable, without eval
+    bit 0,e
+    jr nz,.self                 ; a fixnum
+    ld a,e
+    and 2
+    jr z,.cons
+    ld a,d
+    cp SYM_LO >> 8
+    jr c,.self                  ; a character
+    cp SYM_HI >> 8
+    jr nc,.self                 ; a string, a function...
+    push bc
+    push hl
+    ex de,hl
+    call sym_value
+    jr .value
+.cons:
+    ld a,d
+    or e
+    jr z,.self                  ; NIL
     push bc
     push hl
     ex de,hl
     call eval
+.value:
     pop de
     pop bc
     push hl
@@ -310,6 +382,11 @@ ev_cons:
     jr z,.many
     ex de,hl
     jr .args
+.self:
+    push de
+    inc c
+    jr nz,.args
+    jr .many
 .apply:
     jp apply_core
 .bad1:
@@ -2199,6 +2276,21 @@ sf_labels:
 bind_fn:
     call is_symbol
     jr nz,.bad
+    push hl                     ; it is a local function now: FNBOUND
+    push de
+    ld de,-(SYM_LO+2)
+    add hl,de
+    srl h
+    rr l
+    srl h
+    rr l
+    srl h
+    rr l
+    ld de,FNBOUND
+    add hl,de
+    ld (hl),1
+    pop de
+    pop hl
     push de
     ld de,NIL
     call cons

@@ -39,7 +39,8 @@ KEY_ESC           equ 66            ; KM TEST KEY number
 ;; ---------------------------------------------------------------------------
 ;; MEMORY MAP
 ;;
-;;   &0040-&04FF  low system area: mark stack, symbol hash table, LIBDEFS.
+;;   &0040-&04FF  low system area: mark stack, symbol hash table, LIBDEFS,
+;;                FNBOUND.
 ;;                The firmware sees its ROM here, so nothing the firmware reads goes here.
 ;;                Words below &0500 are also the immediates (characters,
 ;;                markers, headers), which is why no object lives here.
@@ -59,10 +60,14 @@ OBARRAY_END       equ OBARRAY+2*NBUCKETS
 LIBDEFS           equ OBARRAY_END   ; NSYMS bits: the symbol's definition came
 LIBDEFS_END       equ LIBDEFS+NSYMS/8 ;   from library text (SAVE leaves it out)
 
+FNBOUND           equ #0300         ; NSYMS bytes: non-zero if flet or labels
+                                    ;   ever bound the symbol (ev_cons)
 SYM_LO            equ #0500
 NSYMS             equ 512
 SYM_HI            equ SYM_LO+8*NSYMS   ; #1500
-                  assert LIBDEFS_END <= SYM_LO
+                  assert LIBDEFS_END <= FNBOUND
+                  assert FNBOUND+NSYMS <= SYM_LO
+                  assert (FNBOUND and #FF) == 0
 CELL_LO           equ SYM_HI
 
 STACK_SIZE        equ 4096
