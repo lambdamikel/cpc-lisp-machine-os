@@ -96,6 +96,9 @@ V_T3              defs 2
 V_T4              defs 2
 V_SRCOBJ          defs 2            ; reader: the string it reads from (source 2)
 V_EDITSTR         defs 2            ; the function editor's last text, a string
+V_MV1             defs 2            ; multiple values: the first,
+V_MV2             defs 2            ;   the second,
+V_MVL             defs 2            ;   the rest, a list (V_MVN says how many)
 ROOTS_END
 V_BLOCKS          defs 2            ; innermost block/catch frame (a stack address)
 V_FREE            defs 2            ; free cell list
@@ -160,6 +163,9 @@ V_FD              defs 5
 V_FBUF            defs 12           ; digits, printing a float
 V_FOP             defs 2            ; the operation a fold applies
 V_FMA             defs 1            ; A, while fmcall finds the routine
+V_MVN             defs 1            ; multiple values: 0 none (one value), else
+                                    ;   how many plus one, for V_MV1 (each call
+                                    ;   clears it; VALUES, FLOOR... set it)
 V_S1              defs 2            ; scratch for routines that call nothing
 V_S2              defs 2
 V_S3              defs 2

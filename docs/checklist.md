@@ -40,14 +40,19 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
       `symbol-value` `symbol-function` `symbol-plist` `get` `char` `aref`
       `svref`, and on variables; `incf`, `decf`, `push`, `pop` on places
 - [x] Integers are 15 bits (-16384..16383); a result that overflows becomes a
-      float, so `(* 200 200)` is `40000.0`
+      float, so `(* 200 200)` is `40000.0`; `round` takes halves to the
+      even integer, as CL
 - [x] Floats: the firmware's 5-byte reals, about nine digits
 - [x] Errors print a message and the object and return to `LISP>`; the stack
       is checked for overflow
 - [x] ESC breaks any running program, including loops over circular lists
 - [x] Mark-and-sweep garbage collector; about 7000 cells of 4 bytes, 512
       symbols, strings and vectors in a compacted block space
-- [ ] Multiple values (`values`, `multiple-value-bind`)
+- [x] Multiple values: `values`, `multiple-value-list` (built in),
+      `multiple-value-bind`, `nth-value`, `multiple-value-call`,
+      `multiple-value-prog1`, `multiple-value-setq`, `values-list`; `floor`
+      `truncate` `round` `ceiling` return the remainder too, and the REPL
+      prints every value
 - [ ] `defstruct`, hash tables
 - [ ] `*print-case*` (all output is upper case, as in CL)
 
@@ -190,7 +195,7 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
 ## Tools
 
 - [x] `tools/build.sh`: the three ROMs, and MAME romsets with the core at ROM 0
-- [x] `tools/test.sh`: 20 regression tests, on a 464 or a 6128
+- [x] `tools/test.sh`: 21 regression tests, on a 464 or a 6128
 - [x] `tools/run.sh`: type a file at the REPL in MAME; screenshots,
       timings, an instruction profile (`tools/profile.py`)
 - [x] `tools/mame.sh`: a MAME window to play in, with a disc
@@ -229,7 +234,8 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
          functions on lists, strings and vectors; `map`, `remove-duplicates`,
          `substitute`, `fill`
    - [ ] `:start`, `:end`, `:from-end` on the sequence functions
-   - [ ] `defstruct`, hash tables, multiple values
+   - [x] Multiple values
+   - [ ] `defstruct`, hash tables
    - [ ] `|...|` symbols in the reader
 5. [x] **More graphics and sound**: circles, discs, boxes, XOR drawing,
        text windows, text at the graphics cursor, envelopes, the sound

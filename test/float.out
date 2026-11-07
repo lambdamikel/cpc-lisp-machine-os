@@ -72,18 +72,25 @@ LISP> (minusp -0.1)
 T
 LISP> (truncate 7.9)
 7
+0.9
 LISP> (truncate -7.9)
 -7
+-0.9
 LISP> (floor -7.5)
 -8
+0.5
 LISP> (floor 7.5 2)
 3
+1.5
 LISP> (round 2.6)
 3
+-0.4
 LISP> (ceiling 2.1)
 3
+-0.9
 LISP> (ceiling -2.1)
 -2
+-0.0999999996
 LISP> (mod 7.5 2)
 1.5
 LISP> (mod -7.5 2)

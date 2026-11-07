@@ -267,6 +267,30 @@
           (sound channels 0 d 0)
           (sound channels (note n) d volume)))))
 
+;;; Multiple values (values and multiple-value-list are built in)
+
+(defmacro multiple-value-bind (vars form &body body)
+  (let ((g (gensym)))
+    `(apply #'(lambda (&optional ,@vars &rest ,g) ,@body)
+            (multiple-value-list ,form))))
+
+(defmacro nth-value (n form) `(nth ,n (multiple-value-list ,form)))
+
+(defmacro multiple-value-call (f &rest forms)
+  `(apply ,f (append ,@(mapcar #'(lambda (x) `(multiple-value-list ,x)) forms))))
+
+(defmacro multiple-value-prog1 (form &body body)
+  (let ((g (gensym)))
+    `(let ((,g (multiple-value-list ,form))) ,@body (values-list ,g))))
+
+(defmacro multiple-value-setq (vars form)
+  (let ((g (gensym)) (i -1))
+    `(let ((,g (multiple-value-list ,form)))
+       (setq ,@(mapcan #'(lambda (v) (list v `(nth ,(incf i) ,g))) vars))
+       (car ,g))))
+
+(defun values-list (l) (apply #'values l))
+
 ;;; Macros
 
 (defmacro pushnew (item place)

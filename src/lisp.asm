@@ -351,16 +351,27 @@ repl:
     jr nz,.ev
     ERR m_syntax
 .ev:
+    xor a
+    ld (V_MVN),a
     call eval
     ld de,(S_STAR2+SY_VALUE)    ; *** ** * as in CL
     ld (S_STAR3+SY_VALUE),de
     ld de,(S_TIMES+SY_VALUE)
     ld (S_STAR2+SY_VALUE),de
     ld (S_TIMES+SY_VALUE),hl
+    call mv_list                ; every value, a line each
+.pv:
+    ld a,h
+    or l
+    jr z,repl
+    push hl
+    LDHLI
     call fresh_line
     call prin1
     call newline
-    jr repl
+    pop hl
+    CDRHL
+    jr .pv
 
 ;; error: HL = message, DE = the object it is about, or UNBOUND
 error:

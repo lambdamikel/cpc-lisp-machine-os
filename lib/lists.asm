@@ -661,6 +661,38 @@ lq_n_single: db 12,"SINGLE-FLOAT"
 lq_n_double: db 12,"DOUBLE-FLOAT"
 
 ;; ---------------------------------------------------------------------------
+;; MULTIPLE VALUES: the core keeps them (V_MVN, V_MV1, V_MV2, V_MVL) and
+;; multiple-value-list reads them
+
+;; (values ...) -> the first (NIL if there is none); all of them for
+;; multiple-value-list and what is built on it
+;@ VALUES 0 255 lf_values
+lf_values:
+    ld a,b
+    inc a
+    ld (V_MVN),a                ; how many, plus one
+    ld de,NIL
+    ld (V_MV1),de
+    ld (V_MV2),de
+    ld (V_MVL),de
+    ld a,b
+    or a
+    jr z,.done
+    NEXTARG
+    ld (V_MV1),de
+    dec b
+    jr z,.done
+    NEXTARG
+    ld (V_MV2),de
+    dec b
+    jr z,.done
+    CORE args_to_list           ; the third on, as a list
+    ld (V_MVL),hl
+.done:
+    ld hl,(V_MV1)
+    ret
+
+;; ---------------------------------------------------------------------------
 ;; BITS
 
 ;@ LOGAND 0 255 lf_logand

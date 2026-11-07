@@ -409,8 +409,11 @@ ev_cons:
 .many:
     ERR m_toomany
 
-;; apply_core: C = n, with the call laid out on the stack as above
+;; apply_core: C = n, with the call laid out on the stack as above. A call
+;; starts with no multiple values: VALUES (or FLOOR...) sets them as it ends.
 apply_core:
+    xor a
+    ld (V_MVN),a
     ld l,c
     ld h,0
     add hl,hl
@@ -1380,6 +1383,48 @@ ev_progn:
 ;; ===========================================================================
 ;; SPECIAL FORMS. Each is entered with HL = the argument forms, under the
 ;; eval frame.
+
+;; (multiple-value-list form): all the values form returns, as a list
+sf_mvlist:
+    call car
+    xor a
+    ld (V_MVN),a
+    call eval
+    call mv_list
+    jp ev_done
+
+;; mv_list: HL = a value just returned -> a list of all the values it came
+;; with: those VALUES left, if it is their first (else they are from
+;; something before it, and it is a single value)
+mv_list:
+    ld a,(V_MVN)
+    or a
+    jr z,.one
+    push hl
+    ld de,(V_MV1)
+    or a
+    sbc hl,de
+    pop hl
+    jr nz,.one
+    dec a                       ; how many
+    ld hl,NIL
+    ret z                       ; (values): none
+    ld de,(V_MVL)               ; the third on,
+    cp 3
+    jr nc,.two
+    ld de,NIL
+.two:
+    cp 2
+    jr c,.first
+    ld hl,(V_MV2)               ;   the second,
+    call cons
+    ex de,hl
+.first:
+    ld hl,(V_MV1)               ;   the first
+    jp cons
+.one:
+    ld de,NIL
+    jp cons
 
 sf_quote:
     call car

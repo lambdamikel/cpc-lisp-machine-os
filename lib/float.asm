@@ -467,34 +467,149 @@ fl_quot:
     call f_get
     jp f_div
 
+;; the four roundings: (truncate x [y]), floor, round, ceiling. The
+;; quotient, and as the second value the remainder x - q*y (an integer when
+;; x and y both are). round takes a half to the even one, as CL does.
 fl_truncate:
-    call fl_quot
-    ld ix,M_FIX
-    jr fl_toint
+    ld c,0
+    jr fl_rounding
 fl_floor:
-    call fl_quot
-    ld ix,M_INT
-    jr fl_toint
-
+    ld c,1
+    jr fl_rounding
 ;@ ROUND 1 2 lf_round
 lf_round:
-    call fl_quot
-    ld ix,M_R2BIN
-    jr fl_toint
-
+    ld c,2
+    jr fl_rounding
 ;@ CEILING 1 2 lf_ceiling
 lf_ceiling:
-    call fl_quot
-    ld hl,V_FA
+    ld c,3
+fl_rounding:
+    push hl                     ; &arg 0
+    push bc                     ; B = how many, C = which
+    call fl_quot                ; FA = x / y
+    ld hl,V_FD
+    ld de,V_FA
+    FM M_MOVE                   ; FD = that, for round's halves
+    pop bc
+    push bc
+    ld a,c
+    cp 3
+    jr nz,.sel
+    ld hl,V_FA                  ; ceiling: -(floor -x)
     FM M_NEG
+.sel:
+    pop bc
+    push bc
+    ld ix,M_FIX
+    ld a,c
+    or a
+    jr z,.go
     ld ix,M_INT
-    call fl_toint
-    ex de,hl                    ; -(floor -x)
+    cp 2
+    jr nz,.go
+    ld ix,M_R2BIN
+.go:
+    call fl_toint               ; HL = q
+    pop bc
+    push bc
+    ld a,c
+    cp 3
+    jr nz,.q
+    ex de,hl
     ld hl,2
     or a
     sbc hl,de
-    ret po
-    jp fl_toobig
+    jp pe,fl_toobig
+.q:
+    ld (V_MV1),hl
+    ld a,c
+    cp 2
+    call z,fl_tie
+    pop bc
+    pop hl
+    NEXTARG                     ; x
+    push hl
+    push de
+    ld hl,V_FC
+    call f_get                  ; FC = x
+    pop de
+    pop hl
+    ld a,e                      ; both integers: the remainder is one
+    and 1
+    ld c,a
+    ld de,3                     ; y, 1 if there is none
+    dec b
+    jr z,.y
+    NEXTARG
+.y:
+    ld a,e
+    and c
+    push af
+    ld hl,V_FB
+    call f_get                  ; FB = y
+    ld de,(V_MV1)
+    ld hl,V_FA
+    call f_get                  ; FA = q
+    call f_mul                  ; * y
+    ld hl,V_FA
+    ld de,V_FC
+    FM M_RSUB                   ; x - that
+    call f_chk
+    pop af
+    jr z,.float
+    ld hl,V_FA
+    FM M_FIX
+    ld hl,V_FA
+    call fl_bin2fix
+    jr nc,.r
+.float:
+    call fl_result
+.r:
+    ld (V_MV2),hl
+    ld a,3
+    ld (V_MVN),a
+    ld hl,(V_MV1)
+    ret
+
+;; fl_tie: round's q (V_MV1) and FD, the quotient it came from: if that was
+;; exactly half way, q is the even one of the two
+fl_tie:
+    ld de,(V_MV1)
+    ld hl,V_FB
+    call f_get                  ; FB = q
+    ld hl,V_FB
+    ld de,V_FD
+    FM M_RSUB                   ; FB = f - q
+    ld hl,V_FB                  ; +-0.5: a zero mantissa, exponent &80
+    ld a,(hl)
+    inc hl
+    or (hl)
+    inc hl
+    or (hl)
+    ret nz
+    inc hl
+    ld a,(hl)
+    and #7F
+    ret nz
+    ld c,(hl)                   ; bit 7: the sign
+    inc hl
+    ld a,(hl)
+    cp #80
+    ret nz
+    ld hl,(V_MV1)
+    bit 1,l
+    ret z                       ; even already
+    ld de,2
+    bit 7,c
+    jr z,.up
+    or a
+    sbc hl,de                   ; f = q - 0.5: down to q - 1
+    jr .set
+.up:
+    add hl,de                   ; f = q + 0.5: up to q + 1
+.set:
+    ld (V_MV1),hl
+    ret
 
 ;; fl_toint: IX = M_FIX, M_INT or M_R2BIN -> FA made a whole number, as a
 ;; fixnum in HL. (Those routines say nothing about overflow: FA must be

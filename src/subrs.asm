@@ -1199,7 +1199,8 @@ divide:
     or e
     jr z,.zero
     ld a,h
-    push af                     ; the sign of the remainder
+    or a                        ; (ld sets no flags)
+    push af                     ; the sign of the remainder: the dividend's
     xor d
     push af                     ; the sign of the quotient
     call abs_hl
@@ -1257,13 +1258,25 @@ subr_truncate:
 NUM_TRUNCATE:
     call two_nums
     call divide
-    jp tag_hl
+    jr mv_qr
 subr_floor:
     call nums_v
 NUM_FLOOR:
     call two_nums
     call floor_div
-    jp tag_hl
+;; mv_qr: HL = a quotient, DE = the remainder (untagged) -> the quotient,
+;; and both as the multiple values
+mv_qr:
+    ex de,hl
+    add hl,hl
+    inc hl                      ; (smaller than the divisor: a fixnum)
+    ld (V_MV2),hl
+    ex de,hl
+    call tag_hl
+    ld (V_MV1),hl
+    ld a,3
+    ld (V_MVN),a
+    ret
 subr_mod:
     call nums_2
 NUM_MOD:
