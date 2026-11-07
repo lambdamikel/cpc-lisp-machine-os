@@ -73,7 +73,7 @@ LISP> (save "m:bad" 'sq 'car)
 Error: nothing to save for CAR
 LISP> (save "m:bad" 'nosuch)
 Error: nothing to save for NOSUCH
-LISP> (defparameter *big* (make-list 3000 'abcdefghij))
+LISP> (defparameter *big* (make-list 3000 :initial-element 'abcdefghij))
 *BIG*
 LISP> (save "m:b1" '*big*)
 (*BIG*)

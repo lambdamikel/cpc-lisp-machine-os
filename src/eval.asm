@@ -751,24 +751,12 @@ let_body:
     jp ev_done
 
 ;; apply_list: HL = function (or a symbol naming one), DE = list of
-;; arguments -> HL = value. For natives that call functions.
+;; arguments -> HL = value. For natives that call functions. The arguments
+;; go onto the stack as a call's do, so a closure binds them from there.
 apply_list:
     ld bc,(V_ENV)
     push bc                     ; an eval frame
     call coerce_fn
-    ld a,h
-    cp #C0
-    jr nc,.subr
-    push hl                     ; a library function goes as a subr does
-    dec hl
-    dec hl
-    ld a,(hl)
-    pop hl
-    cp HDR_LSUBR and #FF
-    jr z,.subr
-    ex de,hl
-    jr apply_closure_tail
-.subr:
     push hl
     ex de,hl
     ld c,0
@@ -791,15 +779,33 @@ apply_list:
 .go:
     jp apply_core
 
-;; apply1: HL = function, DE = one argument -> HL = value
+;; apply1: HL = function, DE = one argument -> HL = value. apply2: and BC
+;; a second. No list is made.
 apply1:
+    push de
+    call coerce_fn
+    pop de
     push hl
-    ex de,hl
-    ld de,NIL
-    call cons
-    ex de,hl
-    pop hl
-    jr apply_list
+    ld hl,(V_ENV)
+    ex (sp),hl                  ; an eval frame
+    push hl                     ; the function
+    push de
+    ld c,1
+    jp apply_core
+apply2:
+    push bc
+    push de
+    call coerce_fn
+    pop de
+    pop bc
+    push hl
+    ld hl,(V_ENV)
+    ex (sp),hl
+    push hl
+    push de
+    push bc
+    ld c,2
+    jp apply_core
 
 ;; coerce_fn: HL = a function or a symbol with a global one -> HL = the
 ;; function. Errors on anything else. BC, DE kept.

@@ -537,18 +537,22 @@ subr_rplacd:
     pop hl
     ret
 
-;; (mapcar f list...) and (mapc f list...)
+;; (mapcar f list...) and (mapc f list...). Each call is laid out on the
+;; stack as eval lays out one (map_call): no list of the arguments is made.
 subr_mapcar:
     ld a,1
     jr map_common
 subr_mapc:
     xor a
 map_common:
-    push af                     ; (ix+9): 1 = collect
+    push af                     ; (ix+9): 1 = collect; (ix+8): map_call's count
     ld e,(hl)
     inc hl
     ld d,(hl)
     dec hl
+    ex de,hl
+    call coerce_fn              ; (once, not for every element)
+    ex de,hl
     push de                     ; (ix+6) f
     dec hl
     dec hl
@@ -565,15 +569,29 @@ map_common:
     ld ix,0
     add ix,sp
 .loop:
-    ld l,(ix+2)
+    ld l,(ix+2)                 ; one of the lists at its end: done
     ld h,(ix+3)
-    call cars_cdrs
-    jr c,.done
-    ex de,hl
-    ld l,(ix+6)
-    ld h,(ix+7)
+.chk:
+    ld a,h
+    or l
+    jr z,.call
+    push hl
+    LDHLI
+    ld a,l
+    and 3
+    jr nz,.end
+    ld a,h
+    or l
+    jr z,.end
+    pop hl
+    CDRHL
+    jr .chk
+.end:
+    pop hl
+    jr .done
+.call:
     push ix
-    call apply_list
+    call map_call
     pop ix
     ld a,(ix+9)
     or a
@@ -602,87 +620,129 @@ map_common:
     ex de,hl
     ret
 
-;; cars_cdrs: HL = a list of lists -> C if one of them is empty; else HL =
-;; a list of their cars, and each is replaced by its cdr
-cars_cdrs:
-    push hl
-.chk:
-    ld a,h
-    or l
-    jr z,.ok
-    push hl
-    LDHLI
-    ld a,l
-    and 3
-    jr nz,.empty
-    ld a,h
-    or l
-    jr z,.empty
-    pop hl
-    CDRHL
-    jr .chk
-.empty:
-    pop hl
-    pop hl
-    scf
-    ret
-.ok:
-    pop hl
-    ld de,NIL
-.l:
-    ld a,h
-    or l
-    jr z,.fin
-    push hl
-    LDHLI                       ; one of the lists
-    push hl
-    LDHLI                       ; its car
-    call cons
+;; map_call: IX = map's frame -> f applied to the lists' first elements,
+;; each list moved on one
+map_call:
+    ld bc,(V_ENV)
+    push bc                     ; an eval frame
+    ld l,(ix+6)
+    ld h,(ix+7)
+    push hl                     ; the function
+    ld (ix+8),0
+    ld l,(ix+2)
+    ld h,(ix+3)
+.a:
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    dec hl                      ; DE = one list
     ex de,hl
-    pop hl
-    CDRHL
-    ex (sp),hl
-    pop bc
+    ld c,(hl)
+    inc hl
+    ld b,(hl)
+    inc hl
+    push bc                     ; its first element: an argument
+    ld c,(hl)
+    inc hl
+    ld b,(hl)                   ; BC = the rest of it
+    ex de,hl
     ld (hl),c
     inc hl
     ld (hl),b
-    dec hl
-    CDRHL
-    jr .l
-.fin:
-    ex de,hl
-    ld de,NIL
-    call nreverse_onto
-    or a
-    ret
+    inc hl
+    inc (ix+8)
+    LDHLI                       ; the next list
+    ld a,h
+    or l
+    jr nz,.a
+    ld c,(ix+8)
+    jp apply_core
 
+;; (funcall f arg...), (apply f arg... list) called as functions (from
+;; mapcar, apply...; eval itself passes funcall's arguments on): the call
+;; laid out on the stack, no list made
 subr_funcall:
+    call fn_frame               ; the eval frame and the function pushed
+    ld b,a
+    dec b                       ; the arguments after f
+    ld c,b
+    jr z,.go
+.p:
+    dec hl
+    dec hl
     ld e,(hl)
     inc hl
     ld d,(hl)
     dec hl
     push de
-    dec hl
-    dec hl
-    dec b
-    call args_to_list
-    ex de,hl
-    pop hl
-    jp apply_list
+    djnz .p
+.go:
+    jp apply_core
 
 subr_apply:
+    call fn_frame
+    ld c,0
+    sub 2
+    jr z,.list
+    ld b,a
+.p:
+    dec hl
+    dec hl
     ld e,(hl)
     inc hl
     ld d,(hl)
     dec hl
     push de
+    inc c
+    djnz .p
+.list:
     dec hl
     dec hl
-    dec b
-    call liststar_args
+    LDHLI                       ; the list: its elements, each an argument
+.s:
+    ld a,h
+    or l
+    jr z,.go
+    ld a,l
+    and 3
+    jr nz,.go
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    inc hl
+    LDHLI
+    push de
+    inc c
+    jr nz,.s
+    jp ev_cons.many
+.go:
+    jp apply_core
+
+;; fn_frame: HL = &arg 0, the function (or a symbol), B = how many ->
+;; pushed under the caller's return: an eval frame, the function. HL kept,
+;; A = how many
+fn_frame:
+    ld a,b
+    pop bc                      ; the return
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    dec hl
+    push bc
+    push af
+    push hl
     ex de,hl
+    call coerce_fn              ; (an autoload may run: all is on the stack)
+    ex de,hl                    ; DE = the function
     pop hl
-    jp apply_list
+    pop af
+    pop bc                      ; the return again
+    push hl
+    ld hl,(V_ENV)
+    ex (sp),hl                  ; an eval frame
+    push de                     ; the function
+    push bc
+    ret
 
 ;; ---------------------------------------------------------------------------
 ;; PREDICATES AND EQUALITY
@@ -1138,25 +1198,36 @@ mul_fix:
     pop af
     jp num_ovf
 
-;; umul: BC * DE -> HL, C if it does not fit 16 bits
+;; umul: BC * DE -> HL, C if it does not fit 16 bits. The smaller one is
+;; the multiplier, taken a bit at a time from the bottom until none are
+;; left: (* 7 9) takes 4 rounds, not 16.
 umul:
+    ld h,b
+    ld l,c
+    or a
+    sbc hl,de
+    jr nc,.l0                   ; DE the smaller
+    ld h,b
+    ld l,c
+    ld b,d
+    ld c,e
+    ex de,hl
+.l0:
     ld hl,0
-    ld a,16
 .l:
-    add hl,hl
-    jr c,.ovf
-    sla e
-    rl d
+    srl d
+    rr e
     jr nc,.n
     add hl,bc
-    jr c,.ovf
+    ret c                       ; too big
 .n:
-    dec a
-    jr nz,.l
-    or a
-    ret
-.ovf:
-    scf
+    ld a,d
+    or e
+    ret z                       ; (NC) done
+    sla c
+    rl b
+    jr nc,.l
+    scf                         ; bits left and the multiplicand past 16
     ret
 
 ;; udiv16: HL / DE (unsigned) -> HL = quotient, DE = remainder

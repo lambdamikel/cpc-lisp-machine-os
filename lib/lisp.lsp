@@ -27,7 +27,7 @@
     (loop (unless (consp l) (return (nreconc r l)))
           (push (pop l) r))))
 
-(defun make-list (n &optional initial-element)
+(defun make-list (n &key initial-element)
   (let ((l nil))
     (dotimes (i n l) (push initial-element l))))
 

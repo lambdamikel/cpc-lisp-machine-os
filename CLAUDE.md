@@ -364,7 +364,9 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   (2026-11-07 night: catchable errors, all of format, compound types,
   file streams -- checked on the 464 through Parados --, the extended
   loop, the line editor's wrap and copy fixes). Mike keeps the CPC off: flash each build that passes the
-  tests on both machines, no need to ask. Everything may be replaced **except
+  tests on both machines, no need to ask. Slot 1 (the vector head) may become a sixth
+  Lisp ROM -- for the byte-code machine (Mike, 2026-11-07: "the vector head
+  can go ... use the space instead for common lisp"). Everything may be replaced **except
   Parados and the LS AI ROM**. `tools/card.py lisp` re-flashes the three
   Lisp ROMs (it checks the CPC is off and refuses slots 2 and 6);
   `tools/card.py basic` silences the core. `docs/cpc-test.txt` is the

@@ -238,18 +238,12 @@ lk_match:
     or a
     sbc hl,de
     jr z,.equal1
-    ld l,(ix+LK_TEST)           ; any other: (test item element)
+    pop bc                      ; any other: (test item element)
+    ld e,(ix+LK_ITEM)
+    ld d,(ix+LK_ITEM+1)
+    ld l,(ix+LK_TEST)
     ld h,(ix+LK_TEST+1)
-    ex (sp),hl                  ; the test on the stack, HL = the element
-    ld de,NIL
-    SCORE cons
-    ex de,hl
-    ld l,(ix+LK_ITEM)
-    ld h,(ix+LK_ITEM+1)
-    SCORE cons
-    ex de,hl
-    pop hl
-    SCORE apply_list
+    SCORE apply2
     ld a,h
     or l
     ld a,0

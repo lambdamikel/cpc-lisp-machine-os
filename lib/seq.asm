@@ -315,15 +315,12 @@ so_less:
     call so_key
     ex (sp),hl                  ; (key x) on the stack, where the GC sees it
     call so_key
-    ld de,NIL
-    SCORE cons
-    ex de,hl
-    pop hl
-    SCORE cons                  ; ((key x) (key y))
-    ex de,hl
+    ld b,h
+    ld c,l                      ; BC = (key y)
+    pop de                      ; DE = (key x)
     ld l,(ix+SRT_PRED)
     ld h,(ix+SRT_PRED+1)
-    SCORE apply_list
+    SCORE apply2                ; no list made
     ld a,h
     or l
     ret
@@ -335,10 +332,6 @@ so_key:
     ld a,d
     or e
     ret z
-    push de
-    ld de,NIL
-    SCORE cons
     ex de,hl
-    pop hl
-    SCORE apply_list
+    SCORE apply1
     ret

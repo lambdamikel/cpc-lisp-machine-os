@@ -26,7 +26,7 @@
 (save "m:abcdefghijklm" 'sq)
 (save "m:bad" 'sq 'car)
 (save "m:bad" 'nosuch)
-(defparameter *big* (make-list 3000 'abcdefghij))
+(defparameter *big* (make-list 3000 :initial-element 'abcdefghij))
 (save "m:b1" '*big*)
 (save "m:b2" '*big*)
 (dir "m:")
