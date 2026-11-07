@@ -8,7 +8,8 @@
 ;; An error anywhere abandons whatever is open and gives the buffer back
 ;; (toplevel, in the core).
 ;;
-;; A name without a "." gets ".LSP".
+;; A name without a "." gets ".LSP". A name on M: is on the RAM disc
+;; (ramdisc.asm), in the 6128's second 64 KB.
 
 CAS_IN_OPEN   equ #BC77
 CAS_IN_CLOSE  equ #BC7A
@@ -118,7 +119,7 @@ lf_load:
     call fl_lend                ; DE = the buffer
     pop bc
     ld hl,TOKBUF
-    call CAS_IN_OPEN
+    call fl_in_open
     jr c,.open
     call fe_release
     pop de
@@ -181,6 +182,19 @@ lf_save:
     ld de,UNBOUND
     jp lib_error
 .have:
+    push hl                     ; each must have something to save
+.chk:
+    ld a,h
+    or l
+    jr z,.checked
+    push hl
+    LDHLI
+    call fl_check
+    pop hl
+    CDRHL
+    jr .chk
+.checked:
+    pop hl
     ex (sp),hl                  ; the symbols on the stack, HL = the name
     push hl
     call fl_name
@@ -188,7 +202,7 @@ lf_save:
     call fl_lend
     pop bc
     ld hl,TOKBUF
-    call CAS_OUT_OPEN
+    call fl_out_open
     jr c,.open
     call fe_release
     pop de
@@ -268,6 +282,32 @@ fl_write_def:
     call lputc
     ld a,10
     jp lputc
+
+;; fl_check: HL = something to save: a symbol with a function or macro of
+;; its own, or a value. Else an error.
+fl_check:
+    push hl
+    CORE is_symbol
+    pop hl
+    jr nz,.bad
+    push hl
+    call fl_has_fn
+    pop hl
+    ret z
+    push hl
+    inc hl
+    inc hl
+    LDHLI                       ; its value
+    ld de,UNBOUND
+    or a
+    sbc hl,de
+    pop hl
+    ret nz
+.bad:
+    ex de,hl
+    ld hl,fl_m_undef
+    jp lib_error
+fl_m_undef:   db "nothing to save for",0
 
 ;; fl_has_fn: HL = a symbol -> Z if its function is a closure or a macro
 fl_has_fn:
@@ -373,10 +413,44 @@ fl_is_user:
     or 1
     ret
 
-;; (dir): the catalogue, as the disc ROM prints it -> NIL
-;@ DIR 0 0 lf_dir
+;; (dir ["m:"]): the catalogue, as the disc ROM prints it, or the RAM
+;; disc's -> NIL
+;@ DIR 0 1 lf_dir
 lf_dir:
+    ld a,b
+    or a
+    jr z,.disc
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    ex de,hl
+    push hl
+    call lstring
+    ld a,(hl)
+    or #20
+    cp "m"
+    pop de
+    jr nz,.bad
+    call rd_catalog
+    jp lnil
+.bad:
+    ld hl,fl_m_name
+    jp lib_error
+.disc:
     call fl_lend
     call CAS_CATALOG
     call fe_release
     jp lnil
+
+;; fl_in_open, fl_out_open: as CAS IN OPEN and CAS OUT OPEN, or the RAM
+;; disc's for a name on M:
+fl_in_open:
+    call rd_is_m
+    jp nz,CAS_IN_OPEN
+    jp rd_open_in
+fl_out_open:
+    call rd_is_m
+    jp nz,CAS_OUT_OPEN
+    jp rd_open_out
+
+    include "ramdisc.asm"

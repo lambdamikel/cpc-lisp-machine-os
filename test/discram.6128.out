@@ -1,0 +1,129 @@
+LISP> (dir "m:")
+
+Drive M: (RAM)
+
+
+64512 bytes free
+NIL
+LISP> (defun sq (x) (* x x))
+SQ
+LISP> (defvar *v* 42)
+*V*
+LISP> (save "m:one")
+(*V* SQ)
+LISP> (defun cube (x) (* x x x))
+CUBE
+LISP> (save "m:two" 'cube)
+(CUBE)
+LISP> (dir "m:")
+
+Drive M: (RAM)
+
+ONE.LSP       52
+TWO.LSP       30
+
+64430 bytes free
+NIL
+LISP> (fmakunbound 'sq)
+SQ
+LISP> (fmakunbound 'cube)
+CUBE
+LISP> (load "m:one")
+T
+LISP> (sq 5)
+25
+LISP> *v*
+42
+LISP> (load "m:two")
+T
+LISP> (cube 3)
+27
+LISP> (save "m:one" 'cube)
+(CUBE)
+LISP> (dir "m:")
+
+Drive M: (RAM)
+
+ONE.LSP       30
+TWO.LSP       30
+
+64452 bytes free
+NIL
+LISP> (fmakunbound 'cube)
+CUBE
+LISP> (load "m:two")
+T
+LISP> (cube 4)
+64
+LISP> (delete-file "m:two")
+T
+LISP> (load "m:two")
+Error: cannot open "m:two"
+LISP> (load "m:one")
+T
+LISP> (cube 2)
+8
+LISP> (delete-file "m:nosuch")
+Error: no such file: "m:nosuch"
+LISP> (dir "x:")
+Error: bad file name: "x:"
+LISP> (save "m:abcdefghijklm" 'sq)
+Error: bad file name: "m:abcdefghijklm"
+LISP> (save "m:bad" 'sq 'car)
+Error: nothing to save for CAR
+LISP> (save "m:bad" 'nosuch)
+Error: nothing to save for NOSUCH
+LISP> (defparameter *big* (make-list 1000 'abcdefghij))
+*BIG*
+LISP> (save "m:b1" '*big*)
+(*BIG*)
+LISP> (save "m:b2" '*big*)
+Error: cannot write the file
+LISP> (dir "m:")
+
+Drive M: (RAM)
+
+ONE.LSP       30
+B1.LSP        38986
+
+25496 bytes free
+NIL
+LISP> (delete-file "m:b1")
+T
+LISP> (save "m:b2" '*big*)
+(*BIG*)
+LISP> (setq *big* nil)
+NIL
+LISP> (load "m:b2")
+T
+LISP> (length *big*)
+1000
+LISP> (delete-file "m:b2")
+T
+LISP> (dir "m:")
+
+Drive M: (RAM)
+
+ONE.LSP       30
+
+64482 bytes free
+NIL
+LISP> (save "disc" 'sq)
+(SQ)
+LISP> (fmakunbound 'sq)
+SQ
+LISP> (load "disc")
+T
+LISP> (sq 6)
+36
+LISP> (delete-file "disc")
+T
+LISP> (dir)
+
+Drive A: user  0
+
+
+178K free
+
+NIL
+LISP> 

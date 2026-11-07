@@ -122,7 +122,10 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 - **Function editor:** `ed`
 - **Files** (through the firmware's cassette vectors, so with any disc ROM;
   tested with AMSDOS in MAME, tape not tried): `load`, `save` (what you
-  defined, or the symbols named, pretty-printed), `dir`
+  defined, or the symbols named, pretty-printed), `dir`, `delete-file`
+- **RAM disc** on a 6128: drive `M:` in the second 64 KB, for `load`,
+  `save`, `(dir "m:")` and `delete-file`; it survives a reset, not a
+  power-off. On a 464 an `M:` name says there is none.
 
 ### Library ROM 2
 
@@ -142,7 +145,7 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 ## Tools
 
 - [x] `tools/build.sh`: the three ROMs, and MAME romsets with the core at ROM 0
-- [x] `tools/test.sh`: 14 regression tests, on a 464 or a 6128
+- [x] `tools/test.sh`: 15 regression tests, on a 464 or a 6128
 - [x] `tools/run.sh`: type a file at the REPL in MAME; screenshots,
       timings, an instruction profile (`tools/profile.py`)
 - [x] `tools/mame.sh`: a MAME window to play in, with a disc
@@ -161,8 +164,10 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
          built-in, 11% on a closure)
    - [ ] `apply` and `mapcar` without the general `bind`
    - [ ] More from the profiler; rarely used core functions moved to a
-         library ROM to make room (the core has ~200 bytes free)
-3. [ ] **The 6128's extra 64 KB**: a RAM disc for `save` and `load`
+         library ROM to make room (the core has ~140 bytes free)
+   - [ ] `pprint` of a long list of data: one element a line, filled lines
+         would be a third the size
+3. [x] **The 6128's extra 64 KB**: a RAM disc, drive `M:`
 4. [ ] **More Common Lisp**
    - [ ] `string<` `string>` `string-equal` and the other string comparisons;
          `char=` `char<` `char-equal` and the other character comparisons

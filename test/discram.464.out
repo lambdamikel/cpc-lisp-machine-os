@@ -1,0 +1,101 @@
+LISP> (dir "m:")
+Error: no RAM disc (M: needs a 6128)
+LISP> (defun sq (x) (* x x))
+SQ
+LISP> (defvar *v* 42)
+*V*
+LISP> (save "m:one")
+Error: no RAM disc (M: needs a 6128)
+LISP> (defun cube (x) (* x x x))
+CUBE
+LISP> (save "m:two" 'cube)
+Error: no RAM disc (M: needs a 6128)
+LISP> (dir "m:")
+Error: no RAM disc (M: needs a 6128)
+LISP> (fmakunbound 'sq)
+SQ
+LISP> (fmakunbound 'cube)
+CUBE
+LISP> (load "m:one")
+Error: no RAM disc (M: needs a 6128)
+LISP> (sq 5)
+Error: undefined function SQ
+LISP> *v*
+42
+LISP> (load "m:two")
+Error: no RAM disc (M: needs a 6128)
+LISP> (cube 3)
+Error: undefined function CUBE
+LISP> (save "m:one" 'cube)
+Error: nothing to save for CUBE
+LISP> (dir "m:")
+Error: no RAM disc (M: needs a 6128)
+LISP> (fmakunbound 'cube)
+CUBE
+LISP> (load "m:two")
+Error: no RAM disc (M: needs a 6128)
+LISP> (cube 4)
+Error: undefined function CUBE
+LISP> (delete-file "m:two")
+Error: no RAM disc (M: needs a 6128)
+LISP> (load "m:two")
+Error: no RAM disc (M: needs a 6128)
+LISP> (load "m:one")
+Error: no RAM disc (M: needs a 6128)
+LISP> (cube 2)
+Error: undefined function CUBE
+LISP> (delete-file "m:nosuch")
+Error: no RAM disc (M: needs a 6128)
+LISP> (dir "x:")
+Error: bad file name: "x:"
+LISP> (save "m:abcdefghijklm" 'sq)
+Error: nothing to save for SQ
+LISP> (save "m:bad" 'sq 'car)
+Error: nothing to save for SQ
+LISP> (save "m:bad" 'nosuch)
+Error: nothing to save for NOSUCH
+LISP> (defparameter *big* (make-list 1000 'abcdefghij))
+*BIG*
+LISP> (save "m:b1" '*big*)
+Error: no RAM disc (M: needs a 6128)
+LISP> (save "m:b2" '*big*)
+Error: no RAM disc (M: needs a 6128)
+LISP> (dir "m:")
+Error: no RAM disc (M: needs a 6128)
+LISP> (delete-file "m:b1")
+Error: no RAM disc (M: needs a 6128)
+LISP> (save "m:b2" '*big*)
+Error: no RAM disc (M: needs a 6128)
+LISP> (setq *big* nil)
+NIL
+LISP> (load "m:b2")
+Error: no RAM disc (M: needs a 6128)
+LISP> (length *big*)
+0
+LISP> (delete-file "m:b2")
+Error: no RAM disc (M: needs a 6128)
+LISP> (dir "m:")
+Error: no RAM disc (M: needs a 6128)
+LISP> (save "disc" 'sq)
+Error: nothing to save for SQ
+LISP> (fmakunbound 'sq)
+SQ
+LISP> (load "disc")
+
+DISC    .LSP not found
+Error: cannot open "disc"
+LISP> (sq 6)
+Error: undefined function SQ
+LISP> (delete-file "disc")
+
+DISC    .LSP not found
+T
+LISP> (dir)
+
+Drive A: user  0
+
+
+178K free
+
+NIL
+LISP> 

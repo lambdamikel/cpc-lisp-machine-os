@@ -98,7 +98,7 @@ ROMPEEK:
     ret
 tramp_end:
     org tramp_src+tramp_end-TRAMP
-    assert tramp_end <= TRAMP+128
+    assert tramp_end <= RDISK
 
 ;; LIBCALL: a library function, called as a subr: V_LIBFN says which, HL =
 ;; &arg 0, B = how many. Into its part's dispatcher.

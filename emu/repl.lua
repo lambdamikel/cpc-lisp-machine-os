@@ -169,6 +169,15 @@ local function finish(why)
     end
     f:close()
   end
+  -- LISP_DUMP="BC77-BC9F,B0C0-B0FF": RAM in hex on stderr, for debugging
+  for a, b in (os.getenv("LISP_DUMP") or ""):gmatch("(%x+)-(%x+)") do
+    local lo, hi = tonumber(a, 16), tonumber(b, 16)
+    for row = lo, hi, 16 do
+      local t = {}
+      for i = row, math.min(row + 15, hi) do t[#t + 1] = string.format("%02X", MEM:read_u8(i)) end
+      io.stderr:write(string.format("%04X: %s\n", row, table.concat(t, " ")))
+    end
+  end
   io.stderr:write("repl.lua: " .. why .. " after " .. F .. " frames\n")
   manager.machine:exit()
 end

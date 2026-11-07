@@ -79,7 +79,8 @@ TOKBUF            equ #AD00         ; 256: the reader's token
 VARS              equ #AE00         ; the variables, below
 LIBSCR            equ #AF00         ; 256: scratch for the library ROM
 HISTBUF           equ #B000         ; 128: the line editor's history
-TRAMP             equ #B080         ; 128: the cross-ROM trampoline, copied at boot
+TRAMP             equ #B080         ; 58: the cross-ROM trampoline, copied at boot
+RDISK             equ #B0C0         ; 64: the RAM disc's state (lib/ramdisc.asm)
 VARS_END          equ LIBSCR
 NLIBS             equ 4             ; library ROMs: parts 0-3 (src/xrom.asm)
 

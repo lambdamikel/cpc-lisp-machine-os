@@ -85,6 +85,17 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   reader reads the open input
   file (`V_INSRC` 3), `putc` writes the output file (`V_OUTMODE` 3); the 2
   KB buffer is lent like the editor's, and toplevel abandons open files.
+* **The RAM disc** (`lib/ramdisc.asm`): drive `M:` in the 6128's second
+  64 KB, one linear space read and written a byte at a time through the
+  gate array (configurations &C4-&C7 map a bank at &4000-&7FFF, &C0 maps
+  it back at once -- the heap is there too; the code runs in the ROM at
+  &C000 and the stack is above &8000). A 1 KB directory (63 entries), then
+  the files packed; deleting moves the later ones down. `load`/`save` on an
+  `M:` name swap three CAS vectors (close, abandon, char) for far calls
+  into the library while the file is open, so the core's reader and putc
+  need no change; close or abandon (toplevel, on an error) put the disc
+  ROM's back. A 464 is recognised by a write under &C4 landing in main
+  RAM. State: 64 bytes at `RDISK` (&B0C0), above the trampoline.
 * **The function editor** (`lib/fed.asm`, Mike's idea): `(ed 'foo)` shows
   foo's definition pretty-printed (`lib/pp.asm`, also `pprint`) on a full
   screen; COPY or CTRL-S reads and evaluates it, ESC drops it; `(ed)`
@@ -124,9 +135,7 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   fib 17 went from 1103 to 778 frames. What is left is spread out: apply
   conses the arguments into a list that bind takes apart again; the
   interrupt-time firmware is ~8%.
-* **Still to come**:
-  the 6128's extra RAM, more speed; maybe `*print-case*` (all output is
-  upper case, as in CL).
+* **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
 same addresses as screen RAM. Screen access from ROM code goes through the
@@ -165,6 +174,7 @@ should see.
 
     tools/build.sh                      assemble, splice into build/mame
     tools/run.sh [-m 464|6128] [-s shot.png] [-p prof.txt] file.lsp   type it, print the transcript
+    LISP_DUMP="BC77-BC9F,B0C0-B0FF" tools/run.sh ...   and RAM in hex at the end
     tools/test.sh [-m 6128] [-u]        regression: test/*.lsp against test/*.out
     tools/mame.sh [-m 6128] [disc.mfi]  a MAME window to play in, with a disc
 
@@ -216,6 +226,13 @@ should see.
   HL = the destination. REAL FIX, INT and REAL TO BINARY say nothing about
   overflow: check the exponent first. The Firmware Guide's text is in
   `The_Amstrad_CPC_Firmware_Guide.pdf` (amstrad.eu), pages 76-81.
+* **RST 3 (FAR CALL) in a jumpblock entry returns past its far address --
+  into the next vector.** The routine it calls must take that return
+  address off (AMSDOS does: one routine for all its CAS vectors, which
+  tells it which one was called) or point it at a RET; `rd_fix` in
+  `lib/ramdisc.asm` does the latter. Missing this ran CAS OUT DIRECT after
+  every CAS OUT CHAR, and left AMSDOS writing broken files. The far call
+  does hand the routine's flags back (it keeps them in AF').
 * **ROMCALL hands BC back as the callee left it.** A core routine that
   calls the library and needs B or C afterwards must save them itself
   (the reader's token length did not survive `lnum_read` at first).

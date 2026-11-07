@@ -5,7 +5,8 @@
 #
 # Each test/NAME.lsp is typed at the REPL; the transcript from the first
 # prompt on (the banner's free-cell count differs between machines) must
-# match test/NAME.out. -u writes the transcripts as the new expectations --
+# match test/NAME.out -- or test/NAME.464.out, NAME.6128.out where the
+# machines differ. -u writes the transcripts as the new expectations --
 # read them before committing. Several tests run at once. A test whose name
 # starts with "disc" gets a blank disc in drive A (a DDI-1 on the 464).
 cd "$(dirname "$0")/.."
@@ -41,9 +42,11 @@ for n in "${names[@]}"; do
     if grep -q TIMEOUT "$tmp/$n.err"; then
         echo "TIMEOUT $n"; fail=1; continue
     fi
+    exp=test/$n.out                     # or one for this machine
+    [ -f "test/$n.$MACH.out" ] && exp=test/$n.$MACH.out
     if [ -n "$UPDATE" ]; then
-        cp "$tmp/$n.got" "test/$n.out"; echo "wrote test/$n.out"
-    elif diff -u "test/$n.out" "$tmp/$n.got" > "$tmp/$n.diff"; then
+        cp "$tmp/$n.got" "$exp"; echo "wrote $exp"
+    elif diff -u "$exp" "$tmp/$n.got" > "$tmp/$n.diff"; then
         echo "ok      $n"
     else
         echo "FAIL    $n"; cat "$tmp/$n.diff"; fail=1
