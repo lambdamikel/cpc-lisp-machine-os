@@ -159,6 +159,15 @@ or the firmware's FAR CALL.
 
 ## Hardware on Mike's bench
 
+**CPC Lisp runs on the real 464** (2026-11-07, build 6078 from the card):
+banner, speech and singing through the card, PlayCity, disc through
+Parados, ESC, `(fib 17)` in about 13 s -- MAME's timing holds. "Disc
+full" there was the card's drive holding a full disc (flash disc 29):
+`tools/dskloader.py --list` names the drive's disc, `--get 0` copies it
+off for a look (iDSK), and a blank `iDSK x.dsk -n` loaded into the drive
+fixed it (the drive is PSRAM: lost at power-off; store it in a free slot,
+8, with the CPC off, to keep it).
+
 * **CPC 464, BASIC 1.0**, with **LambdaSpeak 4** (board 1). The card serves
   up to eight expansion ROMs from flash, uploaded over USB with no EPROM
   burning -- the reason this project is cheap to iterate. It also emulates

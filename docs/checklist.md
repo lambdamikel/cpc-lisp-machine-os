@@ -18,8 +18,9 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
       read from the ROM on first use (autoload)
 - [x] Runs on the 464 and the 6128 in MAME, with and without a disc drive
 - [x] Flashed to the LambdaSpeak 4 card (`tools/card.py`), checksums verified
-- [ ] First run on the real 464 (2026-11-07: ROMs on the card, awaiting
-      `docs/cpc-test.txt`)
+- [x] The real 464 (2026-11-07, build 6078 on the LambdaSpeak 4 card):
+      boots to `LISP>`, speech and singing, PlayCity, disc through Parados,
+      ESC, and `(fib 17)` in about 13 s -- as in MAME
 - [ ] `|LISP` from BASIC, with the core at a ROM number other than 0: built
       in, not tried yet
 - [ ] Real 6128, 664: not tried
@@ -230,7 +231,7 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
 
 ## Still to come, in this order
 
-1. [ ] **The real 464**: go through `docs/cpc-test.txt`, fix what differs
+1. [x] **The real 464**: it all checks out (2026-11-07)
 2. [ ] **Speed**
    - [x] Arguments that are constants or variables skip `eval`; `+` `-`
          and comparisons have a fast path for two integers; ESC is checked
