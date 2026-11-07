@@ -129,6 +129,9 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 - **Sound:** `sound` (channels, period, duration, volume, envelopes, noise:
   BASIC's SOUND), `envelope` (ENV) `tone-envelope` (ENT, negative number
   repeats) `release` `sound-check` (SQ) `sound-hold` `sound-continue`
+- **Turtle graphics:** `forward` `back` `left` `right` `pen-up`
+  `pen-down` `home` `set-position` `set-heading` `turtle-position`
+  `heading` (native, a sine table, positions to 1/256)
 - **Keys, time, the machine:** `inkey` `wait-key` `key-down-p` `joystick`
   `frame` `time` `peek` `poke` (all 64 KB of RAM: `#xC000` reads as a
   float, which addresses take)
@@ -174,6 +177,9 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 - **Structures and hashing:** `copy-structure` `gethash` `remhash` `sxhash`
   (and the `%` functions `defstruct` and the hash tables use)
 - **Symbols, system:** `gensym` `intern` `remprop` `room`
+- **The LambdaSpeak card:** `say` (DECtalk; it sings too) `speech-stop`
+  `speech-voice` `speech-rate` `speech-volume`; PlayCity: `playcity`
+  `pc-tone` (six channels) `pc-off`
 
 ### Library ROM 3: written in Lisp
 
@@ -190,8 +196,8 @@ lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
   `assoc-if` `rassoc-if` `mapcan` `maplist` `adjoin` `union`
   `intersection` `set-difference` `subsetp`
 - **Numbers:** `expt` `gcd` `signum`
-- **Music:** `note` (`'c4` is middle C, 478, as in the CPC manual; `#`
-  sharp, `B` flat), `play` (a list of notes, `R` a rest, `(G4 40)` a
+- **Music:** `note` (`'c4` is middle C, 239, `'a4` 440 Hz, 142 -- the AY
+  runs at 1 MHz; `#` sharp, `B` flat), `play` (a list of notes, `R` a rest, `(G4 40)` a
   longer one)
 - **Macros:** `pushnew` `psetq` `do` `do*`; the variable `*features*`
 - **Multiple values:** `multiple-value-bind` `nth-value`
@@ -204,7 +210,8 @@ lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
 ### The demo ROM
 
 `(demo)` lists them: `shapes` `rose` `spiral` `moire` `bounce`
-`sierpinski` `sketch` `tune` `hanoi` `queens` `primes` `fact`. They are
+`sierpinski` `sketch` `koch` (the Koch snowflake) `tree` `tune` `talk`
+`sing` `chords` (PlayCity) `hanoi` `queens` `primes` `fact`. They are
 Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
 
 ## Tools
@@ -256,8 +263,13 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
 5. [x] **More graphics and sound**: circles, discs, boxes, XOR drawing,
        text windows, text at the graphics cursor, envelopes, the sound
        queue, notes and `play`, joystick, `peek`/`poke`
+   - [x] Turtle graphics, native; the Koch snowflake and a tree in the
+         demos
+   - [x] PlayCity's six channels (on the card: `(playcity t)`), checked
+         in MAME by recording and measuring the notes; LambdaSpeak speech
+         and singing (`say`)
    - [ ] Still: user-defined characters (SYMBOL), flood fill (the 464's
-         firmware has none), PlayCity's extra channels on Mike's card
+         firmware has none)
 6. [x] **A demo ROM** with example programs: `(demo)` lists them --
        pictures (shapes, a rose in floats, a spiral, XOR moire, a bouncing
        ball, the chaos game, a sketcher on the cursor keys), Ode to Joy,

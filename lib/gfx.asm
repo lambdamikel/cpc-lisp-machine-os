@@ -608,3 +608,352 @@ lf_sound_hold:
 lf_sound_continue:
     call SOUND_CONTINUE
     jp lnil
+
+;; ---------------------------------------------------------------------------
+;; THE TURTLE, as Logo's: it starts in the middle, facing up; headings in
+;; degrees, 0 up, clockwise. Its position is kept in 1/256 units (four
+;; bytes each), so many short steps do not drift; the trigonometry is a
+;; table of sines in 1/256.
+
+TT_X        equ V_TURTLE        ; x, 1/256 units, signed, four bytes
+TT_Y        equ V_TURTLE+4
+TT_H        equ V_TURTLE+8      ; the heading, 0-359
+TT_PEN      equ V_TURTLE+10     ; 0 down, 1 up
+TT_MAGIC    equ V_TURTLE+11     ; &A5 once it is set up
+
+;; tt_ready: the turtle at home, pen down, the first time. All kept.
+tt_ready:
+    push af
+    ld a,(TT_MAGIC)
+    cp #A5
+    jr z,.ok
+    push hl
+    push de
+    call tt_home
+    xor a
+    ld (TT_PEN),a
+    ld a,#A5
+    ld (TT_MAGIC),a
+    pop de
+    pop hl
+.ok:
+    pop af
+    ret
+
+;; tt_home: in the middle, facing up
+tt_home:
+    ld hl,320
+    ld de,200
+    call tt_setpos
+    ld hl,0
+    ld (TT_H),hl
+    ret
+
+;; tt_setpos: HL = x, DE = y, whole units
+tt_setpos:
+    push de
+    ld de,TT_X
+    call .one
+    pop hl
+    ld de,TT_Y
+.one:                           ; (DE) = HL * 256, four bytes
+    xor a
+    ld (de),a
+    inc de
+    ld a,l
+    ld (de),a
+    inc de
+    ld a,h
+    ld (de),a
+    inc de
+    rla
+    sbc a,a                     ; the sign, spread
+    ld (de),a
+    ret
+
+;; tt_whole: HL = the address of a position -> DE = it, rounded
+tt_whole:
+    ld a,(hl)
+    add a,128
+    inc hl
+    ld a,(hl)
+    adc a,0
+    ld e,a
+    inc hl
+    ld a,(hl)
+    adc a,0
+    ld d,a
+    ret
+
+;; tt_where: DE = x, HL = y, rounded
+tt_where:
+    ld hl,TT_Y
+    call tt_whole
+    push de
+    ld hl,TT_X
+    call tt_whole
+    pop hl
+    ret
+
+;; tt_neg: HL = -HL
+tt_neg:
+    xor a
+    sub l
+    ld l,a
+    sbc a,a
+    sub h
+    ld h,a
+    ret
+
+;; tt_sin: HL = degrees, 0-719 -> HL = the sine * 256
+tt_sin:
+    ld de,360
+.m:
+    or a
+    sbc hl,de
+    jr nc,.m
+    add hl,de                   ; 0-359
+    ld de,180
+    or a
+    sbc hl,de
+    jr c,.upper
+    call .half                  ; 180-359: the negative half
+    jr tt_neg
+.upper:
+    add hl,de
+.half:                          ; HL = 0-179 -> the table's
+    ld de,90
+    or a
+    sbc hl,de
+    jr c,.q1
+    ex de,hl                    ; 90-179: sin(180 - h)
+    ld hl,90
+    or a
+    sbc hl,de
+    jr .t
+.q1:
+    add hl,de
+.t:
+    add hl,hl
+    ld de,tt_sines
+    add hl,de
+    LDHLI
+    ret
+
+;; tt_prod: HL = n (signed), DE = s (-256..256) -> A:HL = n * s, signed,
+;; 24 bits
+tt_prod:
+    ld a,h
+    xor d
+    ld (V_S1),a                 ; the product's sign, bit 7
+    bit 7,h
+    call nz,tt_neg
+    ex de,hl
+    bit 7,h
+    call nz,tt_neg
+    ex de,hl
+    ld c,l
+    ld b,h                      ; BC = |n|, DE = |s|
+    ld a,d
+    or a
+    jr z,.byte
+    ld a,b                      ; |s| = 256: |n| * 256
+    ld h,c
+    ld l,0
+    jr .sign
+.byte:
+    ld hl,0
+    xor a
+    ld d,8
+.l:
+    add hl,hl
+    rla
+    rl e
+    jr nc,.n
+    add hl,bc
+    adc a,0
+.n:
+    dec d
+    jr nz,.l
+.sign:
+    ld c,a
+    ld a,(V_S1)
+    rla
+    ld a,c
+    ret nc
+    xor a                       ; negative: A:HL = -A:HL
+    sub l
+    ld l,a
+    ld a,0
+    sbc a,h
+    ld h,a
+    ld a,0
+    sbc a,c
+    ret
+
+;; tt_add: DE = a position, A:HL = a signed 24-bit amount -> added
+tt_add:
+    ld c,a
+    rla
+    sbc a,a
+    ld b,a                      ; the sign, spread
+    ex de,hl
+    ld a,(hl)
+    add a,e
+    ld (hl),a
+    inc hl
+    ld a,(hl)
+    adc a,d
+    ld (hl),a
+    inc hl
+    ld a,(hl)
+    adc a,c
+    ld (hl),a
+    inc hl
+    ld a,(hl)
+    adc a,b
+    ld (hl),a
+    ret
+
+;; (forward n), (back n): the turtle moves, drawing if its pen is down
+;@ FORWARD 1 1 lf_forward
+lf_forward:
+    call lint_hl
+    jr tt_fwd
+;@ BACK 1 1 lf_back
+lf_back:
+    call lint_hl
+    call tt_neg
+tt_fwd:
+    call tt_ready
+    push hl
+    call tt_where               ; from where it is
+    call gx_move
+    ld hl,(TT_H)
+    call tt_sin                 ; x by n * sin heading
+    ex de,hl
+    pop hl
+    push hl
+    call tt_prod
+    ld de,TT_X
+    call tt_add
+    ld hl,(TT_H)
+    ld de,90
+    add hl,de
+    call tt_sin                 ; y by n * cos heading
+    ex de,hl
+    pop hl
+    call tt_prod
+    ld de,TT_Y
+    call tt_add
+    call tt_where
+    ld a,(TT_PEN)
+    or a
+    jr nz,.up
+    call gx_line
+    jp lnil
+.up:
+    call gx_move
+    jp lnil
+
+;; (right degrees), (left degrees): the turtle turns
+;@ RIGHT 1 1 lf_right
+lf_right:
+    call lint_hl
+    jr tt_turn
+;@ LEFT 1 1 lf_left
+lf_left:
+    call lint_hl
+    call tt_neg
+tt_turn:
+    call tt_ready
+    ld de,(TT_H)
+    add hl,de
+    ld de,360
+.neg:
+    bit 7,h
+    jr z,.p
+    add hl,de
+    jr .neg
+.p:
+    or a
+    sbc hl,de
+    jr nc,.p
+    add hl,de
+    ld (TT_H),hl
+    jp lnil
+
+;; (set-heading degrees), (heading)
+;@ SET-HEADING 1 1 lf_set_heading
+lf_set_heading:
+    call lint_hl
+    call tt_ready
+    ld de,0
+    ld (TT_H),de
+    jr tt_turn
+;@ HEADING 0 0 lf_heading
+lf_heading:
+    call tt_ready
+    ld hl,(TT_H)
+    add hl,hl
+    inc hl
+    ret
+
+;; (pen-up), (pen-down): whether the turtle draws
+;@ PEN-UP 0 0 lf_pen_up
+lf_pen_up:
+    ld a,1
+    jr tt_setpen
+;@ PEN-DOWN 0 0 lf_pen_down
+lf_pen_down:
+    xor a
+tt_setpen:
+    call tt_ready
+    ld (TT_PEN),a
+    jp lnil
+
+;; (home): the turtle back in the middle, facing up (it draws nothing)
+;@ HOME 0 0 lf_home
+lf_home:
+    call tt_ready
+    call tt_home
+    jp lnil
+
+;; (set-position x y): the turtle there (it draws nothing)
+;@ SET-POSITION 2 2 lf_set_position
+lf_set_position:
+    call lint_hl
+    call lint_de
+    call tt_ready
+    call tt_setpos
+    jp lnil
+
+;; (turtle-position) -> (x y), rounded
+;@ TURTLE-POSITION 0 0 lf_turtle_position
+lf_turtle_position:
+    call tt_ready
+    call tt_where
+    add hl,hl
+    inc hl
+    push de
+    ld de,NIL
+    CORE cons
+    pop de
+    ex de,hl
+    add hl,hl
+    inc hl
+    CORE cons
+    ret
+
+;; sin 0-90 degrees, * 256
+tt_sines:
+    dw 0,4,9,13,18,22,27,31,36,40
+    dw 44,49,53,58,62,66,71,75,79,83
+    dw 88,92,96,100,104,108,112,116,120,124
+    dw 128,132,136,139,143,147,150,154,158,161
+    dw 165,168,171,175,178,181,184,187,190,193
+    dw 196,199,202,204,207,210,212,215,217,219
+    dw 222,224,226,228,230,232,234,236,237,239
+    dw 241,242,243,245,246,247,248,249,250,251
+    dw 252,253,254,254,255,255,255,256,256,256
+    dw 256

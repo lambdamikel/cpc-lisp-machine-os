@@ -11,7 +11,12 @@
                ("(bounce)" "a ball: a key stops it")
                ("(sierpinski)" "the chaos game")
                ("(sketch)" "cursors draw, COPY, SPACE")
+               ("(koch 4)" "a Koch snowflake, turtle")
+               ("(tree)" "a tree, by turtle")
                ("(tune)" "Ode to Joy")
+               ("(talk)" "speech: LambdaSpeak")
+               ("(sing)" "singing: LambdaSpeak")
+               ("(chords)" "PlayCity's six voices")
                ("(hanoi 4)" "the towers of Hanoi")
                ("(queens 6)" "n queens on a board")
                ("(primes 100)" "a sieve")
@@ -121,6 +126,46 @@
           (plot x y p)))
   (%restore))
 
+;; Turtle graphics (forward, left, right... are in library 1). A Koch
+;; curve: a side is four sides a third as long, the middle two a bump.
+;; 324 divides by 3 to level 4 exactly.
+(defun %koch-side (len level)
+  (if (= level 0)
+      (forward len)
+      (let ((l (floor len 3)) (n (1- level)))
+        (%koch-side l n) (left 60)
+        (%koch-side l n) (right 120)
+        (%koch-side l n) (left 60)
+        (%koch-side l n))))
+
+(defun koch (&optional (level 3))
+  (%dark 1)
+  (pen-up) (set-position 158 293) (set-heading 90) (pen-down)
+  (graphics-pen 1)
+  (dotimes (i 3)
+    (%koch-side 324 level)
+    (right 120)
+    (graphics-pen (+ i 2)))
+  (%again))
+
+;; a branch, and two smaller ones from its end, each turned 25 degrees
+(defun %branch (len level)
+  (when (> level 0)
+    (graphics-pen (1+ (mod level 3)))
+    (forward len)
+    (left 25)
+    (%branch (floor (* len 3) 4) (1- level))
+    (right 50)
+    (%branch (floor (* len 3) 4) (1- level))
+    (left 25)
+    (pen-up) (back len) (pen-down)))
+
+(defun tree (&optional (level 8))
+  (%dark 1)
+  (pen-up) (set-position 320 10) (set-heading 0) (pen-down)
+  (%branch 90 level)
+  (%again))
+
 ;; Beethoven, with a volume envelope that dies away
 (defun tune ()
   (envelope 1 15 -1 3)
@@ -129,6 +174,30 @@
     (let ((d 20))
       (when (consp n) (setq d (cadr n) n (car n)))
       (sound 1 (note n) d 15 1)))
+  t)
+
+;; The LambdaSpeak card (speech and PlayCity are in library 2). Without
+;; the card these are silent.
+(defun talk ()
+  (say "Hello. I am a Lisp machine, for the Amstrad C P C.")
+  (say "My library has turtle graphics, sound, and hash tables.")
+  t)
+
+;; DECtalk sings in its phoneme notation: [ax<300,25>] is 300 ms at pitch
+;; 25, one semitone a step; 20 is G3, 25 C4, 29 E4, 32 G4
+(defun sing ()
+  (say "[:phoneme arpabet speak on][ay<350,20>ae<220,25>m<100,25>ax<260,29>l<90,32>ih<260,32>s<130,32>p<70,32>m<90,29>ax<220,29>sh<110,25>iy<420,25>n<300,25>]")
+  t)
+
+;; six voices: a chord on each PlayCity chip, I IV V I
+(defun chords ()
+  (playcity t)
+  (dolist (c '((c3 e3 g3 c4 e4 g4) (f3 a3 c4 f4 a4 c5)
+               (g3 b3 d4 g4 b4 d5) (c3 e3 g3 c4 e4 g4)))
+    (let ((i 0))
+      (dolist (n c) (pc-tone i (note n) 10) (incf i)))
+    (dotimes (k 50) (frame)))
+  (pc-off)
   t)
 
 (defun hanoi (n &optional (from 'a) (to 'c) (via 'b))

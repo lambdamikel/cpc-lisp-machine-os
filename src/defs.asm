@@ -166,6 +166,7 @@ V_FMA             defs 1            ; A, while fmcall finds the routine
 V_MVN             defs 1            ; multiple values: 0 none (one value), else
                                     ;   how many plus one, for V_MV1 (each call
                                     ;   clears it; VALUES, FLOOR... set it)
+V_TURTLE          defs 12           ; the library's turtle (lib/gfx.asm)
 V_S1              defs 2            ; scratch for routines that call nothing
 V_S2              defs 2
 V_S3              defs 2

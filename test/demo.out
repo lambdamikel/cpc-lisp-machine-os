@@ -9,7 +9,12 @@ CPC Lisp demos:
 (bounce)     a ball: a key stops it
 (sierpinski) the chaos game
 (sketch)     cursors draw, COPY, SPACE
+(koch 4)     a Koch snowflake, turtle
+(tree)       a tree, by turtle
 (tune)       Ode to Joy
+(talk)       speech: LambdaSpeak
+(sing)       singing: LambdaSpeak
+(chords)     PlayCity's six voices
 (hanoi 4)    the towers of Hanoi
 (queens 6)   n queens on a board
 (primes 100) a sieve
@@ -41,6 +46,10 @@ LISP> (primes 100)
 LISP> (fact 20)
 2.43290201e18
 LISP> (spiral)
+T
+LISP> (koch 2)
+T
+LISP> (talk)
 T
 LISP> (do ((i 0 (1+ i)) (j 10 (1- j))) ((= i 3) (list i j)))
 (3 7)

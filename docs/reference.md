@@ -21,7 +21,8 @@ Contents: [Starting](#starting) · [The REPL](#the-repl) ·
 [Hash tables](#hash-tables) · [Types](#types) ·
 [Input and output](#input-and-output) · [Files](#files) ·
 [The text screen](#the-text-screen) · [Graphics](#graphics) ·
-[Sound and music](#sound-and-music) ·
+[Turtle graphics](#turtle-graphics) · [Sound and music](#sound-and-music) ·
+[Speech and PlayCity](#the-lambdaspeak-card-speech-and-playcity) ·
 [Keys, time and the machine](#keys-time-and-the-machine) ·
 [The demos](#the-demos) · [Memory](#memory) ·
 [Differences from Common Lisp](#differences-from-common-lisp)
@@ -431,6 +432,24 @@ BASIC. A `pen` argument sets the graphics pen first; it stays set.
 | `(fill-box x1 y1 x2 y2 [pen])` | filled | 1 |
 | `(ink-mode n)` | 0 normal, 1 XOR, 2 AND, 3 OR. A disc or a box drawn twice with XOR is gone again | 1 |
 
+## Turtle graphics
+
+Logo's turtle: it starts in the middle of the screen facing up; headings
+are degrees, 0 up, clockwise. It draws with the graphics pen.
+
+| Function | | |
+|---|---|---|
+| `(forward n)` `(back n)` | moves, drawing if the pen is down | 1 |
+| `(left degrees)` `(right degrees)` | turns | 1 |
+| `(pen-up)` `(pen-down)` | | 1 |
+| `(home)` | the middle, facing up (draws nothing) | 1 |
+| `(set-position x y)` `(set-heading degrees)` | (draw nothing) | 1 |
+| `(turtle-position)` `(heading)` | `(x y)`, degrees | 1 |
+
+Its position is kept to 1/256, so thousands of short steps do not drift:
+`(dotimes (i 360) (forward 2) (right 1))` comes back where it started.
+`(koch 4)` and `(tree)` in the demos are turtle programs.
+
 ## Sound and music
 
 | Function | | |
@@ -441,8 +460,22 @@ BASIC. A `pen` argument sets the graphics pen first; it stays set.
 | `(release channels)` | | 1 |
 | `(sound-check channel)` | the queue's state (SQ) | 1 |
 | `(sound-hold)` `(sound-continue)` | | 1 |
-| `(note 'c4)` | the period of a note: a letter, `#` (sharp) or `B` (flat), the octave; C4 is middle C, 478, as in the CPC manual | 3 |
+| `(note 'c4)` | the period of a note: a letter, `#` (sharp) or `B` (flat), the octave. The AY runs at 1 MHz, period = 62500 / frequency: C4 (middle C) is 239, A4 (440 Hz) 142 | 3 |
 | `(play notes [duration [channels [volume]]])` | `notes` like `'(c4 e4 g4 (c5 40) r c5)`: `R` a rest, a list a note with its own duration | 3 |
+
+## The LambdaSpeak card: speech and PlayCity
+
+| Function | | |
+|---|---|---|
+| `(say text)` | the card speaks it in DECtalk; Lisp goes on meanwhile, and a second line waits its turn. DECtalk's inline commands work: `[:phoneme arpabet speak on]` and `[ax<300,25>]` (300 ms at pitch 25, C4) sing | 2 |
+| `(speech-stop)` | | 2 |
+| `(speech-voice n)` | 1 Paul, 2 Harry, 3 Betty, 4 Ursula, 5 Dennis, 6 Kit, 7 Frank, 8 Rita, 9 Wendy; 0 the default | 2 |
+| `(speech-rate n)` `(speech-volume n)` | 0-15, 0 the default | 2 |
+| `(playcity on)` | T: the card's PlayCity on, at the CPC's pitch, silent; NIL off. A real PlayCity needs no switching on, and takes no harm | 2 |
+| `(pc-tone channel period [volume])` | channel 0-5 (0-2 the right chip, 3-5 the left) plays period (as `sound`'s: `(note 'a4)`) at volume 0-15 (12) until changed; volume 0 is silence | 2 |
+| `(pc-off)` | all six silent | 2 |
+
+Without the card these do nothing (the bytes go to a port nobody answers).
 
 ## Keys, time and the machine
 
@@ -462,8 +495,9 @@ BASIC. A `pen` argument sets the graphics pen first; it stays set.
 ## The demos
 
 The demo ROM: `(demo)` lists them. `(shapes)` `(rose [k])` `(spiral)`
-`(moire)` `(bounce)` `(sierpinski [n])` `(sketch)` `(tune)`
-`(hanoi n)` `(queens n)` `(primes n)` `(fact n)`. A key ends a picture.
+`(moire)` `(bounce)` `(sierpinski [n])` `(sketch)` `(koch [level])`
+`(tree [level])` `(tune)` `(talk)` `(sing)` `(chords)` `(hanoi n)`
+`(queens n)` `(primes n)` `(fact n)`. A key ends a picture.
 They are Lisp text, so `(ed 'rose)` shows one.
 
 ## Memory

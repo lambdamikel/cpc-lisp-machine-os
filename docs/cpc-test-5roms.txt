@@ -116,7 +116,7 @@ blank: note exactly what you see and switch off.
 9. Sound
 --------
 [ ] (play '(c4 e4 g4 c5))            four rising notes
-[ ] (note 'a4)                       284  (the period for A 440)
+[ ] (note 'a4)                       142  (the period for A 440)
 
 
 10. The demos
