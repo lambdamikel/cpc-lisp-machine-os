@@ -11,37 +11,51 @@ rediscover it. That project's memory notes do not load here -- this file is
 the bridge. Keep it current; put new lasting lessons here or in this repo's
 own memory.
 
-## The starting design (proposed, not settled -- confirm with Mike)
+## The design
 
-* **ROM 0 is the core.** At power-up the firmware enters whatever answers
-  as ROM 0 -- normally BASIC. An expansion ROM answering 0 (with ROMDIS
-  silencing the internal one) replaces it. Evaluator, reader, printer, GC,
-  REPL and line editor live here.
-* **A second ROM is the library**: graphics, sound and disc wrappers over
-  the firmware jumpblock, and as much of the language as possible written in
-  Lisp itself (macros), stored in ROM.
-* **Z80 assembly with rasm**, not C: a Lisp with GC and a reader in C would
-  not fit 2 x 16 KB.
-* **Lexical closures**: environments in the heap, `lambda` captures them.
-  `defun`, `let`/`let*`, `labels`, `setq`/`setf`, `if`/`cond`/`when`/
-  `unless`, `and`/`or`, `progn`, `dolist`/`dotimes`, `defmacro` + backquote.
-  Tail calls in `eval` (if/progn/let bodies) -- the Z80 stack is small.
-* **Data**: fixnums, symbols, conses, strings, characters; maybe vectors.
-  Floats only if the firmware's maths routines are usable -- verify first.
-* **Heap**: RAM &0040-&A6FF on a 464 is about 42 KB before ROM workspace;
-  4-byte conses give roughly 8-9 K cells. Mark-and-sweep with a
-  non-recursive mark (pointer reversal). The 6128's extra 64 KB is a later
-  option.
-* **I/O through the firmware**: text VDU, KM for keys, GRA for graphics,
-  the sound manager, CAS/AMSDOS for files -- so `(load "x.lsp")` works with
-  any disc ROM.
-* **First milestone**: one ROM at 0 that boots to `LISP>` with integers,
-  symbols, conses, `lambda` + closures, `defun`, `if`, `let` and GC; tested
-  in MAME, then on Mike's 464 through the card.
+Settled with Mike on 2026-11-06:
+
+* **It must run on every CPC** (464, 664, 6128). Firmware is called **only
+  through its vectors**, never at ROM-internal addresses. Past &BD37 the
+  jumpblocks differ between the 464 and the 664/6128 -- see *CPC facts*.
+* **Floats are wanted, through the firmware's maths package** (it is in the
+  firmware ROM, not BASIC's, so it survives replacing BASIC).
+* **Don't worry about ROM slots or numbers**: any number that does not
+  collide with a built-in ROM (0 is BASIC, 7 the disc ROM). Development is
+  in MAME; the real CPC comes much later.
+
+What is built (`src/`, read `src/lisp.asm`'s header first):
+
+* **ROM 0 is the core**, a foreground ROM: at 0 (ROMDIS) it replaces BASIC;
+  at any other number `|LISP` starts it. It calls **KL ROM WALK** itself, as
+  BASIC does, or no background ROM (disc!) is initialised.
+* **Z80 assembly with rasm.** Common Lisp syntax and semantics where they
+  fit: Lisp-2 (`#'`, `funcall`), symbols upcased, lexical closures, special
+  variables (`defvar`), `defmacro` + backquote, `block`/`return-from`,
+  `catch`/`throw`, `labels`/`flet`, `setf` on the usual places, `&optional`
+  `&rest` `&body` `&aux` and destructuring. No `&key` yet.
+* **Objects**: 16-bit words, tag in the low bits. Fixnums are 15-bit
+  (-16384..16383). Symbols live in a fixed region (&0500-&14FF, 512 slots);
+  cells (4 bytes) above; strings in a compacted block space; characters and
+  markers are immediates below &0500. `src/defs.asm` has the layout.
+* **GC**: mark and sweep; marking is iterative with a 256-word mark stack
+  and a heap rescan on overflow (not pointer reversal -- simpler, any depth).
+  The machine stack is scanned **conservatively**, so native code may keep
+  Lisp values on it; it must never hold a raw block-space pointer across an
+  allocation (blocks move).
+* **Eval** is a loop with proper tail calls; the Lisp has its own 4 KB
+  machine stack (the firmware's is tiny), checked against overflow.
+* **Input** is the firmware's EDIT (BASIC's line editor, copy cursor and
+  all); ESC is polled with KM TEST KEY during evaluation.
+* **Still to come**: a second ROM (graphics, sound, disc, Lisp-defined
+  library), floats, vectors, `&key`, `unwind-protect`, `load`, the 6128's
+  extra RAM.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
 same addresses as screen RAM. Screen access from ROM code goes through the
-firmware (or careful ROM/RAM banking) -- design around it from the start.
+firmware (or careful ROM/RAM banking). Likewise a ROM at another number
+cannot be read while ROM 0's code runs: crossing ROMs needs RAM trampolines
+or the firmware's FAR CALL.
 
 ## Hardware on Mike's bench
 
@@ -72,31 +86,42 @@ should see.
 
 ## Testing in MAME
 
-The pattern from LambdaSpeak 4 (`~/git/lambdaspeak4/tools/run_rom.sh` and
-`emu/romtest.lua`, `emu/midipiano.lua` -- read them before writing a
-harness):
+    tools/build.sh                      assemble, splice into build/mame
+    tools/run.sh [-m 464|6128] [-s shot.png] file.lsp    type it, print the transcript
+    tools/test.sh [-m 6128] [-u]        regression: test/*.lsp against test/*.out
 
-    env -u WAYLAND_DISPLAY GDK_BACKEND=x11 xvfb-run -a \
-      mame -rompath ~/claude/cpc/mame-roms -video none -sound none \
-      cpc464 -exp rom -rom1 build/LISP.ROM -autoboot_script test.lua
-
-* A 464 with a drive **and** a ROM box: `-exp ddi1 -exp:ddi1:exp rom -rom1 ...`.
-* The ROM box has sockets `rom1`..`rom8`. **Open question:** which ROM
-  number each socket answers, and whether MAME can put a ROM at **0** to
-  replace BASIC. Settle that first; if it cannot, test the core as a
-  background ROM entered by a command, or patch the boot.
-* `screen:snapshot(path)` works with `-video none`; `-nothrottle` makes long
-  runs fast.
-* **Drive the key matrix directly** for held keys: `:kbrow.0`..`:kbrow.9`,
-  where a field's `mask` is the CPC key number (row*8+bit);
-  `field:set_value(1)` presses, `(0)` releases. `natkeyboard` presses and
-  releases within a frame, and **drops the first character** of a posted
-  string often enough to matter -- post a leading space.
-* Use MAME's **cpc464** as the baseline (BASIC 1.0, the oldest firmware);
-  check the 6128 too.
+* **MAME's ROM box cannot answer ROM 0**: it numbers its *filled* sockets
+  1, 2, 3... in order (rom1, rom2, rom8 became ROMs 1, 2, 3). So
+  `tools/build.sh` builds private romsets in `build/mame` with BASIC's 16 KB
+  replaced by LISP.ROM -- what ROMDIS does on the real machine. MAME warns
+  about the checksum and runs it.
+* `emu/repl.lua` catches output by tapping opcode fetches at &BB5A (TXT
+  OUTPUT; A is the character) and types a line each time the ROM enters the
+  EDIT vector. EDIT's own echo does not go through &BB5A, so the harness
+  writes the typed line into the transcript itself.
+* The first keys typed after power-up are lost: the harness waits 50
+  frames before the first line, and posts every line with a leading space.
+* `screen:snapshot(path)` works with `-video none`; `-nothrottle` runs at
+  about 14x. Long tests outlast a 2-minute tool timeout -- run in background.
+* The LambdaSpeak 4 patterns (`~/git/lambdaspeak4/tools/run_rom.sh`,
+  `emu/romtest.lua`, `emu/midipiano.lua`) are the reference for anything
+  new: tap tokens in globals, the key matrix through `:kbrow.N` fields.
 
 ## CPC facts that cost time before
 
+* **A foreground ROM is entered** (464 and 6128 alike) with DE = &0040,
+  HL = &ABFF, BC = &B0FF, SP = &BFF8. After KL ROM WALK, HL is &ABFF on a
+  bare 464 and &A6F7 on a 6128 (AMSDOS takes ~1.3 KB, and every background
+  ROM 4 bytes more). &AC00-&B0FF is the foreground's own area on both.
+* **The jumpblocks differ past &BD37.** The 664/6128 insert twelve entries
+  at &BD3A, so EDIT (the line editor -- firmware ROM, not BASIC) is &BD3A on
+  a 464 and &BD5E on a 664/6128, and the maths package starts at &BD3D
+  (464, 49 entries) or &BD61 (6128, 32 entries) -- different sets, not an
+  offset. A 464 is recognised by &EF (FIRM JUMP) at &BD3D; the 6128 has &CF.
+* **The 464's ROM walk** went 3, 2, 1 in MAME. The docs say it only looks
+  at ROMs 0-7 (the 664/6128 at 0-15): give library ROMs numbers 1-6.
+* **rasm labels are case-insensitive**: `s_quote` and `S_QUOTE` collide.
+  A label in front of a macro that starts with `align` is not aligned.
 * **ROMDIS**: BASIC's ROM obeys it on all three machines, so a card ROM at 0
   replaces BASIC on the 464, 664 and 6128. **The 664/6128's internal AMSDOS
   ignores ROMDIS** -- never put anything at ROM 7 there (on a 6128, both

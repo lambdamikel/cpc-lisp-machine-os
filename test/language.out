@@ -1,0 +1,100 @@
+LISP> (defun fact (n) (if (= n 0) 1 (* n (fact (- n 1)))))
+FACT
+LISP> (fact 7)
+5040
+LISP> (defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))
+FIB
+LISP> (fib 15)
+610
+LISP> (defun make-counter () (let ((n 0)) (lambda () (setq n (+ n 1)))))
+MAKE-COUNTER
+LISP> (setq c (make-counter))
+#<FUNCTION>
+LISP> (funcall c)
+1
+LISP> (funcall c)
+2
+LISP> (funcall c)
+3
+LISP> (let ((x 1) (y 2)) (list x y (+ x y)))
+(1 2 3)
+LISP> (let* ((x 1) (y (+ x 1))) (* x y 10))
+20
+LISP> (mapcar #'(lambda (x) (* x x)) '(1 2 3 4 5))
+(1 4 9 16 25)
+LISP> (defmacro my-when (test &body body) `(if ,test (progn ,@body) nil))
+MY-WHEN
+LISP> (my-when t 1 2 3)
+3
+LISP> (macroexpand-1 '(my-when a b c))
+(IF A (PROGN B C) NIL)
+LISP> `(a ,(+ 1 2) ,@(list 4 5) . end)
+(A 3 4 5 . END)
+LISP> (defun count-down (n) (if (= n 0) 'done (count-down (- n 1))))
+COUNT-DOWN
+LISP> (count-down 3000)
+DONE
+LISP> (dolist (x '(a b c)) (print x))
+
+A 
+B 
+C 
+NIL
+LISP> (dotimes (i 5) (princ i))
+01234
+NIL
+LISP> (defvar *v* 10)
+*V*
+LISP> (defun get-v () *v*)
+GET-V
+LISP> (let ((*v* 20)) (get-v))
+20
+LISP> (get-v)
+10
+LISP> (block foo (return-from foo 42) 99)
+42
+LISP> (catch 'tag (throw 'tag 7) 8)
+7
+LISP> (labels ((ev (n) (if (= n 0) t (od (- n 1)))) (od (n) (if (= n 0) nil (ev (- n 1))))) (ev 10))
+T
+LISP> (undefined-fn 1)
+Error: undefined function UNDEFINED-FN
+LISP> xyz
+Error: unbound variable XYZ
+LISP> (car 5)
+Error: not a list: 5
+LISP> (+ 1 'a)
+Error: not a number: A
+LISP> (length '(1 2 3))
+3
+LISP> (reverse '(1 2 3))
+(3 2 1)
+LISP> (append '(1 2) '(3) nil '(4 5))
+(1 2 3 4 5)
+LISP> (equal '(1 (2 "x")) '(1 (2 "x")))
+T
+LISP> (assoc 'b '((a . 1) (b . 2)))
+(B . 2)
+LISP> (member 3 '(1 2 3 4))
+(3 4)
+LISP> (setq l (list 1 2 3))
+(1 2 3)
+LISP> (setf (car l) 100)
+100
+LISP> l
+(100 2 3)
+LISP> (push 0 l)
+(0 100 2 3)
+LISP> l
+(0 100 2 3)
+LISP> (pop l)
+0
+LISP> l
+(100 2 3)
+LISP> (incf (cadr l) 5)
+7
+LISP> l
+(100 7 3)
+LISP> (> (gc) 1000)
+T
+LISP> 

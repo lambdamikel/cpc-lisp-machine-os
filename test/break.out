@@ -1,0 +1,13 @@
+LISP> (loop)
+Error: break
+LISP> (+ 1 2)
+3
+LISP> (defun forever (n) (forever (+ n 1)))
+FOREVER
+LISP> (forever 0)
+Error: break
+LISP> (let ((l '(1 2))) (setf (cdr (cdr l)) l) (length l))
+Error: break
+LISP> (* 6 7)
+42
+LISP> 

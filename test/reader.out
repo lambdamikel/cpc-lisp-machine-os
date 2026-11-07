@@ -1,0 +1,65 @@
+LISP> 42
+42
+LISP> -7
+-7
+LISP> -16384
+-16384
+LISP> 16383
+16383
+LISP> 16384
+Error: integer too large
+LISP> (quote (a b c))
+(A B C)
+LISP> '(1 2 . 3)
+(1 2 . 3)
+LISP> (+ 1 2 3)
+6
+LISP> (car '(x y))
+X
+LISP> "hello"
+"hello"
+LISP> "say \"hi\" \\ back"
+"say \"hi\" \\ back"
+LISP> #\a
+#\a
+LISP> #\Space
+#\Space
+LISP> #\(
+#\(
+LISP> (list #\newline #\A #\z)
+(#\Newline #\A #\z)
+LISP> t
+T
+LISP> nil
+NIL
+LISP> ()
+NIL
+LISP> #x1F
+31
+LISP> #b101
+5
+LISP> #x-10
+-16
+LISP> 'sym
+SYM
+LISP> :keyword
+:KEYWORD
+LISP> (eq :keyword ':keyword)
+T
+LISP> '(quote x)
+'X
+LISP> '#'car
+#'CAR
+LISP> '(a ; a comment
+    b) ; more
+(A B)
+LISP> '(a #| block
+    comment |# b)
+(A B)
+LISP> (list 1 2
+    3 4)
+(1 2 3 4)
+LISP> )
+LISP> (1 . )
+Error: syntax error
+LISP> 
