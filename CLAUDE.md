@@ -271,9 +271,13 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   (255 = silent). `n` lists the slots. **Giving a slot ROM 0 means the CPC
   boots into it every time** -- to get BASIC back, set it to 255. Check `n`
   before Mike powers on after any change.
-* Current slots (2026-11-06): 0 AMSDOS 0.5 (silent), 1 vector head (ROM 1),
-  2 Parados (ROM 7), 3 ROM 3, 4/5/7 silent (old images), 6 LSAI (ROM 2).
-  **Ask Mike which slots the Lisp ROMs may overwrite.**
+* Slots since 2026-11-07: 0 LISPLIB2 (ROM 5), 1 vector head (ROM 1),
+  2 Parados (ROM 7), 3 ROM 3, 4 LISP core (ROM 0), 5 LISPLIB (ROM 4),
+  6 LS AI (ROM 2), 7 silent. Mike: everything may be replaced **except
+  Parados and the LS AI ROM**. `tools/card.py lisp` re-flashes the three
+  Lisp ROMs (it checks the CPC is off and refuses slots 2 and 6);
+  `tools/card.py basic` silences the core. `docs/cpc-test.txt` is the
+  sheet of what to type on the real machine.
 * **Before flash writes or a firmware flash, the CPC should be off.** Check
   with `kitloader.cpc_is_off()` (`~/git/lambdaspeak4/tools/kitloader.py`):
   two `d` readings with `/IORQ /RD /WR` all zero. Counters standing still do
@@ -289,6 +293,8 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
 * Concise reports; say what was verified and how.
 * **Never crawl the NAS**: no `find`/`grep -r` from `/` or over all of
   `~`. Look in known places; `find <dir> -xdev` with a timeout if needed.
-* This repo is **local only** (no GitHub remote yet). Ask before creating
-  one; private by default.
+* GitHub: **private** repo `lambdamikel/cpc-lisp-machine-os` (created at
+  Mike's request, 2026-11-07, so he can read it from another computer).
+  Keep it private; push when work is committed. Never commit ROM images
+  (`build/` is ignored): the system ROMs are Amstrad's.
 * Commit with the attribution lines the session gives you.
