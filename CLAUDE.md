@@ -157,9 +157,10 @@ should see.
   drawn again in inverse. (XORing the cell put the ROM's code on screen.)
 * **The firmware's text output manages ~5 characters a frame** (TXT WR
   CHAR): fine for a line, far too slow to redraw a screen per key.
-* **MAME's CPC keys** (emulated, not natural, keyboard): COPY is End, DEL is
-  Insert, CLR is Backspace, ESC is backquote, CTRL is Right Alt; Left Ctrl
-  and Left Alt are joystick fire buttons.
+* **MAME's CPC keys** (emulated keyboard): COPY is End, DEL is Insert, CLR
+  is Backspace, ESC is backquote, CTRL is Right Alt; Left Ctrl and Left Alt
+  are joystick fire buttons (Left Ctrl + S typed an X). In natural mode, End
+  is COPY too -- Mike's confirmed way to finish the function editor.
 * **ROMDIS**: BASIC's ROM obeys it on all three machines, so a card ROM at 0
   replaces BASIC on the 464, 664 and 6128. **The 664/6128's internal AMSDOS
   ignores ROMDIS** -- never put anything at ROM 7 there (on a 6128, both
