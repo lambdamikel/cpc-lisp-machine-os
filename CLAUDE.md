@@ -300,9 +300,10 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   (255 = silent). `n` lists the slots. **Giving a slot ROM 0 means the CPC
   boots into it every time** -- to get BASIC back, set it to 255. Check `n`
   before Mike powers on after any change.
-* Slots since 2026-11-07: 0 LISPLIB2 (ROM 5), 1 vector head (ROM 1),
-  2 Parados (ROM 7), 3 ROM 3, 4 LISP core (ROM 0), 5 LISPLIB (ROM 4),
-  6 LS AI (ROM 2), 7 silent. Mike: everything may be replaced **except
+* Slots since 2026-11-07 (afternoon): 0 LISPLIB2 (ROM 5), 1 vector head
+  (ROM 1), 2 Parados (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0),
+  5 LISPLIB (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6). All five Lisp
+  ROMs must come from one build: re-flash them together. Mike: everything may be replaced **except
   Parados and the LS AI ROM**. `tools/card.py lisp` re-flashes the three
   Lisp ROMs (it checks the CPC is off and refuses slots 2 and 6);
   `tools/card.py basic` silences the core. `docs/cpc-test.txt` is the
