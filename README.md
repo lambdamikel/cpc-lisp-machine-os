@@ -27,7 +27,7 @@ macros written in Lisp (`sort`, `reduce`, `remove-if`, `do`, ...) that are
 loaded from ROM the first time they are used, the maths functions
 (`sqrt`, `sin`, `atan`, `log`, `expt`, ...) through the firmware, files
 (`load`, `save`, `dir`), a line editor and a full-screen function editor.
-`format` (~A ~S ~D ~% ...), `&key`. Not yet: vectors. It has not been on a real CPC yet.
+`format` (~A ~S ~D ~% ...), `&key`, `unwind-protect`, vectors. It has not been on a real CPC yet.
 
 ## Building and testing
 

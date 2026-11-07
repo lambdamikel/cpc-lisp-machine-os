@@ -490,6 +490,11 @@ read_hash:
     ld hl,S_FUNCTION
     jp read_wrap
 .h1:
+    cp "("
+    jr nz,.h2
+    call read_list              ; #( ... ): a vector
+    jp list_to_vector
+.h2:
     cp #5C                      ; backslash
     jr z,read_char
     cp "|"

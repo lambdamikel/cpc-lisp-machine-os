@@ -155,6 +155,8 @@ print_obj:
     jp z,print_string
     cp HDR_FLOAT and #FF
     jp z,lnum_print
+    cp HDR_VECTOR and #FF
+    jp z,print_vector
     ld de,str_function
     cp HDR_CLOSURE and #FF
     jr z,.unread
@@ -384,6 +386,48 @@ abbrevs:
     dw S_UNQUOTE,str_comma
     dw S_UNQUOTE_SPLICING,str_commaat
     dw 0
+
+;; print_vector: HL = a vector, as #(a b c)
+print_vector:
+    push hl
+    ld a,"#"
+    call putc
+    ld a,"("
+    call putc
+    pop hl
+    ld de,0
+.l:
+    push hl                     ; the vector, the index
+    push de
+    call vec_data
+    ex de,hl
+    or a
+    sbc hl,bc
+    jr nc,.end
+    add hl,bc
+    ld a,h
+    or l
+    jr z,.first
+    push hl
+    push de
+    ld a," "
+    call putc
+    pop de
+    pop hl
+.first:
+    add hl,hl
+    add hl,de
+    LDHLI
+    call print_obj
+    pop de
+    inc de
+    pop hl
+    jr .l
+.end:
+    pop de
+    pop hl
+    ld a,")"
+    jp putc
 
 ;; print_fixnum: HL = a fixnum
 print_fixnum:

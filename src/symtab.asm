@@ -195,6 +195,13 @@ symtab:
     SUBR CHAR_CODE,"CHAR-CODE",subr_char_code,1,1
     SUBR CODE_CHAR,"CODE-CHAR",subr_code_char,1,1
     SUBR CHAR,"CHAR",subr_char,2,2
+    SUBR MAKE_ARRAY,"MAKE-ARRAY",subr_make_array,1,255
+    SUBR VECTOR,"VECTOR",subr_vector,0,255
+    SUBR AREF,"AREF",subr_aref,2,2
+    SUBR SVREF,"SVREF",subr_aref,2,2
+    SUBR ELT,"ELT",subr_elt,2,2
+    SUBR VECTORP,"VECTORP",subr_vectorp,1,1
+    SYMBOL KW_INITIAL_ELEMENT,":INITIAL-ELEMENT",SF_CONST,1
     SUBR STRING_EQ,"STRING=",subr_string_eq,2,2
     SUBR STRING,"STRING",subr_string,1,1
 

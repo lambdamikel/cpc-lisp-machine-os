@@ -404,6 +404,7 @@ m_notlist:   db "not a list:",0
 m_notcons:   db "not a cons:",0
 m_notnum:    db "not a number:",0
 m_notstr:    db "not a string:",0
+m_notvec:    db "not a vector:",0
 m_notchar:   db "not a character:",0
 m_overflow:  db "integer overflow",0
 m_div0:      db "division by zero",0

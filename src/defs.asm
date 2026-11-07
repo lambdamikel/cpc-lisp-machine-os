@@ -182,6 +182,7 @@ CLOSEMARK         equ #040E         ; the reader's ")"
 HDR_CLOSURE       equ #0482         ; data: (code . env), code = (lambda-list . body)
 HDR_MACRO         equ #0486         ; data: a closure
 HDR_STRING        equ #04C2         ; data: pointer to [len lo][len hi][chars]
+HDR_VECTOR        equ #04C6         ; data: pointer to [len][elements, a word each]
 HDR_SUBR          equ #04CA         ; ROM: [hdr][code][min][max]
 HDR_FSUBR         equ #04CE         ; ROM: [hdr][code] -- a special form
 HDR_NOFN          equ #04D2         ; ROM: a symbol entry with no function

@@ -254,20 +254,20 @@ mark_value:
 .obj:
     ld a,l
     rrca
-    jr c,.next                  ; fixnum
+    jp c,.next                  ; fixnum
     rrca
     jr c,.tag10
     ; tag 00: a cons if it is in the cell region
     ld a,h
     cp CELL_LO >> 8
-    jr c,.next                  ; NIL
+    jp c,.next                  ; NIL
     call below_cellhi
-    jr nc,.next
+    jp nc,.next
     jr .cell
 .tag10:
     ld a,h
     cp SYM_LO >> 8
-    jr c,.next                  ; character, marker, header
+    jp c,.next                  ; character, marker, header
     cp CELL_LO >> 8
     jr c,.sym
     call below_cellhi
@@ -292,6 +292,8 @@ mark_value:
     jr c,.cons
     bit 0,e
     jr nz,.cons                 ; a fixnum 576..639 looks like this too
+    cp HDR_VECTOR and #FF
+    jr z,.vector
     cp HDR_RAW_L
     jr nc,.next                 ; raw data, or a free cell
     LDHLI                       ; the data word is a Lisp value
@@ -300,6 +302,23 @@ mark_value:
     LDHLI                       ; HL = cdr
     call mpush_de
     jp .obj
+.vector:                        ; its elements, from block space
+    LDHLI
+    ld a,h
+    or l
+    jr z,.next                  ; no block yet (being made)
+    call vec_words
+.vl:
+    ld a,b
+    or c
+    jr z,.next
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    inc hl
+    call mpush_de
+    dec bc
+    jr .vl
 .sym:
     ld a,l
     and 7
@@ -343,6 +362,16 @@ mark_value:
     ld (V_MSP),hl
     ex de,hl
     jp .obj
+
+;; vec_words: HL = a vector's block -> HL = its first element, BC = how many
+vec_words:
+    ld c,(hl)
+    inc hl
+    ld b,(hl)
+    inc hl
+    srl b
+    rr c
+    ret
 
 ;; push DE on the mark stack if it could be a heap object. HL, BC preserved.
 mpush_de:
@@ -477,11 +506,35 @@ rescan:
     jr c,.cons
     bit 0,e
     jr nz,.cons                 ; a fixnum, not a header
+    cp HDR_VECTOR and #FF
+    jr z,.vec
     cp HDR_RAW_L
     jr nc,.cdone                ; raw data, or free
     LDHLI
     call mark_value
     jr .cdone
+.vec:
+    LDHLI
+    ld a,h
+    or l
+    jr z,.cdone
+    call vec_words
+.vr:
+    ld a,b
+    or c
+    jr z,.cdone
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    inc hl
+    push hl
+    push bc
+    ex de,hl
+    call mark_value
+    pop bc
+    pop hl
+    dec bc
+    jr .vr
 .cons:
     push hl
     ex de,hl

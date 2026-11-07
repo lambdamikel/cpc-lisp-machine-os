@@ -222,6 +222,8 @@ subr_append:
 subr_length:
     call is_string
     jr z,.str
+    call is_vector
+    jr z,.vec
     ld de,0
 .l:
     ld a,h
@@ -241,11 +243,246 @@ subr_length:
     ret
 .str:
     call str_data
+    jr .n
+.vec:
+    call vec_data
+.n:
     ld l,c
     ld h,b
     add hl,hl
     inc hl
     ret
+
+;; ---------------------------------------------------------------------------
+;; VECTORS: a typed cell (HDR_VECTOR) whose block in block space holds the
+;; elements, a word each. The GC follows them (mark_value) and moves the
+;; block as it moves a string's.
+
+;; is_vector: HL -> Z if it is a vector. All kept but AF.
+is_vector:
+    push bc
+    ld c,HDR_VECTOR and #FF
+    call is_typed
+    pop bc
+    ret
+
+;; vec_data: HL = a vector -> HL = its first element, BC = how many. DE kept
+vec_data:
+    LDHLI
+    jp vec_words
+
+;; make_vector: BC = how many, DE = what each is -> HL = a new vector
+make_vector:
+    push de
+    push bc
+    ld hl,HDR_VECTOR
+    ld de,0
+    call alloc_typed
+    pop bc
+    push hl                     ; the vector, reachable
+    sla c
+    rl b
+    jp c,err_nostr
+    call blk_alloc              ; owner = its data word
+    inc hl
+    inc hl
+    pop de
+    ex (sp),hl                  ; the elements on the stack, HL = the value
+    ex de,hl
+    ex (sp),hl                  ; the vector on the stack, HL = the elements
+    srl b
+    rr c
+.f:
+    ld a,b
+    or c
+    jr z,.done
+    ld (hl),e
+    inc hl
+    ld (hl),d
+    inc hl
+    dec bc
+    jr .f
+.done:
+    pop hl
+    ret
+
+;; vec_index: HL = a vector, DE = an index -> HL = that element's address
+vec_index:
+    call is_vector
+    jr nz,.notvec
+    call fixnum_de
+    push de
+    sra d
+    rr e
+    push de
+    call vec_data
+    pop de
+    ex de,hl
+    or a
+    sbc hl,bc
+    jr nc,.bad                  ; past the end (or negative: huge)
+    add hl,bc
+    add hl,hl
+    add hl,de
+    pop de
+    ret
+.bad:
+    pop de
+    ld hl,m_index
+    jp error
+.notvec:
+    ex de,hl
+    ld hl,m_notvec
+    jp error
+
+;; (make-array n [:initial-element x]) -- other keys are let be
+subr_make_array:
+    NEXTARG
+    push de                     ; n
+    ld de,NIL
+    dec b
+.k:
+    ld a,b
+    cp 2
+    jr c,.go
+    push de
+    NEXTARG
+    push hl
+    ex de,hl
+    ld de,S_KW_INITIAL_ELEMENT
+    call cmp_hl_de
+    pop hl
+    pop de
+    jr nz,.skip
+    NEXTARG
+    jr .n
+.skip:
+    dec hl
+    dec hl
+.n:
+    dec b
+    dec b
+    jr .k
+.go:
+    pop hl
+    call fixnum_hl
+    sra h
+    rr l
+    bit 7,h
+    jr nz,.bad
+    ld b,h
+    ld c,l
+    jp make_vector
+.bad:
+    add hl,hl
+    inc hl
+    ex de,hl
+    ld hl,m_index
+    jp error
+
+;; (vector x ...)
+subr_vector:
+    push hl
+    push bc
+    ld c,b
+    ld b,0
+    ld de,NIL
+    call make_vector
+    pop bc
+    pop de                      ; &arg 0
+    push hl
+    LDHLI
+    inc hl
+    inc hl
+    ex de,hl
+.c:
+    ld a,b
+    or a
+    jr z,.done
+    push bc
+    ld c,(hl)
+    inc hl
+    ld b,(hl)
+    dec hl
+    dec hl
+    dec hl
+    ex de,hl
+    ld (hl),c
+    inc hl
+    ld (hl),b
+    inc hl
+    ex de,hl
+    pop bc
+    djnz .c
+.done:
+    pop hl
+    ret
+
+;; list_to_vector: HL = a list -> HL = a vector of its elements
+list_to_vector:
+    push hl
+    ld bc,0
+    ld d,h
+    ld e,l
+.c:
+    ld a,d
+    or e
+    jr z,.n
+    inc bc
+    ex de,hl
+    CDRHL
+    ex de,hl
+    jr .c
+.n:
+    ld de,NIL
+    call make_vector
+    pop de                      ; the list
+    push hl
+    LDHLI
+    inc hl
+    inc hl
+.f:
+    ld a,d
+    or e
+    jr z,.done
+    ex de,hl
+    ld c,(hl)
+    inc hl
+    ld b,(hl)
+    inc hl
+    LDHLI
+    ex de,hl
+    ld (hl),c
+    inc hl
+    ld (hl),b
+    inc hl
+    jr .f
+.done:
+    pop hl
+    ret
+
+;; (aref v i), (svref v i): an element; of a string, a character
+subr_aref:
+    call is_string
+    jp z,subr_char
+    call vec_index
+    LDHLI
+    ret
+
+;; (elt sequence i): of a list, a vector or a string
+subr_elt:
+    call is_string
+    jp z,subr_char
+    call is_vector
+    jr z,subr_aref
+    ex de,hl
+    jp subr_nth
+
+subr_vectorp:
+    call is_vector
+    jp z,ret_t
+    call is_string
+    jp bool_z
 
 subr_nth:
     call nthcdr_hl_de

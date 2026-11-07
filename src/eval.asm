@@ -2407,6 +2407,8 @@ setf_table:
     dw S_SYMBOL_PLIST,setf_plist
     dw S_GET,setf_get
     dw S_CHAR,setf_char
+    dw S_AREF,setf_aref
+    dw S_SVREF,setf_aref
     dw 0
 
 setf_car:
@@ -2482,6 +2484,25 @@ setf_char:
     pop de                      ; index
     pop bc                      ; the character
     jp set_char
+
+setf_aref:
+    push de
+    push hl
+    call cdr
+    call car
+    ex (sp),hl
+    call car                    ; the vector (or string)
+    pop de                      ; index
+    pop bc                      ; the value
+    call is_string
+    jp z,set_char
+    push bc
+    call vec_index
+    pop de
+    ld (hl),e
+    inc hl
+    ld (hl),d
+    ret
 
 ;; set_car / set_cdr: HL = a cons, DE = value
 set_car:

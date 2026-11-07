@@ -99,7 +99,13 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
 * **`unwind-protect`** is a third frame kind (2) beside block and catch;
   `throw`/`return-from` run the cleanups of the frames they pass. An error
   or ESC does not: it goes straight to toplevel.
-* **Still to come**: vectors,
+* **Vectors** (one-dimensional, `src/subrs.asm`): a typed cell
+  (`HDR_VECTOR`) whose block holds the elements, a word each. Its header is
+  "raw" (the data word is not a Lisp value), but `mark_value` and `rescan`
+  follow the elements, and a block-less vector (mid-allocation) is skipped.
+  `make-array` (`:initial-element`), `vector`, `aref`/`svref` (also on
+  strings) with `setf`, `elt`, `length`, `vectorp`, `#(...)` both ways.
+* **Still to come**:
   the 6128's extra RAM, speed; maybe `*print-case*` (all output is upper
   case, as in CL).
 
