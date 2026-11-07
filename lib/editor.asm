@@ -19,9 +19,11 @@
 ;; (V_DEPTH) is the truth: with nothing open there, the stack is emptied.
 ;;
 ;; Screen positions: a line starts at column ED_COL0 and wraps at the window
-;; width. Rows are kept as row + the firmware's roll count (TXT GET CURSOR
-;; returns it), which does not change when the screen scrolls; subtracting
-;; the current roll count gives the row now.
+;; width. Rows are kept as row - the firmware's roll count (TXT GET CURSOR
+;; returns it; it goes down by one when the screen scrolls up), which does
+;; not change when the screen scrolls; adding the current roll count gives
+;; the row now. (Row + roll, the first version, held only until the screen
+;; scrolled: a line that wrapped at the bottom then scrolled once a key.)
 
 TXT_GET_WINDOW      equ #BB69
 TXT_CUR_ENABLE      equ #BB7B
@@ -29,13 +31,13 @@ TXT_RD_CHAR         equ #BB60
 TXT_INVERSE         equ #BB9C
 
 ED_COL0   equ LIBSCR+16         ; the column the line starts in
-ED_VROW0  equ LIBSCR+17         ; its row plus the roll count
+ED_VROW0  equ LIBSCR+17         ; its row less the roll count
 ED_W      equ LIBSCR+18         ; window width
 ED_H      equ LIBSCR+19         ; window height
 ED_LEN    equ LIBSCR+20         ; characters in LINEBUF
 ED_POS    equ LIBSCR+21         ; the cursor's index
 ED_CCOL   equ LIBSCR+22         ; copy cursor: column, 0 = none
-ED_CVROW  equ LIBSCR+23         ;   row plus roll count
+ED_CVROW  equ LIBSCR+23         ;   row less roll count
 ED_CCHAR  equ LIBSCR+24         ;   the character under it
 ED_INSTR  equ LIBSCR+25         ; scanning: inside a string
 ED_ATOM   equ LIBSCR+26         ; scanning: start of the atom being read, 255 none
@@ -43,13 +45,15 @@ ED_I      equ LIBSCR+27         ; scanning: index
 ED_G      equ LIBSCR+28         ; matching: ")"s that closed earlier lines' "("s
 ED_LD     equ LIBSCR+29         ; matching: "("s open in this line
 ED_LOCAL  equ LIBSCR+32         ; matching: their indices, 32
-ED_STACK  equ LIBSCR+64         ; earlier lines' "("s: column, vrow, indent, tokens
+ED_STACK  equ LIBSCR+64         ; earlier lines' "("s: column, row - roll, indent, tokens
 ED_MAX    equ 48
 ED_LIMIT  equ 250               ; longest line
 
 lib_editor:
     call TXT_GET_CURSOR         ; H = column, L = row, A = roll count
-    add a,l
+    ld b,a
+    ld a,l
+    sub b
     ld (ED_VROW0),a
     ld a,h
     ld (ED_COL0),a
@@ -273,7 +277,9 @@ ed_cmove:
     ld a,h
     ld (ED_CCOL),a
     pop af
-    add a,l
+    ld b,a
+    ld a,l
+    sub b
     ld (ED_CVROW),a
     jr .move
 .have:
@@ -325,7 +331,13 @@ ed_copy:
     cp (hl)
     jr z,.edge
     inc (hl)
-.edge:
+    jr .on
+.edge:                          ; at the right edge: on at the next row's start
+    ld (hl),1
+    ld hl,ED_CVROW
+    inc (hl)
+    call ed_clamp_copy
+.on:
     call ed_draw_copy
     call ed_place
     jp ed_key
@@ -335,7 +347,7 @@ ed_clamp_copy:
     call TXT_GET_CURSOR         ; A = roll
     ld b,a
     ld a,(ED_CVROW)
-    sub b                       ; its row now
+    add a,b                     ; its row now
     jr z,.top
     bit 7,a
     jr nz,.top
@@ -343,12 +355,12 @@ ed_clamp_copy:
     ld a,(ED_H)
     cp c
     ret nc
-    add a,b
+    sub b                       ; the bottom row
     ld (ED_CVROW),a
     ret
 .top:
-    ld a,b
-    inc a
+    ld a,1                      ; the top row
+    sub b
     ld (ED_CVROW),a
     ret
 
@@ -357,7 +369,7 @@ ed_copy_at:
     call TXT_GET_CURSOR
     ld b,a
     ld a,(ED_CVROW)
-    sub b
+    add a,b
     ld l,a
     ld a,(ED_CCOL)
     ld h,a
@@ -506,7 +518,7 @@ ed_goto:
     pop hl
     ld a,(ED_VROW0)
     add a,l
-    sub b
+    add a,b
     ld l,a
     jp TXT_SET_CURSOR
 
@@ -700,7 +712,7 @@ ed_match:
     pop hl
     ld a,(ED_VROW0)
     add a,l
-    sub b
+    add a,b
     ld l,a
     or a
     ret
@@ -715,13 +727,13 @@ ed_match:
     call ed_entry
     ld d,(hl)                   ; column
     inc hl
-    ld e,(hl)                   ; row + roll
+    ld e,(hl)                   ; row - roll
     push de
     call TXT_GET_CURSOR
     ld b,a
     pop de
     ld a,e
-    sub b
+    add a,b
     jr z,.quiet                 ; scrolled off the top
     bit 7,a
     jr nz,.quiet
