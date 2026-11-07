@@ -1,6 +1,10 @@
 CPC Lisp -- first run on the real 464
 =====================================
 
+(This sheet is for the three ROMs flashed in the morning of 2026-11-07.
+Once the card has the five-ROM set -- the demos, library 3 -- use
+docs/cpc-test-5roms.txt instead.)
+
 On the card (flashed 2026-11-07, checksums verified against the files):
 
     slot 4  ROM 0  Lisp core (the CPC boots into it instead of BASIC)
