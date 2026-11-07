@@ -192,8 +192,8 @@ Speech is the one thing MAME cannot check -- it has no LambdaSpeak.
 [ ] (ed 'queens), SHIFT + down / up  a page down and up
 
 
-14. Build 4178: files as streams, through Parados (needs that flash)
---------------------------------------------------------------------
+14. Build 4326: files as streams, through Parados
+-------------------------------------------------
 Only the card's disc can tell -- MAME has AMSDOS. Use a disc with room
 (see the note at the top on "disc full"). Two files open at once is the
 new part.
