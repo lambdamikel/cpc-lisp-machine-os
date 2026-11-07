@@ -10,4 +10,12 @@ LISP> (let ((l '(1 2))) (setf (cdr (cdr l)) l) (length l))
 Error: break
 LISP> (* 6 7)
 42
+LISP> (let ((x 0)) (dotimes (i 16000) (dotimes (j 16000) (setq x j))))
+Error: break
+LISP> (do ((i 0 (+ i 0))) (nil) i)
+Error: break
+LISP> (dolist (x (let ((l (list 1 2))) (setf (cdr (cdr l)) l) l)) x)
+Error: break
+LISP> (+ 3 4)
+7
 LISP> 

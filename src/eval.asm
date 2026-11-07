@@ -81,10 +81,6 @@ eval:
     ld de,(V_ENV)
     push de
 ev_loop:
-    ld a,(V_BRK)
-    dec a
-    ld (V_BRK),a
-    call z,poll_esc
     bit 0,l
     jr nz,ev_done               ; fixnum
     ld a,l
@@ -749,6 +745,14 @@ bind:
     ld (ix+0),l
     ld (ix+1),h
     ex de,hl                    ; HL = the parameter
+    ld a,h                      ; a lambda-list keyword? (they are together)
+    cp S_AMP_OPTIONAL >> 8
+    jr nz,.k4
+    ld a,l
+    cp S_AMP_OPTIONAL and #FF
+    jr c,.k4
+    cp (S_AMP_AUX and #FF)+1
+    jr nc,.k4
     ld de,S_AMP_OPTIONAL
     call cmp_hl_de
     jr nz,.k1
@@ -1177,6 +1181,11 @@ cmp_hl_de:
 
 ;; progn: HL = forms -> HL = value of the last, NIL if none
 progn:
+    ld a,(V_BRK)
+    dec a
+    ld (V_BRK),a
+    and 31
+    call z,poll_esc
     ld a,h
     or l
     ret z
@@ -1198,6 +1207,11 @@ progn:
 
 ;; ev_progn: the same, from inside eval, with the last form a tail
 ev_progn:
+    ld a,(V_BRK)                ; ESC is looked at in every 32nd body: all
+    dec a                       ; recursion and every loop runs one
+    ld (V_BRK),a
+    and 31
+    call z,poll_esc
     ld a,h
     or l
     jp z,ev_done

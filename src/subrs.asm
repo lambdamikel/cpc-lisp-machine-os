@@ -1013,7 +1013,39 @@ neg_hl:
     inc hl
     ret
 
+;; fix_pair: HL = &arg 0 of two -> DE = arg 0, HL = arg 1, carry set if
+;; both are fixnums. BC kept.
+fix_pair:
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    dec hl
+    dec hl
+    ld a,(hl)
+    dec hl
+    ld l,(hl)
+    ld h,a
+    ld a,l
+    and e
+    rra
+    ret
+
 subr_plus:
+    ld a,b                      ; two fixnums: at once
+    cp 2
+    jr nz,.gen
+    push hl
+    call fix_pair
+    jr nc,.gen1
+    dec hl
+    or a
+    adc hl,de
+    jp pe,.gen1                 ; overflow: the general way
+    pop de
+    ret
+.gen1:
+    pop hl
+.gen:
     call nums_v
 NUM_PLUS:
     ld ix,1
@@ -1040,6 +1072,22 @@ NUM_PLUS:
     ret
 
 subr_minus:
+    ld a,b                      ; two fixnums: at once
+    cp 2
+    jr nz,.gen
+    push hl
+    call fix_pair
+    jr nc,.gen1
+    ex de,hl
+    or a
+    sbc hl,de
+    jp pe,.gen1
+    inc hl
+    pop de
+    ret
+.gen1:
+    pop hl
+.gen:
     call nums_v
 NUM_MINUS:
     NEXTARG
@@ -1380,6 +1428,20 @@ subr_numeq:
 subr_numne:
     ld c,5
 compare:
+    ld a,b                      ; two fixnums: at once
+    cp 2
+    jr nz,.gen
+    push hl
+    call fix_pair
+    jr nc,.gen1
+    pop af
+    ex de,hl
+    call NUM_COMPARE.cmp
+    jp z,ret_nil
+    jp ret_t
+.gen1:
+    pop hl
+.gen:
     call nums_v
 NUM_COMPARE:
     NEXTARG
@@ -1390,6 +1452,14 @@ NUM_COMPARE:
     NEXTARG
     ex (sp),hl
     push de
+    call .cmp
+    pop de
+    pop hl
+    jp z,ret_nil
+    djnz .l
+    jp ret_t
+;; HL against DE, fixnums -> NZ if C's relation holds (1 <, 2 =, 4 >)
+.cmp:
     ld a,h
     xor #80
     ld h,a
@@ -1404,12 +1474,8 @@ NUM_COMPARE:
     jr z,.got
     ld a,4
 .got:
-    pop de
-    pop hl
     and c
-    jp z,ret_nil
-    djnz .l
-    jp ret_t
+    ret
 
 subr_zerop:
     call nums_1

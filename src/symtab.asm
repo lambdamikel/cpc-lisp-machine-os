@@ -50,7 +50,9 @@ symtab:
     SYMBOL AMP_REST,"&REST",0,0
     SYMBOL AMP_BODY,"&BODY",0,0
     SYMBOL AMP_KEY,"&KEY",0,0
-    SYMBOL AMP_AUX,"&AUX",0,0
+    SYMBOL AMP_AUX,"&AUX",0,0           ; (bind: these five together)
+    assert S_AMP_AUX-S_AMP_OPTIONAL == 32
+    assert (S_AMP_OPTIONAL >> 8) == (S_AMP_AUX >> 8)
     SYMBOL OTHERWISE,"OTHERWISE",0,0
     SYMBOL UNQUOTE,"UNQUOTE",0,0
     SYMBOL UNQUOTE_SPLICING,"UNQUOTE-SPLICING",0,0
