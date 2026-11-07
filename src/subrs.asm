@@ -331,51 +331,6 @@ vec_index:
     ld hl,m_notvec
     jp error
 
-;; (make-array n [:initial-element x]) -- other keys are let be
-subr_make_array:
-    NEXTARG
-    push de                     ; n
-    ld de,NIL
-    dec b
-.k:
-    ld a,b
-    cp 2
-    jr c,.go
-    push de
-    NEXTARG
-    push hl
-    ex de,hl
-    ld de,S_KW_INITIAL_ELEMENT
-    call cmp_hl_de
-    pop hl
-    pop de
-    jr nz,.skip
-    NEXTARG
-    jr .n
-.skip:
-    dec hl
-    dec hl
-.n:
-    dec b
-    dec b
-    jr .k
-.go:
-    pop hl
-    call fixnum_hl
-    sra h
-    rr l
-    bit 7,h
-    jr nz,.bad
-    ld b,h
-    ld c,l
-    jp make_vector
-.bad:
-    add hl,hl
-    inc hl
-    ex de,hl
-    ld hl,m_index
-    jp error
-
 ;; (vector x ...)
 subr_vector:
     push hl

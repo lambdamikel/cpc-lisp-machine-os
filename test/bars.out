@@ -1,0 +1,36 @@
+LISP> '|hello world|
+|hello world|
+LISP> (symbol-name '|hello world|)
+"hello world"
+LISP> 'foo|bar|baz
+|FOObarBAZ|
+LISP> 'a\ b
+|A B|
+LISP> '\a
+|a|
+LISP> (list '|123| (symbolp '|123|) '|.| '||)
+(|123| T |.| ||)
+LISP> (eq '|FOO| 'foo)
+T
+LISP> (intern "lower")
+|lower|
+LISP> (prin1-to-string (intern "lower"))
+"|lower|"
+LISP> (princ '|mixed Case|)
+mixed Case
+|mixed Case|
+LISP> (read-from-string "|x y|")
+|x y|
+LISP> (format nil "~S ~A" '|a(b| '|a(b|)
+"|a(b| a(b"
+LISP> (list 'normal :key 'a-b '*x* '1+)
+(NORMAL :KEY A-B *X* 1+)
+LISP> (list '|-5| '|+| '- '|1+| '1+ '|+12| '|1.5|)
+(|-5| + - 1+ 1+ |+12| 1.5)
+LISP> (make-array 3 :initial-element 'x)
+#(X X X)
+LISP> (make-array 2)
+#(NIL NIL)
+LISP> (make-array -1)
+Error: index out of range -1
+LISP> 

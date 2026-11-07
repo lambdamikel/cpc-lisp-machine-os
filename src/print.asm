@@ -177,6 +177,91 @@ print_obj:
 
 print_symbol:
     call str_data
+    ld a,(V_ESC)
+    or a
+    jr z,print_chars
+    call sym_odd                ; prin1 of |a b|: in bars, read gives it back
+    jr nc,print_chars
+    ld a,"|"
+    call putc
+    call print_chars
+    ld a,"|"
+    jp putc
+
+;; sym_odd: HL = a name's characters, BC = how many -> C if read would not
+;; give the name back as it is: lower case, a delimiter, | or \ in it; or
+;; empty, ".", or digits with a sign or none (it would read as a number).
+;; HL, BC kept
+sym_odd:
+    push hl
+    push bc
+    ld a,b
+    or c
+    jr z,.yes                   ; ||
+    ld a,(hl)
+    cp "."
+    jr nz,.num
+    dec bc
+    ld a,b
+    or c
+    inc bc
+    jr z,.yes                   ; |.|
+    ld a,(hl)
+.num:
+    push hl
+    push bc
+    cp "+"
+    jr z,.sign
+    cp "-"
+    jr nz,.dl
+.sign:
+    inc hl
+    dec bc
+    ld a,b
+    or c
+    jr z,.word                  ; + or - alone: a symbol
+.dl:
+    ld a,(hl)
+    sub "0"
+    cp 10
+    jr nc,.word
+    inc hl
+    dec bc
+    ld a,b
+    or c
+    jr nz,.dl
+    pop bc                      ; all digits
+    pop hl
+    jr .yes
+.word:
+    pop bc
+    pop hl
+.l:
+    ld a,b
+    or c
+    jr z,.no
+    ld a,(hl)
+    cp "a"
+    jr c,.d
+    cp "z"+1
+    jr c,.yes
+.d:
+    cp "|"
+    jr z,.yes
+    cp #5C
+    jr z,.yes
+    call is_delim
+    jr z,.yes
+    inc hl
+    dec bc
+    jr .l
+.yes:
+    scf
+.no:
+    pop bc
+    pop hl
+    ret
+
 print_chars:
     ld a,b
     or c

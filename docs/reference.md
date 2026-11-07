@@ -101,8 +101,10 @@ The reader is Common Lisp's, mostly:
 | `#'f` | `(function f)` |
 | `#(1 2 3)` | a vector |
 | `; ...`, `#| ... |#` | comments |
+| `\|hello world\|`, `a\ b` | symbols with characters taken as they are: between bars, or one after `\`. `prin1` writes such a name in bars, `princ` without |
 
-Not read: `#S(...)` (printed, not read back), `|odd symbols|`, `#.`, `#+`.
+Not read: `#S(...)` (printed, not read back), `#.`, `#+`. A symbol named
+like a float (`\|1.5\|`) is printed without bars.
 
 **Typing `~`**: the CPC keyboard has no tilde. **CTRL + 2** types it --
 the firmware's own key table, so it works in the line editor, in `ed` and
@@ -365,7 +367,7 @@ strings (see [Sequences](#sequences)).
 
 | Function | | |
 |---|---|---|
-| `(make-array n [:initial-element x])` | one dimension | core |
+| `(make-array n [:initial-element x])` | one dimension | 2 |
 | `(vector x...)` `(vectorp x)` | | core |
 | `(aref v i)` `(svref v i)` | `setf`-able; aref takes strings too | core |
 

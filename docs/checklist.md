@@ -295,7 +295,8 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
    - [x] String streams (`with-output-to-string`,
          `with-input-from-string`, `make-string-output-stream`...) and
          `*standard-output*` (printers without a stream, `format t`)
-   - [ ] `|...|` symbols in the reader
+   - [x] `|...|` and `\` in symbols; `prin1` puts bars round a name that
+         needs them (and `make-array` moved to library ROM 2 for room)
 5. [x] **More graphics and sound**: circles, discs, boxes, XOR drawing,
        text windows, text at the graphics cursor, envelopes, the sound
        queue, notes and `play`, joystick, `peek`/`poke`

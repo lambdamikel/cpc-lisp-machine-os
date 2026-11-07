@@ -339,11 +339,19 @@ read_list:
 .eof:
     ERR m_eof
 
-;; read_token: A = its first character, already read
+;; read_token: A = its first character, already read. Between bars, |a b|,
+;; characters are taken as they are, blanks and lower case and all; \ takes
+;; the next one so. Such a token is a symbol, never a number.
 read_token:
     ld hl,TOKBUF
-    ld b,0
+    ld bc,0                     ; B = length; C bit 0: in bars, bit 1: escaped
 .loop:
+    cp "|"
+    jr z,.bar
+    cp #5C
+    jr z,.esc
+    bit 0,c
+    jr nz,.store
     cp "a"
     jr c,.store
     cp "z"+1
@@ -354,10 +362,29 @@ read_token:
     inc hl
     inc b
     jr z,.long
+.next:
     call getc
+    bit 0,c
+    jr z,.out
+    or a
+    jr nz,.loop                 ; in bars: only the end of the text ends it
+    ERR m_eof
+.bar:
+    ld a,c
+    xor 1
+    or 2
+    ld c,a
+    jr .next
+.esc:
+    set 1,c
+    call getc
+    jr .store
+.out:
     call is_delim
     jr nz,.loop
     call ungetc
+    bit 1,c
+    jr nz,.sym                  ; escaped: a symbol
     ; B = length; a number?
     call parse_int
     ret nc

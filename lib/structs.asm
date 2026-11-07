@@ -15,6 +15,57 @@ st_is:
     pop bc
     ret
 
+;; (make-array n [:initial-element x]): a vector of n, each x (NIL). Other
+;; keywords (:element-type...) are let be.
+;@ MAKE-ARRAY 1 255 lf_make_array
+lf_make_array:
+    NEXTARG
+    push de                     ; n
+    ld de,NIL
+    dec b
+.k:
+    ld a,b
+    cp 2
+    jr c,.go
+    push de
+    NEXTARG
+    ld a,e
+    cp S_KW_INITIAL_ELEMENT and #FF
+    jr nz,.skip
+    ld a,d
+    cp S_KW_INITIAL_ELEMENT >> 8
+.skip:
+    pop de
+    jr nz,.other
+    NEXTARG
+    jr .n
+.other:
+    dec hl
+    dec hl
+.n:
+    dec b
+    dec b
+    jr .k
+.go:
+    pop hl
+    push de
+    call lfix_hl
+    pop de
+    sra h
+    rr l
+    bit 7,h
+    jr nz,.bad
+    ld b,h
+    ld c,l
+    CORE make_vector
+    ret
+.bad:
+    add hl,hl
+    inc hl
+    ex de,hl
+    ld hl,m_index
+    CORE error
+
 ;; (%make-struct type value...) -> a new structure of them
 ;@ %MAKE-STRUCT 1 255 lf_make_struct
 lf_make_struct:
