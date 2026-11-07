@@ -201,6 +201,7 @@ symtab:
     SYMBOL KW_START,":START",SF_CONST,1
     SYMBOL KW_END,":END",SF_CONST,1
     SYMBOL KW_FROM_END,":FROM-END",SF_CONST,1
+    SYMBOL KW_COUNT,":COUNT",SF_CONST,1
     SUBR STRING,"STRING",subr_string,1,1
 
     ; input, output, evaluation

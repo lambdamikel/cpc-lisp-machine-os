@@ -164,6 +164,9 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 - **Sorting:** `sort`, `stable-sort` (lists and vectors, `:key`)
 - **Lists:** `member` `assoc` `rassoc` (with `:test`, `:test-not`, `:key`),
   `reverse` `nreverse` (lists, strings, vectors)
+- **Sequences:** `find` `position` `count` `remove` `delete` `substitute`
+  `nsubstitute`, each with `-if` and `-if-not`: lists, strings, vectors;
+  `:test` `:test-not` `:key` `:start` `:end` `:from-end` `:count`
 - **Conversion:** `coerce` (to `list`, `vector`, `string`, `character`,
   `float`)
 - **Bits:** `logand` `logior` `logxor` `lognot` `ash`
@@ -178,10 +181,7 @@ Read from the ROM the first time each is used. The sequence functions take
 lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
 `:count` for the removes).
 
-- **Sequences:** `find` `find-if` `find-if-not` `position` `position-if`
-  `position-if-not` `count` `count-if` `count-if-not` `remove` `remove-if`
-  `remove-if-not` `delete` `delete-if` `delete-if-not` `remove-duplicates`
-  `delete-duplicates` `substitute` `substitute-if` `nsubstitute` `search`
+- **Sequences:** `remove-duplicates` `delete-duplicates` `search`
   `subseq` `copy-seq` `concatenate` `fill` `map` `reduce` (`:key`
   `:from-end` `:initial-value`) `every` `some` `notany` `notevery` (any
   number of sequences)
@@ -210,7 +210,7 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
 ## Tools
 
 - [x] `tools/build.sh`: the three ROMs, and MAME romsets with the core at ROM 0
-- [x] `tools/test.sh`: 22 regression tests, on a 464 or a 6128
+- [x] `tools/test.sh`: 23 regression tests, on a 464 or a 6128
 - [x] `tools/run.sh`: type a file at the REPL in MAME; screenshots,
       timings, an instruction profile (`tools/profile.py`)
 - [x] `tools/mame.sh`: a MAME window to play in, with a disc
@@ -248,7 +248,8 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
          `remove`, `find`, `position`, `count` and the rest; the sequence
          functions on lists, strings and vectors; `map`, `remove-duplicates`,
          `substitute`, `fill`
-   - [ ] `:start`, `:end`, `:from-end` on the sequence functions
+   - [x] `:start`, `:end`, `:from-end`, `:count` on find, position, count,
+         remove, delete, substitute (native now: 4-14x faster)
    - [x] Multiple values
    - [x] `defstruct`, hash tables, `defsetf`, `type-of`, `typep`
    - [ ] `|...|` symbols in the reader

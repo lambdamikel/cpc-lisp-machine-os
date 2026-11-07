@@ -237,10 +237,11 @@ in a loop's body costs an expansion each time round.
 
 ## Sequences
 
-A sequence is a list, a string or a vector. The functions in Lisp (**3**)
-take `:test`, `:test-not` and `:key` as in CL, and the removes `:count`;
-`:start`, `:end` and `:from-end` are not taken (they are let be). A result
-of the same kind is a fresh one.
+A sequence is a list, a string or a vector. find, position, count,
+remove, delete and substitute (and their -if and -if-not) take all of
+CL's keywords: `:test`, `:test-not`, `:key`, `:start`, `:end`,
+`:from-end`, and `:count` for the removes and substitutes. A result of
+the same kind is a fresh one.
 
 | Function | | |
 |---|---|---|
@@ -248,13 +249,13 @@ of the same kind is a fresh one.
 | `(reverse seq)` `(nreverse seq)` | | 2 |
 | `(sort seq pred &key key)` `(stable-sort ...)` | a merge sort: stable; lists relinked, vectors in place | 2 |
 | `(coerce x type)` | to `list`, `vector`, `string`, `character`, `float`, `t` | 2 |
-| `(find x seq ...)` `(find-if p seq ...)` `(find-if-not ...)` | | 3 |
-| `(position x seq ...)` `(position-if ...)` `(position-if-not ...)` | | 3 |
-| `(count x seq ...)` `(count-if ...)` `(count-if-not ...)` | | 3 |
-| `(remove x seq ...)` `(remove-if ...)` `(remove-if-not ...)` | | 3 |
-| `(delete ...)` `(delete-if ...)` `(delete-if-not ...)` | as remove (not destructive) | 3 |
-| `(remove-duplicates seq ...)` `(delete-duplicates ...)` | keeps the last of each | 3 |
-| `(substitute new old seq ...)` `(substitute-if new p seq ...)` `(nsubstitute ...)` | | 3 |
+| `(find x seq ...)` `(find-if p seq ...)` `(find-if-not ...)` | | 2 |
+| `(position x seq ...)` `(position-if ...)` `(position-if-not ...)` | | 2 |
+| `(count x seq ...)` `(count-if ...)` `(count-if-not ...)` | | 2 |
+| `(remove x seq ...)` `(remove-if ...)` `(remove-if-not ...)` | | 2 |
+| `(delete ...)` `(delete-if ...)` `(delete-if-not ...)` | as remove (not destructive) | 2 |
+| `(substitute new old seq ...)` `(substitute-if ...)` `(substitute-if-not ...)` `(nsubstitute ...)` | | 2 |
+| `(remove-duplicates seq ...)` `(delete-duplicates ...)` | keeps the last of each; :test, :test-not, :key | 3 |
 | `(search seq1 seq2 ...)` | the index where seq1 is in seq2 | 3 |
 | `(subseq seq start [end])` `(copy-seq seq)` | | 3 |
 | `(concatenate type seq...)` | type `list`, `vector` or `string` | 3 |
@@ -476,9 +477,8 @@ then use cells like your own; the names cost nothing until then.
 - No packages; one name space of symbols.
 - `error` prints its arguments; it does not take a format string, and
   there are no conditions (`handler-case`, `restart`...).
-- `:start`, `:end` and `:from-end` are not taken by the sequence
-  functions (except `fill`'s and `reduce`'s); `delete` and friends are not
-  destructive.
+- `search`, `remove-duplicates`, `every`/`some` and `map` do not take
+  `:start`/`:end`/`:from-end`; `delete` and friends are not destructive.
 - Hash tables do not grow their buckets.
 - Strings that functions build are at most 255 characters.
 - Multi-dimensional arrays, `loop` with keywords (the extended LOOP),

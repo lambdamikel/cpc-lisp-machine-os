@@ -48,73 +48,21 @@
 
 ;;; Sequences: lists, strings and vectors. A string or a vector is worked
 ;;; through as a list (%seq) and the result made the same kind (%like).
-;;; :test, :test-not and :key as in CL; :start, :end and :from-end are
-;;; not taken (they are let be, as unknown keys are).
+;;; find, position, count, remove, delete, substitute (and their -if,
+;;; -if-not) are native, with all CL's keywords (lib/seqfn.asm).
 
 (defun %seq (s) (if (listp s) s (coerce s 'list)))
 
 (defun %like (s l)
   (cond ((listp s) l) ((stringp s) (coerce l 'string)) (t (coerce l 'vector))))
 
-(defun %eqf (item test test-not)
-  (cond (test-not #'(lambda (x) (not (funcall test-not item x))))
-        (test #'(lambda (x) (funcall test item x)))
-        (t #'(lambda (x) (eql item x)))))
-
-(defun %pos (p seq key)
-  (let ((i 0))
-    (dolist (x (%seq seq))
-      (when (funcall p (if key (funcall key x) x)) (return (cons i x)))
-      (incf i))))
-
-(defun find (item seq &key test test-not key)
-  (cdr (%pos (%eqf item test test-not) seq key)))
-(defun find-if (p seq &key key) (cdr (%pos p seq key)))
-(defun find-if-not (p seq &key key) (cdr (%pos (complement p) seq key)))
-
-(defun position (item seq &key test test-not key)
-  (car (%pos (%eqf item test test-not) seq key)))
-(defun position-if (p seq &key key) (car (%pos p seq key)))
-(defun position-if-not (p seq &key key) (car (%pos (complement p) seq key)))
-
-(defun %count (p seq key)
-  (let ((n 0))
-    (dolist (x (%seq seq) n) (when (funcall p (if key (funcall key x) x)) (incf n)))))
-(defun count (item seq &key test test-not key)
-  (%count (%eqf item test test-not) seq key))
-(defun count-if (p seq &key key) (%count p seq key))
-(defun count-if-not (p seq &key key) (%count (complement p) seq key))
-
-(defun %remove (p seq key count)
-  (let ((r nil) (n 0))
-    (dolist (x (%seq seq) (%like seq (nreverse r)))
-      (if (and (or (null count) (< n count)) (funcall p (if key (funcall key x) x)))
-          (incf n)
-          (push x r)))))
-(defun remove (item seq &key test test-not key count)
-  (%remove (%eqf item test test-not) seq key count))
-(defun remove-if (p seq &key key count) (%remove p seq key count))
-(defun remove-if-not (p seq &key key count) (%remove (complement p) seq key count))
-(defun delete (item seq &rest keys) (apply #'remove item seq keys))
-(defun delete-if (p seq &rest keys) (apply #'remove-if p seq keys))
-(defun delete-if-not (p seq &rest keys) (apply #'remove-if-not p seq keys))
-
 (defun remove-duplicates (seq &key test test-not key)
   (let ((r nil) (l (%seq seq)))
     (loop (when (null l) (return (%like seq (nreverse r))))
           (let ((x (pop l)))
-            (unless (%pos (%eqf (if key (funcall key x) x) test test-not) l key)
+            (unless (position (if key (funcall key x) x) l :test test :test-not test-not :key key)
               (push x r))))))
 (defun delete-duplicates (seq &rest keys) (apply #'remove-duplicates seq keys))
-
-(defun %subst (new p seq key)
-  (let ((r nil))
-    (dolist (x (%seq seq) (%like seq (nreverse r)))
-      (push (if (funcall p (if key (funcall key x) x)) new x) r))))
-(defun substitute (new old seq &key test test-not key)
-  (%subst new (%eqf old test test-not) seq key))
-(defun substitute-if (new p seq &key key) (%subst new p seq key))
-(defun nsubstitute (new old seq &rest keys) (apply #'substitute new old seq keys))
 
 (defun search (a b &key test test-not key)
   (let ((a (%seq a)) (b (%seq b)) (i 0)

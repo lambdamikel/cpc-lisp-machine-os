@@ -31,6 +31,7 @@ lib_names:
     include "seq.asm"
     include "lists.asm"
     include "structs.asm"
+    include "seqfn.asm"
     include "lib2tab.asm"
 
 lib_end:

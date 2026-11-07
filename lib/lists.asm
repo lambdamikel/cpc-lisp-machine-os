@@ -10,14 +10,30 @@
 ;; ---------------------------------------------------------------------------
 ;; MEMBER, ASSOC, RASSOC with keywords
 
-;; the frame, on the machine stack where the GC sees it, at IX
+;; the frame, on the machine stack where the GC sees it, at IX; the
+;; sequence functions (seqfn.asm) use the same one, larger
 LK_ITEM     equ 0               ; what is looked for
-LK_TEST     equ 2               ; the test, NIL for eql
+LK_TEST     equ 2               ; the test, NIL for eql (the predicate, for -if)
 LK_KEY      equ 4               ; the key, NIL for none
-LK_NOT      equ 6               ; 1 for :test-not (a word: the GC skips it)
+LK_NOT      equ 6               ; 1 for :test-not or -if-not (a word: the GC
+                                ;   skips it)
 LK_LIST     equ 8               ; the list, as far as it has been searched
 LK_MODE     equ 10              ; 0 member, 1 assoc, 2 rassoc
-LK_SIZE     equ 12
+SQ_START    equ 12              ; :start, :end, :from-end, :count as given
+SQ_END      equ 14
+SQ_FROMEND  equ 16
+SQ_COUNT    equ 18
+SQ_IF       equ 20              ; 1: the predicate takes the element alone
+SQ_OP       equ 22              ; seqfn.asm's operation
+SQ_NEW      equ 24              ; substitute's new element
+SQ_I        equ 26              ; the index
+SQ_HIT      equ 28              ; :from-end: the last match,
+SQ_HITI     equ 30              ;   its index
+SQ_N        equ 32              ; matches seen
+SQ_RES      equ 34              ; remove, substitute: what is kept, reversed
+SQ_SKIP     equ 36              ; matches to keep before dropping
+SQ_SEQ      equ 38              ; the sequence as given
+LK_SIZE     equ 40
 
 ;@ MEMBER 2 255 lf_member
 lf_member:
@@ -31,17 +47,8 @@ lf_assoc:
 lf_rassoc:
     ld a,2
 lk_go:
-    ld ix,-LK_SIZE
-    add ix,sp
-    ld sp,ix
+    call lk_frame
     ld (ix+LK_MODE),a
-    xor a
-    ld (ix+LK_TEST),a
-    ld (ix+LK_TEST+1),a
-    ld (ix+LK_KEY),a
-    ld (ix+LK_KEY+1),a
-    ld (ix+LK_NOT),a
-    ld (ix+LK_NOT+1),a
     NEXTARG
     ld (ix+LK_ITEM),e
     ld (ix+LK_ITEM+1),d
@@ -104,9 +111,30 @@ lk_go:
     ld hl,m_notlist
     CORE error
 
+;; lk_frame: a frame of LK_SIZE below the caller's return address, all
+;; NIL, at IX (the caller pops it: LK_SIZE bytes). A, BC, HL kept.
+lk_frame:
+    pop de                      ; the return address
+    ld ix,-LK_SIZE
+    add ix,sp
+    ld sp,ix
+    push de
+    push hl
+    push bc
+    push ix
+    pop hl
+    ld b,LK_SIZE
+.z:
+    ld (hl),0
+    inc hl
+    djnz .z
+    pop bc
+    pop hl
+    ret
+
 ;; lk_keys: IX = the frame, HL = &the first keyword argument, B = how many
-;; words are left -> :test, :test-not and :key in the frame. Others are let
-;; be, as &key does.
+;; words are left -> :test, :test-not, :key (and :start, :end, :from-end,
+;; :count) in the frame. Others are let be, as &key does.
 lk_keys:
     ld a,b
     cp 2
@@ -130,11 +158,37 @@ lk_keys:
     or a
     sbc hl,de
     jr z,.set
+    ld c,SQ_START
+    ld hl,S_KW_START
+    or a
+    sbc hl,de
+    jr z,.set
+    ld c,SQ_END
+    ld hl,S_KW_END
+    or a
+    sbc hl,de
+    jr z,.set
+    ld c,SQ_FROMEND
+    ld hl,S_KW_FROM_END
+    or a
+    sbc hl,de
+    jr z,.set
+    ld c,SQ_COUNT
+    ld hl,S_KW_COUNT
+    or a
+    sbc hl,de
+    jr z,.set
     ld hl,S_KW_TEST_NOT
     or a
     sbc hl,de
     jr nz,.skip
+    pop hl
+    push hl
+    ld a,h
+    or l
+    jr z,.skip                  ; :test-not nil: as if not given
     ld (ix+LK_NOT),1
+    ld c,LK_TEST
 .set:
     push ix
     pop hl
@@ -163,6 +217,9 @@ lk_match:
     SCORE apply1                ; (key element)
     ex de,hl
 .keyed:
+    ld a,(ix+SQ_IF)
+    or a
+    jp nz,.pred
     ld l,(ix+LK_TEST)
     ld h,(ix+LK_TEST+1)
     ld a,h
@@ -225,6 +282,16 @@ lk_match:
 .r:
     xor (ix+LK_NOT)
     ret
+.pred:                          ; -if: (predicate element)
+    ld l,(ix+LK_TEST)
+    ld h,(ix+LK_TEST+1)
+    SCORE apply1
+    ld a,h
+    or l
+    ld a,0
+    jr z,.r
+    inc a
+    jr .r
 
 ;; ---------------------------------------------------------------------------
 ;; REVERSE, NREVERSE
