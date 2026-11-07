@@ -609,6 +609,7 @@ lf_nreconc:
     include "fed.asm"
     include "disc.asm"
     include "strings.asm"
+    include "gfx.asm"
     include "libtab.asm"
 
 lib_end:

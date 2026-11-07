@@ -58,13 +58,24 @@ lib_numbers:
     jp ln_read
     jp ln_print
     jp ln_int
+    jp ln_uint
+
+;; ln_uint: HL = 0..65535 -> NC, HL = it as a float (the reader's #x past a
+;; fixnum)
+ln_uint:
+    xor a
+    ld de,V_FA
+    FM M_INT2R
+    call fl_result
+    or a
+    ret
 
 ;; ln_int: HL = a number -> NC, HL = it rounded, a plain 16-bit number (for
 ;; the core's num_int). BC, DE kept.
 ln_int:
     push de
     ex de,hl
-    call fl_plain
+    call fl_word
     pop de
     or a
     ret
@@ -848,6 +859,7 @@ fl_plain:
     FM M_R2INT
     jr nc,.big
     jp p,.pos
+.negative:
     ld a,h
     cp #80
     jr c,.neg
@@ -875,6 +887,20 @@ fl_plain:
     pop ix
     pop de
     jp fl_range
+
+;; fl_word: the same, but 32768-65535 are let be too, as a 16-bit word (an
+;; address for peek and poke): what the other ROMs' lint_hl gets
+fl_word:
+    push bc
+    push de
+    push ix
+    ld hl,V_FD
+    call f_get
+    ld hl,V_FD
+    FM M_R2INT
+    jr nc,fl_plain.big
+    jp m,fl_plain.negative
+    jr fl_plain.done
 
 ;; ---------------------------------------------------------------------------
 ;; READING: TOKBUF holds B characters -> NC and HL = a float, or C if they

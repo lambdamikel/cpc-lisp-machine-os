@@ -103,7 +103,9 @@ lint_hl:
     ret
 .float:
     push ix
-    CORE num_int
+    push bc                     ; (through the core and the number ROM:
+    CORE num_int                ;   callers keep their argument count in B)
+    pop bc
     pop ix
     ret
 lint_de:

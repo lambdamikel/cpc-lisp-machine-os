@@ -26,7 +26,8 @@
 ;;   +12 symbol hash table  +14 boot forms (list of text addresses, 0 ends)
 ;;   +16 dispatcher         +18 line editor, or 0 (called like EDIT: LINEBUF
 ;;                              to fill, carry set for ENTER, clear for ESC)
-;;   +20 number routines, or 0: four jumps -- arithmetic, read, print, round
+;;   +20 number routines, or 0: five jumps -- arithmetic, read, print, round,
+;;       and a 16-bit word to a float (the reader's big #x numbers)
 ;;       (lnum)
 ;;   +22 the part, 0-3
 ;; The first part with an editor (or number routines) gives them.

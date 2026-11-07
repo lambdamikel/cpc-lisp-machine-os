@@ -240,6 +240,33 @@
         ((minusp x) (if (floatp x) -1.0 -1))
         (t x)))
 
+;;; Music
+
+;; (note 'c4) -> the period SOUND wants: a letter, then # (sharp) or B
+;; (flat), then the octave (4 if none). C4 is middle C, 478, and A4 284, as
+;; in the CPC manual's table (period = 125000 / frequency); the table below
+;; is octave 1.
+(defun note (n)
+  (let* ((s (string n)) (k (position (char s 0) "C D EF G A B")) (i 1) (o 4))
+    (unless k (error "not a note:" n))
+    (when (> (length s) 1)
+      (case (char s 1) (#\# (incf k) (incf i)) (#\B (decf k) (incf i))))
+    (when (> (length s) i) (setq o (digit-char-p (char s i))))
+    (cond ((< k 0) (setq k 11) (decf o))
+          ((> k 11) (setq k 0) (incf o)))
+    (let ((p (nth k '(3822 3608 3405 3214 3034 2863 2703 2551 2408 2273 2145 2025))))
+      (if (< o 1) (ash p 1) (ash (+ p (ash 1 (- o 2))) (- 1 o))))))
+
+;; (play '(c4 e4 g4 (c5 40) r c5)): each note for duration 1/100 s, or as
+;; long as its list says; R is a rest
+(defun play (notes &optional (duration 20) (channels 1) (volume 12))
+  (dolist (n notes)
+    (let ((d duration))
+      (when (consp n) (setq d (cadr n) n (car n)))
+      (if (eq n 'r)
+          (sound channels 0 d 0)
+          (sound channels (note n) d volume)))))
+
 ;;; Macros
 
 (defmacro pushnew (item place)

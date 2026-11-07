@@ -642,16 +642,21 @@ read_radix:
     add hl,de
     jr c,.big1
     pop bc
-    bit 7,h
-    jr nz,.big2
     call getc
     call is_delim
     jr nz,.dig
     call ungetc
-    ; must fit 15 bits signed: 0..&3FFF, or negated
+    ; a fixnum if it fits (0..&3FFF, or negated), else up to &FFFF a float,
+    ; as a decimal that big is (through the library)
     ld a,h
     cp #40
     jr c,.fits
+    ld a,b
+    or a
+    jr nz,.big2
+    ld a,12
+    call lnum
+    ret nc
     jr .big2
 .fits:
     ld a,b

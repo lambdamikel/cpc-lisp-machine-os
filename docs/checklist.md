@@ -107,12 +107,19 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 ### Library ROM 1
 
 - **Text screen:** `cls` `mode` `locate` `pen` `paper` `ink` (with a second
-  colour, flashing) `border` `reset`
+  colour, flashing) `border` `reset` `window` (BASIC's WINDOW) `tag` (text
+  at the graphics cursor) `transparent` `flash-speed` (SPEED INK)
+  `text-cursor` (POS and VPOS)
 - **Graphics:** `plot` `plotr` `draw` `drawr` `move` `mover` `test` `testr`
-  `origin` `clg` `graphics-pen` `graphics-paper` `xpos` `ypos`
+  `origin` `clg` `graphics-pen` `graphics-paper` `xpos` `ypos`, and
+  `circle` `disc` (filled) `box` `fill-box` `ink-mode` (0 normal, 1 XOR,
+  2 AND, 3 OR, as BASIC 1.1's)
 - **Sound:** `sound` (channels, period, duration, volume, envelopes, noise:
-  BASIC's SOUND)
-- **Keys and time:** `inkey` `wait-key` `key-down-p` `frame` `time`
+  BASIC's SOUND), `envelope` (ENV) `tone-envelope` (ENT, negative number
+  repeats) `release` `sound-check` (SQ) `sound-hold` `sound-continue`
+- **Keys, time, the machine:** `inkey` `wait-key` `key-down-p` `joystick`
+  `frame` `time` `peek` `poke` (all 64 KB of RAM: `#xC000` reads as a
+  float, which addresses take)
 - **Strings:** `string-upcase` `string-downcase` `string-capitalize`
   `char-upcase` `char-downcase` `string-trim` `string-left-trim`
   `string-right-trim` `make-string` `parse-integer` `nreconc`
@@ -168,12 +175,15 @@ lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
   `assoc-if` `rassoc-if` `mapcan` `maplist` `adjoin` `union`
   `intersection` `set-difference` `subsetp`
 - **Numbers:** `expt` `gcd` `signum`
+- **Music:** `note` (`'c4` is middle C, 478, as in the CPC manual; `#`
+  sharp, `B` flat), `play` (a list of notes, `R` a rest, `(G4 40)` a
+  longer one)
 - **Macros:** `pushnew` `psetq` `do` `do*`; the variable `*features*`
 
 ## Tools
 
 - [x] `tools/build.sh`: the three ROMs, and MAME romsets with the core at ROM 0
-- [x] `tools/test.sh`: 18 regression tests, on a 464 or a 6128
+- [x] `tools/test.sh`: 19 regression tests, on a 464 or a 6128
 - [x] `tools/run.sh`: type a file at the REPL in MAME; screenshots,
       timings, an instruction profile (`tools/profile.py`)
 - [x] `tools/mame.sh`: a MAME window to play in, with a disc
@@ -210,9 +220,11 @@ lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
    - [ ] `:start`, `:end`, `:from-end` on the sequence functions
    - [ ] `defstruct`, hash tables, multiple values
    - [ ] `|...|` symbols in the reader
-5. [ ] **More graphics and sound**: envelopes (BASIC's ENV and ENT),
-       `release`, the sound queue, text windows, filled shapes, circles,
-       user-defined characters, text at the graphics cursor, ink flash speed
+5. [x] **More graphics and sound**: circles, discs, boxes, XOR drawing,
+       text windows, text at the graphics cursor, envelopes, the sound
+       queue, notes and `play`, joystick, `peek`/`poke`
+   - [ ] Still: user-defined characters (SYMBOL), flood fill (the 464's
+         firmware has none), PlayCity's extra channels on Mike's card
 6. [ ] **A demo ROM** with example programs
 7. [ ] **A reference manual**: every function and capability, with examples
 8. [ ] Later, maybe: `*print-case*`; a byte-code compiler

@@ -1,0 +1,67 @@
+LISP> (mode 1)
+1
+LISP> (progn (cls) (disc 150 300 60 2) (list (test 150 300) (test 150 355) (test 150 370) (test 95 300) (test 85 300)))
+(2 2 0 2 0)
+LISP> (progn (cls) (circle 320 200 100 1) (list (test 420 200) (test 320 300) (test 320 200) (test 391 271)))
+(1 1 0 1)
+LISP> (progn (cls) (box 450 250 600 380 3) (list (test 450 300) (test 600 380) (test 500 300)))
+(3 3 0)
+LISP> (progn (cls) (fill-box 470 270 580 360 2) (list (test 470 270) (test 580 360) (test 525 315) (test 466 315) (test 525 364)))
+(2 2 2 0 0)
+LISP> (progn (cls) (ink-mode 1) (fill-box 0 0 10 10 3) (let ((a (test 5 5))) (fill-box 0 0 10 10 3) (ink-mode 0) (list a (test 5 5))))
+(3 0)
+LISP> (progn (cls) (circle 100 100 40.6 1) (test 140 100))
+1
+LISP> (tag t)
+T
+LISP> (tag nil)
+
+
+NIL
+LISP> (window 1 40 1 25)
+NIL
+LISP> (cls)
+NIL
+LISP> (text-cursor)
+(1 3)
+LISP> (transparent t)
+T
+LISP> (transparent nil)
+NIL
+LISP> (flash-speed 10 10)
+NIL
+LISP> (ink-mode 0)
+0
+LISP> (poke #x9C40 42)
+42
+LISP> (peek 40000)
+42
+LISP> (peek #x9C40)
+42
+LISP> #xC000
+49152.0
+LISP> #x3FFF
+16383
+LISP> #x10000
+Error: integer too large
+LISP> (envelope 1 10 1 5)
+NIL
+LISP> (tone-envelope -2 5 2 2)
+NIL
+LISP> (envelope 1 2 3)
+Error: wrong number of arguments for #<SUBR ENVELOPE>
+LISP> (sound-check 1)
+4
+LISP> (list (note 'c4) (note 'a4) (note 'c#4) (note 'eb4) (note 'b) (note 'c0) (note 'c7))
+(478 284 451 402 253 7644 60)
+LISP> (play '(c4 (e4 5) r) 5)
+NIL
+LISP> (note 'x4)
+Error: not a note: X4
+LISP> (joystick)
+0
+LISP> (mode 2)
+2
+LISP> (mode 1)
+1
+LISP> 
