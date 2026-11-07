@@ -46,6 +46,8 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 - [x] Floats: the firmware's 5-byte reals, about nine digits
 - [x] Errors print a message and the object and return to `LISP>`; the stack
       is checked for overflow
+- [x] Errors can be caught: `ignore-errors`, `handler-case`; `error` with a
+      format string, `warn`, `assert`
 - [x] ESC breaks any running program, including loops over circular lists
 - [x] Mark-and-sweep garbage collector; about 7000 cells of 4 bytes, 512
       symbols, strings and vectors in a compacted block space
@@ -223,7 +225,7 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
 ## Tools
 
 - [x] `tools/build.sh`: the three ROMs, and MAME romsets with the core at ROM 0
-- [x] `tools/test.sh`: 24 regression tests, on a 464 or a 6128
+- [x] `tools/test.sh`: 25 regression tests, on a 464 or a 6128
 - [x] `tools/run.sh`: type a file at the REPL in MAME; screenshots,
       timings, an instruction profile (`tools/profile.py`)
 - [x] `tools/mame.sh`: a MAME window to play in, with a disc

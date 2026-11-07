@@ -1865,32 +1865,6 @@ subr_macroexpand:
     jr c,.l
     ret
 
-;; (error format-string args...): prints them and goes back to the REPL
-subr_error:
-    push hl
-    push bc
-    call fresh_line
-    ld hl,m_error
-    call puts
-    pop bc
-    pop hl
-.l:
-    NEXTARG
-    push hl
-    push bc
-    ex de,hl
-    call princ
-    pop bc
-    pop hl
-    dec b
-    jr z,.done
-    ld a," "
-    call putc
-    jr .l
-.done:
-    call newline
-    jp toplevel
-
 ;; ---------------------------------------------------------------------------
 ;; THE SYSTEM
 

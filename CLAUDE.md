@@ -124,6 +124,12 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
 * **`unwind-protect`** is a third frame kind (2) beside block and catch;
   `throw`/`return-from` run the cleanups of the frames they pass. An error
   or ESC does not: it goes straight to toplevel.
+* **Errors can be caught**: `%catch-errors` (a special form) pushes frame
+  kind 3, with the reader's and printer's state under it, and answers
+  `(T . value)` or `(NIL . (message . objects))`. `error` (lisp.asm) and
+  `%signal` unwind there (cleanups run) when such a frame is about --
+  never for ESC, out of memory or stack overflow. `error`, `ignore-errors`,
+  `handler-case` are Lisp (lisp.lsp); a condition is its message string.
 * **Multiple values**: `values` (library) sets V_MVN/V_MV1/V_MV2/V_MVL;
   `apply_core` clears V_MVN at every call's start; `multiple-value-list`
   (a special form) takes them if the form's value is V_MV1 (else it is

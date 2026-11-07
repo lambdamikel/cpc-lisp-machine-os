@@ -377,8 +377,40 @@ repl:
     CDRHL
     jr .pv
 
-;; error: HL = message, DE = the object it is about, or UNBOUND
+;; error: HL = message, DE = the object it is about, or UNBOUND. With a
+;; handler (%catch-errors) about, the error goes there instead, as a
+;; message string and the object -- but not ESC, nor running out of memory
+;; or stack: those always come back here.
 error:
+    push de
+    push hl
+    ld de,m_break
+    call cmp_hl_de
+    jr z,.print
+    ld de,m_nomem
+    call cmp_hl_de
+    jr z,.print
+    ld de,m_stack
+    call cmp_hl_de
+    jr z,.print
+    call has_handler
+    jr z,.print
+    ld bc,0                     ; the message, a string
+.len:
+    ld a,(hl)
+    or a
+    jr z,.made
+    inc hl
+    inc bc
+    jr .len
+.made:
+    pop hl                      ; its start
+    call make_string
+    pop de
+    jp signal
+.print:
+    pop hl
+    pop de
     push de
     push hl
     xor a
@@ -398,6 +430,84 @@ error:
 .nl:
     call newline
     jp toplevel
+
+;; (%signal message): an error, message a string: to a handler, or printed
+;; and back to LISP>
+subr_signal:
+    ld de,UNBOUND
+;; signal: HL = a message string, DE = an object or UNBOUND
+signal:
+    call has_handler
+    jr z,.print
+    push hl
+    ld hl,NIL
+    ld a,d
+    cp UNBOUND >> 8
+    jr nz,.obj
+    ld a,e
+    cp UNBOUND and #FF
+    jr z,.none
+.obj:
+    ex de,hl
+    ld de,NIL
+    call cons                   ; (object)
+.none:
+    ex de,hl
+    pop hl
+    call cons                   ; (message . objects)
+    ex de,hl
+    ld hl,NIL
+    call cons                   ; (NIL . condition): %catch-errors' answer
+    ld de,NIL
+    ld c,3
+    jp unwind_to
+.print:
+    push de
+    push hl
+    xor a
+    ld (V_OUTMODE),a
+    call fresh_line
+    ld hl,m_error
+    call puts
+    pop hl
+    call princ
+    pop hl
+    ld de,UNBOUND
+    call cmp_hl_de
+    jr z,.nl
+    ld a," "
+    call putc
+    call prin1
+.nl:
+    call newline
+    jp toplevel
+
+;; has_handler -> NZ if a %catch-errors frame is about. HL, DE kept.
+has_handler:
+    push hl
+    push de
+    ld hl,(V_BLOCKS)
+.l:
+    ld a,h
+    or l
+    jr z,.out
+    push hl
+    ld de,6
+    add hl,de
+    ld a,(hl)                   ; the frame's kind
+    pop hl
+    cp 3
+    jr z,.yes
+    ld de,8
+    add hl,de
+    LDHLI                       ; the one before
+    jr .l
+.yes:
+    or a
+.out:
+    pop de
+    pop hl
+    ret
 
 err_nomem:
     ERR m_nomem

@@ -1,0 +1,49 @@
+LISP> (ignore-errors (car 1))
+NIL
+"not a list: 1"
+LISP> (multiple-value-list (ignore-errors (car 1)))
+(NIL "not a list: 1")
+LISP> (ignore-errors (+ 1 2))
+3
+LISP> (handler-case (car 1) (error (c) (format nil "caught: ~A" c)))
+"caught: not a list: 1"
+LISP> (handler-case (/ 1 0) (error () 'div))
+DIV
+LISP> (handler-case (+ 1 2) (:no-error (v) (* v 10)) (error (c) c))
+30
+LISP> (handler-case (error "bad ~A and ~S" 1 "two") (error (c) c))
+"bad 1 and \"two\""
+LISP> (error "plain ~D" 42)
+Error: plain 42
+LISP> (error 'oops)
+Error: OOPS
+LISP> (+ 1 2)
+3
+LISP> (warn "careful: ~A" 3)
+Warning: careful: 3
+NIL
+LISP> (assert (= 1 2))
+Error: assertion failed: (= 1 2)
+LISP> (handler-case (assert (= 1 1)) (error (c) c))
+NIL
+LISP> (defun safe-div (a b) (handler-case (/ a b) (error () nil)))
+SAFE-DIV
+LISP> (list (safe-div 6 3) (safe-div 1 0))
+(2 NIL)
+LISP> (let ((log nil)) (handler-case (unwind-protect (car 1) (push 'cleaned log)) (error () log)))
+(CLEANED)
+LISP> (handler-case (handler-case (car 1) (error (c) (error "inner: ~A" c))) (error (c) c))
+"inner: not a list: 1"
+LISP> (handler-case (undefined-fn 1) (error (c) c))
+"undefined function UNDEFINED-FN"
+LISP> (handler-case (loop) (error (c) c))
+Error: break
+LISP> (+ 3 4)
+7
+LISP> (handler-case (let ((x 'a)) (symbol-value 'nosuch)) (error (c) c))
+"unbound variable NOSUCH"
+LISP> (defvar *sp* 1)
+*SP*
+LISP> (handler-case (let ((*sp* 2)) (error "x")) (error () *sp*))
+1
+LISP> 

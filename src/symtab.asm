@@ -99,6 +99,7 @@ symtab:
     FSUBR UNWIND_PROTECT,"UNWIND-PROTECT",sf_unwind_protect
     FSUBR MULTIPLE_VALUE_LIST,"MULTIPLE-VALUE-LIST",sf_mvlist
     FSUBR EXPANDED,"%EXPANDED",sf_expanded  ; a macro call, its expansion cached
+    FSUBR CATCH_ERRORS,"%CATCH-ERRORS",sf_catch_errors
 
     ; lists
     SUBR CAR,"CAR",car,1,1
@@ -215,7 +216,7 @@ symtab:
     SUBR EVAL,"EVAL",subr_eval,1,1
     SUBR MACROEXPAND_1,"MACROEXPAND-1",subr_macroexpand_1,1,1
     SUBR MACROEXPAND,"MACROEXPAND",subr_macroexpand,1,1
-    SUBR ERROR,"ERROR",subr_error,1,255
+    SUBR SIGNAL,"%SIGNAL",subr_signal,1,1  ; error is in the library
 
     ; the system
     SUBR GC,"GC",subr_gc,0,0

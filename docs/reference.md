@@ -46,7 +46,7 @@ parentheses balance).
 
 - `*`, `**`, `***` hold the last three values printed (the first of each).
 - An error prints `Error:`, a message and the object it is about, and comes
-  back to `LISP>`. Open files are abandoned, and special variables bound
+  back to `LISP>` -- unless `ignore-errors` or `handler-case` catches it. Open files are abandoned, and special variables bound
   with `let` get their global values back.
 - **ESC** stops whatever is running: `Error: break`. Even a tight `(loop)`.
 - The CPC has no `~` key: it is **CTRL + 2** (the firmware's key table).
@@ -208,7 +208,11 @@ expanded the first time it is evaluated and the expansion kept in the call
 | `(values x...)` | | 2 |
 | `(values-list list)` | | 3 |
 | `(functionp x)` | | core |
-| `(error x...)` | prints `Error:` and its arguments (`princ`, blanks between), back to `LISP>` | core |
+| `(error control arg...)` | signals an error: `(error "bad value: ~A" x)`, the message made by `format`; a symbol is its name. Caught by `ignore-errors` and `handler-case`, else printed and back to `LISP>` | 3 |
+| `(ignore-errors form...)` | the forms' value, or NIL and the condition if an error was signalled | 3 |
+| `(handler-case form (error (c) body...) (:no-error (v) body...))` | as CL; every error is one kind, so the first clause that is not `:no-error` takes it | 3 |
+| `(warn control arg...)` | prints `Warning:` and the message, and goes on | 3 |
+| `(assert form)` | an error if form is false | 3 |
 
 ## Symbols
 
@@ -525,8 +529,9 @@ then use cells like your own; the names cost nothing until then.
   digits.
 - Symbols print upper case only (`*print-case*` is not there).
 - No packages; one name space of symbols.
-- `error` prints its arguments; it does not take a format string, and
-  there are no conditions (`handler-case`, `restart`...).
+- A condition is its message, a string; there are no condition classes,
+  `handler-bind` or restarts. ESC, running out of memory and stack
+  overflow are never caught.
 - `search`, `remove-duplicates`, `every`/`some` and `map` do not take
   `:start`/`:end`/`:from-end`; `delete` and friends are not destructive.
 - Hash tables do not grow their buckets.

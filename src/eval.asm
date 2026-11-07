@@ -2204,6 +2204,43 @@ sf_catch:
     call progn
     jr block_exit
 
+;; (%catch-errors form): (T . its value), or (NIL . (message . objects))
+;; if an error was signalled in it (see error). What the reader and printer
+;; were doing is put back either way.
+sf_catch_errors:
+    call car
+    ld a,(V_OUTMODE)
+    ld b,a
+    ld a,(V_INSRC)
+    ld c,a
+    push bc
+    ld a,(V_PEEK)
+    push af
+    ld bc,3
+    ld de,NIL
+    PUSHFRAME
+    call eval
+    ex de,hl
+    ld hl,S_T
+    call cons                   ; (T . value)
+catch_exit:
+    pop de
+    call unwind_specs
+    pop de
+    ld (V_ENV),de
+    pop de
+    pop de
+    pop de
+    ld (V_BLOCKS),de
+    pop af
+    ld (V_PEEK),a
+    pop bc
+    ld a,c
+    ld (V_INSRC),a
+    ld a,b
+    ld (V_OUTMODE),a
+    jp ev_done
+
 sf_return:
     ld de,NIL
     jr return_common
@@ -2258,6 +2295,9 @@ unwind_to:
     jr .find
 .found:
     ld sp,ix
+    ld a,c
+    cp 3
+    jp z,catch_exit             ; an error caught
     jp block_exit
 .none:
     ld hl,m_noblock

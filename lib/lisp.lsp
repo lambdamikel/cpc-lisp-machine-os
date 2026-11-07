@@ -188,6 +188,48 @@
         ((minusp x) (if (floatp x) -1.0 -1))
         (t x)))
 
+;;; Errors. (error "format string" args...) signals one; ignore-errors and
+;;; handler-case catch them (through the core's %catch-errors, which gives
+;;; (T . value) or (NIL . (message . objects))). A condition is its message,
+;;; a string: (format t "~A" c) shows it. ESC is never caught.
+
+(defun error (datum &rest args)
+  (%signal (if (stringp datum) (apply #'format nil datum args) (princ-to-string datum))))
+
+(defun warn (datum &rest args)
+  (fresh-line)
+  (princ "Warning: ")
+  (if (stringp datum) (apply #'format t datum args) (princ datum))
+  (terpri)
+  nil)
+
+(defmacro assert (form &rest ignore)
+  `(unless ,form (error "assertion failed: ~S" ',form)))
+
+(defun %condition (c)
+  (if (cdr c) (format nil "~A ~S" (car c) (cadr c)) (car c)))
+
+(defmacro ignore-errors (&body body)
+  (let ((r (gensym)))
+    `(let ((,r (%catch-errors (progn ,@body))))
+       (if (car ,r) (cdr ,r) (values nil (%condition (cdr ,r)))))))
+
+;; (handler-case form (error (c) body...) (:no-error (v) body...)): every
+;; error is one kind, so the first clause that is not :no-error takes it
+(defmacro handler-case (form &rest clauses)
+  (let ((r (gensym))
+        (err (find :no-error clauses :key #'car :test-not #'eq))
+        (ok (find :no-error clauses :key #'car)))
+    `(let ((,r (%catch-errors ,form)))
+       (if (car ,r)
+           ,(if ok
+                `(let ((,(or (car (cadr ok)) (gensym)) (cdr ,r))) ,@(cddr ok))
+                `(cdr ,r))
+           ,(if err
+                `(let ((,(or (car (cadr err)) (gensym)) (%condition (cdr ,r))))
+                   ,@(cddr err))
+                `(%signal (%condition (cdr ,r))))))))
+
 ;;; Questions
 
 (defun y-or-n-p (&optional message &rest args)
@@ -210,7 +252,7 @@
 ;; measured in MAME. The table below is octave 0.
 (defun note (n)
   (let* ((s (string n)) (k (position (char s 0) "C D EF G A B")) (i 1) (o 4))
-    (unless k (error "not a note:" n))
+    (unless k (error "not a note: ~A" n))
     (when (> (length s) 1)
       (case (char s 1) (#\# (incf k) (incf i)) (#\B (decf k) (incf i))))
     (when (> (length s) i) (setq o (digit-char-p (char s i))))
