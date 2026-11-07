@@ -192,7 +192,27 @@ Speech is the one thing MAME cannot check -- it has no LambdaSpeak.
 [ ] (ed 'queens), SHIFT + down / up  a page down and up
 
 
-14. Getting BASIC back
+14. Build 4178: files as streams, through Parados (needs that flash)
+--------------------------------------------------------------------
+Only the card's disc can tell -- MAME has AMSDOS. Use a disc with room
+(see the note at the top on "disc full"). Two files open at once is the
+new part.
+
+[ ] (with-open-file (o "t1" :direction :output) (format o "~{~A~%~}" '(one two three)))
+                                     NIL
+[ ] (with-open-file (i "t1") (list (read-line i) (read-line i)))
+                                     ("ONE" "TWO")
+[ ] (defun cp (a b) (with-open-file (i a) (with-open-file (o b :direction :output) (loop for l = (read-line i nil nil) while l do (write-line l o)))))
+                                     CP
+[ ] (cp "t1" "t2")                   NIL, no error
+[ ] (with-open-file (i "t2") (loop for l = (read-line i nil nil) while l collect l))
+                                     ("ONE" "TWO" "THREE")
+[ ] (dir)                            T1.LSP and T2.LSP, the same size
+
+A photo of the screen is as good as ticks.
+
+
+15. Getting BASIC back
 ----------------------
 Switch the CPC off, then on the PC:
 
