@@ -474,7 +474,7 @@ case_ch:
     jp lchar
 
 ;; (concatenate 'string string...): the type is not looked at
-;@ CONCATENATE 1 255 lf_concatenate
+;@ %CONCATENATE 1 255 lf_concatenate
 lf_concatenate:
     ld de,TOKBUF
     ld c,0                      ; the length so far
@@ -516,7 +516,7 @@ lf_concatenate:
     jp str_long
 
 ;; (subseq string start [end]): strings only, for now
-;@ SUBSEQ 2 3 lf_subseq
+;@ %SUBSEQ 2 3 lf_subseq
 lf_subseq:
     NEXTARG
     push de                     ; the string
@@ -608,6 +608,7 @@ lf_nreconc:
     include "fr.asm"
     include "fed.asm"
     include "disc.asm"
+    include "strings.asm"
     include "libtab.asm"
 
 lib_end:

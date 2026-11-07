@@ -2218,6 +2218,9 @@ sf_dolist:
     ld a,h
     or l
     jr z,.end
+    ld a,l
+    and 3
+    jp nz,err_notlist_hl
     ld e,(hl)
     inc hl
     ld d,(hl)

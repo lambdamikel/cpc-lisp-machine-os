@@ -1,0 +1,119 @@
+LISP> (member 2 '(1 2 3))
+(2 3)
+LISP> (member 5 '(1 2 3))
+NIL
+LISP> (member 2.0 '(1 2.0 3))
+(2.0 3)
+LISP> (member "b" '("a" "b") :test #'equal)
+("b")
+LISP> (member "b" '("a" "b"))
+NIL
+LISP> (member 2 '(1 2 3) :test #'<)
+(3)
+LISP> (member 2 '(1 2 3) :test-not #'eql)
+(1 2 3)
+LISP> (member 'b '((a 1) (b 2)) :key #'car)
+((B 2))
+LISP> (member 3 '(1 2 3) :test 'eql)
+(3)
+LISP> (member 1 '(1 . 2))
+(1 . 2)
+LISP> (member 2 '(1 . 2))
+Error: not a list: 2
+LISP> (assoc 'b '((a . 1) nil (b . 2)))
+(B . 2)
+LISP> (assoc "b" '(("a" . 1) ("b" . 2)) :test #'equal)
+("b" . 2)
+LISP> (assoc 3 '((1 . a) (5 . b)) :test #'<)
+(5 . B)
+LISP> (rassoc 2 '((a . 1) (b . 2)))
+(B . 2)
+LISP> (rassoc "x" '((a . "x")) :test #'string=)
+(A . "x")
+LISP> (reverse '(1 2 3))
+(3 2 1)
+LISP> (reverse "hello")
+"olleh"
+LISP> (reverse (vector 1 2 3))
+#(3 2 1)
+LISP> (reverse "")
+""
+LISP> (reverse nil)
+NIL
+LISP> (nreverse (list 1 2 3))
+(3 2 1)
+LISP> (nreverse (vector 1 2 3 4))
+#(4 3 2 1)
+LISP> (let ((s (string-upcase "abcde"))) (nreverse s) s)
+"EDCBA"
+LISP> (nreverse (vector))
+#()
+LISP> (logand 12 10)
+8
+LISP> (logior 12 10)
+14
+LISP> (logxor 12 10)
+6
+LISP> (logand)
+-1
+LISP> (logand -1 255)
+255
+LISP> (lognot 0)
+-1
+LISP> (ash 1 10)
+1024
+LISP> (ash 1024 -3)
+128
+LISP> (ash -8 -1)
+-4
+LISP> (ash 1 14)
+Error: integer overflow
+LISP> (gensym)
+G1
+LISP> (gensym "X")
+X2
+LISP> (symbolp (intern "FOO"))
+T
+LISP> (eq (intern "CAR") 'car)
+T
+LISP> (setf (get 'pp 'a) 1 (get 'pp 'b) 2)
+2
+LISP> (remprop 'pp 'a)
+T
+LISP> (symbol-plist 'pp)
+(B 2)
+LISP> (remprop 'pp 'zz)
+NIL
+LISP> (coerce "abc" 'list)
+(#\a #\b #\c)
+LISP> (coerce '(#\x #\y) 'string)
+"xy"
+LISP> (coerce '(1 2) 'vector)
+#(1 2)
+LISP> (coerce (vector #\a #\b) 'string)
+"ab"
+LISP> (coerce "hi" 'vector)
+#(#\h #\i)
+LISP> (coerce (vector 1 2) 'list)
+(1 2)
+LISP> (coerce "a" 'character)
+#\a
+LISP> (coerce 'b 'character)
+#\B
+LISP> (coerce 3 'float)
+3.0
+LISP> (coerce 3 'single-float)
+3.0
+LISP> (coerce '(1) t)
+(1)
+LISP> (coerce 1 'frob)
+Error: cannot coerce to FROB
+LISP> (coerce '(1 2) 'string)
+Error: not a character: 1
+LISP> (dolist (x "abc") x)
+Error: not a list: "abc"
+LISP> (nreverse "xyz")
+"zyx"
+LISP> (remove #\a "banana")
+"bnn"
+LISP> 

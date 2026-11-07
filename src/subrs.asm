@@ -175,10 +175,6 @@ reverse:
     ex de,hl
     ret
 
-subr_nreverse:
-    ld de,NIL
-    jp nreverse_onto
-
 ;; append2: HL = list, DE = tail -> a copy of the list ending in tail
 append2:
     push de
@@ -528,49 +524,6 @@ subr_last:
     jr .l
 .end:
     pop hl
-    ret
-
-;; (member x list), by eql
-subr_member:
-    ex de,hl
-.l:
-    ld a,h
-    or l
-    ret z
-    ld a,l
-    and 3
-    jp nz,err_notlist_hl
-    push hl
-    LDHLI
-    call eql
-    pop hl
-    ret z
-    CDRHL
-    jr .l
-
-;; (assoc x alist), by eql
-subr_assoc:
-    ex de,hl
-.l:
-    ld a,h
-    or l
-    ret z
-    push hl
-    LDHLI
-    ld a,h
-    or l
-    jr z,.skip
-    push hl
-    LDHLI
-    call eql
-    pop hl
-    jr z,.found
-.skip:
-    pop hl
-    call cdr
-    jr .l
-.found:
-    pop de
     ret
 
 subr_rplaca:
@@ -1507,124 +1460,6 @@ subr_oddp:
     bit 1,l
     jp bool_nz
 
-subr_logand:
-    ld ix,-1
-.l:
-    ld a,b
-    or a
-    jr z,.done
-    NEXTARG
-    call fixnum_de
-    push ix
-    ex (sp),hl
-    ld a,l
-    and e
-    ld l,a
-    ld a,h
-    and d
-    ld h,a
-    ex (sp),hl
-    pop ix
-    dec b
-    jr .l
-.done:
-    push ix
-    pop hl
-    ret
-subr_logior:
-    ld ix,1
-.l:
-    ld a,b
-    or a
-    jr z,.done
-    NEXTARG
-    call fixnum_de
-    push ix
-    ex (sp),hl
-    ld a,l
-    or e
-    ld l,a
-    ld a,h
-    or d
-    ld h,a
-    ex (sp),hl
-    pop ix
-    dec b
-    jr .l
-.done:
-    push ix
-    pop hl
-    ret
-subr_logxor:
-    ld ix,1
-.l:
-    ld a,b
-    or a
-    jr z,.done
-    NEXTARG
-    call fixnum_de
-    push ix
-    ex (sp),hl
-    ld a,l
-    xor e
-    or 1
-    ld l,a
-    ld a,h
-    xor d
-    ld h,a
-    ex (sp),hl
-    pop ix
-    dec b
-    jr .l
-.done:
-    push ix
-    pop hl
-    ret
-subr_lognot:
-    call fixnum_hl
-    ld a,l
-    cpl
-    or 1
-    ld l,a
-    ld a,h
-    cpl
-    ld h,a
-    ret
-
-;; (ash n count)
-subr_ash:
-    call fixnum_hl
-    call fixnum_de
-    sra h
-    rr l
-    ex de,hl
-    sra h
-    rr l
-    ex de,hl
-    bit 7,d
-    jr nz,.right
-.left:
-    ld a,d
-    or e
-    jp z,tag_hl
-    ld a,h
-    and #C0
-    jr z,.ok
-    cp #C0
-    jp nz,err_overflow
-.ok:
-    add hl,hl
-    dec de
-    jr .left
-.right:
-    ld a,d
-    or e
-    jp z,tag_hl
-    sra h
-    rr l
-    inc de
-    jr .right
-
 ;; (random n): 0 <= result < n
 subr_random:
     call nums_1
@@ -1875,132 +1710,6 @@ put_prop:
     ld (hl),d
     ret
 
-;; (remprop symbol indicator)
-subr_remprop:
-    call sym_slot
-    dec hl
-    dec hl
-    push hl                     ; the plist word
-    LDHLI
-    ld a,l
-    and #FC
-    ld l,a
-    ld bc,0                     ; the cell before, none yet
-.l:
-    ld a,h
-    or l
-    jr z,.no
-    push hl
-    LDHLI
-    call cmp_hl_de
-    pop hl
-    jr z,.found
-    call cdr
-    ld c,l
-    ld b,h                      ; the value cell of this pair
-    call cdr
-    jr .l
-.found:
-    call cdr
-    call cdr                    ; what follows the pair
-    ld a,b
-    or c
-    jr z,.first
-    ex de,hl
-    ld l,c
-    ld h,b
-    call set_cdr
-    pop hl
-    jp ret_t
-.first:
-    ex de,hl
-    pop hl
-    ld a,(hl)
-    and 3
-    or e
-    ld (hl),a
-    inc hl
-    ld (hl),d
-    jp ret_t
-.no:
-    pop hl
-    jp ret_nil
-
-subr_gensym:
-    ld hl,(V_GENSYM)
-    inc hl
-    ld (V_GENSYM),hl
-    ld de,TOKBUF
-    ld a,"G"
-    ld (de),a
-    inc de
-    call utoa
-    ld a,e
-    sub TOKBUF and #FF
-    ld b,a
-    jp make_symbol
-
-;; utoa: HL = 0..65535 -> its digits at DE, DE moved past them
-utoa:
-    ld (V_S1),de
-    ld b,0
-    ld de,-10000
-    call .d
-    ld de,-1000
-    call .d
-    ld de,-100
-    call .d
-    ld de,-10
-    call .d
-    ld a,l
-    add a,"0"
-    call .put
-    ld de,(V_S1)
-    ret
-.d:
-    ld a,"0"-1
-.l:
-    inc a
-    add hl,de
-    jr c,.l
-    sbc hl,de
-    cp "0"
-    jr nz,.out
-    inc b
-    dec b
-    ret z
-.out:
-    ld b,1
-.put:
-    push hl
-    ld hl,(V_S1)
-    ld (hl),a
-    inc hl
-    ld (V_S1),hl
-    pop hl
-    ret
-
-;; (intern string)
-subr_intern:
-    call check_string
-    call str_data
-    ld a,b
-    or a
-    jr nz,.long
-    ld b,c
-    push bc
-    ld de,TOKBUF
-    ld a,c
-    or a
-    jr z,.e
-    ld b,0
-    ldir
-.e:
-    pop bc
-    jp intern
-.long:
-    ERR m_toolong
-
 ;; ---------------------------------------------------------------------------
 ;; CHARACTERS AND STRINGS
 
@@ -2073,19 +1782,6 @@ string_index:
     ld de,UNBOUND
     ld hl,m_index
     jp error
-
-subr_string_eq:
-    call string_designator
-    ex de,hl
-    call string_designator
-    call str_equal
-    jp bool_z
-
-;; string_designator: HL = string or symbol -> something str_data can read
-string_designator:
-    call is_string
-    ret z
-    jp sym_slot
 
 ;; (string x): a string, a symbol's name, or a character
 subr_string:
@@ -2191,36 +1887,3 @@ subr_gc:
     add hl,hl
     inc hl
     ret
-
-subr_room:
-    call gc
-    ld hl,(V_NFREE)
-    call print_uint
-    ld hl,m_cells
-    call puts
-    ; free symbol slots
-    ld hl,(V_SYMFREE)
-    ld de,0
-.s:
-    ld a,h
-    or l
-    jr z,.sd
-    inc de
-    inc hl
-    inc hl
-    LDHLI
-    jr .s
-.sd:
-    ex de,hl
-    call print_uint
-    ld hl,m_syms
-    call puts
-    ld hl,(V_BLKHI)
-    ld de,(V_BLKTOP)
-    or a
-    sbc hl,de
-    call print_uint
-    ld hl,m_bytes
-    call puts
-    jp ret_nil
-

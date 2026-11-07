@@ -5,7 +5,7 @@ instead of BASIC. Common Lisp syntax, lexical closures, macros, a garbage
 collector -- in 16 KB of Z80 assembly, with graphics, sound, files, floats
 and editors in two more ROMs.
 
-    CPC Lisp 0.3, library ROMs 1 2
+    CPC Lisp 0.3, library ROMs 1 2 3
     7119 cells free
 
     LISP> (defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))
@@ -23,20 +23,23 @@ closures, special variables, `defmacro` and backquote, `block`/`catch`,
 `labels`/`flet`, `setf`, tail calls, ESC to break, and a mark-and-sweep GC.
 Also `format` (~A ~S ~D ~% ...), `&key`, `unwind-protect` and vectors.
 
-The library comes in two more ROMs. The first has graphics (`plot`, `draw`,
-`test`, ...), `sound`, keys, the text screen, strings, files (`load`,
-`save`, `dir`), a line editor and a full-screen function editor. The second
-has the floats and maths functions (`sqrt`, `sin`, `atan`, `log`, `expt`,
-...) through the firmware, `format`, and about forty CL functions and macros
-written in Lisp (`sort`, `reduce`, `remove-if`, `do`, ...) that are loaded
-from ROM the first time they are used. Without one, its functions are
-undefined and the rest works. It has not been on a real CPC yet.
+The library comes in three more ROMs. The first has graphics (`plot`,
+`draw`, `test`, ...), `sound`, keys, the text screen, strings and characters
+(the CL comparisons and predicates), files (`load`, `save`, `dir`, a RAM
+disc on the 6128), a line editor and a full-screen function editor. The
+second has the floats and maths functions (`sqrt`, `sin`, `atan`, `log`,
+...) through the firmware, `format`, `sort`, `coerce`, and `member`/`assoc`
+with `:test` and `:key`. The third has about seventy CL functions and macros
+written in Lisp (the sequence functions on lists, strings and vectors,
+`reduce`, `map`, `do`, ...) that are loaded from ROM the first time they are
+used. Without one, its functions are undefined and the rest works. It is
+being tried on a real 464 (`docs/cpc-test.txt`).
 
 ## Building and testing
 
 Needs rasm and MAME with the CPC ROMs (paths in `tools/build.sh`).
 
-    tools/build.sh                 # build/LISP.ROM, LISPLIB.ROM, LISPLIB2.ROM, and
+    tools/build.sh                 # build/LISP.ROM, LISPLIB*.ROM, and
                                    # MAME romsets with the core at ROM 0
     tools/mame.sh                  # a MAME window to play in (-m 6128 for a 6128)
     tools/run.sh file.lsp          # type a file at it in MAME, print the transcript

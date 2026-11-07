@@ -1,0 +1,101 @@
+LISP> (remove #\a "banana")
+"bnn"
+LISP> (remove 3 (vector 1 3 2 3))
+#(1 2)
+LISP> (remove 3 '(1 3 2 3) :count 1)
+(1 2 3)
+LISP> (remove "b" '("a" "b") :test #'string=)
+("a")
+LISP> (remove-if #'evenp '(1 2 3 4))
+(1 3)
+LISP> (find #\n "banana")
+#\n
+LISP> (find 2 (vector 1 2 3))
+2
+LISP> (find 'b '((a 1) (b 2)) :key #'car)
+(B 2)
+LISP> (find-if #'evenp '(1 3 4 5))
+4
+LISP> (position #\n "banana")
+2
+LISP> (position 9 '(1 2))
+NIL
+LISP> (count #\a "banana")
+3
+LISP> (count-if #'oddp (vector 1 2 3))
+2
+LISP> (remove-duplicates '(1 2 1 3 2))
+(1 3 2)
+LISP> (remove-duplicates "hello")
+"helo"
+LISP> (remove-duplicates '((a 1) (b 2) (a 3)) :key #'car)
+((B 2) (A 3))
+LISP> (substitute #\o #\a "banana")
+"bonono"
+LISP> (substitute 0 1 '(1 2 1))
+(0 2 0)
+LISP> (search "an" "banana")
+1
+LISP> (search '(2 3) '(1 2 3 4))
+1
+LISP> (search "x" "banana")
+NIL
+LISP> (search "" "abc")
+0
+LISP> (every #'evenp '(2 4))
+T
+LISP> (every #'< '(1 2) '(3 4))
+T
+LISP> (some #'> '(1 5) '(3 4))
+T
+LISP> (notany #'evenp '(1 3))
+T
+LISP> (reduce #'+ '(1 2 3 4))
+10
+LISP> (reduce #'+ '(1 2 3) :initial-value 10)
+16
+LISP> (reduce #'list '(1 2 3) :from-end t)
+(1 (2 3))
+LISP> (reduce #'+ (vector 1 2 3))
+6
+LISP> (reduce #'+ nil)
+0
+LISP> (map 'list #'1+ '(1 2 3))
+(2 3 4)
+LISP> (map 'string #'char-upcase "abc")
+"ABC"
+LISP> (map 'vector #'+ '(1 2) '(10 20))
+#(11 22)
+LISP> (map nil #'print '(1))
+
+1 
+NIL
+LISP> (mapcan #'(lambda (x) (list x x)) '(1 2))
+(1 1 2 2)
+LISP> (subseq '(a b c d) 1 3)
+(B C)
+LISP> (subseq (vector 1 2 3 4) 2)
+#(3 4)
+LISP> (subseq "hello" 1 3)
+"el"
+LISP> (subseq '(1 2) 1 5)
+Error: index out of range
+LISP> (copy-seq "abc")
+"abc"
+LISP> (concatenate 'string "ab" '(#\c) (vector #\d))
+"abcd"
+LISP> (concatenate 'list '(1) (vector 2) "c")
+(1 2 #\c)
+LISP> (concatenate 'vector '(1) '(2))
+#(1 2)
+LISP> (fill (list 1 2 3) 0)
+(0 0 0)
+LISP> (fill (vector 1 2 3 4) 9 :start 1 :end 3)
+#(1 9 9 4)
+LISP> (fill (make-string 3) #\z)
+"zzz"
+LISP> (member-if #'evenp '(1 2 3))
+(2 3)
+LISP> (assoc-if #'evenp '((1 . a) (2 . b)))
+(2 . B)
+LISP> 

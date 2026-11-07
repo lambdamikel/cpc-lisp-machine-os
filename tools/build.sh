@@ -10,7 +10,8 @@
 # BASIC's 16 KB replaced by ours. MAME warns about the checksum and runs it.
 #
 #   build/LISP.ROM                  the core ROM
-#   build/LISPLIB.ROM, LISPLIB2.ROM the library ROMs (parts 0 and 1), for
+#   build/LISPLIB.ROM, LISPLIB2.ROM, LISPLIB3.ROM
+#                                   the library ROMs (parts 0, 1, 2), for
 #                                   any other ROM numbers
 #   build/lisp.sym, lisplib*.sym    their symbols (rasm -s format)
 #   build/mame/cpc464/cpc464.rom    464 OS + LISP     (rompath build/mame)
@@ -46,9 +47,10 @@ asm src/lisp.asm build/LISP.ROM build/lisp.sym
 # the core's symbols, for the library: labels and constants, not locals
 awk '$3 == "B0" && ($4 == "L" || $4 == "A") && $1 !~ /\./ && $1 != "BUILD_ID" && $1 != "SYNCHRO" && $1 != "RASM_VERSION" \
      { print $1 " equ " $2 }' build/lisp.sym > build/core.inc
-python3 tools/mklib.py build lib/lib.asm lib/lib2.asm
+python3 tools/mklib.py build lib/lib.asm lib/lib2.asm lib/lib3.asm
 asm lib/lib.asm build/LISPLIB.ROM build/lisplib.sym -I lib
 asm lib/lib2.asm build/LISPLIB2.ROM build/lisplib2.sym -I lib
+asm lib/lib3.asm build/LISPLIB3.ROM build/lisplib3.sym -I lib
 
 mkdir -p build/mame/cpc464 build/mame/cpc6128 build/mame/cpc_ddi1
 { head -c 16384 "$ROMS/cpc464/cpc464.rom"; cat build/LISP.ROM; } > build/mame/cpc464/cpc464.rom

@@ -668,7 +668,7 @@ rd_out_close:
 rd_catalog:
     call rd_ready
     ld hl,rd_m_head
-    call fe_puts
+    call lputs
     ld hl,RD_DIR
     ld b,RD_NENT
 .e:
@@ -719,7 +719,7 @@ rd_catalog:
     sbc hl,de
     call rd_putnum
     ld hl,rd_m_free
-    jp fe_puts
+    jp lputs
 
 rd_crlf:
     ld a,13

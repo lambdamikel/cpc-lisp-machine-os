@@ -114,11 +114,11 @@ lf_ed:
 .template:
     push de
     ld hl,fe_m_defun
-    call fe_puts
+    call lputs
     pop hl
     CORE prin1
     ld hl,fe_m_tail
-    call fe_puts
+    call lputs
 .printed:
     xor a
     ld (V_OUTMODE),a
@@ -182,14 +182,6 @@ fe_m_tail:    db " ()",10,"  )",0
 fe_m_status:  db " COPY or CTRL-S: done   ESC: cancel",0
 fe_m_cannot:  db "cannot edit a builtin:",0
 
-;; fe_puts: HL = text in this ROM, through putc
-fe_puts:
-    ld a,(hl)
-    or a
-    ret z
-    call lputc
-    inc hl
-    jr fe_puts
 
 ;; fe_reserve: lend the buffer out of block space
 fe_reserve:

@@ -1,12 +1,5 @@
 ;; CPC Lisp -- sequence functions in native code (library ROM, part 1).
 
-;; SCORE: CORE, keeping IX (these routines keep a frame in it)
-macro SCORE routine
-    push ix
-    ld ix,{routine}
-    call CORECALL
-    pop ix
-mend
 
 ;; (sort sequence predicate [:key key]), and stable-sort, the same thing: a
 ;; merge sort, stable. A list is sorted by relinking its conses (use the
@@ -151,40 +144,13 @@ lf_sort:
 
 so_m_key: db "sort: :key only",0
 
-;; so_iskey: DE -> Z if it is the keyword :KEY
+;; so_iskey: DE -> Z if it is the keyword :KEY (a builtin: its name is in
+;; the core ROM, which this one cannot read)
 so_iskey:
-    ld a,e
-    and 7
-    cp 2
-    ret nz
-    ld a,d
-    cp SYM_LO >> 8
-    jr c,.no
-    cp SYM_HI >> 8
-    jr nc,.no
-    ex de,hl
-    SCORE str_data              ; HL = its name, BC = how long
-    ld a,b
+    ld hl,S_KW_KEY
     or a
-    ret nz
-    ld a,c
-    cp 4
-    ret nz
-    ld de,.name
-    ld b,4
-.c:
-    ld a,(de)
-    cp (hl)
-    ret nz
-    inc de
-    inc hl
-    djnz .c
+    sbc hl,de
     ret
-.no:
-    or 1
-    ret
-.name:
-    db ":KEY"
 
 ;; so_list: HL = a list -> HL = it sorted (the frame at IX)
 so_list:

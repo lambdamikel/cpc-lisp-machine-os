@@ -1,0 +1,93 @@
+LISP> (remove-if-not #'alpha-char-p "a1b2")
+"ab"
+LISP> (position-if #'upper-case-p "abCd")
+2
+LISP> (string< "apple" "banana")
+0
+LISP> (string< "abc" "abc")
+NIL
+LISP> (string<= "abc" "abc")
+3
+LISP> (string= "abc" 'abc)
+NIL
+LISP> (string= "ABC" 'abc)
+T
+LISP> (string-equal "abc" 'abc)
+T
+LISP> (string/= "abc" "abd")
+2
+LISP> (string-lessp "ABC" "abd")
+2
+LISP> (string> "b" "a")
+0
+LISP> (string= #\a "a")
+T
+LISP> (char= #\a #\a #\a)
+T
+LISP> (char< #\a #\b #\c)
+T
+LISP> (char< #\a #\c #\b)
+NIL
+LISP> (char/= #\a #\b #\a)
+NIL
+LISP> (char/= #\a #\b #\c)
+T
+LISP> (char-equal #\a #\A)
+T
+LISP> (char-lessp #\a #\B)
+T
+LISP> (char= #\a 1)
+Error: not a character: 1
+LISP> (alpha-char-p #\a)
+T
+LISP> (alpha-char-p #\1)
+NIL
+LISP> (upper-case-p #\A)
+T
+LISP> (lower-case-p #\A)
+NIL
+LISP> (alphanumericp #\5)
+T
+LISP> (graphic-char-p #\Space)
+T
+LISP> (digit-char-p #\7)
+7
+LISP> (digit-char-p #\a)
+NIL
+LISP> (digit-char-p #\a 16)
+10
+LISP> (digit-char-p #\z 36)
+35
+LISP> (digit-char 11 16)
+#\B
+LISP> (digit-char 5)
+#\5
+LISP> (digit-char 12)
+NIL
+LISP> (string-trim " " "  hi  ")
+"hi"
+LISP> (string-left-trim '(#\x #\y) "xyxhix")
+"hix"
+LISP> (string-right-trim "ab" "xxab")
+"xx"
+LISP> (string-trim " " "   ")
+""
+LISP> (string-capitalize "hello wORLD 3rd")
+"Hello World 3rd"
+LISP> (make-string 3 :initial-element #\*)
+"***"
+LISP> (length (make-string 5))
+5
+LISP> (string= (quote car) "CAR")
+T
+LISP> (string< (quote car) (quote cdr))
+1
+LISP> (string-capitalize (quote hello))
+"Hello"
+LISP> (coerce 1 (quote car))
+Error: cannot coerce to CAR
+LISP> (sort (list 3 1 2) (function <) :key (function -))
+(3 2 1)
+LISP> (string-equal #\a "A")
+T
+LISP> 

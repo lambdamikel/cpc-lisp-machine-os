@@ -442,9 +442,6 @@ m_index:     db "index out of range",0
 m_eof:       db "unexpected end of text",0
 m_autoload:  db "the library did not define",0
 m_write:     db "cannot write the file",0
-m_cells:     db " cells, ",0
-m_syms:      db " symbols, ",0
-m_bytes:     db " string bytes free",13,10,0
 
     include "symtab.asm"
 

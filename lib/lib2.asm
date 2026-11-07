@@ -1,5 +1,5 @@
-;; CPC Lisp -- the library ROMs, part 1: floats, format, sort, and the
-;; functions written in Lisp. lib/lib.asm explains the parts.
+;; CPC Lisp -- the library ROMs, part 1: floats, format, sort, lists and
+;; sequences, coerce. lib/lib.asm explains the parts.
 
     include "core.inc"
     include "macros.asm"
@@ -29,7 +29,7 @@ lib_names:
     include "float.asm"
     include "format.asm"
     include "seq.asm"
-;@lisp lisp.lsp
+    include "lists.asm"
     include "lib2tab.asm"
 
 lib_end:

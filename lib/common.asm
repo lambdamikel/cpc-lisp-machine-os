@@ -9,6 +9,14 @@ macro CORE routine
     call CORECALL
 mend
 
+;; SCORE: CORE, keeping IX (for routines that keep a frame in it)
+macro SCORE routine
+    push ix
+    ld ix,{routine}
+    call CORECALL
+    pop ix
+mend
+
 lib_init:
     scf
     ret
@@ -165,6 +173,15 @@ lib_error:
     pop de
     ld hl,TOKBUF
     CORE error
+
+;; lputs: HL = text in this ROM, zero-terminated, through putc
+lputs:
+    ld a,(hl)
+    or a
+    ret z
+    call lputc
+    inc hl
+    jr lputs
 
 ;; lputc: A through the core's putc. All registers kept.
 lputc:

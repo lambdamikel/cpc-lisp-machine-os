@@ -115,14 +115,10 @@ symtab:
     SUBR LIST,"LIST",args_to_list,0,255
     SUBR LISTSTAR,"LIST*",liststar_args,1,255
     SUBR APPEND,"APPEND",subr_append,0,255
-    SUBR REVERSE,"REVERSE",reverse,1,1
-    SUBR NREVERSE,"NREVERSE",subr_nreverse,1,1
     SUBR LENGTH,"LENGTH",subr_length,1,1
     SUBR NTH,"NTH",subr_nth,2,2
     SUBR NTHCDR,"NTHCDR",subr_nthcdr,2,2
     SUBR LAST,"LAST",subr_last,1,1
-    SUBR MEMBER,"MEMBER",subr_member,2,2
-    SUBR ASSOC,"ASSOC",subr_assoc,2,2
     SUBR RPLACA,"RPLACA",subr_rplaca,2,2
     SUBR RPLACD,"RPLACD",subr_rplacd,2,2
     SUBR MAPCAR,"MAPCAR",subr_mapcar,2,255
@@ -173,11 +169,6 @@ symtab:
     SUBR MINUSP,"MINUSP",subr_minusp,1,1
     SUBR EVENP,"EVENP",subr_evenp,1,1
     SUBR ODDP,"ODDP",subr_oddp,1,1
-    SUBR LOGAND,"LOGAND",subr_logand,0,255
-    SUBR LOGIOR,"LOGIOR",subr_logior,0,255
-    SUBR LOGXOR,"LOGXOR",subr_logxor,0,255
-    SUBR LOGNOT,"LOGNOT",subr_lognot,1,1
-    SUBR ASH,"ASH",subr_ash,2,2
     SUBR RANDOM,"RANDOM",subr_random,1,1
 
     ; symbols
@@ -191,9 +182,6 @@ symtab:
     SUBR MAKUNBOUND,"MAKUNBOUND",subr_makunbound,1,1
     SUBR FMAKUNBOUND,"FMAKUNBOUND",subr_fmakunbound,1,1
     SUBR GET,"GET",subr_get,2,3
-    SUBR REMPROP,"REMPROP",subr_remprop,2,2
-    SUBR GENSYM,"GENSYM",subr_gensym,0,0
-    SUBR INTERN,"INTERN",subr_intern,1,1
 
     ; characters and strings
     SUBR CHAR_CODE,"CHAR-CODE",subr_char_code,1,1
@@ -206,7 +194,12 @@ symtab:
     SUBR ELT,"ELT",subr_elt,2,2
     SUBR VECTORP,"VECTORP",subr_vectorp,1,1
     SYMBOL KW_INITIAL_ELEMENT,":INITIAL-ELEMENT",SF_CONST,1
-    SUBR STRING_EQ,"STRING=",subr_string_eq,2,2
+    SYMBOL KW_TEST,":TEST",SF_CONST,1         ; for the library's keywords
+    SYMBOL KW_TEST_NOT,":TEST-NOT",SF_CONST,1
+    SYMBOL KW_KEY,":KEY",SF_CONST,1
+    SYMBOL KW_START,":START",SF_CONST,1
+    SYMBOL KW_END,":END",SF_CONST,1
+    SYMBOL KW_FROM_END,":FROM-END",SF_CONST,1
     SUBR STRING,"STRING",subr_string,1,1
 
     ; input, output, evaluation
@@ -223,7 +216,6 @@ symtab:
 
     ; the system
     SUBR GC,"GC",subr_gc,0,0
-    SUBR ROOM,"ROOM",subr_room,0,0
 
     align 4
     dw 0                                ; the end

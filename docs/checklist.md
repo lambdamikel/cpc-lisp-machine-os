@@ -11,7 +11,7 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
       664/6128 jump blocks apart
 - [x] Starts the background ROMs itself (KL ROM WALK), so the disc ROM
       (AMSDOS, Parados) works
-- [x] Library ROMs: up to four, at any ROM numbers 1-6, in any order, found
+- [x] Library ROMs (three now): up to four, at any ROM numbers 1-6, in any order, found
       by signature and build number. Any of them may be missing; their
       functions are then undefined, and the core alone still works.
 - [x] Library names cost nothing until used; functions written in Lisp are
@@ -87,24 +87,22 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 ### Core ROM: functions
 
 - **Lists:** `car` `cdr` `first` `rest` `second` `third` `caar` `cadr` `cdar`
-  `cddr` `caddr` `cdddr` `cons` `list` `list*` `append` `reverse`
-  `nreverse` `length` `nth` `nthcdr` `last` `member` `assoc` `rplaca`
-  `rplacd`
+  `cddr` `caddr` `cdddr` `cons` `list` `list*` `append` `length` `nth`
+  `nthcdr` `last` `rplaca` `rplacd`
 - **Functions:** `mapcar` `mapc` `apply` `funcall`
 - **Predicates:** `null` `not` `atom` `consp` `listp` `symbolp` `numberp`
   `integerp` `stringp` `characterp` `functionp` `keywordp` `vectorp` `eq`
   `eql` `equal`
 - **Numbers:** `+` `-` `*` `1+` `1-` `truncate` `floor` `mod` `rem` `abs`
   `max` `min` `<` `>` `<=` `>=` `=` `/=` `zerop` `plusp` `minusp` `evenp`
-  `oddp` `logand` `logior` `logxor` `lognot` `ash` `random`
+  `oddp` `random`
 - **Symbols:** `symbol-name` `symbol-value` `symbol-function` `symbol-plist`
-  `set` `boundp` `fboundp` `makunbound` `fmakunbound` `get` `remprop`
-  `gensym` `intern`
-- **Characters, strings, vectors:** `char-code` `code-char` `char` `string=`
-  `string` `make-array` (`:initial-element`) `vector` `aref` `svref` `elt`
+  `set` `boundp` `fboundp` `makunbound` `fmakunbound` `get`
+- **Characters, strings, vectors:** `char-code` `code-char` `char` `string`
+  `make-array` (`:initial-element`) `vector` `aref` `svref` `elt`
 - **Input, output, evaluation:** `print` `prin1` `princ` `terpri`
   `write-char` `read` `eval` `error`
-- **System:** `gc` `room`
+- **System:** `gc`
 
 ### Library ROM 1
 
@@ -115,8 +113,18 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 - **Sound:** `sound` (channels, period, duration, volume, envelopes, noise:
   BASIC's SOUND)
 - **Keys and time:** `inkey` `wait-key` `key-down-p` `frame` `time`
-- **Strings:** `string-upcase` `string-downcase` `char-upcase`
-  `char-downcase` `concatenate` `subseq` `parse-integer` `nreconc`
+- **Strings:** `string-upcase` `string-downcase` `string-capitalize`
+  `char-upcase` `char-downcase` `string-trim` `string-left-trim`
+  `string-right-trim` `make-string` `parse-integer` `nreconc`
+- **String comparisons** (strings, symbols or characters; the index where
+  they differ, as in CL): `string=` `string/=` `string<` `string>`
+  `string<=` `string>=` `string-equal` `string-not-equal` `string-lessp`
+  `string-greaterp` `string-not-greaterp` `string-not-lessp`
+- **Characters:** `char=` `char/=` `char<` `char>` `char<=` `char>=`
+  `char-equal` `char-not-equal` `char-lessp` `char-greaterp`
+  `char-not-greaterp` `char-not-lessp` (any number of arguments),
+  `alpha-char-p` `upper-case-p` `lower-case-p` `both-case-p`
+  `alphanumericp` `graphic-char-p` `digit-char-p` `digit-char`
 - **Printing to and from strings:** `pprint` `prin1-to-string`
   `princ-to-string` `read-from-string`
 - **Function editor:** `ed`
@@ -135,18 +143,37 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
   with widths. The CPC has no `~` key: it is **CTRL + 2** (the firmware's
   own key table; in MAME, Right Alt + 2)
 - **Sorting:** `sort`, `stable-sort` (lists and vectors, `:key`)
-- **Written in Lisp** (loaded from the ROM when first used): `identity`
-  `complement` `nconc` `copy-list` `make-list` `butlast` `acons` `pairlis`
-  `rassoc` `subst` `remove` `remove-if` `remove-if-not` `find` `find-if`
-  `position` `position-if` `count` `count-if` `member-if` `every` `some`
-  `notany` `notevery` `reduce` `mapcan` `maplist` `adjoin` `union`
-  `intersection` `set-difference` `subsetp` `gcd` `signum` and the macros
-  `pushnew` `psetq` `do` `do*`; the variable `*features*`
+- **Lists:** `member` `assoc` `rassoc` (with `:test`, `:test-not`, `:key`),
+  `reverse` `nreverse` (lists, strings, vectors)
+- **Conversion:** `coerce` (to `list`, `vector`, `string`, `character`,
+  `float`)
+- **Bits:** `logand` `logior` `logxor` `lognot` `ash`
+- **Symbols, system:** `gensym` `intern` `remprop` `room`
+
+### Library ROM 3: written in Lisp
+
+Read from the ROM the first time each is used. The sequence functions take
+lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
+`:count` for the removes).
+
+- **Sequences:** `find` `find-if` `find-if-not` `position` `position-if`
+  `position-if-not` `count` `count-if` `count-if-not` `remove` `remove-if`
+  `remove-if-not` `delete` `delete-if` `delete-if-not` `remove-duplicates`
+  `delete-duplicates` `substitute` `substitute-if` `nsubstitute` `search`
+  `subseq` `copy-seq` `concatenate` `fill` `map` `reduce` (`:key`
+  `:from-end` `:initial-value`) `every` `some` `notany` `notevery` (any
+  number of sequences)
+- **Lists:** `identity` `complement` `nconc` `copy-list` `make-list`
+  `butlast` `acons` `pairlis` `subst` `member-if` `member-if-not`
+  `assoc-if` `rassoc-if` `mapcan` `maplist` `adjoin` `union`
+  `intersection` `set-difference` `subsetp`
+- **Numbers:** `expt` `gcd` `signum`
+- **Macros:** `pushnew` `psetq` `do` `do*`; the variable `*features*`
 
 ## Tools
 
 - [x] `tools/build.sh`: the three ROMs, and MAME romsets with the core at ROM 0
-- [x] `tools/test.sh`: 15 regression tests, on a 464 or a 6128
+- [x] `tools/test.sh`: 18 regression tests, on a 464 or a 6128
 - [x] `tools/run.sh`: type a file at the REPL in MAME; screenshots,
       timings, an instruction profile (`tools/profile.py`)
 - [x] `tools/mame.sh`: a MAME window to play in, with a disc
@@ -164,20 +191,25 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
    - [x] `funcall` without building an argument list (28% faster on a
          built-in, 11% on a closure)
    - [ ] `apply` and `mapcar` without the general `bind`
-   - [ ] More from the profiler; rarely used core functions moved to a
-         library ROM to make room (the core has ~140 bytes free)
+   - [ ] More from the profiler (the core has ~840 bytes free again: some
+         rarely used functions moved to library ROM 2)
    - [ ] `pprint` of a long list of data: one element a line, filled lines
          would be a third the size
 3. [x] **The 6128's extra 64 KB**: a RAM disc, drive `M:`
 4. [ ] **More Common Lisp**
-   - [ ] `string<` `string>` `string-equal` and the other string comparisons;
-         `char=` `char<` `char-equal` and the other character comparisons
-   - [ ] More strings: `string-trim`, `search`, `position` and `find` on
-         strings, `string-left-trim`, `string-right-trim`
-   - [ ] `coerce`
-   - [ ] `:test` and `:key` on `member`, `assoc`, `remove`, `find`,
-         `position`, `count`
+   - [x] `string<` `string>` `string-equal` and the other string comparisons;
+         `char=` `char<` `char-equal` and the other character comparisons;
+         the character predicates
+   - [x] More strings: `string-trim` (left, right), `string-capitalize`,
+         `make-string`; `search`, `position`, `find` on strings
+   - [x] `coerce`
+   - [x] `:test`, `:test-not` and `:key` on `member`, `assoc`, `rassoc`,
+         `remove`, `find`, `position`, `count` and the rest; the sequence
+         functions on lists, strings and vectors; `map`, `remove-duplicates`,
+         `substitute`, `fill`
+   - [ ] `:start`, `:end`, `:from-end` on the sequence functions
    - [ ] `defstruct`, hash tables, multiple values
+   - [ ] `|...|` symbols in the reader
 5. [ ] **More graphics and sound**: envelopes (BASIC's ENV and ENT),
        `release`, the sound queue, text windows, filled shapes, circles,
        user-defined characters, text at the graphics cursor, ink flash speed
