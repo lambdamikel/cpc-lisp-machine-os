@@ -73,6 +73,11 @@ print_obj:
     ld de,str_macro
     cp HDR_MACRO and #FF
     jr z,.unread
+    cp HDR_LSUBR and #FF
+    jp z,print_lsubr
+    ld de,str_autoload
+    cp HDR_AUTOLOAD and #FF
+    jr z,.unread
     ld de,str_unknown
 .unread:
     ex de,hl
@@ -336,6 +341,7 @@ print_uint:
 
 str_function:  db "#<FUNCTION>",0
 str_macro:     db "#<MACRO>",0
+str_autoload:  db "#<AUTOLOAD>",0
 str_unknown:   db "#<?>",0
 str_unbound:   db "#<UNBOUND>",0
 str_marker:    db "#<MARKER>",0

@@ -209,17 +209,9 @@ symtab:
     SUBR MACROEXPAND,"MACROEXPAND",subr_macroexpand,1,1
     SUBR ERROR,"ERROR",subr_error,1,255
 
-    ; the system and the screen
+    ; the system
     SUBR GC,"GC",subr_gc,0,0
     SUBR ROOM,"ROOM",subr_room,0,0
-    SUBR CLS,"CLS",subr_cls,0,0
-    SUBR MODE,"MODE",subr_mode,1,1
-    SUBR LOCATE,"LOCATE",subr_locate,2,2
-    SUBR PEN,"PEN",subr_pen,1,1
-    SUBR PAPER,"PAPER",subr_paper,1,1
-    SUBR INK,"INK",subr_ink,2,3
-    SUBR BORDER,"BORDER",subr_border,1,1
-    SUBR RESET,"RESET",subr_reset,0,0
 
     align 4
     dw 0                                ; the end

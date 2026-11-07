@@ -18,6 +18,10 @@
     include "defs.asm"
     include "macros.asm"
 
+    ifndef BUILD_ID
+BUILD_ID = 0                    ; tools/build.sh gives both ROMs the same one
+    endif
+
     org #C000
     db 0                        ; foreground ROM
     db 0,1,0                    ; mark, version, modification
@@ -142,8 +146,28 @@ boot:
     ld h,#5A
     ld (V_RAND),hl
 
+    ; the library ROM, if there is one
+    ld hl,tramp_src
+    ld de,TRAMP
+    ld bc,tramp_end-TRAMP
+    ldir
+    ld (V_TOPSP),sp             ; an error in its boot forms ends up at the REPL
+    call find_library
+
     ld hl,banner
     call puts
+    ld a,(V_LIBROM)
+    or a
+    jr z,.nolib
+    ld hl,banner_lib
+    call puts
+    ld a,(V_LIBROM)
+    ld l,a
+    ld h,0
+    call print_uint
+.nolib:
+    call newline
+    call gc
     ld hl,(V_NFREE)
     call print_uint
     ld hl,banner2
@@ -278,6 +302,7 @@ toplevel:
     xor a
     ld (V_PEEK),a
     ld (V_DEPTH),a
+    ld (V_INSRC),a
 repl:
     ld hl,prompt_main
     ld (V_PROMPT),hl
@@ -331,8 +356,10 @@ err_nostr:
     include "print.asm"
     include "eval.asm"
     include "subrs.asm"
+    include "xrom.asm"
 
-banner:      db "CPC Lisp 0.1",13,10,0
+banner:      db "CPC Lisp 0.2",0
+banner_lib:  db ", library in ROM ",0
 banner2:     db " cells free",13,10,13,10,0
 prompt_main: db "LISP> ",0
 prompt_cont: db "  ",0
@@ -370,6 +397,8 @@ m_nomem:     db "out of memory",0
 m_nosyms:    db "out of symbols",0
 m_nostr:     db "out of string space",0
 m_index:     db "index out of range",0
+m_eof:       db "unexpected end of text",0
+m_autoload:  db "the library did not define",0
 m_cells:     db " cells, ",0
 m_syms:      db " symbols, ",0
 m_bytes:     db " string bytes free",13,10,0

@@ -47,9 +47,21 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   machine stack (the firmware's is tiny), checked against overflow.
 * **Input** is the firmware's EDIT (BASIC's line editor, copy cursor and
   all); ESC is polled with KM TEST KEY during evaluation.
-* **Still to come**: a second ROM (graphics, sound, disc, Lisp-defined
-  library), floats, vectors, `&key`, `unwind-protect`, `load`, the 6128's
-  extra RAM.
+* **The library ROM** (`lib/`, any number 1-6; MAME's ROM box makes it 1)
+  holds graphics, sound, keys, the text-screen functions, strings, and
+  Lisp-defined functions and macros (`lib/lisp.lsp`). `src/xrom.asm`
+  explains the arrangement: the core finds it by signature and build number
+  (both ROMs come from one `tools/build.sh` run, and call each other by
+  address); calls cross through a trampoline in RAM using KL ROM SELECT; a
+  library name costs nothing until the reader interns it, and a Lisp-defined
+  function is read from the ROM's text on its first call (autoload). The
+  library is assembled against the core's symbols (`build/core.inc`) and may
+  use its constants and variables directly, its code only through `CORE`,
+  and must hand the core RAM pointers only.
+* **Still to come**: a Lisp-aware line editor in the library (paren
+  matching, auto-indent, history, copy cursor -- asked for by Mike), then a
+  full-screen function editor (`(ed 'foo)`, with a pretty-printer); floats,
+  vectors, `&key`, `unwind-protect`, `load` from disc, the 6128's extra RAM.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
 same addresses as screen RAM. Screen access from ROM code goes through the

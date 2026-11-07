@@ -226,6 +226,9 @@ ev_cons:
     ld hl,SY_FUNC
     add hl,de
     LDHLI
+    push bc
+    call resolve_fn
+    pop bc
     ld a,h
     cp #C0
     jr c,.notrom
@@ -329,24 +332,34 @@ apply_core:
     ld a,e
     and 3
     cp 2
-    jr nz,.notfn
+    jp nz,.notfn
     ld a,d
     cp #C0
     jr nc,.rom
     cp CELL_LO >> 8
-    jr c,.notfn
+    jp c,.notfn
     ld h,d
     ld l,e
     dec hl
     dec hl
     ld a,(hl)
-    cp HDR_CLOSURE and #FF
-    jr nz,.notfn
     inc hl
-    ld a,(hl)
-    cp HDR_CLOSURE >> 8
-    jr nz,.notfn
-    jp apply_closure_stack
+    ld b,(hl)
+    dec b
+    dec b
+    dec b
+    dec b
+    jr nz,.notfn                ; the header's high byte is 4
+    cp HDR_CLOSURE and #FF
+    jp z,apply_closure_stack
+    cp HDR_LSUBR and #FF
+    jp nz,.notfn
+    ; a library function: its dispatcher checks the arguments
+    ld (V_LIBFN),de
+    ld de,LIBCALL
+    ld a,255
+    ld b,0
+    jr .check
 .rom:
     ld h,d
     ld l,e
@@ -354,21 +367,24 @@ apply_core:
     dec hl
     ld a,(hl)
     cp HDR_SUBR and #FF
-    jr nz,.notfn
+    jp nz,.notfn
     inc hl
     inc hl
     ld e,(hl)
     inc hl
     ld d,(hl)                   ; DE = code
     inc hl
-    ld a,c
-    cp (hl)
-    jr c,.args                  ; fewer than min
-    ld b,(hl)
+    ld b,(hl)                   ; min
     inc hl
-    ld a,(hl)
+    ld a,(hl)                   ; max
+.check:                         ; DE = code, B = min, A = max, C = n
     cp c
-    jr c,.args                  ; more than max
+    jr c,.args
+    ld h,a
+    ld a,c
+    cp b
+    jr c,.args
+    ld a,h
     cp b
     jr nz,.variadic
     cp 4
@@ -552,10 +568,14 @@ coerce_fn:
     call is_symbol
     jr nz,.check
     push bc
-    ld bc,SY_FUNC
-    add hl,bc
-    pop bc
+    push de
+    ex de,hl
+    ld hl,SY_FUNC
+    add hl,de
     LDHLI
+    call resolve_fn
+    pop de
+    pop bc
 .check:
     call is_function
     jr nz,.bad
@@ -583,8 +603,11 @@ is_function:
     pop hl
     cp HDR_SUBR and #FF
     jr z,.rom
+    cp HDR_LSUBR and #FF
+    jr z,.cell
     cp HDR_CLOSURE and #FF
     ret nz
+.cell:
     ld a,h
     cp #C0
     jr nc,.no
@@ -998,6 +1021,7 @@ sf_function:
     ld hl,SY_FUNC
     add hl,de
     LDHLI
+    call resolve_fn
     call is_function
     jp z,ev_done
     ld hl,m_undef
@@ -2453,6 +2477,7 @@ macroexpand1:
     ld hl,SY_FUNC
     add hl,de
     LDHLI
+    call resolve_fn
     ld a,h
     cp CELL_LO >> 8
     jr c,.no1

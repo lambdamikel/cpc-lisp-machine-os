@@ -1246,6 +1246,7 @@ subr_symbol_function:
     add hl,bc
     LDHLI
     pop de
+    call resolve_fn
     ld a,h
     cp 4
     ret nz
@@ -1758,82 +1759,3 @@ subr_room:
     call puts
     jp ret_nil
 
-subr_cls:
-    call TXT_CLEAR_WINDOW
-    jp ret_nil
-subr_mode:
-    call fixnum_hl
-    push hl
-    srl h
-    rr l
-    ld a,l
-    and 3
-    call SCR_SET_MODE
-    pop hl
-    ret
-;; (locate column row), from 1 as in BASIC
-subr_locate:
-    call fixnum_hl
-    call fixnum_de
-    srl h
-    rr l
-    ld h,l
-    srl d
-    rr e
-    ld l,e
-    call TXT_SET_CURSOR
-    jp ret_nil
-subr_pen:
-    call fixnum_hl
-    push hl
-    srl h
-    rr l
-    ld a,l
-    call TXT_SET_PEN
-    pop hl
-    ret
-subr_paper:
-    call fixnum_hl
-    push hl
-    srl h
-    rr l
-    ld a,l
-    call TXT_SET_PAPER
-    pop hl
-    ret
-;; (ink pen colour [colour2])
-subr_ink:
-    NEXTARG
-    call fixnum_de
-    push de
-    NEXTARG
-    call fixnum_de
-    ld c,e
-    srl c
-    dec b
-    dec b
-    jr z,.one
-    NEXTARG
-    call fixnum_de
-.one:
-    srl e
-    ld b,c
-    ld c,e
-    pop de
-    srl e
-    ld a,e
-    call SCR_SET_INK
-    jp ret_nil
-subr_border:
-    call fixnum_hl
-    push hl
-    srl h
-    rr l
-    ld b,l
-    ld c,l
-    call SCR_SET_BORDER
-    pop hl
-    ret
-
-subr_reset:
-    rst 0

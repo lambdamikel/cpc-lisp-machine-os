@@ -5,15 +5,30 @@
 ;; expression may run over several lines, each prompted for when it is
 ;; needed. Symbols are upcased, as in Common Lisp.
 
-;; getc -> A = the next character. BC, DE, HL kept.
+;; getc -> A = the next character, 0 at the end of library text (and
+;; again after that). BC, DE, HL kept.
 getc:
     ld a,(V_PEEK)
     or a
-    jr z,.buf
+    jr z,.src
     push af
     xor a
     ld (V_PEEK),a
     pop af
+    ret
+.src:
+    ld a,(V_INSRC)
+    or a
+    jr z,.buf
+    push hl
+    ld hl,(V_SRCPTR)
+    call LIBPEEK
+    or a
+    jr z,.end
+    inc hl
+    ld (V_SRCPTR),hl
+.end:
+    pop hl
     ret
 .buf:
     push hl
@@ -93,15 +108,20 @@ is_delim:
     cp a
     ret
 
-;; skipws -> A = the first character that is not blank or in a comment
+;; skipws -> A = the first character that is not blank or in a comment,
+;; 0 at the end
 skipws:
     call getc
+    or a
+    ret z
     cp " "+1
     jr c,skipws
     cp ";"
     ret nz
 .comment:
     call getc
+    or a
+    ret z
     cp 10
     jr nz,.comment
     jr skipws
@@ -111,6 +131,11 @@ skipws:
 read:
     call check_stack
     call skipws
+    or a
+    jr nz,.r0
+    ld hl,EOFMARK
+    ret
+.r0:
     cp "("
     jp z,read_list
     cp ")"
@@ -154,7 +179,7 @@ read_wrap:
     pop hl
     jp cons
 
-;; read_obj: like read, but ")" and "." are errors
+;; read_obj: like read, but ")", "." and the end are errors
 read_obj:
     call read
 check_real:
@@ -162,12 +187,11 @@ check_real:
     cp 4
     ret nz
     ld a,l
-    cp CLOSEMARK and #FF
-    jr z,.bad
-    cp DOTMARK and #FF
-    ret nz
-.bad:
+    cp EOFMARK and #FF
+    jr z,.eof
     ERR m_syntax
+.eof:
+    ERR m_eof
 
 read_list:
     ld hl,V_DEPTH
@@ -185,6 +209,8 @@ read_list:
     jr z,.done
     cp DOTMARK and #FF
     jr z,.dot
+    cp EOFMARK and #FF
+    jr z,.eof
 .elem:
     ld de,NIL
     call cons
@@ -236,6 +262,8 @@ read_list:
     ret
 .baddot:
     ERR m_syntax
+.eof:
+    ERR m_eof
 
 ;; read_token: A = its first character, already read
 read_token:
@@ -361,6 +389,8 @@ read_string:
     ld bc,0
 .loop:
     call getc
+    or a
+    jr z,.eof
     cp #22
     jr z,.done
     cp #5C                      ; backslash
@@ -372,6 +402,8 @@ read_string:
     inc c
     jr nz,.loop
     ERR m_toolong
+.eof:
+    ERR m_eof
 .done:
     ld hl,TOKBUF
     jp make_string
@@ -398,6 +430,8 @@ read_hash:
     ERR m_syntax
 .comment:
     call getc
+    or a
+    jr z,.eof
 .c2:
     cp "|"
     jr nz,.comment
@@ -405,6 +439,8 @@ read_hash:
     cp "#"
     jr nz,.c2
     jp read
+.eof:
+    ERR m_eof
 
 ;; read_char: #\ is read
 read_char:

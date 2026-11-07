@@ -61,7 +61,15 @@ intern:
     ld hl,NIL
     ret
 .create:
+    push bc
     call make_symbol
+    pop bc
+    pop de                      ; bucket address
+    push de
+    ld a,e
+    sub OBARRAY and #FF
+    rrca                        ; the bucket's number
+    call lib_find
     pop de                      ; bucket address
     push de
     ex de,hl

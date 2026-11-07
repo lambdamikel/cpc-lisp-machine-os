@@ -23,6 +23,8 @@ TXT_CUR_ON        equ #BB81
 TXT_CUR_OFF       equ #BB84
 SCR_SET_MODE      equ #BC0E
 KL_ROM_WALK       equ #BCCB
+KL_ROM_SELECT     equ #B90F         ; C = ROM -> C = the one before. AF, B corrupt
+KL_CURR_SELECTION equ #B912         ; -> A = the ROM selected now
 MC_WAIT_FLYBACK   equ #BD19
 EDIT_464          equ #BD3A
 EDIT_6128         equ #BD5E
@@ -62,7 +64,9 @@ STACK_MARGIN      equ 256           ; eval refuses to go deeper than this
 LINEBUF           equ #AC00         ; 256: the EDIT buffer
 TOKBUF            equ #AD00         ; 256: the reader's token
 VARS              equ #AE00         ; the variables, below
-VARS_END          equ #B100
+LIBSCR            equ #B000         ; 128: scratch for the library ROM
+TRAMP             equ #B080         ; 128: the cross-ROM trampoline, copied at boot
+VARS_END          equ LIBSCR
 
 ;; Variables. The first block holds Lisp values and is a GC root, scanned
 ;; word by word; everything after ROOTS_END is not.
@@ -101,6 +105,14 @@ V_GCS             defs 2            ; GC: collections so far
 V_NFREE           defs 2            ; GC: cells free after the last one
 V_GENSYM          defs 2            ; gensym counter
 V_RAND            defs 2            ; random state
+V_COREROM         defs 1            ; this ROM's number
+V_LIBROM          defs 1            ; the library ROM's number, 0 = none
+V_LIBDISP         defs 2            ; the library's dispatcher
+V_LIBBKT          defs 2            ; the library's symbol hash table
+V_LIBFN           defs 2            ; the library function being called
+V_RCBC            defs 2            ; trampoline: BC in passing
+V_INSRC           defs 1            ; reader: 0 the keyboard, 1 library text
+V_SRCPTR          defs 2            ; reader: next character of library text
 V_S1              defs 2            ; scratch for routines that call nothing
 V_S2              defs 2
 V_S3              defs 2
@@ -137,6 +149,8 @@ HDR_STRING        equ #04C2         ; data: pointer to [len lo][len hi][chars]
 HDR_SUBR          equ #04CA         ; ROM: [hdr][code][min][max]
 HDR_FSUBR         equ #04CE         ; ROM: [hdr][code] -- a special form
 HDR_NOFN          equ #04D2         ; ROM: a symbol entry with no function
+HDR_LSUBR         equ #04D6         ; data: its entry in the library ROM
+HDR_AUTOLOAD      equ #04DA         ; data: its definition's text in the library ROM
 FREEMARK          equ #04FE
 HDR_RAW_L         equ #C0
 
