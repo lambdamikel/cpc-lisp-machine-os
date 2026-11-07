@@ -90,7 +90,11 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   call `lnum_read`/`lnum_print`; a token too big for a fixnum reads as a
   float. `/` gives a fixnum only for a whole quotient of fixnums. Graphics
   and other natives taking integers round floats (`lint_hl`).
-* **Still to come**: vectors, `&key`, `format`, `unwind-protect`,
+* **`format`** (`lib/format.asm`): `t` or `nil` as the destination; ~A ~S
+  ~D ~C ~% ~& ~~, with a width (~5D pads left, ~8A right). `nil` prints
+  into TOKBUF through `to_string_ix` (255 characters at most). On the
+  screen a lone LF in output is a new line (`putc` adds the CR).
+* **Still to come**: vectors, `&key`, `unwind-protect`,
   the 6128's extra RAM, speed; maybe `*print-case*` (all output is upper
   case, as in CL).
 

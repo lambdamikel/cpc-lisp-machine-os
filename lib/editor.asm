@@ -540,8 +540,12 @@ ed_where:
 ;; ---------------------------------------------------------------------------
 ;; parentheses
 
-;; ed_indent -> A = the blanks a new line starts with
+;; ed_indent -> A = the blanks a new line starts with: none inside a string
 ed_indent:
+    ld a,(V_EDSTR)
+    or a
+    ld a,0
+    ret nz
     ld a,(V_EDDEPTH)
     or a
     ret z

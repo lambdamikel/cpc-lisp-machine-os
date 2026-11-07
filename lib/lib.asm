@@ -755,6 +755,7 @@ lf_nreconc:
     include "fed.asm"
     include "disc.asm"
     include "float.asm"
+    include "format.asm"
     include "libtab.asm"
 
 lib_end:

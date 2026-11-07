@@ -356,12 +356,14 @@ lf_pprint:
 ;; (prin1-to-string object), (princ-to-string object): up to 255 characters
 ;@ PRIN1-TO-STRING 1 1 lf_prin1_to_string
 lf_prin1_to_string:
-    ld ix,prin1
-    jr to_string
+    ld ix,l_prin1
+    jr to_string_ix
 ;@ PRINC-TO-STRING 1 1 lf_princ_to_string
 lf_princ_to_string:
-    ld ix,princ
-to_string:
+    ld ix,l_princ
+;; to_string_ix: IX = a routine of this ROM, which prints -> HL = what it
+;; printed, as a string (255 characters at most). HL goes to it.
+to_string_ix:
     ld de,(V_OUTPTR)
     push de
     ld de,(V_OUTEND)
@@ -381,7 +383,7 @@ to_string:
     ld (V_OUTEND),de
     ld de,0
     ld (V_OUTCNT),de
-    call CORECALL
+    call lcall_ix
     ld hl,(V_OUTCNT)
     ld bc,(V_OUTPTR)
     pop de
@@ -403,6 +405,12 @@ to_string:
     sub TOKBUF and #FF
     ld c,a
     jp lstr_result
+l_prin1:
+    ld ix,prin1
+    jp CORECALL
+l_princ:
+    ld ix,princ
+    jp CORECALL
 
 ;; (read-from-string string): the first object in it
 ;@ READ-FROM-STRING 1 1 lf_read_from_string

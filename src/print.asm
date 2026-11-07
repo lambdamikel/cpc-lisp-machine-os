@@ -23,6 +23,16 @@ putc:
     or a
     jr nz,.mem
     pop af
+    cp 10                       ; LF on the screen: a new line, so a CR
+    jp nz,TXT_OUTPUT            ; first unless in column 1 already
+    push hl
+    call TXT_GET_CURSOR
+    ld a,h
+    pop hl
+    dec a
+    ld a,13
+    call nz,TXT_OUTPUT
+    ld a,10
     jp TXT_OUTPUT
 .mem:
     cp 3
