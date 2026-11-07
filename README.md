@@ -21,7 +21,7 @@ The core ROM boots to `LISP>` in MAME on the 464 and the 6128 (ROM 0,
 replacing BASIC), with integers, floats, symbols, conses, strings, characters,
 closures, special variables, `defmacro` and backquote, `block`/`catch`,
 `labels`/`flet`, `setf`, tail calls, ESC to break, and a mark-and-sweep GC.
-Also `format` (~A ~S ~D ~% ...), `&key`, `unwind-protect` and vectors.
+Also `format` (CL's directives, `~{~}` and `~[~]` included), `&key`, `unwind-protect` and vectors.
 
 The library comes in three more ROMs. The first has graphics (`plot`,
 `draw`, `test`, ...), `sound`, keys, the text screen, strings and characters

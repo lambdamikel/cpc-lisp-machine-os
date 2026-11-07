@@ -386,9 +386,43 @@ on `copy-structure` (**2**).
 | `(peek-char)` `(unread-char c)` | the next key, left to be read again; c read next | 1 |
 | `(listen)` | T if a key is waiting | 1 |
 | `(y-or-n-p [message arg...])` `(yes-or-no-p ...)` | asks; T for y, NIL for n | 3 |
-| `(format dest control arg...)` | dest `t` (the screen) or `nil` (a string); `~A` `~S` `~D` `~C` `~%` `~&` `~~`, a width: `~5D` pads on the left, `~8A` on the right. **Type `~` as CTRL + 2** | 2 |
+| `(format dest control arg...)` | dest `t` (the screen) or `nil` (a string, 255 characters at most); the directives below. **Type `~` as CTRL + 2** | 2 |
 
 All output is upper case for symbols.
+
+### format directives
+
+A directive is `~`, up to five parameters separated by commas (a number,
+`'c` for a character, `V` to take it from the next argument, `#` for how
+many arguments are left), the modifiers `:` and `@`, and a letter in
+either case.
+
+| Directive | |
+|---|---|
+| `~A` `~S` | princ / prin1. `~mincol,,,padcharA` pads on the right, `~@A` on the left; `~:A` prints NIL as `()` |
+| `~D` `~B` `~O` `~X` | an integer in base 10, 2, 8, 16. `~mincol,padchar,commachar,intervalD`; `~@D` always a sign, `~:D` commas: `(format nil "~:D" 12345)` is `"12,345"`. A whole float (`40000.0`) prints as an integer; anything else as `~A` |
+| `~nR` | base n (2-36), then `~D`'s parameters |
+| `~R` `~:R` | in words: `"one thousand nine hundred eighty-four"`, `"...eighty-fourth"` |
+| `~@R` `~:@R` | Roman numerals (1-3999): `MCMLXXXIV`; old style without IV, IX: `IIII` |
+| `~w,d,,,padF` | fixed point, d digits after the point (rounded half up), at least w wide: `(format nil "~8,3F" 2.5)` is `"   2.500"`. Without d as `print` shows it (`7` as `7.0`); `~@F` a sign always |
+| `~E` `~G` | as `~F` without d |
+| `~d,,w,pad$` | money: `~$` is `~,2F` |
+| `~C` | a character; `~@C` as `#\c` |
+| `~P` | `s` unless the argument is 1; `~:P` looks at the argument before again (`"~D item~:P"`); `~@P` `y` / `ies` |
+| `~%` `~&` `~\|` `~~` | newline, fresh line, page (on the CPC: clears the screen), tilde; `~n%` n of them |
+| `~colnum,colincT` | on to column colnum (or past it to the next colinc); `~n@T` n blanks |
+| `~n*` `~n:*` `~n@*` | skip n arguments (1), back n (1), go to argument n (0) |
+| `~?` `~@?` | the next argument is a control string, its arguments the list after it (`~?`) or the arguments left (`~@?`) |
+| `~{...~}` | the body for a list's elements, taking as many as it uses each time: `(format nil "~{~A~^, ~}" '(a b c))` is `"A, B, C"`. `~:{` a list of lists, one each time; `~@{` the arguments left; `~:@{` both; `~n{` at most n times; `~:}` at least once |
+| `~[a~;b~;c~]` | clause n, n the argument (or `~n[`); `~:;` before the last makes it the default |
+| `~:[false~;true~]` | by whether the argument is NIL |
+| `~@[...~]` | if the argument is true, the clause (which then takes it); else nothing |
+| `~(...~)` | lower case; `~:(` Each Word Capitalised; `~@(` the first word; `~:@(` UPPER CASE (128 characters at most inside) |
+| `~^` | stop here if no arguments are left: ends a `~{` iteration (or the whole format) |
+| `~` newline | the newline and the blanks after it are left out, to break a long control string; `~:` keeps the blanks, `~@` the newline |
+
+Not there: `~<...~>` (justification), `~/name/`, `~:C`'s names, `~E`'s
+exponent form.
 
 ## Files
 
@@ -537,8 +571,7 @@ then use cells like your own; the names cost nothing until then.
 - Hash tables do not grow their buckets.
 - Strings that functions build are at most 255 characters.
 - Multi-dimensional arrays, `loop` with keywords (the extended LOOP),
-  `format` directives beyond `~A ~S ~D ~C ~% ~& ~~`, streams, and CLOS are
-  not there.
+  `format`'s `~<...~>`, streams, and CLOS are not there.
 - A macro call keeps its first expansion (displacing): a macro that
   expands differently each time -- reading a global, say -- is not
   expanded again.

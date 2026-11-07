@@ -36,6 +36,7 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
       `&key` (defaults, `((:keyword var))`, unknown keys ignored), `&aux`,
       destructuring
 - [x] `block`, `return-from`, `return`, `catch`, `throw`, `unwind-protect`
+      (its cleanups run however the form is left: a throw, an error, ESC)
 - [x] `flet`, `labels`
 - [x] `setf` on `car` `cdr` `first` `rest` `second` `cadr` `nth`
       `symbol-value` `symbol-function` `symbol-plist` `get` `char` `aref`
@@ -168,9 +169,12 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 
 - **Floats:** `/` `round` `ceiling` `float` `floatp` `sqrt` `exp` `sin` `cos`
   `tan` `log` `atan` `expt` and the constant `pi`
-- **Output:** `format` with `t` or `nil`: `~A` `~S` `~D` `~C` `~%` `~&` `~~`,
-  with widths. The CPC has no `~` key: it is **CTRL + 2** (the firmware's
-  own key table; in MAME, Right Alt + 2)
+- **Output:** `format` with `t` or `nil` and CL's directives: `~A` `~S`
+  `~D` `~B` `~O` `~X` `~R` (radix, words, ordinals, Roman) `~F` `~E` `~G`
+  `~$` `~C` `~P` `~%` `~&` `~|` `~~` `~T` `~*` `~?` `~{~}` `~[~;~]` `~(~)`
+  `~^` and `~` newline, with parameters (`V`, `#`, `'c`) and the `:` `@`
+  modifiers -- all but `~<~>`. The CPC has no `~` key: it is **CTRL + 2**
+  (the firmware's own key table; in MAME, Right Alt + 2)
 - **Sorting:** `sort`, `stable-sort` (lists and vectors, `:key`)
 - **Lists:** `member` `assoc` `rassoc` (with `:test`, `:test-not`, `:key`),
   `reverse` `nreverse` (lists, strings, vectors)
@@ -267,6 +271,12 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
          remove, delete, substitute (native now: 4-14x faster)
    - [x] Multiple values
    - [x] `defstruct`, hash tables, `defsetf`, `type-of`, `typep`
+   - [x] Errors can be caught (`ignore-errors`, `handler-case`);
+         `unwind-protect`'s cleanups run on errors and ESC too
+   - [x] `format`: all of CL's directives but `~<~>`
+   - [ ] Files as streams: `open`, `close`, `with-open-file`, reading and
+         printing to a stream
+   - [ ] The extended `loop` (`for`, `collect`, `sum`...)
    - [ ] `|...|` symbols in the reader
 5. [x] **More graphics and sound**: circles, discs, boxes, XOR drawing,
        text windows, text at the graphics cursor, envelopes, the sound

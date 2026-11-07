@@ -142,10 +142,9 @@ local function directives()
 end
 
 -- Typing is several frames a key; CPC text is CR LF. natkeyboard's coded
--- strings use {ENTER}; braces in the text itself are escaped as {{ and }}.
+-- strings use {ENTER}; a brace that starts no code it knows is typed as it
+-- is ("{{" is not an escape: it typed two).
 local function coded(s)
-  s = s:gsub("{", "\1"):gsub("}", "\2")
-  s = s:gsub("\1", "{{"):gsub("\2", "}}")
   return s
 end
 

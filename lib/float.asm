@@ -1226,20 +1226,98 @@ FL_LAST  equ V_FBUF+10          ; the last digit that is not 0
 FL_TRIES equ V_FBUF+11
 
 ln_print:
-    call fl_arg
-    ld a,(V_FA+4)
-    or a
+    call fl_digits
     jr nz,.nz
     ld hl,fl_s_zero
     jp fl_puts
 .nz:
-    ld hl,V_FA+3
-    bit 7,(hl)
-    jr z,.pos
-    res 7,(hl)
+    jp p,.pos
     ld a,"-"
     call lputc
 .pos:
+    ld a,(FL_K)                 ; 10^-3 <= x < 10^7: plain
+    add a,3
+    cp 10
+    jr nc,.sci
+    ld a,(FL_K)
+    bit 7,a
+    jr nz,.small
+    inc a                       ; k+1 digits, the point, the rest
+    ld b,a
+    ld hl,V_FBUF
+    call fl_digs
+    ld a,(FL_K)
+    jr .frac
+.small:                         ; 0.00ddd
+    ld hl,fl_s_zero
+    call fl_puts2
+    ld a,(FL_K)
+    cpl                         ; -k-1 zeros
+    or a
+    jr z,.z0
+    ld b,a
+.zl:
+    ld a,"0"
+    call lputc
+    djnz .zl
+.z0:
+    ld a,(FL_LAST)
+    inc a
+    ld b,a
+    ld hl,V_FBUF
+    jp fl_digs
+.sci:                           ; d.ddde-k
+    ld a,(V_FBUF)
+    call lputc
+    xor a
+    call .frac
+    ld a,"e"
+    call lputc
+    ld a,(FL_K)
+    ld l,a
+    add a,a
+    sbc a,a
+    ld h,a
+    add hl,hl
+    inc hl
+    CORE print_fixnum
+    ret
+;; .frac: A = the index of the last digit printed: the point, then the
+;; digits after it up to the last that is not 0, or one 0
+.frac:
+    push af
+    ld a,"."
+    call lputc
+    pop af
+    ld b,a
+    ld a,(FL_LAST)
+    sub b
+    jr z,.f0
+    jr c,.f0
+    ld e,b
+    ld d,0
+    ld hl,V_FBUF+1
+    add hl,de
+    ld b,a
+    jp fl_digs
+.f0:
+    ld a,"0"
+    jp lputc
+
+;; fl_digits: HL = a number -> its nine significant digits at V_FBUF (as
+;; characters), its decimal exponent in FL_K, the index of the last digit
+;; that is not 0 in FL_LAST. Z if it is zero (and nothing set); else NZ,
+;; and M if it is negative.
+fl_digits:
+    call fl_arg
+    ld a,(V_FA+4)
+    or a
+    ret z
+    ld hl,V_FA+3
+    ld a,(hl)
+    and #80
+    push af                     ; the sign
+    res 7,(hl)
     ld a,(V_FA+4)               ; k = (exponent - 129) * 77 / 256, rounded down
     sub 129
     ld e,a
@@ -1327,74 +1405,158 @@ ln_print:
 .lastd:
     ld a,b
     ld (FL_LAST),a
-    ld a,(FL_K)                 ; 10^-3 <= x < 10^7: plain
-    add a,3
-    cp 10
-    jr nc,.sci
+    pop af
+    or 1                        ; NZ; M if negative
+    ret
+
+;; fl_fixed: HL = a number, B = how many digits after the point (80 at
+;; most), C bit 0: no point and nothing after it (a whole number), bit 1: a
+;; "+" if it is not negative, bit 2: commas between the whole part's
+;; thousands -> it printed in fixed point, rounded (half up)
+fl_fixed:
+    ld a,b
+    cp 81
+    jr c,.b
+    ld b,80
+.b:
+    push bc
+    call fl_digits
+    pop bc
+    jr nz,.nz
+    xor a                       ; zero: digits all 0, k = 0
+    ld (FL_K),a
+    jr .zero
+.nz:
+    jp p,.r
+    set 3,c                     ; negative
+.r:
+    ld a,(FL_K)                 ; n = k + 1 + B digits stay
+    inc a
+    add a,b
+    bit 7,a
+    jr nz,.zero                 ; none: it rounds to 0
+    cp 9
+    jr nc,.print                ; all nine
+    ld e,a
+    ld d,0
+    ld hl,V_FBUF
+    add hl,de
+    ld a,(hl)                   ; the first digit dropped
+    push af
+    push hl
+    ld a,9
+    sub e
+.cl:
+    ld (hl),"0"
+    inc hl
+    dec a
+    jr nz,.cl
+    pop hl
+    pop af
+    cp "5"
+    jr c,.print
+.up:                            ; one more in the last digit kept
+    ld a,l
+    cp V_FBUF and #FF
+    jr z,.top
+    dec hl
+    ld a,(hl)
+    inc a
+    ld (hl),a
+    cp "9"+1
+    jr c,.print
+    ld (hl),"0"
+    jr .up
+.top:                           ; 9.99 -> 10.0: a digit more
+    ld a,"1"
+    ld (V_FBUF),a
+    ld hl,FL_K
+    inc (hl)
+    jr .print
+.zero:
+    ld hl,V_FBUF
+    ld a,9
+.zl:
+    ld (hl),"0"
+    inc hl
+    dec a
+    jr nz,.zl
+.print:
+    ld a,"-"
+    bit 3,c
+    jr nz,.sg
+    bit 1,c
+    jr z,.int
+    ld a,"+"
+.sg:
+    call lputc
+.int:
     ld a,(FL_K)
     bit 7,a
-    jr nz,.small
-    inc a                       ; k+1 digits, the point, the rest
-    ld b,a
-    ld hl,V_FBUF
-    call fl_digs
-    ld a,(FL_K)
-    jr .frac
-.small:                         ; 0.00ddd
-    ld hl,fl_s_zero
-    call fl_puts2
-    ld a,(FL_K)
-    cpl                         ; -k-1 zeros
-    or a
-    jr z,.z0
-    ld b,a
-.zl:
+    jr z,.whole
     ld a,"0"
     call lputc
-    djnz .zl
-.z0:
-    ld a,(FL_LAST)
-    inc a
-    ld b,a
-    ld hl,V_FBUF
-    jp fl_digs
-.sci:                           ; d.ddde-k
-    ld a,(V_FBUF)
+    jr .point
+.whole:
+    ld d,a                      ; D = digits still to come in the whole part
+    ld e,0                      ; E = the digit's index
+.w:
+    ld a,e
+    call fl_dig
     call lputc
-    xor a
-    call .frac
-    ld a,"e"
+    ld a,d
+    or a
+    jr z,.point
+    bit 2,c
+    jr z,.nc
+.m3:
+    sub 3
+    jr z,.cm
+    jr nc,.m3
+    jr .nc
+.cm:
+    ld a,","
     call lputc
-    ld a,(FL_K)
-    ld l,a
-    add a,a
-    sbc a,a
-    ld h,a
-    add hl,hl
-    inc hl
-    CORE print_fixnum
-    ret
-;; .frac: A = the index of the last digit printed: the point, then the
-;; digits after it up to the last that is not 0, or one 0
-.frac:
-    push af
+.nc:
+    inc e
+    dec d
+    jr .w
+.point:
+    bit 0,c
+    ret nz
     ld a,"."
     call lputc
-    pop af
-    ld b,a
-    ld a,(FL_LAST)
-    sub b
-    jr z,.f0
-    jr c,.f0
-    ld e,b
-    ld d,0
-    ld hl,V_FBUF+1
-    add hl,de
-    ld b,a
-    jr fl_digs
-.f0:
+    ld a,b
+    or a
+    ret z
+    ld a,(FL_K)
+    inc a
+    ld e,a
+.f:
+    ld a,e
+    call fl_dig
+    call lputc
+    inc e
+    djnz .f
+    ret
+
+;; fl_dig: A = a digit's index (signed) -> A = the digit; "0" outside 0-8
+fl_dig:
+    cp 9
+    jr nc,.z
+    push hl
+    ld hl,V_FBUF
+    add a,l
+    ld l,a
+    jr nc,.n
+    inc h
+.n:
+    ld a,(hl)
+    pop hl
+    ret
+.z:
     ld a,"0"
-    jp lputc
+    ret
 
 ;; fl_digs: B digits from HL
 fl_digs:
