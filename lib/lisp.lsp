@@ -370,29 +370,82 @@
 ;;; Types
 
 (defun type-of (x)
-  (cond ((null x) 'null) ((integerp x) 'fixnum) ((floatp x) 'single-float)
+  (cond ((null x) 'null) ((eq x t) 'boolean) ((integerp x) 'fixnum)
+        ((floatp x) 'single-float) ((keywordp x) 'keyword)
         ((symbolp x) 'symbol) ((consp x) 'cons) ((stringp x) 'string)
         ((characterp x) 'character) ((%struct-type x)) ((vectorp x) 'vector)
         ((functionp x) 'function) (t t)))
 
 (defun typep (x type)
-  (case type
-    ((t) t)
-    ((nil) nil)
-    ((integer fixnum) (integerp x))
-    ((float single-float double-float) (floatp x))
-    (number (numberp x))
-    (symbol (symbolp x))
-    (keyword (keywordp x))
-    (cons (consp x))
-    (list (listp x))
-    (null (null x))
-    (atom (atom x))
-    (string (stringp x))
-    (character (characterp x))
-    (vector (vectorp x))
-    (function (functionp x))
-    (otherwise (%struct-is x type))))
+  (if (consp type)
+      (%typep-list x (car type) (cdr type))
+      (case type
+        ((t) t)
+        ((nil) nil)
+        ((integer fixnum rational) (integerp x))
+        ((float single-float double-float short-float long-float) (floatp x))
+        ((number real) (numberp x))
+        (bit (or (eql x 0) (eql x 1)))
+        (symbol (symbolp x))
+        (keyword (keywordp x))
+        (boolean (or (eq x t) (null x)))
+        (cons (consp x))
+        (list (listp x))
+        (null (null x))
+        (atom (atom x))
+        ((string simple-string) (stringp x))
+        ((character base-char standard-char) (characterp x))
+        ((vector array) (or (vectorp x) (stringp x)))
+        (simple-vector (vectorp x))
+        (sequence (or (listp x) (vectorp x) (stringp x)))
+        ((function compiled-function) (functionp x))
+        (structure-object (if (%struct-type x) t nil))
+        (otherwise
+         (let ((d (get type '%deftype)))
+           (if d (typep x (funcall d)) (%struct-is x type)))))))
+
+(defun %typep-list (x head args)
+  (case head
+    (or (some (lambda (ty) (typep x ty)) args))
+    (and (every (lambda (ty) (typep x ty)) args))
+    (not (not (typep x (car args))))
+    (member (if (member x args) t nil))
+    (eql (eql x (car args)))
+    (satisfies (if (funcall (car args) x) t nil))
+    (mod (and (integerp x) (<= 0 x) (< x (car args))))
+    ((integer fixnum float single-float real number)
+     (and (typep x head) (%in-range x (car args) (cadr args))))
+    (otherwise
+     (let ((d (get head '%deftype)))
+       (if d (typep x (apply d args)) (typep x head))))))
+
+(defun %in-range (x lo hi)
+  (and (cond ((or (null lo) (eq lo '*)) t) ((consp lo) (> x (car lo)))
+             (t (>= x lo)))
+       (cond ((or (null hi) (eq hi '*)) t) ((consp hi) (< x (car hi)))
+             (t (<= x hi)))))
+
+(defmacro deftype (name args &body body)
+  `(progn (setf (get ',name '%deftype) (lambda ,args ,@body)) ',name))
+
+(defmacro check-type (place type)
+  `(unless (typep ,place ',type)
+     (error "~S is not of type ~S" ,place ',type)))
+
+(defmacro typecase (key &body clauses)
+  (let ((k (gensym)))
+    `(let ((,k ,key))
+       (cond ,@(mapcar (lambda (c)
+                         (cons (if (member (car c) '(t otherwise)) t
+                                   `(typep ,k ',(car c)))
+                               (or (cdr c) '(nil))))
+                       clauses)))))
+
+(defmacro etypecase (key &body clauses)
+  (let ((k (gensym)))
+    `(let ((,k ,key))
+       (typecase ,k ,@clauses
+         (otherwise (error "~S fits no clause of etypecase" ,k))))))
 
 ;;; Macros
 

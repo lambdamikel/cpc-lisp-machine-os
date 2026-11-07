@@ -364,10 +364,15 @@ on `copy-structure` (**2**).
 
 ## Types
 
-`(type-of x)` (`fixnum`, `single-float`, `symbol`, `null`, `cons`,
-`string`, `character`, `vector`, `function`, a structure's name);
-`(typep x type)` for those and `integer`, `float`, `number`, `keyword`,
-`list`, `atom`, `t`, `nil` (**3**).
+All in library ROM 3.
+
+| | |
+|---|---|
+| `(type-of x)` | `null` `boolean` `fixnum` `single-float` `keyword` `symbol` `cons` `string` `character` `vector` `function`, or a structure's name (`hash-table` for a hash table) |
+| `(typep x type)` | a type name: those, and `t` `nil` `integer` `rational` `float` `number` `real` `bit` `list` `atom` `array` `simple-vector` `sequence` `structure-object`, a structure's name, a `deftype`; or a list: `(or ...)` `(and ...)` `(not type)` `(member x...)` `(eql x)` `(satisfies f)` `(mod n)`, `(integer lo hi)` (also `float`, `real`, `number`; `*` for no bound, `(n)` for n itself left out) |
+| `(deftype name lambda-list body...)` | a new type name: body returns the type it stands for, `(deftype small () '(integer 0 9))` |
+| `(check-type place type)` | an error unless the value is of the type |
+| `(typecase key (type form...)... [(otherwise form...)])` | the forms of the first clause whose type key is of; `etypecase`: an error if none fits |
 
 ## Input and output
 

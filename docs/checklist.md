@@ -217,7 +217,9 @@ lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
   `values-list`
 - **Structures, hash tables, types:** `defstruct` `defsetf`
   `make-hash-table` `clrhash` `maphash` `hash-table-count`
-  `hash-table-p` `hash-table-test` `type-of` `typep`
+  `hash-table-p` `hash-table-test` `type-of` `typep` (compound types:
+  `or` `and` `not` `member` `eql` `satisfies` `mod`, ranges) `deftype`
+  `check-type` `typecase` `etypecase`
 
 ### The demo ROM
 

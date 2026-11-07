@@ -1,0 +1,35 @@
+LISP> (mapcar #'type-of (list nil t 1 1.5 :k 'a '(1) "s" #\c (vector 1) #'car (make-hash-table)))
+(NULL BOOLEAN FIXNUM SINGLE-FLOAT KEYWORD SYMBOL CONS STRING CHARACTER VECTOR FUNCTION HASH-TABLE)
+LISP> (defstruct point x y)
+POINT
+LISP> (type-of (make-point))
+POINT
+LISP> (list (typep 5 'integer) (typep 5 '(integer 0 9)) (typep 10 '(integer 0 9)) (typep 5 '(integer (5) *)))
+(T T NIL NIL)
+LISP> (list (typep 'a '(or integer symbol)) (typep 1.5 '(and number (not integer))) (typep 3 '(member 1 2 3)) (typep 2 '(eql 2)))
+(T T T T)
+LISP> (list (typep 4 '(satisfies evenp)) (typep 7 '(mod 8)) (typep 8 '(mod 8)) (typep "x" 'sequence) (typep #(1) 'array))
+(T T NIL T T)
+LISP> (list (typep nil 'boolean) (typep 0 'bit) (typep (make-point) 'point) (typep (make-point) 'structure-object) (typep (make-hash-table) 'hash-table))
+(T T T T T)
+LISP> (deftype small () '(integer 0 9))
+SMALL
+LISP> (deftype vec-of (n) `(and vector (satisfies (lambda (v) (= (length v) ,n)))))
+VEC-OF
+LISP> (list (typep 3 'small) (typep 30 'small) (typep '(3) '(or small cons)))
+(T NIL T)
+LISP> (defun f (x) (check-type x integer) (* x 2))
+F
+LISP> (f 4)
+8
+LISP> (f 'a)
+Error: A is not of type INTEGER
+LISP> (defun g (x) (typecase x (integer 'int) ((or string symbol) 'name) (t 'other)))
+G
+LISP> (mapcar #'g '(1 "s" a 1.5))
+(INT NAME NAME OTHER)
+LISP> (etypecase 1.5 (integer 1))
+Error: 1.5 fits no clause of etypecase
+LISP> (typecase 5 (string 1))
+NIL
+LISP> 
