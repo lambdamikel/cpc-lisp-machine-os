@@ -125,7 +125,8 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 - **Graphics:** `plot` `plotr` `draw` `drawr` `move` `mover` `test` `testr`
   `origin` `clg` `graphics-pen` `graphics-paper` `xpos` `ypos`, and
   `circle` `disc` (filled) `box` `fill-box` `ink-mode` (0 normal, 1 XOR,
-  2 AND, 3 OR, as BASIC 1.1's)
+  2 AND, 3 OR, as BASIC 1.1's) `flood-fill` `symbol` (user-defined
+  characters 240-255)
 - **Sound:** `sound` (channels, period, duration, volume, envelopes, noise:
   BASIC's SOUND), `envelope` (ENV) `tone-envelope` (ENT, negative number
   repeats) `release` `sound-check` (SQ) `sound-hold` `sound-continue`
@@ -272,8 +273,8 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
    - [x] PlayCity's six channels (on the card: `(playcity t)`), checked
          in MAME by recording and measuring the notes; LambdaSpeak speech
          and singing (`say`)
-   - [ ] Still: user-defined characters (SYMBOL), flood fill (the 464's
-         firmware has none)
+   - [x] User-defined characters (`symbol`, 240-255) and `flood-fill`
+         (a paint bucket of its own: the 464's firmware has no fill)
 6. [x] **A demo ROM** with example programs: `(demo)` lists them --
        pictures (shapes, a rose in floats, a spiral, XOR moire, a bouncing
        ball, the chaos game, a sketcher on the cursor keys), Ode to Joy,

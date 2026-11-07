@@ -54,6 +54,10 @@ boot:
     ld (hl),0
     ldir
     pop hl
+    ld de,-127
+    add hl,de
+    ld (V_UDG),hl               ; 128 bytes for user-defined characters
+    dec hl
     ld (V_MEMTOP),hl
     ; which machine: &BD3D is a FIRM JUMP (&EF) only on a 464
     ld hl,EDIT_6128

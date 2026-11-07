@@ -439,6 +439,8 @@ BASIC. A `pen` argument sets the graphics pen first; it stays set.
 | `(box x1 y1 x2 y2 [pen])` | the edges | 1 |
 | `(fill-box x1 y1 x2 y2 [pen])` | filled | 1 |
 | `(ink-mode n)` | 0 normal, 1 XOR, 2 AND, 3 OR. A disc or a box drawn twice with XOR is gone again | 1 |
+| `(flood-fill x y [pen])` | the area around (x, y) of its colour, up to any other colour, painted with pen -- a paint bucket, the same on every CPC (BASIC 1.1's FILL stops only at the pen's colour). A whole screen in mode 1 takes about half a minute | 1 |
+| `(symbol code row...)` | character code 240-255 drawn from up to eight rows, top first, each a byte (`#b00111100`): BASIC's SYMBOL, with SYMBOL AFTER 240 | 1 |
 
 ## Turtle graphics
 

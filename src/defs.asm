@@ -167,6 +167,8 @@ V_MVN             defs 1            ; multiple values: 0 none (one value), else
                                     ;   how many plus one, for V_MV1 (each call
                                     ;   clears it; VALUES, FLOOR... set it)
 V_TURTLE          defs 12           ; the library's turtle (lib/gfx.asm)
+V_UDG             defs 2            ; 128 bytes under the top: the matrices of
+                                    ;   characters 240-255 (the library's symbol)
 V_MFORM           defs 2            ; eval: the call form ev_cons is on (a macro
                                     ;   call is rewritten to cache its expansion)
 V_S1              defs 2            ; scratch for routines that call nothing
