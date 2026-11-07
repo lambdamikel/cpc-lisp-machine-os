@@ -210,9 +210,24 @@ new part.
 [ ] (dir)                            T1.LSP and T2.LSP, the same size
 
 A photo of the screen is as good as ticks.
+(Checked on the 464, 2026-11-07: all as above.)
 
 
-15. Getting BASIC back
+15. Build 5743: the line editor
+-------------------------------
+[ ] (dotimes (i 30) (print i))   then, at the bottom of the screen, type a
+    line longer than the screen is wide:
+    (list 'aaaaaaaaaa 'bbbbbbbbbb 'cccccccccc 'dddddddddd)
+                                     it goes on at the next row, the screen
+                                     scrolling once -- not a row a key
+[ ] (mode 2), then a line longer than 80 characters:
+    (format nil "~{~A~}" (loop for i below 100 collect (mod i 10)))
+    then SHIFT + up to the first row of the digits, and COPY held down
+                                     the copy goes on at the start of the
+                                     next row: ...789 then 0123...
+
+
+16. Getting BASIC back
 ----------------------
 Switch the CPC off, then on the PC:
 

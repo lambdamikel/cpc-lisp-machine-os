@@ -360,9 +360,10 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
 * Slots since 2026-11-07 (afternoon): 0 LISPLIB2 (ROM 5), 1 vector head
   (ROM 1), 2 Parados (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0),
   5 LISPLIB (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6). All five Lisp
-  ROMs must come from one build: re-flash them together. Flashed: build 4326
+  ROMs must come from one build: re-flash them together. Flashed: build 5743
   (2026-11-07 night: catchable errors, all of format, compound types,
-  file streams, the extended loop). Mike keeps the CPC off: flash each build that passes the
+  file streams -- checked on the 464 through Parados --, the extended
+  loop, the line editor's wrap and copy fixes). Mike keeps the CPC off: flash each build that passes the
   tests on both machines, no need to ask. Everything may be replaced **except
   Parados and the LS AI ROM**. `tools/card.py lisp` re-flashes the three
   Lisp ROMs (it checks the CPC is off and refuses slots 2 and 6);
