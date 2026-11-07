@@ -371,10 +371,11 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
 * Slots since 2026-11-07 (afternoon): 0 LISPLIB2 (ROM 5), 1 vector head
   (ROM 1), 2 Parados (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0),
   5 LISPLIB (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6). All five Lisp
-  ROMs must come from one build: re-flash them together. Flashed: build 5743
+  ROMs must come from one build: re-flash them together. Flashed: build 8423
   (2026-11-07 night: catchable errors, all of format, compound types,
   file streams -- checked on the 464 through Parados --, the extended
-  loop, the line editor's wrap and copy fixes). Mike keeps the CPC off: flash each build that passes the
+  loop, the line editor's wrap and copy fixes, faster apply/mapcar,
+  string streams, |symbols|, ~<). Mike keeps the CPC off: flash each build that passes the
   tests on both machines, no need to ask. Slot 1 (the vector head) may become a sixth
   Lisp ROM -- for the byte-code machine (Mike, 2026-11-07: "the vector head
   can go ... use the space instead for common lisp"). Everything may be replaced **except
