@@ -103,6 +103,14 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   at once: `fl_lend` lends a second 2 KB below the first, `fl_release`
   gives both back when neither is open (block space became 11/64 of the
   heap for that). A stream is `#S(FILE-STREAM name direction open-p)`.
+  String streams (`lib/lisp2.lsp`, demo part): `#S(STRING-OUTPUT-STREAM
+  chunks)` -- a printer prints into TOKBUF (mode 1) and `so_back` pushes
+  the text as a string chunk -- and `#S(STRING-INPUT-STREAM string index)`
+  read through V_INSRC 2, the index stored back by `si_back`. The natives
+  tell the kinds apart by slot count (`so_kind`: 2, 3; a file stream has
+  4). `*standard-output*` is a builtin special (S_STDOUT), NIL = screen.
+  `so_kind` keeps IX: `so_from`/`si_from` hold their return in it, and a
+  CORE call inside once sent it astray (the machine reset).
 * **The RAM disc** (`lib/ramdisc.asm`): drive `M:` in the 6128's second
   64 KB, one linear space read and written a byte at a time through the
   gate array (configurations &C4-&C7 map a bank at &4000-&7FFF, &C0 maps

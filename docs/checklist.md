@@ -249,7 +249,11 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
    - [x] ESC: a tap that falls inside a garbage collection is caught too
    - [x] `funcall` without building an argument list (28% faster on a
          built-in, 11% on a closure)
-   - [ ] `apply` and `mapcar` without the general `bind`
+   - [x] `apply`, `mapcar`, `funcall` (as a function) and the library's
+         calls (sort's predicate, `:test`, `:key`) lay calls out on the
+         stack: no argument lists. Closures through `mapcar` a third
+         faster, builtins twice, `apply` of a lambda 3.3x, `sort` 40%;
+         a multiply that stops when the smaller factor runs out
    - [ ] More from the profiler (the core has ~840 bytes free again: some
          rarely used functions moved to library ROM 2)
    - [x] `pprint` fills data -- a list that is not a call, and anything
@@ -288,6 +292,9 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
          `return`, `always` `never` `thereis`, `initially` `finally`,
          `named`, destructuring -- expanded by native code (library ROM
          2) once
+   - [x] String streams (`with-output-to-string`,
+         `with-input-from-string`, `make-string-output-stream`...) and
+         `*standard-output*` (printers without a stream, `format t`)
    - [ ] `|...|` symbols in the reader
 5. [x] **More graphics and sound**: circles, discs, boxes, XOR drawing,
        text windows, text at the graphics cursor, envelopes, the sound

@@ -464,10 +464,6 @@
   `(let ((,(car spec) (open ,@(cdr spec))))
      (unwind-protect (progn ,@body) (close ,(car spec)))))
 
-(defun streamp (x) (%struct-is x 'file-stream))
-(defun open-stream-p (s) (%struct-ref s 3 'file-stream))
-(defun input-stream-p (s) (eq (%struct-ref s 2 'file-stream) :input))
-(defun output-stream-p (s) (eq (%struct-ref s 2 'file-stream) :output))
 (defun probe-file (name)
   (when (car (%catch-errors (%open name nil))) (%close nil) name))
 

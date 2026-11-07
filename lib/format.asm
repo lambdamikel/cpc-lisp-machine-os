@@ -93,12 +93,60 @@ lf_format:
     ld de,S_T
     or a
     sbc hl,de
-    jr nz,.file
-    call fmt_run                ; T: the screen
+    add hl,de
+    jr nz,.dest
+    ld hl,(S_STDOUT+SY_VALUE)   ; T: *standard-output*, the screen if NIL or T
+    ld a,h
+    or l
+    jr z,.screen
+    or a
+    sbc hl,de
+    add hl,de
+    jr z,.screen
+.dest:
+    push hl
+    ld c,HDR_STRUCT and #FF
+    CORE is_typed
+    jr nz,.nots
+    CORE vec_data               ; two slots: a string output stream
+    ld a,c
+    cp 2
+    jr z,.sstream
+.nots:
+    pop hl
+    jr .file
+.screen:
+    call fmt_run
     jp lnil
 .string:
     ld ix,fmt_run
     jp to_string_ix
+.sstream:                       ; the text made as for NIL, then onto the
+    ld ix,fmt_run               ;   stream's list (slot 1)
+    call to_string_ix
+    pop de                      ; the stream
+    push de
+    push hl
+    ex de,hl
+    CORE vec_data
+    inc hl
+    inc hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    pop hl
+    CORE cons
+    ex de,hl
+    pop hl
+    push de
+    CORE vec_data
+    inc hl
+    inc hl
+    pop de
+    ld (hl),e
+    inc hl
+    ld (hl),d
+    jp lnil
 .file:                          ; a stream: the file open for output
     ld a,(V_FILES)
     and 2

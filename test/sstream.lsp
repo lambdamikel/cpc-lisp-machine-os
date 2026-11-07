@@ -1,0 +1,18 @@
+(with-output-to-string (s) (princ "hello " s) (prin1 'world s) (terpri s) (format s "~D+~D" 1 2))
+(with-output-to-string (*standard-output*) (print 'x) (princ "y") (format t "~A" 'z))
+*standard-output*
+(let ((s (make-string-output-stream))) (write-string "ab" s) (write-char #\c s) (list (get-output-stream-string s) (get-output-stream-string s)))
+(with-input-from-string (s "(1 2) foo \"bar\" 42") (list (read s) (read s) (read s) (read s) (read s nil :end)))
+(with-input-from-string (s "line one
+line two") (list (read-line s) (read-line s) (read-line s nil :eof)))
+(with-input-from-string (s "abc") (list (read-char s) (peek-char nil s) (read-char s) (progn (unread-char #\b s) (read-char s)) (read-char s) (read-char s nil :e) (listen s)))
+(with-input-from-string (s "x y") (read s) (with-input-from-string (t2 "inner") (read t2)))
+(with-input-from-string (s "abc def") (read s) (read-line s))
+(mapcar #'streamp (list (make-string-output-stream) (make-string-input-stream "a") 5))
+(list (input-stream-p (make-string-input-stream "a")) (output-stream-p (make-string-output-stream)) (open-stream-p (make-string-output-stream)))
+(read (make-string-output-stream))
+(print 1 (make-string-input-stream "a"))
+(with-output-to-string (s) (pprint '(defun f (x) (list x x)) s))
+(format nil "[~A]" (with-output-to-string (s) (dotimes (i 5) (format s "~D," i))))
+(print 'still-screen)
+(format t "screen ~A~%" 'too)

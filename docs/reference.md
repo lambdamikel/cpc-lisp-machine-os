@@ -406,8 +406,11 @@ All in library ROM 3.
 ## Input and output
 
 Every printer takes a stream after its object, and every reader a stream
-first: `NIL` or `T` (or nothing) is the screen and the keyboard, a stream
-from `open` is a file (see *Files*). The readers' `eof-error-p` (T) and
+first: a stream from `open` is a file (see *Files*), and string streams
+are below. For a printer, nothing or `NIL` means `*standard-output*`,
+whose value is `NIL` (the screen) unless you bind it; `T` is the screen.
+`(format t ...)` prints to `*standard-output*` too. For a reader, nothing,
+`NIL` or `T` is the keyboard. The readers' `eof-error-p` (T) and
 `eof-value` (NIL) say what the end of a file gives: an error, or that
 value -- `(read-line s nil nil)` is NIL at the end.
 
@@ -432,6 +435,18 @@ value -- `(read-line s nil nil)` is NIL at the end.
 
 All output is upper case for symbols. A file being loaded is not
 `read`'s input: `(read)` in it reads the keyboard.
+
+**String streams** (**demo** ROM, with the natives in **1**):
+
+| | |
+|---|---|
+| `(with-output-to-string (var) body...)` | what body prints to var, as a string: `(with-output-to-string (s) (format s "~D-~D" 1 2))` is `"1-2"`. `(with-output-to-string (*standard-output*) ...)` catches what prints without a stream |
+| `(make-string-output-stream)` `(get-output-stream-string s)` | the same in two steps; get empties the stream |
+| `(with-input-from-string (var string) body...)` | var reads the string: `read`, `read-line`, `read-char`, `peek-char`, `unread-char`, `listen` |
+| `(make-string-input-stream string [start])` | |
+| `(streamp x)` `(input-stream-p s)` `(output-stream-p s)` `(open-stream-p s)` | for file and string streams |
+
+A string output stream's text is at most 255 characters.
 
 ### format directives
 
@@ -636,9 +651,9 @@ then use cells like your own; the names cost nothing until then.
   `:start`/`:end`/`:from-end`; `delete` and friends are not destructive.
 - Hash tables do not grow their buckets.
 - Strings that functions build are at most 255 characters.
-- Multi-dimensional arrays, `format`'s `~<...~>`, string streams
-  (`with-output-to-string`),
-  `*standard-output*`, and CLOS are not there. One file is open for input
+- Multi-dimensional arrays, `format`'s `~<...~>`, `*standard-input*`,
+  `*terminal-io*` and CLOS are not there; `*standard-output*` is NIL for
+  the screen, not a stream object. One file is open for input
   and one for output at most.
 - A macro call keeps its first expansion (displacing): a macro that
   expands differently each time -- reading a global, say -- is not

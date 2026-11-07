@@ -152,6 +152,7 @@ symtab:
     SYMENTRY TIMES,"*",HDR_SUBR,subr_times,0,255,SF_SPECIAL,2 ; and the last value
     SYMBOL STAR2,"**",SF_SPECIAL,2       ;   the REPL printed, the one before,
     SYMBOL STAR3,"***",SF_SPECIAL,2      ;   and the one before that
+    SYMBOL STDOUT,"*STANDARD-OUTPUT*",SF_SPECIAL,2  ; printers with no stream
     SUBR ONEPLUS,"1+",subr_inc,1,1
     SUBR ONEMINUS,"1-",subr_dec,1,1
     SUBR TRUNCATE,"TRUNCATE",subr_truncate,1,2

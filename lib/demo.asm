@@ -28,6 +28,7 @@ lib_names:
 
     include "common.asm"
 ;@lisp loop.lsp
+;@lisp lisp2.lsp
 ;@lisp demo.lsp
     include "demotab.asm"
 

@@ -13,8 +13,13 @@ so_m_closed:  db "the stream is not open",0
 so_m_eof:     db "end of file",0
 
 ;; so_from: B = 0, or more and HL = &the stream argument; DE kept ->
-;; output goes to the stream. The state to put back is left on the stack
-;; under the caller's return: the caller ends with jp so_back.
+;; output goes to the stream: none or NIL is *standard-output*'s value,
+;; NIL or T there the screen; a file stream the file open for output; a
+;; string output stream TOKBUF, its text pushed onto the stream at the end.
+;; What to put back is left on the stack under the caller's return: the
+;; stream, V_OUTPTR, V_OUTEND, V_OUTCNT, and V_OUTMODE (bit 7: switched to
+;; the file, bit 6: to a string) with V_OUTCOL. The caller ends with jp
+;; so_back.
 so_from:
     pop ix
     push de
@@ -24,38 +29,175 @@ so_from:
     jr z,.d
     NEXTARG
 .d:
-    ld bc,0                     ; nothing to put back
-    call so_file
+    ld a,d
+    or e
+    jr nz,.given
+    ld de,(S_STDOUT+SY_VALUE)
+.given:
+    call so_kind                ; A = 0 screen, 1 file, 2 string
+    pop hl                      ; the caller's DE
+    push de                     ; the stream
+    ld de,(V_OUTPTR)
+    push de
+    ld de,(V_OUTEND)
+    push de
+    ld de,(V_OUTCNT)
+    push de
+    ex de,hl                    ; DE as the caller had it
+    ld bc,0
+    or a
     jr z,.go
-    ld a,(V_FILES)
-    and 2
-    jr z,so_closed
-    ld a,(V_OUTMODE)
-    or #80
-    ld c,a
+    ld l,a                      ; the kind
     ld a,(V_OUTCOL)
     ld b,a
+    ld a,(V_OUTMODE)
+    ld c,a
+    ld a,l
+    cp 2
+    jr z,.string
+    jr nc,.closed               ; an input stream
+    ld a,(V_FILES)              ; a file
+    and 2
+    jr z,.closed
+    set 7,c
     ld a,3
     ld (V_OUTMODE),a
     ld a,(SO_FCOL)
     ld (V_OUTCOL),a
+    jr .go
+.string:
+    set 6,c
+    ld a,1
+    ld (V_OUTMODE),a
+    ld hl,TOKBUF
+    ld (V_OUTPTR),hl
+    ld hl,TOKBUF+255
+    ld (V_OUTEND),hl
+    ld hl,0
+    ld (V_OUTCNT),hl
+    xor a
+    ld (V_OUTCOL),a
 .go:
-    pop de
     push bc
     jp (ix)
+.closed:                        ; the stream, for the message
+    ld hl,6
+    add hl,sp
+    LDHLI
+    ex de,hl
+    jp so_closed
 
 ;; so_back: the output as it was before so_from. HL kept
 so_back:
     pop bc
+    bit 6,c
+    jr nz,.string
     bit 7,c
-    ret z
-    ld a,(V_OUTCOL)
+    jr z,.drop
+    ld a,(V_OUTCOL)             ; the file's column, for next time
     ld (SO_FCOL),a
     ld a,c
-    and #7F
+    and #3F
     ld (V_OUTMODE),a
     ld a,b
     ld (V_OUTCOL),a
+.drop:
+    pop de
+    pop de
+    pop de
+    pop de
+    ret
+.string:                        ; TOKBUF up to V_OUTPTR: the text printed
+    push bc
+    push hl
+    ld hl,(V_OUTPTR)
+    ld de,TOKBUF
+    or a
+    sbc hl,de
+    ld b,h
+    ld c,l
+    ex de,hl
+    CORE make_string
+    ld de,10                    ; the stream, under the value, the mode and
+    ex de,hl                    ;   three words
+    add hl,sp
+    LDHLI
+    ex de,hl
+    call so_chunk
+    pop hl
+    pop bc
+    pop de
+    ld (V_OUTCNT),de
+    pop de
+    ld (V_OUTEND),de
+    pop de
+    ld (V_OUTPTR),de
+    pop de
+    ld a,c
+    and #3F
+    ld (V_OUTMODE),a
+    ld a,b
+    ld (V_OUTCOL),a
+    ret
+
+;; so_chunk: HL = a string, DE = a string output stream -> pushed onto its
+;; list (slot 1). The stream is held elsewhere, where the GC sees it.
+so_chunk:
+    push de
+    push hl
+    ex de,hl
+    CORE vec_data               ; HL = &slot 0
+    inc hl
+    inc hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    pop hl
+    CORE cons
+    ex de,hl                    ; DE = the list with it
+    pop hl
+    push de
+    CORE vec_data               ; (the cons may have moved the slots)
+    inc hl
+    inc hl
+    pop de
+    ld (hl),e
+    inc hl
+    ld (hl),d
+    ret
+
+;; so_kind: DE = a stream designator -> A = 0 the screen (NIL or T), 1 a
+;; file stream, 2 a string output stream, 3 a string input stream (a
+;; structure of two, three slots: the type and its text; and its index).
+;; BC, DE, HL kept
+so_kind:
+    call so_file
+    ld a,0
+    ret z
+    push hl
+    push bc
+    push de
+    push ix                     ; (CORE takes IX: so_from and si_from keep
+                                ;   their return in it)
+    ex de,hl
+    ld c,HDR_STRUCT and #FF
+    push hl
+    CORE is_typed
+    pop hl
+    ld a,1
+    jr nz,.done
+    CORE vec_data               ; BC = its slots and type
+    ld a,c
+    cp 2
+    jr z,.done                  ; 2: a string output stream
+    cp 3
+    jr z,.done                  ; 3: a string input stream
+    ld a,1
+.done:
+    pop ix
+    pop de
+    pop bc
+    pop hl
     ret
 
 so_closed:
@@ -95,9 +237,12 @@ sd_nth:
     ret
 
 ;; si_from: HL = &the arguments (stream eof-error-p eof-value), B = how
-;; many -> input comes from the stream. Left on the stack under the
-;; caller's return: eof-value, eof-error-p, the state to put back; the
-;; caller ends with jp si_back, or jp si_eof at the end of the file.
+;; many -> input comes from the stream: the keyboard (NIL, T), the file
+;; open for input, or a string input stream's text, from its index on. Left
+;; on the stack under the caller's return: eof-value, eof-error-p,
+;; V_SRCOBJ, V_SRCPTR, the stream, and V_INSRC (bit 7: switched, bit 6: to
+;; a string) with V_PEEK. The caller ends with jp si_back, or jp si_eof at
+;; the end.
 si_from:
     pop ix
     ld a,2
@@ -108,29 +253,62 @@ si_from:
     ld de,S_T
     call sd_nth
     push de                     ; eof-error-p
+    ld de,(V_SRCOBJ)
+    push de
+    ld de,(V_SRCPTR)
+    push de
     xor a
     ld de,NIL
     call sd_nth                 ; DE = the stream
+    push de
     ld bc,0
-    call so_file
-    jr nz,.file
+    call so_kind
+    or a
+    jr nz,.stream
     ld a,(V_INSRC)              ; the keyboard: as it is, unless a file is
-    or a                        ;   being loaded (or library text read)
+    or a                        ;   being loaded (or text read)
     jr z,.go
     xor a
     ld e,a                      ; E = the source, D = its pushed-back char
     ld d,a
     jr .switch
-.file:
-    ld a,(V_FILES)
+.stream:
+    cp 3
+    jr z,.string
+    cp 2
+    jp z,so_closed              ; an output stream
+    ld a,(V_FILES)              ; a file
     rra
-    jr nc,so_closed
+    jp nc,so_closed
     ld e,3
     ld a,(SO_FPEEK)
     ld d,a
+    jr .switch
+.string:
+    ex de,hl
+    push ix
+    CORE vec_data               ; HL = &slot 0
+    pop ix
+    inc hl
+    inc hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)                   ; the string
+    inc hl
+    ld (V_SRCOBJ),de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)                   ; the index, a fixnum
+    ex de,hl
+    sra h
+    rr l
+    ld (V_SRCPTR),hl
+    ld bc,#0040                 ; C bit 6: a string
+    ld de,2                     ; E = the source, D = nothing pushed back
 .switch:
     ld a,(V_INSRC)
     or #80
+    or c
     ld c,a
     ld a,(V_PEEK)
     ld b,a
@@ -145,26 +323,60 @@ si_from:
 ;; si_back: the input as it was before si_from. HL kept
 si_back:
     pop bc
-    pop de
-    pop de
     bit 7,c
-    ret z
+    jr z,.drop
     ld a,(V_INSRC)
     cp 3
-    jr nz,.put
+    jr nz,.str
     ld a,(V_PEEK)               ; the file's, for next time
     ld (SO_FPEEK),a
+    jr .put
+.str:
+    bit 6,c
+    jr z,.put
+    push hl                     ; a string stream: where it got to, back
+    push bc                     ;   in its slot 2 (one less for a character
+    ld hl,(V_SRCPTR)            ;   pushed back)
+    ld a,(V_PEEK)
+    or a
+    jr z,.at
+    dec hl
+.at:
+    add hl,hl
+    inc hl
+    ex de,hl                    ; DE = the index, a fixnum
+    ld hl,4
+    add hl,sp
+    LDHLI                       ; the stream
+    push de
+    CORE vec_data
+    pop de
+    ld bc,4
+    add hl,bc
+    ld (hl),e
+    inc hl
+    ld (hl),d
+    pop bc
+    pop hl
 .put:
     ld a,c
-    and #7F
+    and #3F
     ld (V_INSRC),a
     ld a,b
     ld (V_PEEK),a
+.drop:
+    pop de                      ; the stream
+    pop de
+    ld (V_SRCPTR),de
+    pop de
+    ld (V_SRCOBJ),de
+    pop de
+    pop de
     ret
 
-;; si_eof: the end of the file: eof-value, or an error if eof-error-p
+;; si_eof: the end of the input: eof-value, or an error if eof-error-p
 si_eof:
-    ld hl,2
+    ld hl,8
     add hl,sp
     ld a,(hl)
     inc hl
@@ -181,9 +393,12 @@ si_eof:
     ld de,UNBOUND
     jp lib_error
 
-;; si_infile: Z if the input is the file now
+;; si_infile: Z if the input is a file or a string stream now (read a
+;; character at a time), NZ for the keyboard
 si_infile:
     ld a,(V_INSRC)
+    cp 2
+    ret z
     cp 3
     ret
 
@@ -475,10 +690,34 @@ lf_unread_char:
     srl h
     rr l
     ld c,l
-    call so_file                ; (BC kept)
+    call so_kind                ; A = the kind (BC, DE kept)
+    cp 3
+    jr z,.str
+    or a
     ld a,c
     jr z,.key
     ld (SO_FPEEK),a
+    jp lnil
+.str:                           ; a string stream: its index back one
+    ex de,hl
+    CORE vec_data
+    ld bc,4
+    add hl,bc
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    ld a,d
+    or a
+    jr nz,.back
+    ld a,e
+    cp 3
+    jp c,lnil                   ; at 0 already
+.back:
+    dec de
+    dec de
+    ld (hl),d
+    dec hl
+    ld (hl),e
     jp lnil
 .key:
     call KM_CHAR_RETURN
