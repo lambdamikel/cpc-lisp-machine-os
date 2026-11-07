@@ -188,6 +188,20 @@
         ((minusp x) (if (floatp x) -1.0 -1))
         (t x)))
 
+;;; Questions
+
+(defun y-or-n-p (&optional message &rest args)
+  (loop (when message (fresh-line) (apply #'format t message args))
+        (princ " (y or n) ")
+        (let ((c (char-downcase (read-char))))
+          (princ c)
+          (terpri)
+          (cond ((char= c #\y) (return t))
+                ((char= c #\n) (return nil))))))
+
+(defun yes-or-no-p (&optional message &rest args)
+  (apply #'y-or-n-p message args))
+
 ;;; Music
 
 ;; (note 'c4) -> the period SOUND wants: a letter, then # (sharp) or B

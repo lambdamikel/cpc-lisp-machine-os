@@ -149,6 +149,9 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
   `alphanumericp` `graphic-char-p` `digit-char-p` `digit-char`
 - **Printing to and from strings:** `pprint` `prin1-to-string`
   `princ-to-string` `read-from-string`
+- **Input and output, CL's names:** `read-line` `read-char`
+  `read-char-no-hang` `peek-char` `unread-char` `listen` `write`
+  `write-string` `write-line` `fresh-line`
 - **Function editor:** `ed`
 - **Files** (through the firmware's cassette vectors, so with any disc ROM;
   tested with AMSDOS in MAME, tape not tried): `load`, `save` (what you
@@ -196,6 +199,7 @@ lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
   `assoc-if` `rassoc-if` `mapcan` `maplist` `adjoin` `union`
   `intersection` `set-difference` `subsetp`
 - **Numbers:** `expt` `gcd` `signum`
+- **Questions:** `y-or-n-p` `yes-or-no-p`
 - **Music:** `note` (`'c4` is middle C, 239, `'a4` 440 Hz, 142 -- the AY
   runs at 1 MHz; `#` sharp, `B` flat), `play` (a list of notes, `R` a rest, `(G4 40)` a
   longer one)
@@ -217,7 +221,7 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
 ## Tools
 
 - [x] `tools/build.sh`: the three ROMs, and MAME romsets with the core at ROM 0
-- [x] `tools/test.sh`: 23 regression tests, on a 464 or a 6128
+- [x] `tools/test.sh`: 24 regression tests, on a 464 or a 6128
 - [x] `tools/run.sh`: type a file at the REPL in MAME; screenshots,
       timings, an instruction profile (`tools/profile.py`)
 - [x] `tools/mame.sh`: a MAME window to play in, with a disc

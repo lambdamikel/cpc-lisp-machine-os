@@ -379,6 +379,99 @@ lf_wait_key:
     call KM_WAIT_CHAR_L
     jp lchar
 
+;; Common Lisp's names for the keyboard (a stream argument is let be):
+;; read-char waits for a key, read-char-no-hang does not
+;@ READ-CHAR 0 4 lf_wait_key
+;@ READ-CHAR-NO-HANG 0 4 lf_inkey
+
+;; (peek-char) -> the next character typed, left to be read again
+;@ PEEK-CHAR 0 5 lf_peek_char
+lf_peek_char:
+    call KM_WAIT_CHAR_L
+    push af
+    call KM_CHAR_RETURN
+    pop af
+    jp lchar
+
+;; (unread-char char): it is the next one read
+;@ UNREAD-CHAR 1 2 lf_unread_char
+lf_unread_char:
+    NEXTARG
+    ex de,hl
+    push hl
+    CORE check_char
+    pop hl
+    srl h
+    rr l
+    srl h
+    rr l
+    ld a,l
+    call KM_CHAR_RETURN
+    jp lnil
+
+;; (listen) -> T if a key is waiting to be read
+;@ LISTEN 0 1 lf_listen
+lf_listen:
+    call KM_READ_CHAR_L
+    jp nc,lnil
+    call KM_CHAR_RETURN
+    jp lt
+
+;; (read-line) -> the line typed, with the line editor, as a string; ESC
+;; breaks. The rest of the line the REPL was reading is dropped.
+;@ READ-LINE 0 4 lf_read_line
+lf_read_line:
+    CORE edit_line
+    jr nc,.esc
+    ld hl,0                     ; the REPL's line is used up
+    ld (V_INPTR),hl
+    xor a
+    ld (V_PEEK),a
+    ld hl,LINEBUF
+    ld bc,0
+.l:
+    ld a,(hl)
+    or a
+    jr z,.e
+    inc hl
+    inc bc
+    jr .l
+.e:
+    CORE newline                ; as a terminal echoes RETURN
+    ld hl,LINEBUF
+    CORE make_string
+    ret
+.esc:
+    CORE input_break
+
+;; output, as CL: (fresh-line), (write-string s), (write-line s), (write x)
+;@ FRESH-LINE 0 1 lf_fresh_line
+lf_fresh_line:
+    CORE fresh_line
+    jp lnil
+;@ WRITE-STRING 1 2 lf_write_string
+lf_write_string:
+    LDHLI
+    push hl
+    CORE princ
+    pop hl
+    ret
+;@ WRITE-LINE 1 2 lf_write_line
+lf_write_line:
+    LDHLI
+    push hl
+    CORE princ
+    CORE newline
+    pop hl
+    ret
+;@ WRITE 1 255 lf_write
+lf_write:
+    LDHLI
+    push hl
+    CORE prin1
+    pop hl
+    ret
+
 ;; (key-down-p key-number) -> T while that key is held (BASIC's INKEY)
 ;@ KEY-DOWN-P 1 1 lf_key_down_p
 lf_key_down_p:

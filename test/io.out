@@ -1,0 +1,48 @@
+LISP> (read-line)
+hello world
+" hello world"
+LISP> (list (read-line) (read-line))
+first line
+second line
+(" first line" " second line")
+LISP> (progn (princ "Name? ") (read-line))
+Name? Mike
+" Mike"
+LISP> (length (read-line))
+
+1
+LISP> (read-char)
+#\x
+LISP> (progn (unread-char #\q) (read-char))
+#\q
+LISP> (listen)
+NIL
+LISP> (read-char-no-hang)
+NIL
+LISP> (list (peek-char) (read-char))
+(#\k #\k)
+LISP> (unread-char 5)
+Error: not a character: 5
+LISP> (y-or-n-p "Go on?")
+Go on? (y or n) y
+T
+LISP> (y-or-n-p)
+ (y or n) n
+NIL
+LISP> (write-string "abc")
+abc
+"abc"
+LISP> (write-line "def")
+def
+"def"
+LISP> (write '(1 "a" #\b))
+(1 "a" #\b)
+(1 "a" #\b)
+LISP> (fresh-line)
+NIL
+LISP> (read)
+  (a b . c)
+(A B . C)
+LISP> (+ 1 2)
+3
+LISP> 

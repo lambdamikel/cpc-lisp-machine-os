@@ -372,8 +372,16 @@ on `copy-structure` (**2**).
 | `(print x)` | a new line, x readably, a blank | core |
 | `(prin1 x)` `(princ x)` | readably / as text | core |
 | `(terpri)` `(write-char c)` | | core |
-| `(pprint x)` | broken up to fit the screen | 1 |
+| `(write x)` | as prin1 | 1 |
+| `(write-string s)` `(write-line s)` `(fresh-line)` | | 1 |
+| `(pprint x)` | broken up to fit the screen: code laid out, data (a list that is not a call, anything quoted) filled | 1 |
 | `(read)` | the next object typed | core |
+| `(read-line)` | the next line typed (with the line editor), as a string; ESC breaks | 1 |
+| `(read-char)` | the next key, waiting for it (`wait-key`) | 1 |
+| `(read-char-no-hang)` | the next key, or NIL (`inkey`) | 1 |
+| `(peek-char)` `(unread-char c)` | the next key, left to be read again; c read next | 1 |
+| `(listen)` | T if a key is waiting | 1 |
+| `(y-or-n-p [message arg...])` `(yes-or-no-p ...)` | asks; T for y, NIL for n | 3 |
 | `(format dest control arg...)` | dest `t` (the screen) or `nil` (a string); `~A` `~S` `~D` `~C` `~%` `~&` `~~`, a width: `~5D` pads on the left, `~8A` on the right. **Type `~` as CTRL + 2** | 2 |
 
 All output is upper case for symbols.
