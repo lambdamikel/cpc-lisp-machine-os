@@ -291,6 +291,104 @@
 
 (defun values-list (l) (apply #'values l))
 
+;;; setf on more places: (defsetf access update) -- (setf (access a...) v)
+;;; calls (update a... v). The core looks for the SETF property.
+
+(defmacro defsetf (access update)
+  `(progn (setf (get ',access 'setf) ',update) ',access))
+
+;;; Structures: (defstruct point x (y 0)), or (defstruct (point options) ...)
+;;; with :conc-name, :constructor, :predicate, :copier. make-point takes
+;;; the slots as keys; point-x reads one and setf writes it; point-p and
+;;; copy-point. An instance prints as #S(POINT 1 0).
+
+(defun %sym (&rest parts) (intern (apply #'concatenate 'string (mapcar #'string parts))))
+
+(defmacro defstruct (name &rest slots)
+  (let* ((opts (if (consp name) (cdr name)))
+         (name (if (consp name) (car name) name))
+         (conc (%sym name "-"))
+         (make (%sym "MAKE-" name))
+         (pred (%sym name "-P"))
+         (copy (%sym "COPY-" name))
+         (i 0) (forms nil))
+    (dolist (o opts)
+      (when (consp o)
+        (case (car o)
+          (:conc-name (setq conc (or (cadr o) "")))
+          (:constructor (setq make (cadr o)))
+          (:predicate (setq pred (cadr o)))
+          (:copier (setq copy (cadr o))))))
+    (when (stringp (car slots)) (pop slots))
+    (dolist (s slots)
+      (let ((acc (%sym conc (if (consp s) (car s) s))) (k (incf i)))
+        (push `(defun ,acc (s) (%struct-ref s ,k ',name)) forms)
+        (push `(setf (get ',acc 'setf) #'(lambda (s v) (%struct-set s ,k v ',name))) forms)))
+    `(progn
+       ,@(when make
+           `((defun ,make (&key ,@(mapcar #'(lambda (s) (if (consp s) (list (car s) (cadr s)) s)) slots))
+               (%make-struct ',name ,@(mapcar #'(lambda (s) (if (consp s) (car s) s)) slots)))))
+       ,@(when pred `((defun ,pred (x) (%struct-is x ',name))))
+       ,@(when copy `((defun ,copy (x) (copy-structure x))))
+       ,@(nreverse forms)
+       ',name)))
+
+;;; Hash tables: a structure (HASH-TABLE test count buckets), the buckets a
+;;; vector of alists; a key's bucket is its hash -- sxhash for EQUAL tables,
+;;; %eqhash for EQ and EQL ones -- modulo their number. A table does not
+;;; grow its buckets: :size says how many (16). gethash, %puthash (setf
+;;; gethash) and remhash are native (lib/structs.asm).
+
+(defun make-hash-table (&key (test 'eql) (size 16))
+  (%make-struct 'hash-table
+                (cond ((member test (list 'eq #'eq)) 'eq)
+                      ((member test (list 'equal #'equal 'equalp)) 'equal)
+                      (t 'eql))
+                0
+                (make-array (max 1 (min size 250)))))
+
+(defun hash-table-p (x) (%struct-is x 'hash-table))
+(defun hash-table-count (h) (%struct-ref h 2 'hash-table))
+(defun hash-table-test (h) (%struct-ref h 1 'hash-table))
+
+(defsetf gethash %puthash)
+
+(defun clrhash (h)
+  (fill (%struct-ref h 3 'hash-table) nil)
+  (%struct-set h 2 0 'hash-table)
+  h)
+
+(defun maphash (f h)
+  (let ((b (%struct-ref h 3 'hash-table)))
+    (dotimes (i (length b)) (dolist (e (aref b i)) (funcall f (car e) (cdr e))))))
+
+;;; Types
+
+(defun type-of (x)
+  (cond ((null x) 'null) ((integerp x) 'fixnum) ((floatp x) 'single-float)
+        ((symbolp x) 'symbol) ((consp x) 'cons) ((stringp x) 'string)
+        ((characterp x) 'character) ((%struct-type x)) ((vectorp x) 'vector)
+        ((functionp x) 'function) (t t)))
+
+(defun typep (x type)
+  (case type
+    ((t) t)
+    ((nil) nil)
+    ((integer fixnum) (integerp x))
+    ((float single-float double-float) (floatp x))
+    (number (numberp x))
+    (symbol (symbolp x))
+    (keyword (keywordp x))
+    (cons (consp x))
+    (list (listp x))
+    (null (null x))
+    (atom (atom x))
+    (string (stringp x))
+    (character (characterp x))
+    (vector (vectorp x))
+    (function (functionp x))
+    (otherwise (%struct-is x type))))
+
 ;;; Macros
 
 (defmacro pushnew (item place)

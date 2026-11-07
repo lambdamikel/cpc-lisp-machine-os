@@ -53,7 +53,13 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
       `multiple-value-prog1`, `multiple-value-setq`, `values-list`; `floor`
       `truncate` `round` `ceiling` return the remainder too, and the REPL
       prints every value
-- [ ] `defstruct`, hash tables
+- [x] `defstruct` (`:conc-name`, `:constructor`, `:predicate`, `:copier`,
+      slot defaults; accessors work with `setf`; instances print as
+      `#S(POINT 1 2)`), `copy-structure`, `type-of`, `typep`
+- [x] Hash tables: `make-hash-table` (`:test` `eq` `eql` `equal`, `:size`),
+      `gethash` (two values, `setf`), `remhash`, `clrhash`, `maphash`,
+      `hash-table-count`, `hash-table-p`, `sxhash`
+- [x] `defsetf`: `setf` on places the library or the user defines
 - [ ] `*print-case*` (all output is upper case, as in CL)
 
 ### Data types
@@ -88,7 +94,7 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 `progn` `prog1` `setq` `setf` `incf` `decf` `push` `pop` `let` `let*`
 `flet` `labels` `defun` `defmacro` `defvar` `defparameter` `defconstant`
 `block` `return-from` `return` `catch` `throw` `dolist` `dotimes` `loop`
-`declare` `the` `unwind-protect`
+`declare` `the` `unwind-protect` `multiple-value-list`
 
 ### Core ROM: functions
 
@@ -161,6 +167,9 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 - **Conversion:** `coerce` (to `list`, `vector`, `string`, `character`,
   `float`)
 - **Bits:** `logand` `logior` `logxor` `lognot` `ash`
+- **Multiple values:** `values`
+- **Structures and hashing:** `copy-structure` `gethash` `remhash` `sxhash`
+  (and the `%` functions `defstruct` and the hash tables use)
 - **Symbols, system:** `gensym` `intern` `remprop` `room`
 
 ### Library ROM 3: written in Lisp
@@ -185,6 +194,12 @@ lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
   sharp, `B` flat), `play` (a list of notes, `R` a rest, `(G4 40)` a
   longer one)
 - **Macros:** `pushnew` `psetq` `do` `do*`; the variable `*features*`
+- **Multiple values:** `multiple-value-bind` `nth-value`
+  `multiple-value-call` `multiple-value-prog1` `multiple-value-setq`
+  `values-list`
+- **Structures, hash tables, types:** `defstruct` `defsetf`
+  `make-hash-table` `clrhash` `maphash` `hash-table-count`
+  `hash-table-p` `hash-table-test` `type-of` `typep`
 
 ### The demo ROM
 
@@ -195,7 +210,7 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
 ## Tools
 
 - [x] `tools/build.sh`: the three ROMs, and MAME romsets with the core at ROM 0
-- [x] `tools/test.sh`: 21 regression tests, on a 464 or a 6128
+- [x] `tools/test.sh`: 22 regression tests, on a 464 or a 6128
 - [x] `tools/run.sh`: type a file at the REPL in MAME; screenshots,
       timings, an instruction profile (`tools/profile.py`)
 - [x] `tools/mame.sh`: a MAME window to play in, with a disc
@@ -235,7 +250,7 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
          `substitute`, `fill`
    - [ ] `:start`, `:end`, `:from-end` on the sequence functions
    - [x] Multiple values
-   - [ ] `defstruct`, hash tables
+   - [x] `defstruct`, hash tables, `defsetf`, `type-of`, `typep`
    - [ ] `|...|` symbols in the reader
 5. [x] **More graphics and sound**: circles, discs, boxes, XOR drawing,
        text windows, text at the graphics cursor, envelopes, the sound

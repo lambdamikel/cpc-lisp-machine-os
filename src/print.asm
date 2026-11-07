@@ -157,6 +157,8 @@ print_obj:
     jp z,lnum_print
     cp HDR_VECTOR and #FF
     jp z,print_vector
+    cp HDR_STRUCT and #FF
+    jp z,print_struct
     ld de,str_function
     cp HDR_CLOSURE and #FF
     jr z,.unread
@@ -388,9 +390,16 @@ abbrevs:
     dw 0
 
 ;; print_vector: HL = a vector, as #(a b c)
+print_struct:                   ; #S(type slot...)
+    push hl
+    ld a,"#"
+    call putc
+    ld a,"S"
+    jr print_vec2
 print_vector:
     push hl
     ld a,"#"
+print_vec2:
     call putc
     ld a,"("
     call putc

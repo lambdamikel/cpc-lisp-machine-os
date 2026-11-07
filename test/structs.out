@@ -1,0 +1,150 @@
+LISP> (defstruct point x (y 0))
+POINT
+LISP> (setq p (make-point :x 3))
+#S(POINT 3 0)
+LISP> (point-x p)
+3
+LISP> (point-y p)
+0
+LISP> (setf (point-y p) 7)
+7
+LISP> p
+#S(POINT 3 7)
+LISP> (point-p p)
+T
+LISP> (point-p 5)
+NIL
+LISP> (copy-point p)
+#S(POINT 3 7)
+LISP> (eq p (copy-point p))
+NIL
+LISP> (type-of p)
+POINT
+LISP> (typep p 'point)
+T
+LISP> (typep 3 'integer)
+T
+LISP> (point-x 5)
+Error: not the structure it should be: 5
+LISP> (defstruct (seg (:conc-name s-)) a b)
+SEG
+LISP> (s-a (make-seg :a 1 :b 2))
+1
+LISP> (incf (point-x p))
+4
+LISP> p
+#S(POINT 4 7)
+LISP> (setq h (make-hash-table))
+#S(HASH-TABLE EQL 0 #(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL))
+LISP> (setf (gethash 'a h) 1)
+1
+LISP> (setf (gethash 'b h) 2)
+2
+LISP> (gethash 'a h)
+1
+T
+LISP> (gethash 'z h)
+NIL
+NIL
+LISP> (gethash 'z h 'none)
+NONE
+NIL
+LISP> (hash-table-count h)
+2
+LISP> (setq e (make-hash-table :test 'equal))
+#S(HASH-TABLE EQUAL 0 #(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL))
+LISP> (setf (gethash "key" e) 'v1)
+V1
+LISP> (setf (gethash '(1 2) e) 'v2)
+V2
+LISP> (gethash "key" e)
+V1
+T
+LISP> (gethash (list 1 2) e)
+V2
+T
+LISP> (gethash "key" h)
+NIL
+NIL
+LISP> (remhash 'a h)
+T
+LISP> (gethash 'a h)
+NIL
+NIL
+LISP> (hash-table-count h)
+1
+LISP> (let ((r nil)) (maphash #'(lambda (k v) (push (list k v) r)) e) (length r))
+2
+LISP> (dotimes (i 100) (setf (gethash i h) (* i i)))
+NIL
+LISP> (gethash 77 h)
+5929
+T
+LISP> (hash-table-count h)
+101
+LISP> (clrhash h)
+#S(HASH-TABLE EQL 0 #(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL))
+LISP> (hash-table-count h)
+0
+LISP> (sxhash "abc")
+14434
+LISP> (= (sxhash "abc") (sxhash (copy-seq "abc")))
+T
+LISP> (setf (gethash 1.5 h) 'f)
+F
+LISP> (gethash 1.5 h)
+F
+T
+LISP> (defsetf my-car rplaca)
+MY-CAR
+LISP> (let ((c (list 1 2))) (setf (my-car c) 9) c)
+(9 2)
+LISP> (type-of 3)
+FIXNUM
+LISP> (type-of "s")
+STRING
+LISP> (type-of 'a)
+SYMBOL
+LISP> (type-of nil)
+NULL
+LISP> (type-of 1.5)
+SINGLE-FLOAT
+LISP> (type-of (vector))
+VECTOR
+LISP> p
+#S(POINT 4 7)
+LISP> (setq big (make-hash-table :test 'equal :size 32))
+#S(HASH-TABLE EQUAL 0 #(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL))
+LISP> (dotimes (i 200) (setf (gethash (format nil "k~D" i) big) i))
+NIL
+LISP> (hash-table-count big)
+200
+LISP> (gethash "k150" big)
+150
+T
+LISP> (dotimes (i 200) (remhash (format nil "k~D" i) big))
+NIL
+LISP> (hash-table-count big)
+0
+LISP> (gethash "k150" big)
+NIL
+NIL
+LISP> (setf (gethash 'x h 0) 5)
+5
+LISP> (gethash 'x h)
+5
+T
+LISP> (remhash 'nope h)
+NIL
+LISP> (gethash 1 5)
+Error: not a hash table: 5
+LISP> (remhash 1 5)
+Error: not a hash table: 5
+LISP> (dotimes (i 300) (setf (gethash i h) i))
+NIL
+LISP> (hash-table-count h)
+302
+LISP> (gethash 299 h)
+299
+T
+LISP> 

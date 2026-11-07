@@ -2648,12 +2648,57 @@ setf_place:
     push bc
     ret                         ; to the setter
 .macro:
+    ; not one of these: a SETF property (defsetf) names a function given
+    ; the place's arguments and the new value
+    push de
+    ex de,hl
+    ld de,S_SETF
+    call get_prop
+    pop de
+    jr nz,.expand
+    ex (sp),hl                  ; the setter on the stack, HL = the place
+    call cdr
+    call eval_args              ; the arguments' values, a new list
+    pop bc
+    pop de                      ; the new value
+    push bc
+    push hl
+    ex de,hl
+    ld de,NIL
+    call cons                   ; (value)
+    ex de,hl
+    pop hl
+    ld a,h
+    or l
+    jr z,.only
+    push hl
+.last:
+    ld c,l
+    ld b,h
+    CDRHL
+    ld a,h
+    or l
+    jr nz,.last
+    ld l,c
+    ld h,b
+    inc hl
+    inc hl
+    ld (hl),e                   ; (arg ... value)
+    inc hl
+    ld (hl),d
+    pop de
+    jr .apply
+.only:
+.apply:
+    pop hl
+    jp apply_list
+.expand:
     ; a macro form: expand it and try again
     pop hl
     call macroexpand1
     jr nc,.nomac
     pop de
-    jr setf_place
+    jp setf_place
 .nomac:
     pop de
 .bad:

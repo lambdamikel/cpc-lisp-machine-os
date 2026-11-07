@@ -124,6 +124,16 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
 * **`unwind-protect`** is a third frame kind (2) beside block and catch;
   `throw`/`return-from` run the cleanups of the frames they pass. An error
   or ESC does not: it goes straight to toplevel.
+* **Multiple values**: `values` (library) sets V_MVN/V_MV1/V_MV2/V_MVL;
+  `apply_core` clears V_MVN at every call's start; `multiple-value-list`
+  (a special form) takes them if the form's value is V_MV1 (else it is
+  one value). `floor`/`truncate` (core) and the library's roundings set
+  the remainder; the REPL prints every value.
+* **Structures**: HDR_STRUCT, a vector by another header (the GC marks it
+  as one, the printer shows `#S(...)`), element 0 the type. defstruct and
+  the hash tables (`lib/structs.asm`, `lisp.lsp`) are built on it.
+  `setf` on an unknown place calls the operator's SETF property with the
+  arguments and the value (`defsetf`).
 * **Vectors** (one-dimensional, `src/subrs.asm`): a typed cell
   (`HDR_VECTOR`) whose block holds the elements, a word each. Its header is
   "raw" (the data word is not a Lisp value), but `mark_value` and `rescan`

@@ -206,6 +206,8 @@ HDR_NOFN          equ #04D2         ; ROM: a symbol entry with no function
 HDR_LSUBR         equ #04D6         ; data: its entry in the library ROM
 HDR_AUTOLOAD      equ #04DA         ; data: its definition's text in the library ROM
 HDR_FLOAT         equ #04DE         ; data: pointer to [5][0][a firmware real]
+HDR_STRUCT        equ #04E6         ; a vector by another name: a structure,
+                                    ;   element 0 its type (defstruct, hash tables)
 FREEMARK          equ #04FE
 HDR_RAW_L         equ #C0
 

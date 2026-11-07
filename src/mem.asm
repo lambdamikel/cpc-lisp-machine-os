@@ -294,6 +294,8 @@ mark_value:
     jr nz,.cons                 ; a fixnum 576..639 looks like this too
     cp HDR_VECTOR and #FF
     jr z,.vector
+    cp HDR_STRUCT and #FF
+    jr z,.vector
     cp HDR_RAW_L
     jr nc,.next                 ; raw data, or a free cell
     LDHLI                       ; the data word is a Lisp value
@@ -507,6 +509,8 @@ rescan:
     bit 0,e
     jr nz,.cons                 ; a fixnum, not a header
     cp HDR_VECTOR and #FF
+    jr z,.vec
+    cp HDR_STRUCT and #FF
     jr z,.vec
     cp HDR_RAW_L
     jr nc,.cdone                ; raw data, or free
