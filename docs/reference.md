@@ -63,6 +63,7 @@ line being typed, with the CPC's keys:
 | TAB | indent a blank line to where Lisp would |
 | SHIFT + arrows, COPY | the copy cursor, as in BASIC |
 | `)` | shows its `(` for a moment (beeps if there is none) |
+| **CTRL + 2** | `~` (the CPC has no tilde key; in MAME: Right Alt + 2) |
 
 A continuation line starts indented Lisp-style.
 
@@ -101,6 +102,11 @@ The reader is Common Lisp's, mostly:
 | `; ...`, `#| ... |#` | comments |
 
 Not read: `#S(...)` (printed, not read back), `|odd symbols|`, `#.`, `#+`.
+
+**Typing `~`**: the CPC keyboard has no tilde. **CTRL + 2** types it --
+the firmware's own key table, so it works in the line editor, in `ed` and
+in the firmware's EDIT alike (in MAME, CTRL is Right Alt: Right Alt + 2).
+`format`'s directives need it: `(format t "~A~%" x)`.
 
 ## Data types
 
@@ -367,7 +373,7 @@ on `copy-structure` (**2**).
 | `(terpri)` `(write-char c)` | | core |
 | `(pprint x)` | broken up to fit the screen | 1 |
 | `(read)` | the next object typed | core |
-| `(format dest control arg...)` | dest `t` (the screen) or `nil` (a string); `~A` `~S` `~D` `~C` `~%` `~&` `~~`, a width: `~5D` pads on the left, `~8A` on the right | 2 |
+| `(format dest control arg...)` | dest `t` (the screen) or `nil` (a string); `~A` `~S` `~D` `~C` `~%` `~&` `~~`, a width: `~5D` pads on the left, `~8A` on the right. **Type `~` as CTRL + 2** | 2 |
 
 All output is upper case for symbols.
 

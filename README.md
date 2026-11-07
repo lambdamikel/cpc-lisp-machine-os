@@ -51,6 +51,9 @@ BASIC, or at any free number, where `|LISP` from BASIC starts it. The
 library ROMs go at any free numbers from 1 to 6, in either order, and must
 come from the same build as the core.
 
+**Typing a tilde** (`format`'s `~A`, `~%`...): the CPC has no `~` key --
+it is **CTRL + 2** (in MAME, Right Alt + 2).
+
 ## Documents
 
 * [`docs/reference.md`](docs/reference.md): the reference manual -- the
