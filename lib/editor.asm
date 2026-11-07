@@ -27,7 +27,6 @@ TXT_GET_WINDOW      equ #BB69
 TXT_CUR_ENABLE      equ #BB7B
 TXT_RD_CHAR         equ #BB60
 TXT_INVERSE         equ #BB9C
-KM_CHAR_RETURN      equ #BB0C
 
 ED_COL0   equ LIBSCR+16         ; the column the line starts in
 ED_VROW0  equ LIBSCR+17         ; its row plus the roll count

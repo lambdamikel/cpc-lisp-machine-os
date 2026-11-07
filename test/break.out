@@ -16,6 +16,12 @@ LISP> (do ((i 0 (+ i 0))) (nil) i)
 Error: break
 LISP> (dolist (x (let ((l (list 1 2))) (setf (cdr (cdr l)) l) l)) x)
 Error: break
+LISP> (defun churn () (loop (make-list 50)))
+CHURN
+LISP> (churn)
+Error: break
+LISP> (churn)
+Error: break
 LISP> (+ 3 4)
 7
 LISP> 

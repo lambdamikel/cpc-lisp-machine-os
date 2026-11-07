@@ -70,8 +70,8 @@ stays blank: note exactly what you see and switch off.
 [ ] (loop)                           runs forever; press ESC:
                                      Error: break
 
-  A very short tap of ESC can be missed during a garbage collection
-  (being fixed); press it again.
+  (The ROMs flashed on 2026-11-07 can miss a very short tap of ESC
+  during a garbage collection -- press it again. Fixed since.)
 
 
 6. Screen mode and colours

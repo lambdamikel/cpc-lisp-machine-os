@@ -9,6 +9,7 @@
 
 KM_WAIT_CHAR      equ #BB06
 KM_READ_CHAR      equ #BB09
+KM_CHAR_RETURN    equ #BB0C
 KM_TEST_KEY       equ #BB1E
 TXT_OUTPUT        equ #BB5A
 TXT_WR_CHAR       equ #BB5D

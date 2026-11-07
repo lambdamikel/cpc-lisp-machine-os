@@ -41,14 +41,30 @@ poll_break:
     dec (hl)
     pop hl
     ret nz
-;; poll_esc: is ESC down? Then break. All registers kept.
+;; poll_esc: was ESC pressed? Then break. All registers kept. A press
+;; puts ESC's character (&FC, then the break marker &EF) in the key buffer,
+;; so even a tap that came and went during a GC is seen: the first character
+;; waiting is looked at and put back if it is anything else. Held down, ESC
+;; is seen by KM TEST KEY too, behind typed-ahead keys.
 poll_esc:
     push af
     push bc
     push de
     push hl
+    call KM_READ_CHAR
+    jr nc,.key
+    cp #FC
+    jr z,.esc
+    cp #EF
+    jr z,.esc
+    call KM_CHAR_RETURN
+.key:
     ld a,KEY_ESC
     call KM_TEST_KEY
+    jr .test
+.esc:
+    or a                        ; NZ: A is &FC or &EF
+.test:
     pop hl
     pop de
     pop bc

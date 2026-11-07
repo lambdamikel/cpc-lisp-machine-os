@@ -156,7 +156,7 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
          and comparisons have a fast path for two integers; ESC is checked
          once per function body; plain lambda lists are bound straight
          from the stack. Together: `(fib 17)` 1103 → 641 frames, `sort` ~7×
-   - [ ] ESC: catch a tap that falls inside a garbage collection
+   - [x] ESC: a tap that falls inside a garbage collection is caught too
    - [ ] `funcall`/`apply` without building an argument list
    - [ ] More from the profiler; rarely used core functions moved to a
          library ROM to make room (the core has ~200 bytes free)

@@ -13,4 +13,9 @@
 !esc 100
 (dolist (x (let ((l (list 1 2))) (setf (cdr (cdr l)) l) l)) x)
 !esc 100
+(defun churn () (loop (make-list 50)))
+(churn)
+!esc 37
+(churn)
+!esc 61
 (+ 3 4)
