@@ -247,6 +247,11 @@ should see.
   `lib/ramdisc.asm` does the latter. Missing this ran CAS OUT DIRECT after
   every CAS OUT CHAR, and left AMSDOS writing broken files. The far call
   does hand the routine's flags back (it keeps them in AF').
+* **Library code: the CORE macro takes IX** (it passes the routine in it).
+  A routine keeping a frame in IX calls the core with SCORE, and saves IX
+  around any helper of its own that calls the core (lq_tolist did). And
+  **LDHLI takes A**: a flag kept in A does not survive it. Both cost a
+  debugging round each.
 * **A builtin symbol's name is in the core ROM**, which library code cannot
   read (it sees its own ROM at those addresses). Compare a builtin by
   address (`S_KW_KEY`...), and get a name through `CORE subr_string`
