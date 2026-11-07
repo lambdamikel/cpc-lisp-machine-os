@@ -53,8 +53,8 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   1 and 2) are up to four *parts*, each its own ROM: part 0
   (`lib/lib.asm`, LISPLIB.ROM) has graphics, sound, keys, the text screen,
   strings, the editors, pp and files; part 1 (`lib/lib2.asm`,
-  LISPLIB2.ROM) floats, `format` and the Lisp-defined functions and macros
-  (`lib/lisp.lsp`). `src/xrom.asm` explains the arrangement: the core finds
+  LISPLIB2.ROM) floats, `format`, `sort` (`lib/seq.asm`) and the
+  Lisp-defined functions and macros (`lib/lisp.lsp`). `src/xrom.asm` explains the arrangement: the core finds
   them by signature and build number (all ROMs come from one
   `tools/build.sh` run, and call each other by address), each says which
   part it is (header +22); calls cross through a trampoline in RAM using KL
@@ -115,9 +115,18 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   follow the elements, and a block-less vector (mid-allocation) is skipped.
   `make-array` (`:initial-element`), `vector`, `aref`/`svref` (also on
   strings) with `setf`, `elt`, `length`, `vectorp`, `#(...)` both ways.
+* **Speed** (2026-11-06): `tools/run.sh -p prof.txt` counts every
+  instruction fetched while lines run, `tools/profile.py prof.txt [-l]`
+  sums them by routine. Done so far: arguments that are constants or
+  variables skip `eval` (ev_cons), `FNBOUND` (a byte per symbol at &0300)
+  spares calls the flet/labels search, two-fixnum `+ - <`... skip
+  `nums_v`, ESC is polled per body (progn), not per eval, `sort` is native.
+  fib 17 went from 1103 to 778 frames. What is left is spread out: apply
+  conses the arguments into a list that bind takes apart again; the
+  interrupt-time firmware is ~8%.
 * **Still to come**:
-  the 6128's extra RAM, speed; maybe `*print-case*` (all output is upper
-  case, as in CL).
+  the 6128's extra RAM, more speed; maybe `*print-case*` (all output is
+  upper case, as in CL).
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
 same addresses as screen RAM. Screen access from ROM code goes through the
@@ -155,7 +164,7 @@ should see.
 ## Testing in MAME
 
     tools/build.sh                      assemble, splice into build/mame
-    tools/run.sh [-m 464|6128] [-s shot.png] file.lsp    type it, print the transcript
+    tools/run.sh [-m 464|6128] [-s shot.png] [-p prof.txt] file.lsp   type it, print the transcript
     tools/test.sh [-m 6128] [-u]        regression: test/*.lsp against test/*.out
     tools/mame.sh [-m 6128] [disc.mfi]  a MAME window to play in, with a disc
 
