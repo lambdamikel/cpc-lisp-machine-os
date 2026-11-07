@@ -1,6 +1,6 @@
-;; CPC Lisp -- the demo ROM, library part 3: programs in Lisp (demo.lsp),
-;; read from here the first time each is called; (demo) lists them. Like
-;; the other parts it may be left out. lib/lib.asm explains the parts.
+;; CPC Lisp -- the demo ROM, library part 3: the extended LOOP (loop.lsp)
+;; and programs in Lisp (demo.lsp), read from here the first time each is
+;; called; (demo) lists them. lib/lib.asm explains the parts.
 
     include "core.inc"
     include "macros.asm"
@@ -27,6 +27,7 @@ lib_names:
     db 0
 
     include "common.asm"
+;@lisp loop.lsp
 ;@lisp demo.lsp
     include "demotab.asm"
 

@@ -50,7 +50,7 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 - [x] Errors can be caught: `ignore-errors`, `handler-case`; `error` with a
       format string, `warn`, `assert`
 - [x] ESC breaks any running program, including loops over circular lists
-- [x] Mark-and-sweep garbage collector; about 7000 cells of 4 bytes, 512
+- [x] Mark-and-sweep garbage collector; about 6400-6660 cells of 4 bytes, 512
       symbols, strings and vectors in a compacted block space
 - [x] Multiple values: `values`, `multiple-value-list` (built in),
       `multiple-value-bind`, `nth-value`, `multiple-value-call`,
@@ -97,7 +97,7 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 `quote` `function` `lambda` `if` `when` `unless` `cond` `case` `and` `or`
 `progn` `prog1` `setq` `setf` `incf` `decf` `push` `pop` `let` `let*`
 `flet` `labels` `defun` `defmacro` `defvar` `defparameter` `defconstant`
-`block` `return-from` `return` `catch` `throw` `dolist` `dotimes` `loop`
+`block` `return-from` `return` `catch` `throw` `dolist` `dotimes` `%loop`
 `declare` `the` `unwind-protect` `multiple-value-list`
 
 ### Core ROM: functions
@@ -279,9 +279,15 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
    - [x] `format`: all of CL's directives but `~<~>`
    - [x] Files as streams: `open`, `close`, `with-open-file`,
          `probe-file`; every printer and reader (and `format`) takes a
-         stream; an input and an output file at once (block space is 5/32
+         stream; an input and an output file at once (block space is 11/64
          of the heap now, room for both buffers)
-   - [ ] The extended `loop` (`for`, `collect`, `sum`...)
+   - [x] The extended `loop`: `for` (in, on, across, from/to/below/
+         downto/by, =/then, hash-keys), `with`, `repeat`, `while`,
+         `until`, `collect` `append` `nconc` `sum` `count` `maximize`
+         `minimize` (`into`), `do`, `when`/`if`/`unless`/`else`/`and`,
+         `return`, `always` `never` `thereis`, `initially` `finally`,
+         `named`, destructuring -- expanded by native code (library ROM
+         2) once
    - [ ] `|...|` symbols in the reader
 5. [x] **More graphics and sound**: circles, discs, boxes, XOR drawing,
        text windows, text at the graphics cursor, envelopes, the sound

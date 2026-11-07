@@ -33,6 +33,7 @@ lib_names:
     include "structs.asm"
     include "seqfn.asm"
     include "card.asm"
+    include "loop.asm"
     include "lib2tab.asm"
 
 lib_end:

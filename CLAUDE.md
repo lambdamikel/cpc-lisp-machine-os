@@ -52,13 +52,16 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
 * **The library ROMs** (`lib/`, any numbers 1-6; MAME's ROM box makes them
   1 and 2) are up to four *parts*, each its own ROM: part 0
   (`lib/lib.asm`, LISPLIB.ROM) has graphics, sound, keys, the text screen,
-  strings and characters (`lib/strings.asm`), the editors, pp, files and
-  the RAM disc; part 1 (`lib/lib2.asm`, LISPLIB2.ROM) floats, `format`,
-  `sort` (`lib/seq.asm`), lists/sequences/`coerce` and what moved out of
-  the core (`lib/lists.asm`); part 2 (`lib/lib3.asm`, LISPLIB3.ROM) the
-  Lisp-defined functions and macros (`lib/lisp.lsp`) only; part 3
-  (`lib/demo.asm`, LISPDEMO.ROM) the demos (`lib/demo.lsp`), Lisp text
-  too. All four parts are used: a fifth needs NLIBS raised. `src/xrom.asm` explains the arrangement: the core finds
+  strings and characters (`lib/strings.asm`), the editors, pp, files, the
+  RAM disc and the printers and readers (`lib/streams.asm`); part 1
+  (`lib/lib2.asm`, LISPLIB2.ROM) floats, `format`, `sort` (`lib/seq.asm`),
+  lists/sequences/`coerce` and what moved out of the core
+  (`lib/lists.asm`), structures, the card, the LOOP expander
+  (`lib/loop.asm`); part 2 (`lib/lib3.asm`, LISPLIB3.ROM) the Lisp-defined
+  functions and macros (`lib/lisp.lsp`) only -- nearly full; part 3
+  (`lib/demo.asm`, LISPDEMO.ROM) `loop` (`lib/loop.lsp`) and the demos
+  (`lib/demo.lsp`), Lisp text too: new Lisp library text goes here. Space
+  (2026-11-07): core 234 bytes free, parts 0-3 763, 350, 263, ~9.6 K. All four parts are used: a fifth needs NLIBS raised. `src/xrom.asm` explains the arrangement: the core finds
   them by signature and build number (all ROMs come from one
   `tools/build.sh` run, and call each other by address), each says which
   part it is (header +22); calls cross through a trampoline in RAM using KL
@@ -98,7 +101,7 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   back on the stack under the caller's return -- the native ends with
   `jp so_back`/`si_back`/`si_eof`. An input and an output file may be open
   at once: `fl_lend` lends a second 2 KB below the first, `fl_release`
-  gives both back when neither is open (block space became 5/32 of the
+  gives both back when neither is open (block space became 11/64 of the
   heap for that). A stream is `#S(FILE-STREAM name direction open-p)`.
 * **The RAM disc** (`lib/ramdisc.asm`): drive `M:` in the 6128's second
   64 KB, one linear space read and written a byte at a time through the
@@ -148,6 +151,17 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   (a special form) takes them if the form's value is V_MV1 (else it is
   one value). `floor`/`truncate` (core) and the library's roundings set
   the remainder; the REPL prints every value.
+* **The extended LOOP**: `loop` is a macro (`lib/loop.lsp`, in the demo
+  part); a simple loop becomes the core's `%loop` special form, a keyword
+  loop goes to `%loop-expand` (`lib/loop.asm`, part 1, native: a Lisp
+  expander cost 2000 cells and 3 s an expansion). It parses the clauses
+  into lists in an IX frame and builds forms from byte templates
+  (`lp_build`: TQ_L/TQ_E a list, TQ_S a word, TQ_A/TQ_P an argument or its
+  elements); temporaries are the interned `%0`, `%1`... (nested loops
+  shadow them), keywords matched by name (`lp_kwt`) or, for builtins like
+  IF, by address (`lp_kwb`). A for clause that ends does `(return-from
+  %loop nil)`, so finally runs; a user's `return` leaves `%loop`'s own
+  block and skips it.
 * **Structures**: HDR_STRUCT, a vector by another header (the GC marks it
   as one, the printer shows `#S(...)`), element 0 the type. defstruct and
   the hash tables (`lib/structs.asm`, `lisp.lsp`) are built on it.

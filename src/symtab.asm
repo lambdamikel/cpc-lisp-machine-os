@@ -93,7 +93,7 @@ symtab:
     FSUBR THROW,"THROW",sf_throw
     FSUBR DOLIST,"DOLIST",sf_dolist
     FSUBR DOTIMES,"DOTIMES",sf_dotimes
-    FSUBR LOOP,"LOOP",sf_loop
+    FSUBR PLOOP,"%LOOP",sf_loop       ; LOOP is a macro (lib/loop.lsp)
     FSUBR DECLARE,"DECLARE",sf_declare
     FSUBR THE,"THE",sf_the
     FSUBR UNWIND_PROTECT,"UNWIND-PROTECT",sf_unwind_protect

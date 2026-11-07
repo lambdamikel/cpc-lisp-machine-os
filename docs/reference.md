@@ -32,7 +32,7 @@ Contents: [Starting](#starting) · [The REPL](#the-repl) ·
 With the core ROM at ROM 0 (replacing BASIC), the CPC starts in Lisp:
 
     CPC Lisp 0.3, library ROMs 4 5 6 3
-    6853 cells free
+    6402 cells free
     LISP>
 
 The numbers are the ROMs where the library parts were found. At any other
@@ -172,7 +172,7 @@ All **core**.
 | `(unwind-protect form cleanup...)` | the cleanups run however form is left: a normal end, `throw`, `return-from`, an error (caught or not), ESC |
 | `(dolist (var list [result]) body...)` | |
 | `(dotimes (var n [result]) body...)` | |
-| `(loop body...)` | for ever, until `return` |
+| `(%loop body...)` | for ever, until `return` (what a simple `loop` is) |
 | `(declare ...)` | ignored |
 | `(the type form)` | the form |
 | `(multiple-value-list form)` | all of form's values, as a list |
@@ -181,6 +181,7 @@ All **core**.
 
 | Macro | | |
 |---|---|---|
+| `(loop form...)` | forms that are lists: for ever, until `return`. Otherwise the extended LOOP, below | demo, 2 |
 | `(do ((var init [step])...) (end-test result...) body...)` | `do*` steps in order | 3 |
 | `(psetq var value...)` | in parallel | 3 |
 | `(pushnew x place)` | | 3 |
@@ -195,6 +196,34 @@ All **core**.
 `(macroexpand form)`, `(macroexpand-1 form)` (**core**). A macro call is
 expanded the first time it is evaluated and the expansion kept in the call
 (it prints as written); redefining the macro makes the call expand afresh.
+
+
+### The extended LOOP
+
+`(loop for i from 1 to 10 when (evenp i) collect i)` is `(2 4 6 8 10)`.
+The clauses, in CL's words (keywords may be written `:for` too):
+
+| Clause | |
+|---|---|
+| `for v in list [by f]` `for v on list` | each element; each tail. v may be a pattern: `for (k . v) in alist` |
+| `for v across vector` | each element of a vector or string |
+| `for v from a [to b \| below b \| downto b \| above b] [by n]` | counting; `upfrom` `upto` `downfrom` too; from 0 if not given |
+| `for v = x [then y]` | x every pass, or x first and y after |
+| `for k being the hash-keys of table [using (hash-value v)]` | and `hash-values` |
+| `as` | is `for`; `and` joins for clauses |
+| `with v [= x] [and ...]` | a variable |
+| `repeat n` | n passes |
+| `while x` `until x` | stop when x is false / true (where it stands among the clauses) |
+| `collect x` `append x` `nconc x` `sum x` `count x` `maximize x` `minimize x` | into the result; `into var` into a variable instead (`-ing` forms too) |
+| `do form...` | the forms |
+| `when x clause [and clause...] [else clause...] [end]` | `if` the same; `unless` the other way round |
+| `return x` | the loop's value: x |
+| `always x` `never x` `thereis x` | T unless x is ever false (true); thereis: the first true x |
+| `initially form...` `finally form...` | before the first pass; after the last -- `(finally (return x))` gives x |
+| `named name` | `(return-from name x)` leaves it; `(loop-finish)` goes to the finally forms |
+
+The expansion is made by native code (in library ROM 2) the first time
+the loop runs, and kept. It uses `%0`, `%1`... as its own variables.
 
 ## Functions and evaluation
 
@@ -584,8 +613,11 @@ They are Lisp text, so `(ed 'rose)` shows one.
 
 ## Memory
 
-About 6800-7100 cells of four bytes (conses and objects), 512 symbols,
-and string space between them and the stack; `(room)` says what is free.
+About 6660 cells of four bytes (conses and objects) on a 464, 6400 on a
+6128 (its disc ROM takes some RAM), 512 symbols, and string space --
+strings, vectors, floats, symbols' names: 5.5-5.8 KB -- between them and
+the stack; `(room)` says what is free. A file open takes 2 KB of the
+string space while it is open (two files, 4 KB).
 The garbage collector runs when cells run out. Functions written in Lisp
 in the library ROMs are read from ROM the first time they are called and
 then use cells like your own; the names cost nothing until then.
@@ -604,8 +636,8 @@ then use cells like your own; the names cost nothing until then.
   `:start`/`:end`/`:from-end`; `delete` and friends are not destructive.
 - Hash tables do not grow their buckets.
 - Strings that functions build are at most 255 characters.
-- Multi-dimensional arrays, `loop` with keywords (the extended LOOP),
-  `format`'s `~<...~>`, string streams (`with-output-to-string`),
+- Multi-dimensional arrays, `format`'s `~<...~>`, string streams
+  (`with-output-to-string`),
   `*standard-output*`, and CLOS are not there. One file is open for input
   and one for output at most.
 - A macro call keeps its first expansion (displacing): a macro that

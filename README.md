@@ -3,10 +3,10 @@
 A Lisp machine for the Amstrad CPC: an auto-boot ROM that starts a Lisp
 instead of BASIC. Common Lisp syntax, lexical closures, macros, a garbage
 collector -- in 16 KB of Z80 assembly, with graphics, sound, files, floats
-and editors in two more ROMs.
+and editors in four more ROMs.
 
     CPC Lisp 0.3, library ROMs 1 2 3 4
-    7119 cells free
+    6658 cells free
 
     LISP> (defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))
     FIB
@@ -21,20 +21,23 @@ The core ROM boots to `LISP>` in MAME on the 464 and the 6128 (ROM 0,
 replacing BASIC), with integers, floats, symbols, conses, strings, characters,
 closures, special variables, `defmacro` and backquote, `block`/`catch`,
 `labels`/`flet`, `setf`, tail calls, ESC to break, and a mark-and-sweep GC.
-Also `format` (CL's directives, `~{~}` and `~[~]` included), `&key`, `unwind-protect` and vectors.
+Also `&key`, `unwind-protect`, catchable errors (`handler-case`),
+multiple values, vectors, structures and hash tables.
 
-The library comes in three more ROMs. The first has graphics (`plot`,
-`draw`, `test`, ...), `sound`, keys, the text screen, strings and characters
-(the CL comparisons and predicates), files (`load`, `save`, `dir`, a RAM
-disc on the 6128), a line editor and a full-screen function editor. The
-second has the floats and maths functions (`sqrt`, `sin`, `atan`, `log`,
-...) through the firmware, `format`, `sort`, `coerce`, and `member`/`assoc`
-with `:test` and `:key`. The third has about seventy CL functions and macros
-written in Lisp (the sequence functions on lists, strings and vectors,
-`reduce`, `map`, `do`, ...) that are loaded from ROM the first time they are
-used. A fourth, the demo ROM, has example programs: `(demo)` lists them.
-Without one, its functions are undefined and the rest works. It is being
-tried on a real 464 (`docs/cpc-test.txt`).
+The library comes in four more ROMs. The first has graphics (`plot`,
+`draw`, circles, flood fill, turtle graphics), `sound`, keys, the text
+screen, strings and characters (the CL comparisons and predicates), the
+printers and readers with CL's streams, files (`load`, `save`, `dir`,
+`with-open-file`, a RAM disc on the 6128), a line editor and a full-screen
+function editor. The second has the floats and maths functions (`sqrt`,
+`sin`, `atan`, `log`, ...) through the firmware, all of `format`'s
+directives but `~<~>`, `sort`, the sequence functions with all their
+keywords, hash tables, the expander of the extended `loop`, and speech and
+PlayCity on the LambdaSpeak card. The third has about eighty CL functions
+and macros written in Lisp (`reduce`, `map`, `defstruct`, `typep`,
+`handler-case`, ...) that are read from ROM the first time they are used.
+The fourth, the demo ROM, has `loop` and example programs: `(demo)` lists
+them. It runs on a real 464 (`docs/cpc-test-5roms.txt`).
 
 ## Building and testing
 

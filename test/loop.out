@@ -1,0 +1,99 @@
+LISP> (loop for i from 1 to 5 collect i)
+(1 2 3 4 5)
+LISP> (loop for i below 5 collect (* i i))
+(0 1 4 9 16)
+LISP> (loop for x in '(a b c) for i from 0 collect (list i x))
+((0 A) (1 B) (2 C))
+LISP> (loop for x on '(1 2 3) collect x)
+((1 2 3) (2 3) (3))
+LISP> (loop for c across "abc" collect (char-upcase c))
+(#\A #\B #\C)
+LISP> (loop for i from 10 downto 1 by 3 collect i)
+(10 7 4 1)
+LISP> (loop for x in '(1 2 3 4 5 6) when (evenp x) collect x else collect (- x))
+(-1 2 -3 4 -5 6)
+LISP> (loop for x in '(3 1 4 1 5) sum x)
+14
+LISP> (loop for x in '(3 1 4 1 5) maximize x)
+5
+LISP> (loop for x in '(3 1 4 1 5) minimize x into m finally (return (* m 100)))
+100
+LISP> (loop for x in '(1 2 3) count (oddp x))
+2
+LISP> (loop repeat 3 collect 'hi)
+(HI HI HI)
+LISP> (loop with s = 0 for i from 1 to 10 do (setq s (+ s i)) finally (return s))
+55
+LISP> (loop for x = 1 then (* x 2) while (< x 100) collect x)
+(1 2 4 8 16 32 64)
+LISP> (loop for (a b) in '((1 2) (3 4)) collect (+ a b))
+(3 7)
+LISP> (loop for x in '(1 2 3) append (list x x))
+(1 1 2 2 3 3)
+LISP> (loop for x in '(2 4 6) always (evenp x))
+T
+LISP> (loop for x in '(2 4 7) never (oddp x))
+NIL
+LISP> (loop for x in '(2 4 7 8) thereis (and (oddp x) x))
+7
+LISP> (loop for i from 1 do (when (> i 3) (return i)))
+4
+LISP> (loop named outer for i from 1 to 3 do (loop for j from 1 to 3 do (when (= j 2) (return-from outer (list i j)))))
+(1 2)
+LISP> (loop for i from 1 to 3 collect i into l finally (return (reverse l)))
+(3 2 1)
+LISP> (let ((h (make-hash-table))) (setf (gethash 'a h) 1) (loop for k being the hash-keys of h using (hash-value v) collect (list k v)))
+((A 1))
+LISP> (loop for i from 0 for x in '(a b c) until (eq x 'c) collect x)
+(A B)
+LISP> (let ((n 0)) (loop (incf n) (when (> n 4) (return n))))
+5
+LISP> (loop for x in '(1 2 3) do (print x) finally (print 'end))
+
+1 
+2 
+3 
+END 
+NIL
+LISP> (defun f (l) (loop for x in l if (numberp x) sum x))
+F
+LISP> (f '(1 a 2 b 3))
+6
+LISP> (loop for i from 1 to 3 foo)
+Error: LOOP: not a clause I know: FOO
+LISP> (loop for i in)
+Error: LOOP: a clause is cut short
+LISP> (loop for i from 1 to 2 collect i collect (* 10 i))
+(1 10 2 20)
+LISP> (loop for x in '(1 2 3) for y = (* x 10) collect y)
+(10 20 30)
+LISP> (loop for x in '(a b c d) by #'cddr collect x)
+(A C)
+LISP> (loop for (k . v) in '((a . 1) (b . 2)) collect k collect v)
+(A 1 B 2)
+LISP> (loop for i from 1 to 10 when (evenp i) collect i and sum i into s finally (print s))
+
+30 
+(2 4 6 8 10)
+LISP> (loop for i below 3 nconc (list i 'x))
+(0 X 1 X 2 X)
+LISP> (loop :for i :from 1 :to 3 :collect i)
+(1 2 3)
+LISP> (loop for i from 1 to 5 do (if (= i 3) (loop-finish)) finally (return i))
+3
+LISP> (loop for i from 5 above 0 by 2 collect i)
+(5 3 1)
+LISP> (loop for i downfrom 5 above 0 by 2 collect i)
+(5 3 1)
+LISP> (loop with a = 1 and b = 2 return (+ a b))
+3
+LISP> (pprint '(defun g () (loop for x in l collect x)))
+
+(DEFUN G NIL
+  (LOOP FOR X IN L COLLECT X))
+NIL
+LISP> (defun h (l) (loop for x in l maximize x))
+H
+LISP> (h '(3 9 2))
+9
+LISP> 
