@@ -261,5 +261,6 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
        pictures (shapes, a rose in floats, a spiral, XOR moire, a bouncing
        ball, the chaos game, a sketcher on the cursor keys), Ode to Joy,
        Hanoi, n queens, a sieve, 20!
-7. [ ] **A reference manual**: every function and capability, with examples
+7. [x] **A reference manual**: `docs/reference.md` -- every function, form
+       and macro, the editors' keys, the differences from Common Lisp
 8. [ ] Later, maybe: `*print-case*`; a byte-code compiler

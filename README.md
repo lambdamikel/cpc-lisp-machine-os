@@ -53,9 +53,11 @@ come from the same build as the core.
 
 ## Documents
 
+* [`docs/reference.md`](docs/reference.md): the reference manual -- the
+  REPL, the editors, the syntax, and every function, form and macro
 * [`docs/checklist.md`](docs/checklist.md): everything implemented, every
   built-in function by ROM, and what is still to come
-* [`docs/cpc-test.txt`](docs/cpc-test.txt): what to type on a real CPC, and
-  what it should answer
+* [`docs/cpc-test-5roms.txt`](docs/cpc-test-5roms.txt): what to type on a
+  real CPC, and what it should answer
 * `CLAUDE.md`: the design, the memory layout, and what was learned about the
   CPC and MAME along the way
