@@ -191,21 +191,6 @@ fe_puts:
     inc hl
     jr fe_puts
 
-;; lib_error: HL = a message in this ROM, DE = an object or UNBOUND
-lib_error:
-    push de
-    ld de,TOKBUF
-.c:
-    ld a,(hl)
-    ld (de),a
-    inc hl
-    inc de
-    or a
-    jr nz,.c
-    pop de
-    ld hl,TOKBUF
-    CORE error
-
 ;; fe_reserve: lend the buffer out of block space
 fe_reserve:
     ld hl,(V_BLKHI)             ; room enough without collecting?

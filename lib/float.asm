@@ -10,7 +10,7 @@
 ;; The core keeps fixnum arithmetic; a numeric subr that meets a float, or
 ;; overflows, hands its whole call over (nums_v in src/subrs.asm), and its
 ;; reader and printer call ln_read and ln_print. They come in through the
-;; three jumps at lib_numbers (the header's +20).
+;; four jumps at lib_numbers (the header's +20).
 ;;
 ;; The maths jumpblock is &BD3D on a 464 and &BD61 on a 664/6128, with the
 ;; routines used here at the same offsets in both (the 464's REAL
@@ -57,6 +57,17 @@ lib_numbers:
     jp ln_arith
     jp ln_read
     jp ln_print
+    jp ln_int
+
+;; ln_int: HL = a number -> NC, HL = it rounded, a plain 16-bit number (for
+;; the core's num_int). BC, DE kept.
+ln_int:
+    push de
+    ex de,hl
+    call fl_plain
+    pop de
+    or a
+    ret
 
 ;; fmcall: the byte after the call = a maths routine's offset in the 464's
 ;; jumpblock; A, BC, DE, HL go in. fmcall_ix: IX = its 464 address.

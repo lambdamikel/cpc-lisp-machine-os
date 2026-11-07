@@ -1,31 +1,36 @@
-;; CPC Lisp -- the library ROM.
+;; CPC Lisp -- the library ROMs, and part 0 of them.
 ;;
-;; A background ROM that does nothing at the ROM walk: the core finds it by
-;; its signature and calls in through the trampoline (src/xrom.asm has the
-;; whole arrangement). It is assembled against the core's symbols
-;; (build/core.inc, made by tools/build.sh), so it can use the core's
-;; constants and variables directly -- but the core's CODE only through
-;; CORE, which selects the core's ROM around the call.
+;; Each part is a background ROM that does nothing at the ROM walk: the core
+;; finds it by its signature and calls in through the trampoline
+;; (src/xrom.asm has the whole arrangement). It is assembled against the
+;; core's symbols (build/core.inc, made by tools/build.sh), so it can use the
+;; core's constants and variables directly -- but the core's CODE only
+;; through CORE, which selects the core's ROM around the call. One part
+;; cannot call another's code; lib/common.asm, which each includes, has the
+;; helpers they all need.
 ;;
 ;; A native function is a label preceded by a line
 ;;
 ;;     ;@ NAME MIN MAX label
 ;;
-;; which tools/mklib.py collects into the symbol table, with the Lisp-defined
-;; functions from lib/*.lsp. Arguments arrive as for the core's subrs: fixed
+;; and Lisp text for a part is named in its main file by
+;;
+;;     ;@lisp file.lsp
+;;
+;; tools/mklib.py collects both into the part's symbol table, following the
+;; main file's includes. Arguments arrive as for the core's subrs: fixed
 ;; arity up to 3 in HL, DE, BC, otherwise HL = &arg 0 and B = count (read
 ;; with NEXTARG). Return the value in HL.
 ;;
 ;; Anything handed to the core must be in RAM: the core cannot read this
 ;; ROM. Its messages (m_...) are the core's and can be passed as they are.
+;;
+;; Part 0 (this file): the text screen, graphics, sound, keys, strings, the
+;; line editor, the pretty printer, the function editor, files. Part 1
+;; (lib/lib2.asm): floats, format, and the functions written in Lisp.
 
     include "core.inc"
     include "macros.asm"
-
-macro CORE routine
-    ld ix,{routine}
-    call CORECALL
-mend
 
 ;; firmware used only here
 GRA_MOVE_ABSOLUTE   equ #BBC0
@@ -58,157 +63,17 @@ KL_TIME_PLEASE      equ #BD0D
     dw lib_buckets
     dw lib_boot
     dw lib_dispatch
-    dw lib_editor
-    dw lib_numbers
+    dw lib_editor               ; the line editor
+    dw 0                        ; no number routines
+    assert $ == LIBHDR+LH_PART
+    db 0                        ; part 0
 
 ;; The name has a space so that BASIC cannot call it as a command.
 lib_names:
     db "LISP LIBRAR","Y"+#80
     db 0
 
-lib_init:
-    scf
-    ret
-
-;; lib_dispatch: called through the trampoline for every library function,
-;; with HL = &arg 0, B = count and V_LIBFN = the function object. Checks
-;; the count, puts fixed arguments in registers, jumps to the code.
-lib_dispatch:
-    push hl
-    ld hl,(V_LIBFN)
-    LDHLI                       ; its entry in this ROM
-    push hl
-    pop ix
-    pop hl
-    ld a,b
-    cp (ix+LE_MIN)
-    jr c,.args
-    ld a,(ix+LE_MAX)
-    cp b
-    jr c,.args
-    ld e,(ix+LE_ADDR)
-    ld d,(ix+LE_ADDR+1)
-    push de                     ; ret goes to the code
-    ld a,(ix+LE_MIN)
-    cp (ix+LE_MAX)
-    ret nz                      ; variadic: HL and B as they are
-    cp 4
-    ret nc
-    or a
-    ret z
-    dec a
-    jr z,.one
-    dec a
-    jr z,.two
-    push hl
-    dec hl
-    dec hl
-    dec hl
-    dec hl
-    ld c,(hl)
-    inc hl
-    ld b,(hl)
-    pop hl
-.two:
-    push hl
-    dec hl
-    dec hl
-    ld e,(hl)
-    inc hl
-    ld d,(hl)
-    pop hl
-.one:
-    LDHLI
-    ret
-.args:
-    ld de,(V_LIBFN)
-    ld hl,m_nargs
-    CORE error
-
-;; ---------------------------------------------------------------------------
-;; helpers
-
-;; lfix_hl, lfix_de: error unless a fixnum. All kept.
-lfix_hl:
-    bit 0,l
-    ret nz
-    ex de,hl
-lfix_de:
-    bit 0,e
-    ret nz
-    ld hl,m_notnum
-    CORE error
-
-;; lint_hl: a number in HL -> the plain number in HL, a float rounded.
-;; lint_de likewise. All else kept.
-lint_hl:
-    bit 0,l
-    jr z,.float
-    sra h
-    rr l
-    ret
-.float:
-    push de
-    ex de,hl
-    call fl_plain
-    pop de
-    ret
-lint_de:
-    bit 0,e
-    jr z,.float
-    sra d
-    rr e
-    ret
-.float:
-    push hl
-    call fl_plain
-    ex de,hl
-    pop hl
-    ret
-
-;; a plain number in HL -> a fixnum, assumed in range
-ltag:
-    add hl,hl
-    inc hl
-    ret
-
-;; A -> a character object in HL
-lchar:
-    ld l,a
-    ld h,0
-    add hl,hl
-    add hl,hl
-    inc hl
-    inc hl
-    ret
-
-lnil:
-    ld hl,NIL
-    ret
-lt:
-    ld hl,S_T
-    ret
-
-lcall_ix:
-    jp (ix)
-
-;; lstring: HL = a string -> HL = its characters, BC = how many. An error
-;; for anything else.
-lstring:
-    push hl
-    CORE is_string
-    pop hl
-    jr nz,.bad
-    LDHLI
-    ld c,(hl)
-    inc hl
-    ld b,(hl)
-    inc hl
-    ret
-.bad:
-    ex de,hl
-    ld hl,m_notstr
-    CORE error
+    include "common.asm"
 
 ;; ---------------------------------------------------------------------------
 ;; THE TEXT SCREEN (moved here from the core)
@@ -216,7 +81,7 @@ lstring:
 ;@ CLS 0 0 lf_cls
 lf_cls:
     call TXT_CLEAR_WINDOW
-    jr lnil
+    jp lnil
 
 ;@ MODE 1 1 lf_mode
 lf_mode:
@@ -236,7 +101,7 @@ lf_locate:
     ld h,l
     ld l,e
     call TXT_SET_CURSOR
-    jr lnil
+    jp lnil
 
 ;@ PEN 1 1 lf_pen
 lf_pen:
@@ -540,13 +405,6 @@ lf_time:
 ;; ---------------------------------------------------------------------------
 ;; STRINGS AND CHARACTERS. Results are built in TOKBUF, so up to 255 long.
 
-;; lstr_result: TOKBUF holds C characters -> a new string
-lstr_result:
-    ld b,0
-    ld hl,TOKBUF
-    CORE make_string
-    ret
-
 ;@ STRING-UPCASE 1 1 lf_string_upcase
 lf_string_upcase:
     ld e,0
@@ -559,7 +417,7 @@ case_string:
     call lstring
     ld a,b
     or a
-    jr nz,str_long
+    jp nz,str_long
     pop de
     push bc                     ; the length
     ld b,c
@@ -576,11 +434,7 @@ case_string:
 .next:
     djnz .l
     pop bc
-    jr lstr_result
-str_long:
-    ld hl,m_toolong
-    ld de,UNBOUND
-    CORE error
+    jp lstr_result
 
 ;; case_char: A -> A upcased (C = 0) or downcased (C = 1)
 case_char:
@@ -754,11 +608,9 @@ lf_nreconc:
     include "fr.asm"
     include "fed.asm"
     include "disc.asm"
-    include "float.asm"
-    include "format.asm"
     include "libtab.asm"
 
 lib_end:
-    print "LIBRARY used: ",lib_end-#C000," bytes, free: ",#10000-lib_end
+    print "LIBRARY 1 used: ",lib_end-#C000," bytes, free: ",#10000-lib_end
     assert lib_end <= #10000
     defs #10000-$,#FF

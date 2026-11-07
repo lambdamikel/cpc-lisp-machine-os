@@ -75,6 +75,7 @@ LIBSCR            equ #AF00         ; 256: scratch for the library ROM
 HISTBUF           equ #B000         ; 128: the line editor's history
 TRAMP             equ #B080         ; 128: the cross-ROM trampoline, copied at boot
 VARS_END          equ LIBSCR
+NLIBS             equ 4             ; library ROMs: parts 0-3 (src/xrom.asm)
 
 ;; Variables. The first block holds Lisp values and is a GC root, scanned
 ;; word by word; everything after ROOTS_END is not.
@@ -116,15 +117,18 @@ V_NFREE           defs 2            ; GC: cells free after the last one
 V_GENSYM          defs 2            ; gensym counter
 V_RAND            defs 2            ; random state
 V_COREROM         defs 1            ; this ROM's number
-V_LIBROM          defs 1            ; the library ROM's number, 0 = none
-V_LIBDISP         defs 2            ; the library's dispatcher
-V_LIBBKT          defs 2            ; the library's symbol hash table
+V_LIBS            defs 5*NLIBS      ; library ROMs, by part: [ROM, 0 = none]
+                                    ;   [symbol hash table][dispatcher]
+V_PEEKROM         defs 1            ; the ROM LIBPEEK reads
+V_SRCROM          defs 1            ; reader: the ROM of the library text
+V_EDROM           defs 1            ; the line editor's ROM,
+V_NUMROM          defs 1            ;   the number routines'
 V_LIBFN           defs 2            ; the library function being called
 V_RCBC            defs 2            ; trampoline: BC in passing
 V_INSRC           defs 1            ; reader: 0 the keyboard, 1 library text,
                                     ;   2 a string, 3 the file open for input
 V_FILES           defs 1            ; files open: bit 0 input, bit 1 output
-V_LIBEDIT         defs 2            ; the library's line editor, 0 = none
+V_LIBEDIT         defs 2            ; a library's line editor, 0 = none
 V_EDDEPTH         defs 1            ; line editor: open parens it remembers
 V_EDSTR           defs 1            ; line editor: the last line ended in a string
 V_SRCPTR          defs 2            ; reader: next character of library text,
@@ -137,7 +141,7 @@ V_OUTCNT          defs 2            ;   characters printed (memory and count)
 V_OUTCOL          defs 1            ;   the column, from 0, kept in every mode
 V_BLKSAVE         defs 2            ; V_BLKHI while space is lent out, else 0
 V_LIBDEF          defs 1            ; 1 while library text is evaluated
-V_LIBNUM          defs 2            ; the library's number routines, 0 = none
+V_LIBNUM          defs 2            ; a library's number routines, 0 = none
 V_NUMARGS         defs 2            ; numeric subr: &arg 0,
 V_NUMBC           defs 2            ;   B = how many, C,
 V_NUMOP           defs 2            ;   its NUM_ label,

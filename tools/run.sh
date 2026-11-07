@@ -1,12 +1,12 @@
 #!/bin/bash
 # Boot the Lisp ROM in MAME, type a file at it, print the transcript.
 #
-#     tools/run.sh [-m 464|6128] [-n] [-d disc.dsk] [-s shot.png] [-f frames] [-t times.txt] input.lsp
+#     tools/run.sh [-m 464|6128] [-n|-1] [-d disc.dsk] [-s shot.png] [-f frames] [-t times.txt] input.lsp
 #
 # -d puts a disc in drive A: the 6128's own, or on a 464 a DDI-1 with the
 # ROM box behind it.
-# The library ROM goes in MAME's ROM box (which makes it ROM 1); -n leaves
-# it out.
+# The library ROMs go in MAME's ROM box (which makes them ROMs 1 and 2); -n
+# leaves them out, -1 leaves out the second.
 # The ROM must be built first (tools/build.sh). It boots as ROM 0 from the
 # spliced romsets in build/mame, so this is what a CPC with the ROM at 0 and
 # ROMDIS asserted sees. Lines of input.lsp are typed one per EDIT call; the
@@ -14,14 +14,15 @@
 # after its prompt) goes to stdout.
 set -e
 cd "$(dirname "$0")/.."
-MACH=464 SHOT= FRAMES=30000 TIMES= LIB=1 DISC=
-while getopts "m:s:f:t:nd:" o; do
+MACH=464 SHOT= FRAMES=30000 TIMES= LIB=2 DISC=
+while getopts "m:s:f:t:n1d:" o; do
     case $o in
         m) MACH=$OPTARG ;;
         s) SHOT=$(realpath -m "$OPTARG") ;;
         f) FRAMES=$OPTARG ;;
         t) TIMES=$(realpath -m "$OPTARG") ;;
         n) LIB= ;;
+        1) LIB=1 ;;
         d) DISC=$(realpath "$OPTARG") ;;
         *) exit 2 ;;
     esac
@@ -36,14 +37,17 @@ case $MACH in
 esac
 # the REPL calls EDHOOK, a RET in RAM, before reading each line
 EDIT=0x$(awk '$1 == "EDHOOK" { sub("#", "", $2); print $2 }' build/lisp.sym)
+LIBROMS=
+[ -n "$LIB" ] && LIBROMS="-rom1 build/LISPLIB.ROM"
+[ "$LIB" = 2 ] && LIBROMS="$LIBROMS -rom2 build/LISPLIB2.ROM"
 ROMBOX=
-[ -n "$LIB" ] && ROMBOX="-exp rom -rom1 build/LISPLIB.ROM"
+[ -n "$LIB" ] && ROMBOX="-exp rom $LIBROMS"
 if [ -n "$DISC" ]; then
     if [ "$MACH" = 6128 ]; then
         ROMBOX="$ROMBOX -flop1 $DISC"
     else
         ROMBOX="-exp ddi1 -flop $DISC"
-        [ -n "$LIB" ] && ROMBOX="$ROMBOX -exp:ddi1:exp rom -rom1 build/LISPLIB.ROM"
+        [ -n "$LIB" ] && ROMBOX="$ROMBOX -exp:ddi1:exp rom $LIBROMS"
     fi
 fi
 OUTF=$(mktemp)

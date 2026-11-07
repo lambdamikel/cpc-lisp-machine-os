@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Make the library ROM's symbol table: build/libtab.asm.
+"""Make the library ROMs' symbol tables.
 
-    tools/mklib.py lib/lib.asm lib/*.lsp > build/libtab.asm
+    tools/mklib.py OUTDIR lib/lib.asm lib/lib2.asm ...
 
-Native functions come from ';@ NAME MIN MAX label' lines in the .asm files
-(MAX 255: any number). From the .lsp files, each top-level (defun NAME ...)
-or (defmacro NAME ...) becomes an autoload entry with its text, comments
+Each argument is a part's main file; its table goes to OUTDIR/<name>tab.asm
+(lib.asm -> libtab.asm), which the main file includes. The main file's
+includes are followed (those found next to it). Native functions come from
+';@ NAME MIN MAX label' lines (MAX 255: any number); ';@lisp file.lsp'
+names Lisp text for the part. From that, each top-level (defun NAME ...) or
+(defmacro NAME ...) becomes an autoload entry with its text, comments
 stripped and blanks squeezed; every other top-level form is a boot form,
 evaluated when the core starts.
 
@@ -17,7 +20,8 @@ bucket it would itself use. An entry is
 
 kind 1 native (address = code), 2 autoload (address = text). A name the
 core already has is an error: the core's would always win; so is a name
-defined twice, counting the variables boot forms define.
+defined twice, in any of the parts, counting the variables boot forms
+define.
 """
 import re, sys
 
@@ -121,38 +125,55 @@ def asm_bytes(label, data):
         lines.append('    db ' + ','.join(str(b) for b in data[k:k + 16]))
     return lines
 
-def main():
+def part_sources(main):
+    """The .asm files of a part (main and what it includes, in order) and
+    its Lisp files."""
+    import os
+    asms, lisps, seen = [], [], set()
+    def walk(path):
+        if path in seen:
+            return
+        seen.add(path)
+        asms.append(path)
+        for line in open(path):
+            m = re.match(r'\s+include\s+"([^"]+)"', line)
+            if m:
+                inc = os.path.join(os.path.dirname(path), m.group(1))
+                if os.path.exists(inc):
+                    walk(inc)
+            m = re.match(r';@lisp\s+(\S+)\s*$', line)
+            if m:
+                lisps.append(os.path.join(os.path.dirname(path), m.group(1)))
+    walk(main)
+    return asms, lisps
+
+def part_table(main):
+    """-> (natives, autoloads, boots, variables) of one part"""
     natives, autoloads, boots, variables = [], [], [], []
-    for path in sys.argv[1:]:
-        if path.endswith('.asm'):
-            for no, line in enumerate(open(path), 1):
-                m = re.match(r';@\s+(\S+)\s+(\d+)\s+(\d+)\s+(\w+)\s*$', line)
-                if m:
-                    natives.append((m.group(1), int(m.group(2)), int(m.group(3)), m.group(4)))
-        else:
-            for form, p, line in lisp_forms(open(path, encoding='latin-1').read(), path):
-                m = re.match(r'\((defun|defmacro)\s+([^\s()]+)', form, re.I)
-                if m:
-                    autoloads.append((m.group(2).upper(), form, p, line))
-                else:
-                    boots.append((form, p, line))
-                    v = re.match(r'\((defvar|defparameter|defconstant)\s+([^\s()]+)', form, re.I)
-                    if v:
-                        variables.append(v.group(2).upper())
-    core = core_names()
-    entries, seen = [], set()
+    asms, lisps = part_sources(main)
+    for path in asms:
+        for no, line in enumerate(open(path), 1):
+            m = re.match(r';@\s+(\S+)\s+(\d+)\s+(\d+)\s+(\w+)\s*$', line)
+            if m:
+                natives.append((m.group(1), int(m.group(2)), int(m.group(3)), m.group(4)))
+    for path in lisps:
+        for form, p, line in lisp_forms(open(path, encoding='latin-1').read(), path):
+            m = re.match(r'\((defun|defmacro)\s+([^\s()]+)', form, re.I)
+            if m:
+                autoloads.append((m.group(2).upper(), form, p, line))
+            else:
+                boots.append((form, p, line))
+                v = re.match(r'\((defvar|defparameter|defconstant)\s+([^\s()]+)', form, re.I)
+                if v:
+                    variables.append(v.group(2).upper())
+    return natives, autoloads, boots, variables
+
+def write_table(natives, autoloads, boots):
+    entries = []
     for name, mn, mx, label in natives:
         entries.append((name, 1, mn, mx, label))
     for k, (name, form, p, line) in enumerate(autoloads):
         entries.append((name, 2, 0, 0, f'lt_{k}'))
-    for e in entries + [(v,) for v in variables]:
-        if e[0] in core:
-            sys.exit(f'mklib: {e[0]} is a core builtin already')
-        if e[0] in seen:
-            sys.exit(f'mklib: {e[0]} is defined twice')
-        if len(e[0]) > 255:
-            sys.exit(f'mklib: {e[0]} is too long')
-        seen.add(e[0])
     buckets = [[] for _ in range(64)]
     for k, e in enumerate(entries):
         buckets[hash_name(e[0])].append(k)
@@ -183,8 +204,31 @@ def main():
         data = form.encode('latin-1') + b'\0'
         textbytes += len(data)
         out += asm_bytes(f'lb_{k}', data)
-    print('\n'.join(out))
-    print(f'mklib: {len(natives)} native, {len(autoloads)} in Lisp ({textbytes} bytes of text), '
-          f'{len(boots)} boot forms', file=sys.stderr)
+    return '\n'.join(out) + '\n', textbytes
+
+def main():
+    import os
+    outdir, mains = sys.argv[1], sys.argv[2:]
+    core = core_names()
+    seen = {}
+    parts = []
+    for main in mains:
+        natives, autoloads, boots, variables = part_table(main)
+        for name in [n[0] for n in natives] + [a[0] for a in autoloads] + variables:
+            if name in core:
+                sys.exit(f'mklib: {name} is a core builtin already')
+            if name in seen:
+                sys.exit(f'mklib: {name} is defined twice ({seen[name]}, {main})')
+            if len(name) > 255:
+                sys.exit(f'mklib: {name} is too long')
+            seen[name] = main
+        parts.append((main, natives, autoloads, boots))
+    for main, natives, autoloads, boots in parts:
+        text, textbytes = write_table(natives, autoloads, boots)
+        base = os.path.splitext(os.path.basename(main))[0]
+        with open(os.path.join(outdir, base + 'tab.asm'), 'w') as f:
+            f.write(text)
+        print(f'mklib: {base}: {len(natives)} native, {len(autoloads)} in Lisp '
+              f'({textbytes} bytes of text), {len(boots)} boot forms', file=sys.stderr)
 
 main()

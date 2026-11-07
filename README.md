@@ -2,11 +2,11 @@
 
 A Lisp machine for the Amstrad CPC: an auto-boot ROM that starts a Lisp
 instead of BASIC. Common Lisp syntax, lexical closures, macros, a garbage
-collector -- in 16 KB of Z80 assembly. Graphics, disc and sound will come
-through the CPC firmware, in a second ROM.
+collector -- in 16 KB of Z80 assembly, with graphics, sound, files, floats
+and editors in two more ROMs.
 
-    CPC Lisp 0.1
-    7288 cells free
+    CPC Lisp 0.3, library ROMs 1 2
+    7119 cells free
 
     LISP> (defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))
     FIB
@@ -21,26 +21,31 @@ The core ROM boots to `LISP>` in MAME on the 464 and the 6128 (ROM 0,
 replacing BASIC), with integers, floats, symbols, conses, strings, characters,
 closures, special variables, `defmacro` and backquote, `block`/`catch`,
 `labels`/`flet`, `setf`, tail calls, ESC to break, and a mark-and-sweep GC.
-A second ROM, the library, adds graphics (`plot`, `draw`, `test`, ...),
-`sound`, keys, the text screen, strings, and about forty CL functions and
-macros written in Lisp (`sort`, `reduce`, `remove-if`, `do`, ...) that are
-loaded from ROM the first time they are used, the maths functions
-(`sqrt`, `sin`, `atan`, `log`, `expt`, ...) through the firmware, files
-(`load`, `save`, `dir`), a line editor and a full-screen function editor.
-`format` (~A ~S ~D ~% ...), `&key`, `unwind-protect`, vectors. It has not been on a real CPC yet.
+Also `format` (~A ~S ~D ~% ...), `&key`, `unwind-protect` and vectors.
+
+The library comes in two more ROMs. The first has graphics (`plot`, `draw`,
+`test`, ...), `sound`, keys, the text screen, strings, files (`load`,
+`save`, `dir`), a line editor and a full-screen function editor. The second
+has the floats and maths functions (`sqrt`, `sin`, `atan`, `log`, `expt`,
+...) through the firmware, `format`, and about forty CL functions and macros
+written in Lisp (`sort`, `reduce`, `remove-if`, `do`, ...) that are loaded
+from ROM the first time they are used. Without one, its functions are
+undefined and the rest works. It has not been on a real CPC yet.
 
 ## Building and testing
 
 Needs rasm and MAME with the CPC ROMs (paths in `tools/build.sh`).
 
-    tools/build.sh                 # build/LISP.ROM, and MAME romsets with it at ROM 0
+    tools/build.sh                 # build/LISP.ROM, LISPLIB.ROM, LISPLIB2.ROM, and
+                                   # MAME romsets with the core at ROM 0
+    tools/mame.sh                  # a MAME window to play in (-m 6128 for a 6128)
     tools/run.sh file.lsp          # type a file at it in MAME, print the transcript
     tools/test.sh                  # the regression tests in test/ (-m 6128 for a 6128)
 
 On a real CPC the core ROM goes in at ROM 0 with ROMDIS asserted to replace
 BASIC, or at any free number, where `|LISP` from BASIC starts it. The
-library ROM goes at any free number from 1 to 6, and must come from the
-same build as the core.
+library ROMs go at any free numbers from 1 to 6, in either order, and must
+come from the same build as the core.
 
 `CLAUDE.md` has the design, the memory layout, and what was learned about
 the CPC and MAME along the way.

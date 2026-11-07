@@ -949,7 +949,7 @@ num_ovf:
 ;; float_go: HL = &arg 0, B = n, C, DE = a NUM_ label -> the library's
 ;; result, returned for the subr
 float_go:
-    ld a,(V_LIBROM)
+    ld a,(V_NUMROM)
     or a
     jp nz,lnum_arith
     ld a,b                      ; no library

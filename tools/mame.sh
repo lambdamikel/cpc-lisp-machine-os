@@ -1,6 +1,6 @@
 #!/bin/bash
 # Play with the Lisp in a MAME window: the core at ROM 0, the library at
-# ROM 1, and a disc in drive A that keeps what is saved on it.
+# ROMs 1 and 2, and a disc in drive A that keeps what is saved on it.
 #
 #     tools/mame.sh [-m 464|6128] [disc.mfi]
 #
@@ -35,10 +35,11 @@ if [ ! -f "$DISC" ]; then
 fi
 rm -rf build/mame-live
 cp -r build/mame build/mame-live
-cp build/LISPLIB.ROM build/mame-live/LISPLIB.ROM
+cp build/LISPLIB.ROM build/LISPLIB2.ROM build/mame-live/
+LIBS=(-rom1 build/mame-live/LISPLIB.ROM -rom2 build/mame-live/LISPLIB2.ROM)
 case $MACH in
-    464)  ARGS=(cpc464 -exp ddi1 -flop "$DISC" -exp:ddi1:exp rom -rom1 build/mame-live/LISPLIB.ROM) ;;
-    6128) ARGS=(cpc6128 -flop1 "$DISC" -exp rom -rom1 build/mame-live/LISPLIB.ROM) ;;
+    464)  ARGS=(cpc464 -exp ddi1 -flop "$DISC" -exp:ddi1:exp rom "${LIBS[@]}") ;;
+    6128) ARGS=(cpc6128 -flop1 "$DISC" -exp rom "${LIBS[@]}") ;;
     *) echo "mame: -m 464 or 6128" >&2; exit 2 ;;
 esac
 exec env -u WAYLAND_DISPLAY GDK_BACKEND=x11 /usr/games/mame -rompath build/mame-live \

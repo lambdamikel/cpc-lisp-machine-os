@@ -27,16 +27,6 @@ pp_setw:
     ld (PP_W),a
     ret
 
-;; lputc: A through the core's putc. All registers kept.
-lputc:
-    push ix
-    push de
-    ld e,a
-    CORE putc_e
-    pop de
-    pop ix
-    ret
-
 ;; pp_newline: C = the column to continue in
 pp_newline:
     ld a,13
@@ -357,54 +347,11 @@ lf_pprint:
 ;@ PRIN1-TO-STRING 1 1 lf_prin1_to_string
 lf_prin1_to_string:
     ld ix,l_prin1
-    jr to_string_ix
+    jp to_string_ix
 ;@ PRINC-TO-STRING 1 1 lf_princ_to_string
 lf_princ_to_string:
     ld ix,l_princ
-;; to_string_ix: IX = a routine of this ROM, which prints -> HL = what it
-;; printed, as a string (255 characters at most). HL goes to it.
-to_string_ix:
-    ld de,(V_OUTPTR)
-    push de
-    ld de,(V_OUTEND)
-    push de
-    ld de,(V_OUTCNT)
-    push de
-    ld a,(V_OUTCOL)
-    ld d,a
-    ld a,(V_OUTMODE)
-    ld e,a
-    push de
-    ld a,1
-    ld (V_OUTMODE),a
-    ld de,TOKBUF
-    ld (V_OUTPTR),de
-    ld de,TOKBUF+255
-    ld (V_OUTEND),de
-    ld de,0
-    ld (V_OUTCNT),de
-    call lcall_ix
-    ld hl,(V_OUTCNT)
-    ld bc,(V_OUTPTR)
-    pop de
-    ld a,e
-    ld (V_OUTMODE),a
-    ld a,d
-    ld (V_OUTCOL),a
-    pop de
-    ld (V_OUTCNT),de
-    pop de
-    ld (V_OUTEND),de
-    pop de
-    ld (V_OUTPTR),de
-    ld de,256
-    or a
-    sbc hl,de
-    jp nc,str_long
-    ld a,c
-    sub TOKBUF and #FF
-    ld c,a
-    jp lstr_result
+    jp to_string_ix
 l_prin1:
     ld ix,prin1
     jp CORECALL

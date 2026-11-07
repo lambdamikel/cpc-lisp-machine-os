@@ -49,17 +49,27 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   machine stack (the firmware's is tiny), checked against overflow.
 * **Input** is the firmware's EDIT (BASIC's line editor, copy cursor and
   all); ESC is polled with KM TEST KEY during evaluation.
-* **The library ROM** (`lib/`, any number 1-6; MAME's ROM box makes it 1)
-  holds graphics, sound, keys, the text-screen functions, strings, and
-  Lisp-defined functions and macros (`lib/lisp.lsp`). `src/xrom.asm`
-  explains the arrangement: the core finds it by signature and build number
-  (both ROMs come from one `tools/build.sh` run, and call each other by
-  address); calls cross through a trampoline in RAM using KL ROM SELECT; a
-  library name costs nothing until the reader interns it, and a Lisp-defined
-  function is read from the ROM's text on its first call (autoload). The
-  library is assembled against the core's symbols (`build/core.inc`) and may
-  use its constants and variables directly, its code only through `CORE`,
-  and must hand the core RAM pointers only.
+* **The library ROMs** (`lib/`, any numbers 1-6; MAME's ROM box makes them
+  1 and 2) are up to four *parts*, each its own ROM: part 0
+  (`lib/lib.asm`, LISPLIB.ROM) has graphics, sound, keys, the text screen,
+  strings, the editors, pp and files; part 1 (`lib/lib2.asm`,
+  LISPLIB2.ROM) floats, `format` and the Lisp-defined functions and macros
+  (`lib/lisp.lsp`). `src/xrom.asm` explains the arrangement: the core finds
+  them by signature and build number (all ROMs come from one
+  `tools/build.sh` run, and call each other by address), each says which
+  part it is (header +22); calls cross through a trampoline in RAM using KL
+  ROM SELECT; a library name costs nothing until the reader interns it, and
+  a Lisp-defined function is read from the ROM's text on its first call
+  (autoload). An LSUBR's or AUTOLOAD's data word is its ROM address with the
+  part in the top two bits. Each part is assembled against the core's
+  symbols (`build/core.inc`) and may use its constants and variables
+  directly, its code only through `CORE`, and must hand the core RAM
+  pointers only. **A part cannot call another part's code**: what they
+  share is in `lib/common.asm`, a copy in each; a float met by part 0's
+  `lint_hl` goes through the core (`num_int`). `tools/mklib.py` builds each
+  part's table from its main file's includes and `;@lisp` lines, checking
+  names across all parts. A new part: a main file like `lib/lib2.asm`, a
+  line in `build.sh` and in the MAME scripts.
 * **The line editor** (`lib/editor.asm`, asked for by Mike) replaces EDIT
   when the library is present: a typed `)` shows its `(` (beeps if there is
   none), continuation lines come indented Lisp-style, TAB, up-arrow history,
@@ -82,7 +92,7 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   top of block space (`V_BLKSAVE`; toplevel gives it back). The core's
   `putc` can print into memory or just count (`V_OUTMODE`), and the reader
   can read a string by index (`V_INSRC` 2), which the GC may move.
-* **Floats** (`lib/float.asm`) are the firmware's 5-byte reals (about nine
+* **Floats** (`lib/float.asm`, part 1) are the firmware's 5-byte reals (about nine
   digits), kept in block space behind a typed cell (`HDR_FLOAT`) as a
   string's characters are. The core keeps the fixnum arithmetic: each
   numeric subr starts with `nums_v`/`nums_1`/`nums_2`, which hand the whole

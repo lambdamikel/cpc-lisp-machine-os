@@ -156,16 +156,31 @@ boot:
 
     ld hl,banner
     call puts
-    ld a,(V_LIBROM)
+    ld hl,banner_lib            ; and the library ROMs' numbers
+    ld b,NLIBS
+    ld de,V_LIBS
+.lib:
+    ld a,(de)
     or a
     jr z,.nolib
-    ld hl,banner_lib
-    call puts
-    ld a,(V_LIBROM)
+    push de
+    push bc
+    push af
+    call puts                   ; ", library ROMs" the first time, then " "
+    pop af
     ld l,a
     ld h,0
     call print_uint
+    pop bc
+    pop de
+    ld hl,banner_sp
 .nolib:
+    inc de
+    inc de
+    inc de
+    inc de
+    inc de
+    djnz .lib
     call newline
     call gc
     ld hl,(V_NFREE)
@@ -379,8 +394,9 @@ err_nostr:
     include "subrs.asm"
     include "xrom.asm"
 
-banner:      db "CPC Lisp 0.2",0
-banner_lib:  db ", library in ROM ",0
+banner:      db "CPC Lisp 0.3",0
+banner_lib:  db ", library ROMs"
+banner_sp:   db " ",0
 banner2:     db " cells free",13,10,13,10,0
 prompt_main: db "LISP> ",0
 prompt_cont: db "  ",0

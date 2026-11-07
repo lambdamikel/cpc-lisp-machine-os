@@ -26,7 +26,8 @@ getc:
     jr z,.file
     push hl
     ld hl,(V_SRCPTR)
-    call LIBPEEK
+    ld a,(V_SRCROM)
+    call ROMPEEK
     or a
     jr z,.end
     inc hl
@@ -146,7 +147,7 @@ edit_line:
     jr z,.firm
     push hl
     pop ix
-    ld a,(V_LIBROM)
+    ld a,(V_EDROM)
     jp ROMCALL
 .firm:
     ld hl,(V_EDITV)
