@@ -98,6 +98,7 @@ symtab:
     FSUBR THE,"THE",sf_the
     FSUBR UNWIND_PROTECT,"UNWIND-PROTECT",sf_unwind_protect
     FSUBR MULTIPLE_VALUE_LIST,"MULTIPLE-VALUE-LIST",sf_mvlist
+    FSUBR EXPANDED,"%EXPANDED",sf_expanded  ; a macro call, its expansion cached
 
     ; lists
     SUBR CAR,"CAR",car,1,1

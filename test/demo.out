@@ -54,5 +54,5 @@ T
 LISP> (do ((i 0 (1+ i)) (j 10 (1- j))) ((= i 3) (list i j)))
 (3 7)
 LISP> (macroexpand-1 '(do ((a 1 (+ a b)) (b 2 a)) ((> a 5) a)))
-(LET ((A 1) (B 2)) (LOOP (WHEN (> A 5) (RETURN (PROGN A))) (LET ((G10 (+ A B)) (G11 A)) (SETQ A G10 B G11))))
+(LET ((A 1) (B 2)) (LOOP (WHEN (> A 5) (RETURN (PROGN A))) (LET ((G7 (+ A B)) (G8 A)) (SETQ A G7 B G8))))
 LISP> 

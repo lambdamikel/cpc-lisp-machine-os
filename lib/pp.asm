@@ -99,6 +99,18 @@ pp:
     CORE prin1
     ret
 .list:
+    ld a,(hl)                   ; a macro call with its expansion kept: as
+    cp S_EXPANDED and #FF       ;   it was written
+    jr nz,.notx
+    inc hl
+    ld a,(hl)
+    dec hl
+    cp S_EXPANDED >> 8
+    jr nz,.notx
+    CDRHL
+    CDRHL
+    jr pp
+.notx:
     call pp_prefix
     jr z,pp                     ; 'x: the prefix is out, now x
     ld a,(V_OUTCOL)

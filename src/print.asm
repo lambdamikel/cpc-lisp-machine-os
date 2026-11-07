@@ -310,6 +310,16 @@ print_list:
     ld d,(hl)                   ; DE = car
     inc hl
     LDHLI                       ; HL = cdr
+    ld a,e                      ; a macro call with its expansion kept:
+    cp S_EXPANDED and #FF       ;   as it was written
+    jr nz,.notx
+    ld a,d
+    cp S_EXPANDED >> 8
+    jr nz,.notx
+    pop de
+    CDRHL
+    jr print_list
+.notx:
     ; (quote x) and friends print as 'x
     ld a,l
     and 3

@@ -239,6 +239,7 @@ env_fn_entry:
     ret
 
 ev_cons:
+    ld (V_MFORM),hl             ; (for .macro)
     ld e,(hl)
     inc hl
     ld d,(hl)                   ; DE = operator
@@ -277,7 +278,7 @@ ev_cons:
     or l
     jr z,.global
     CDRHL
-    jr .call
+    jp .call
 .global:
     ld hl,SY_FUNC
     add hl,de
@@ -314,15 +315,27 @@ ev_cons:
     cp HDR_AUTOLOAD and #FF
     jr nz,.call
     push bc                     ; Lisp text in the library: read it first
+    ld bc,(V_MFORM)             ;   (resolve_fn wants DE, the symbol)
+    push bc
     call resolve_fn
+    pop bc
+    ld (V_MFORM),bc
     pop bc
     jr .fn
 .macro:
-    ; a macro: expand, and evaluate the expansion here
+    ; a macro: expand, keep the expansion in the call (mx_displace), and
+    ; evaluate it here
+    ld de,(V_MFORM)
+    push de                     ; the call, while the macro runs
+    push hl                     ; the macro
     LDHLI                       ; its closure
     ld e,c
     ld d,b
-    call apply_list
+    call apply_list             ; the expansion
+    pop de
+    ex (sp),hl                  ; it on the stack, HL = the call
+    call mx_displace
+    pop hl
     jp ev_loop
 .undef:
     ld hl,m_undef
@@ -1383,6 +1396,75 @@ ev_progn:
 ;; ===========================================================================
 ;; SPECIAL FORMS. Each is entered with HL = the argument forms, under the
 ;; eval frame.
+
+;; mx_displace: HL = a macro call (op . args), DE = its macro, the
+;; expansion under the return address -> the call becomes
+;; (%EXPANDED (macro . expansion) op . args): the next time it is evaluated
+;; the expansion is used as it is, while op is still that macro. The
+;; printers show (op . args), as it was written.
+mx_displace:
+    push de
+    push hl                     ; [call][macro][ret][expansion]
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    inc hl
+    LDHLI
+    ex de,hl
+    call cons                   ; (op . args): the call as it was
+    ex (sp),hl
+    push hl                     ; [call][copy][macro][ret][expansion]
+    ld hl,8
+    add hl,sp
+    LDHLI
+    ex de,hl                    ; DE = the expansion
+    ld hl,4
+    add hl,sp
+    LDHLI                       ; HL = the macro
+    call cons                   ; (macro . expansion)
+    pop bc                      ; the call
+    pop de                      ; the copy
+    call cons                   ; ((macro . expansion) . copy)
+    ex de,hl
+    ld l,c
+    ld h,b
+    ld (hl),S_EXPANDED and #FF
+    inc hl
+    ld (hl),S_EXPANDED >> 8
+    inc hl
+    ld (hl),e
+    inc hl
+    ld (hl),d
+    pop de
+    ret
+
+;; (%EXPANDED (macro . expansion) op . args): a macro call mx_displace has
+;; seen. Its expansion, if op is that macro still; else the call as it was
+;; (which is expanded afresh, and cached again)
+sf_expanded:
+    ld e,(hl)
+    inc hl
+    ld d,(hl)                   ; DE = (macro . expansion)
+    inc hl
+    LDHLI                       ; HL = (op . args)
+    push hl
+    LDHLI                       ; op
+    ld bc,SY_FUNC
+    add hl,bc
+    LDHLI                       ; its function now
+    ex de,hl
+    push hl
+    LDHLI                       ; the macro then
+    or a
+    sbc hl,de
+    pop hl
+    jr nz,.changed
+    pop de
+    CDRHL                       ; the expansion
+    jp ev_loop
+.changed:
+    pop hl
+    jp ev_loop
 
 ;; (multiple-value-list form): all the values form returns, as a list
 sf_mvlist:

@@ -111,4 +111,26 @@ LISP> (let ((f #'(lambda (&optional (a 5)) a))) (list (funcall f) (funcall f 1))
 (5 1)
 LISP> (list * ** ***)
 ((5 1) 9 (7))
+LISP> (defmacro sq2 (x) `(* ,x ,x))
+SQ2
+LISP> (defun f2 (n) (sq2 n))
+F2
+LISP> (list (f2 3) (f2 4))
+(9 16)
+LISP> (defmacro sq2 (x) `(+ ,x ,x))
+SQ2
+LISP> (f2 3)
+6
+LISP> (let ((form (list 'sq2 5))) (list (eval form) form (car form)))
+(10 (SQ2 5) %EXPANDED)
+LISP> (defmacro my-incf (v) `(setq ,v (1+ ,v)))
+MY-INCF
+LISP> (defun cnt (n) (let ((i 0)) (loop (when (>= i n) (return i)) (my-incf i))))
+CNT
+LISP> (cnt 100)
+100
+LISP> (pprint '(when (> a 1) (my-incf a)))
+
+(WHEN (> A 1) (MY-INCF A))
+NIL
 LISP> 
