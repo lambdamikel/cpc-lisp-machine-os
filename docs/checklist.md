@@ -72,7 +72,8 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
       the last line; SHIFT + arrows and COPY as on the CPC
 - [x] Function editor: `(ed 'name)` shows a definition pretty-printed on a
       full screen; COPY or CTRL-S reads it back, ESC leaves it; `(ed)`
-      reopens the last text
+      reopens the last text. SHIFT + up/down a page, CTRL + up/down the
+      top/bottom, CTRL + left/right the start/end of a line
 
 ## Built-in functions
 

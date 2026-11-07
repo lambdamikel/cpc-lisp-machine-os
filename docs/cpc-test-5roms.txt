@@ -154,6 +154,10 @@ Use a disc you don't mind writing to.
                 COPY (or CTRL-S) reads it back in: FIB.
                 ESC leaves it unchanged.
 [ ] (ed 'rose)  the demo's definition (ESC to leave it)
+[ ] (ed 'queens) SHIFT + down: a page down; SHIFT + up: back up. CTRL +
+                up/down: the top/bottom. ESC to leave it.
+                (Not in the ROMs flashed at 15:00 on 2026-11-07 -- the
+                next flash.)
 
 
 13. Getting BASIC back

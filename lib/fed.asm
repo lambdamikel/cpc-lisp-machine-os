@@ -8,8 +8,8 @@
 ;; longer than the screen wrap. COPY (or CTRL-S) reads and evaluates all of
 ;; it; ESC leaves it as it was. Keys as in the line editor, and RETURN
 ;; indents the new line, TAB indents the line the cursor is on, a ")" shows
-;; its "(", CTRL + up/down go to the top/bottom, CTRL + left/right to the
-;; start/end of the line.
+;; its "(", SHIFT + up/down go a page up/down, CTRL + up/down to the
+;; top/bottom, CTRL + left/right to the start/end of the line.
 ;;
 ;; THE BUFFER is lent from the top of block space (V_BLKHI is lowered, and
 ;; V_BLKSAVE remembers it, so an error anywhere gives it back): half of
@@ -418,6 +418,10 @@ fe_loop:
     jp z,fe_left
     cp #F3
     jp z,fe_right
+    cp #F4
+    jp z,fe_pgup
+    cp #F5
+    jp z,fe_pgdn
     cp #F8
     jp z,fe_first
     cp #F9
@@ -439,11 +443,11 @@ fe_loop:
     pop af
     cp ")"
     call z,fe_blink
-    jr fe_loop
+    jp fe_loop
 .full:
     pop af
     call ed_beep
-    jr fe_loop
+    jp fe_loop
 .done:
     call TXT_CUR_ENABLE
     scf
@@ -544,13 +548,77 @@ fe_setcur:
     ld (FE_CUR),hl
     jp fe_loop
 
-;; up and down keep the column, as far as the line allows
+;; up and down keep the column, as far as the line allows; SHIFT + up and
+;; down go a screen at a time (less a line, which stays in sight)
 fe_up:
+    call fe_up1
+    jp fe_loop
+fe_down:
+    call fe_down1
+    jp fe_loop
+fe_pgup:
+    ld hl,fe_up1
+    ld de,fe_topup
+    jr fe_page
+fe_pgdn:
+    ld hl,fe_down1
+    ld de,fe_topdown
+;; fe_page: HL moves the cursor a line, DE the screen's top: both, as many
+;; lines as the screen has less one, or until the cursor can go no further
+fe_page:
+    ld a,(FE_H)
+    dec a
+    ld b,a
+.l:
+    push bc
+    push de
+    push hl
+    call .go                    ; the cursor
+    pop hl
+    pop de
+    jr z,.stop                  ; at the first or last line
+    push de
+    push hl
+    ex de,hl
+    call .go                    ; the top
+    pop hl
+    pop de
+    pop bc
+    djnz .l
+    jr .drawn
+.stop:
+    pop bc
+.drawn:
+    call fe_render_all
+    jp fe_loop
+.go:
+    jp (hl)
+
+fe_topup:
+    ld hl,(FE_TOP)
+    ld de,(FE_BUF)
+    call fe_cmp
+    ret z
+    dec hl
+    call fe_lstart
+    ld (FE_TOP),hl
+    ret
+fe_topdown:
+    ld hl,(FE_TOP)
+    call fe_lend
+    ld de,(FE_END)
+    call fe_cmp
+    ret z
+    inc hl
+    ld (FE_TOP),hl
+    ret
+
+fe_up1:
     ld hl,(FE_CUR)
     call fe_lstart
     ld de,(FE_BUF)
     call fe_cmp
-    jp z,fe_loop                ; the first line
+    ret z                       ; the first line
     push hl
     ld de,(FE_CUR)
     ex de,hl
@@ -564,7 +632,7 @@ fe_up:
     call fe_lstart
     pop de
     jr fe_column
-fe_down:
+fe_down1:
     ld hl,(FE_CUR)
     call fe_lstart
     push hl
@@ -573,7 +641,7 @@ fe_down:
     ld de,(FE_END)
     call fe_cmp
     pop de
-    jp z,fe_loop                ; the last line
+    ret z                       ; the last line
     push hl
     ld hl,(FE_CUR)
     or a
@@ -593,9 +661,12 @@ fe_column:
     add hl,bc
     call fe_cmp
     pop bc
-    jr c,fe_setcur
+    jr c,.set
     ex de,hl
-    jr fe_setcur
+.set:
+    ld (FE_CUR),hl
+    or 1                        ; NZ: it moved
+    ret
 
 ;; DEL: the character before the cursor; CLR: the one under it
 fe_bs:
