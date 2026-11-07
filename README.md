@@ -47,5 +47,11 @@ BASIC, or at any free number, where `|LISP` from BASIC starts it. The
 library ROMs go at any free numbers from 1 to 6, in either order, and must
 come from the same build as the core.
 
-`CLAUDE.md` has the design, the memory layout, and what was learned about
-the CPC and MAME along the way.
+## Documents
+
+* [`docs/checklist.md`](docs/checklist.md): everything implemented, every
+  built-in function by ROM, and what is still to come
+* [`docs/cpc-test.txt`](docs/cpc-test.txt): what to type on a real CPC, and
+  what it should answer
+* `CLAUDE.md`: the design, the memory layout, and what was learned about the
+  CPC and MAME along the way
