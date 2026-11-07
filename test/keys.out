@@ -1,0 +1,41 @@
+LISP> (defun k1 (&key a (b 2) (c 3 c-p)) (list a b c c-p))
+K1
+LISP> (k1)
+(NIL 2 3 NIL)
+LISP> (k1 :a 1)
+(1 2 3 NIL)
+LISP> (k1 :c 30 :a 10)
+(10 2 30 T)
+LISP> (k1 :b 20 :c 30 :b 99)
+(NIL 20 30 T)
+LISP> (defun k2 (x &optional (y 5) &key z) (list x y z))
+K2
+LISP> (k2 1)
+(1 5 NIL)
+LISP> (k2 1 2 :z 3)
+(1 2 3)
+LISP> (defun k3 (&rest all &key x y) (list all x y))
+K3
+LISP> (k3 :y 2 :x 1)
+((:Y 2 :X 1) 1 2)
+LISP> (defun k4 (&key ((:size s) 10)) s)
+K4
+LISP> (k4 :size 4)
+4
+LISP> (k4)
+10
+LISP> (defun k5 (&key a &allow-other-keys) a)
+K5
+LISP> (k5 :b 1 :a 2)
+2
+LISP> ((lambda (&key (n (* 2 3))) n))
+6
+LISP> (k1 :a)
+(NIL 2 3 NIL)
+LISP> (defmacro mk (&key (name 'x) (val 0)) `(list ',name ,val))
+MK
+LISP> (mk :val 5)
+(X 5)
+LISP> (mk :name y)
+(Y 0)
+LISP> 

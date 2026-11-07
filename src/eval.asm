@@ -646,14 +646,15 @@ make_closure:
 ;; expected is matched against its argument, recursively.
 bind:
     push ix
-    ld ix,-6
+    ld ix,-8
     add ix,sp
     ld sp,ix
     ld (ix+0),l                 ; lambda list still to do
     ld (ix+1),h
     ld (ix+2),c                 ; arguments still to bind
     ld (ix+3),b
-    ld (ix+4),0                 ; 0 required, 1 &optional, 2 &rest, 3 &aux, 4 after &rest
+    ld (ix+4),0                 ; 0 required, 1 &optional, 2 &rest, 3 &aux,
+                                ; 4 after &rest, 5 &key; (ix+6) the keys
 .loop:
     ld l,(ix+0)
     ld h,(ix+1)
@@ -695,7 +696,20 @@ bind:
 .k3:
     ld de,S_AMP_KEY
     call cmp_hl_de
-    jp z,.nokey
+    jr nz,.k4
+    ld a,(ix+4)                 ; the keys: what &rest took, or the rest
+    cp 4
+    jr z,.krest2
+    ld a,(ix+2)
+    ld (ix+6),a
+    ld a,(ix+3)
+    ld (ix+7),a
+    ld (ix+2),0
+    ld (ix+3),0
+.krest2:
+    ld (ix+4),5
+    jp .loop
+.k4:
     ld a,(ix+4)
     or a
     jr z,.req
@@ -705,7 +719,9 @@ bind:
     jp z,.rest
     dec a
     jp z,.aux
-    jp .badll
+    dec a
+    jp z,.badll
+    jp .key
 .req:
     call .take
     jp c,.few
@@ -727,6 +743,8 @@ bind:
 .opt:
     push hl                     ; the spec: var, or (var [default [svar]])
     call .take
+;; the spec on the stack, DE = the value given, or carry if none was
+.optkey:
     jr nc,.optval
     pop hl
     push hl
@@ -751,6 +769,7 @@ bind:
     call is_symbol
     jr z,.optsym
     call car
+    call .kvar
 .optsym:
     call bind_var
     pop hl
@@ -768,6 +787,8 @@ bind:
 .rest:
     ld e,(ix+2)
     ld d,(ix+3)
+    ld (ix+6),e                 ; for &key after it
+    ld (ix+7),d
     ld (ix+2),0
     ld (ix+3),0
     ld (ix+4),4
@@ -802,8 +823,8 @@ bind:
 .end:
     ld a,(ix+2)
     or (ix+3)
-    jr nz,.many
-    ld hl,6
+    jp nz,.many
+    ld hl,8
     add hl,sp
     ld sp,hl
     pop ix
@@ -828,12 +849,128 @@ bind:
     pop hl
     or a
     ret
+;; &key: the spec is var, (var [default [svar]]) or ((keyword var) ...).
+;; The value follows the first keyword in the keys that matches: one given
+;; is compared by eq, else the name must be ":" and var's. Keys nobody asks
+;; for are let be (as if &allow-other-keys); so is that word itself.
+.key:
+    push hl                     ; the spec
+    call is_symbol
+    jr z,.ks
+    call car                    ; var, or (keyword var)
+.ks:
+    ld a,l
+    and 3
+    jr nz,.kname
+    call car                    ; the keyword
+    ex de,hl
+    ld c,0
+    jr .kfind
+.kname:
+    push hl                     ; &allow-other-keys: nothing to bind
+    LDHLI
+    inc hl
+    inc hl
+    ld a,(hl)
+    pop hl
+    cp "&"
+    jr nz,.kn
+    pop hl
+    jp .loop
+.kn:
+    ex de,hl                    ; DE = var
+    ld c,1
+.kfind:
+    ld l,(ix+6)
+    ld h,(ix+7)
+.kl:
+    ld a,l
+    and 3
+    scf
+    jr nz,.kdone
+    ld a,h
+    or l
+    scf
+    jr z,.kdone                 ; not there
+    push hl
+    LDHLI
+    call .kmatch
+    pop hl
+    CDRHL                       ; (value . rest)
+    jr z,.kfound
+    ld a,h
+    or l
+    scf
+    jr z,.kdone
+    CDRHL
+    jr .kl
+.kfound:
+    ld a,h
+    or l
+    scf
+    jr z,.kdone
+    LDHLI
+    ex de,hl
+    or a
+.kdone:
+    jp .optkey
+;; .kmatch: HL = a key given, DE = the keyword (C = 0) or the var (C = 1)
+;; -> Z if they match. BC, DE kept
+.kmatch:
+    bit 0,c
+    jp z,cmp_hl_de
+    call is_symbol
+    ret nz
+    push de
+    push bc
+    push hl
+    ex de,hl
+    call str_data               ; the var's name
+    ex (sp),hl
+    push bc
+    call str_data               ; the key's
+    pop de
+    inc de
+    ex de,hl
+    or a
+    sbc hl,bc
+    ex de,hl
+    pop de
+    jr nz,.kmno
+    ld a,(hl)
+    cp ":"
+    jr nz,.kmno
+    inc hl
+    dec bc
+.kmc:
+    ld a,b
+    or c
+    jr z,.kmno                  ; all the same: Z
+    ld a,(de)
+    cp (hl)
+    jr nz,.kmno
+    inc hl
+    inc de
+    dec bc
+    jr .kmc
+.kmno:
+    pop bc
+    pop de
+    ret
+;; .kvar: HL = var, or (keyword var) -> the var
+.kvar:
+    ld a,l
+    and 3
+    ret nz
+    ld a,h
+    or l
+    ret z
+    call cdr
+    jp car
 .few:
     ERR m_few
 .many:
     ERR m_many
-.nokey:
-    ERR m_nokey
 .badll:
     ERR m_badll
 

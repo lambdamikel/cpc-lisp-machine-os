@@ -396,7 +396,6 @@ m_notfn:     db "not a function:",0
 m_nargs:     db "wrong number of arguments for",0
 m_few:       db "too few arguments",0
 m_many:      db "too many arguments",0
-m_nokey:     db "&KEY is not supported yet",0
 m_badll:     db "bad lambda list",0
 m_const:     db "cannot change a constant:",0
 m_notvar:    db "not a variable:",0
