@@ -438,7 +438,7 @@ apply_core:
     dec b
     dec b
     dec b
-    jr nz,.notfn                ; the header's high byte is 4
+    jp nz,.notfn                ; the header's high byte is 4
     cp HDR_CLOSURE and #FF
     jp z,apply_closure_stack
     cp HDR_LSUBR and #FF
@@ -450,6 +450,37 @@ apply_core:
     ld b,0
     jr .check
 .rom:
+    ld a,e                      ; FUNCALL: its first argument is the function
+    cp (E_FUNCALL+2) and #FF    ; -- the arguments move up one, over FUNCALL,
+    jr nz,.subr                 ; and the call is that one's (no list built)
+    ld a,d
+    cp (E_FUNCALL+2) >> 8
+    jr nz,.subr
+    ld a,c
+    or a
+    jr z,.subr                  ; (funcall): FUNCALL says what is wrong
+    dec hl
+    dec hl
+    ld a,(hl)                   ; arg 0's high byte
+    inc hl
+    inc hl
+    cp CELL_LO >> 8
+    jr c,.subr                  ; a symbol: FUNCALL looks it up
+    ld d,h
+    ld e,l                      ; to the function's high byte,
+    dec hl
+    dec hl                      ;   from arg 0's
+    push bc
+    ld b,0
+    sla c
+    rl b
+    lddr
+    pop bc
+    inc sp
+    inc sp
+    dec c
+    jp apply_core
+.subr:
     ld h,d
     ld l,e
     dec hl

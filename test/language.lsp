@@ -45,3 +45,10 @@ l
 (incf (cadr l) 5)
 l
 (> (gc) 1000)
+(funcall 'list 1)
+(funcall #'funcall #'funcall #'list 7)
+(apply #'funcall (list #'+ 4 5))
+(funcall '(1 2))
+(funcall)
+(let ((f #'(lambda (&optional (a 5)) a))) (list (funcall f) (funcall f 1)))
+(list * ** ***)

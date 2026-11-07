@@ -157,7 +157,9 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
          once per function body; plain lambda lists are bound straight
          from the stack. Together: `(fib 17)` 1103 → 641 frames, `sort` ~7×
    - [x] ESC: a tap that falls inside a garbage collection is caught too
-   - [ ] `funcall`/`apply` without building an argument list
+   - [x] `funcall` without building an argument list (28% faster on a
+         built-in, 11% on a closure)
+   - [ ] `apply` and `mapcar` without the general `bind`
    - [ ] More from the profiler; rarely used core functions moved to a
          library ROM to make room (the core has ~200 bytes free)
 3. [ ] **The 6128's extra 64 KB**: a RAM disc for `save` and `load`

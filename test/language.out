@@ -97,4 +97,18 @@ LISP> l
 (100 7 3)
 LISP> (> (gc) 1000)
 T
+LISP> (funcall 'list 1)
+(1)
+LISP> (funcall #'funcall #'funcall #'list 7)
+(7)
+LISP> (apply #'funcall (list #'+ 4 5))
+9
+LISP> (funcall '(1 2))
+Error: not a function: (1 2)
+LISP> (funcall)
+Error: wrong number of arguments for #<SUBR FUNCALL>
+LISP> (let ((f #'(lambda (&optional (a 5)) a))) (list (funcall f) (funcall f 1)))
+(5 1)
+LISP> (list * ** ***)
+((5 1) 9 (7))
 LISP> 
