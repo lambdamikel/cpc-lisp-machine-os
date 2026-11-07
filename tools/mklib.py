@@ -15,8 +15,10 @@ bucket it would itself use. An entry is
 
     [next][kind][min][max][address][length][name]
 
-kind 1 native (address = code), 2 autoload (address = text). A name the
-core already has is an error: the core's would always win.
+kind 1 native (address = code), 2 autoload (address = text), 3 a variable
+that a boot form DEFVARs or DEFPARAMETERs (no function; listed so that SAVE
+knows it for the library's). A name the core already has is an error: the
+core's would always win.
 """
 import re, sys
 
@@ -121,7 +123,7 @@ def asm_bytes(label, data):
     return lines
 
 def main():
-    natives, autoloads, boots = [], [], []
+    natives, autoloads, boots, variables = [], [], [], []
     for path in sys.argv[1:]:
         if path.endswith('.asm'):
             for no, line in enumerate(open(path), 1):
@@ -135,12 +137,17 @@ def main():
                     autoloads.append((m.group(2).upper(), form, p, line))
                 else:
                     boots.append((form, p, line))
+                    v = re.match(r'\((defvar|defparameter|defconstant)\s+([^\s()]+)', form, re.I)
+                    if v:
+                        variables.append(v.group(2).upper())
     core = core_names()
     entries, seen = [], set()
     for name, mn, mx, label in natives:
         entries.append((name, 1, mn, mx, label))
     for k, (name, form, p, line) in enumerate(autoloads):
         entries.append((name, 2, 0, 0, f'lt_{k}'))
+    for name in variables:
+        entries.append((name, 3, 0, 0, '0'))
     for e in entries:
         if e[0] in core:
             sys.exit(f'mklib: {e[0]} is a core builtin already')

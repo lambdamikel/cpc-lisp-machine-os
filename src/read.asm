@@ -22,6 +22,8 @@ getc:
     jr z,.buf
     cp 2
     jr z,.str
+    cp 3
+    jr z,.file
     push hl
     ld hl,(V_SRCPTR)
     call LIBPEEK
@@ -62,6 +64,30 @@ getc:
     pop de
     pop hl
     ret
+.file:                          ; the file open for input
+    push hl
+    push de
+    push bc
+    call CAS_IN_CHAR
+    pop bc
+    pop de
+    pop hl
+    jr c,.fchar
+    jr z,.fesc                  ; ESC pressed
+    xor a                       ; the end of the file
+    ret
+.fchar:
+    cp #1A                      ; CTRL-Z ends an ASCII file
+    jr z,.fend
+    or a
+    ret nz
+    ld a," "
+    ret
+.fend:
+    xor a
+    ret
+.fesc:
+    ERR m_break
 .buf:
     push hl
     ld hl,(V_INPTR)

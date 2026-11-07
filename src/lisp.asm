@@ -306,6 +306,14 @@ toplevel:
     ld (V_EDDEPTH),a
     ld (V_EDSTR),a
     ld (V_OUTMODE),a
+    ld a,(V_FILES)              ; a file left open by an error
+    rra
+    call c,CAS_IN_ABANDON
+    ld a,(V_FILES)
+    and 2
+    call nz,CAS_OUT_ABANDON
+    xor a
+    ld (V_FILES),a
     ld hl,(V_BLKSAVE)
     ld a,h
     or l
@@ -411,6 +419,7 @@ m_nostr:     db "out of string space",0
 m_index:     db "index out of range",0
 m_eof:       db "unexpected end of text",0
 m_autoload:  db "the library did not define",0
+m_write:     db "cannot write the file",0
 m_cells:     db " cells, ",0
 m_syms:      db " symbols, ",0
 m_bytes:     db " string bytes free",13,10,0

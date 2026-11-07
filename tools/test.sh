@@ -6,7 +6,8 @@
 # Each test/NAME.lsp is typed at the REPL; the transcript from the first
 # prompt on (the banner's free-cell count differs between machines) must
 # match test/NAME.out. -u writes the transcripts as the new expectations --
-# read them before committing. Several tests run at once.
+# read them before committing. Several tests run at once. A test whose name
+# starts with "disc" gets a blank disc in drive A (a DDI-1 on the 464).
 cd "$(dirname "$0")/.."
 MACH=464 UPDATE=
 while getopts "m:u" o; do
@@ -24,8 +25,14 @@ fi
 tools/build.sh >/dev/null || exit 1
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
+IDSK=${IDSK:-$HOME/claude/midi80/toolchain/idsk/iDSK}
 for n in "${names[@]}"; do
-    ( tools/run.sh -m "$MACH" -f 400000 "test/$n.lsp" 2>"$tmp/$n.err" \
+    disc=()
+    if [[ $n == disc* ]]; then
+        "$IDSK" "$tmp/$n.dsk" -n >/dev/null 2>&1
+        disc=(-d "$tmp/$n.dsk")
+    fi
+    ( tools/run.sh -m "$MACH" "${disc[@]}" -f 400000 "test/$n.lsp" 2>"$tmp/$n.err" \
         | sed -n '/^LISP> /,$p' > "$tmp/$n.got" ) &
 done
 wait

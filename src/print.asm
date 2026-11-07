@@ -25,6 +25,8 @@ putc:
     pop af
     jp TXT_OUTPUT
 .mem:
+    cp 3
+    jr z,.file
     pop af
     cp 13
     ret z
@@ -53,6 +55,23 @@ putc:
     pop de
     pop hl
     ret
+
+.file:                          ; into the file open for output
+    pop af
+    push af
+    push hl
+    push de
+    push bc
+    call CAS_OUT_CHAR
+    pop bc
+    pop de
+    pop hl
+    jr nc,.werr
+    pop af
+    ret
+.werr:
+    pop af
+    ERR m_write
 
 ;; putc_e: E = a character, for the library (the trampoline uses A)
 putc_e:

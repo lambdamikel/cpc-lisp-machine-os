@@ -1,8 +1,10 @@
 #!/bin/bash
 # Boot the Lisp ROM in MAME, type a file at it, print the transcript.
 #
-#     tools/run.sh [-m 464|6128] [-n] [-s shot.png] [-f frames] [-t times.txt] input.lsp
+#     tools/run.sh [-m 464|6128] [-n] [-d disc.dsk] [-s shot.png] [-f frames] [-t times.txt] input.lsp
 #
+# -d puts a disc in drive A: the 6128's own, or on a 464 a DDI-1 with the
+# ROM box behind it.
 # The library ROM goes in MAME's ROM box (which makes it ROM 1); -n leaves
 # it out.
 # The ROM must be built first (tools/build.sh). It boots as ROM 0 from the
@@ -12,14 +14,15 @@
 # after its prompt) goes to stdout.
 set -e
 cd "$(dirname "$0")/.."
-MACH=464 SHOT= FRAMES=30000 TIMES= LIB=1
-while getopts "m:s:f:t:n" o; do
+MACH=464 SHOT= FRAMES=30000 TIMES= LIB=1 DISC=
+while getopts "m:s:f:t:nd:" o; do
     case $o in
         m) MACH=$OPTARG ;;
         s) SHOT=$(realpath -m "$OPTARG") ;;
         f) FRAMES=$OPTARG ;;
         t) TIMES=$(realpath -m "$OPTARG") ;;
         n) LIB= ;;
+        d) DISC=$(realpath "$OPTARG") ;;
         *) exit 2 ;;
     esac
 done
@@ -35,6 +38,14 @@ esac
 EDIT=0x$(awk '$1 == "EDHOOK" { sub("#", "", $2); print $2 }' build/lisp.sym)
 ROMBOX=
 [ -n "$LIB" ] && ROMBOX="-exp rom -rom1 build/LISPLIB.ROM"
+if [ -n "$DISC" ]; then
+    if [ "$MACH" = 6128 ]; then
+        ROMBOX="$ROMBOX -flop1 $DISC"
+    else
+        ROMBOX="-exp ddi1 -flop $DISC"
+        [ -n "$LIB" ] && ROMBOX="$ROMBOX -exp:ddi1:exp rom -rom1 build/LISPLIB.ROM"
+    fi
+fi
 OUTF=$(mktemp)
 trap 'rm -f "$OUTF"' EXIT
 LISP_IN=$(realpath "$IN") LISP_OUT=$OUTF LISP_SHOT=$SHOT LISP_FRAMES=$FRAMES LISP_EDIT=$EDIT LISP_TIMES=$TIMES \

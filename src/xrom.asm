@@ -24,7 +24,8 @@
 ;;                              to fill, carry set for ENTER, clear for ESC)
 ;;
 ;; A symbol entry: [next][kind][min][max][address][length][name...]
-;;   kind 1 native (address = code), 2 autoload (address = text)
+;;   kind 1 native (address = code), 2 autoload (address = text), 3 a
+;;   variable a boot form defines (only so that it counts as the library's)
 
 LIBHDR            equ #C010
 LE_KIND           equ 2
@@ -211,6 +212,8 @@ lib_find:
     call LIBPEEK
     cp 1
     jr z,.native
+    cp 2
+    jr nz,.none                 ; a variable the library defines: no function
     ld hl,LE_ADDR
     add hl,de
     call lib_word               ; DE = the text

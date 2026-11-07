@@ -1,0 +1,47 @@
+LISP> (defun sq (x) (* x x))
+SQ
+LISP> (defvar *items* '(1 "two" #\3))
+*ITEMS*
+LISP> (defmacro twice (x) `(progn ,x ,x))
+TWICE
+LISP> (save "work")
+(SQ TWICE *ITEMS*)
+LISP> (dir)
+
+Drive A: user  0
+
+WORK    .LSP   1K
+
+177K free
+
+NIL
+LISP> (fmakunbound 'sq)
+SQ
+LISP> (fmakunbound 'twice)
+TWICE
+LISP> (makunbound '*items*)
+*ITEMS*
+LISP> (load "work")
+T
+LISP> (sq 9)
+81
+LISP> *items*
+(1 "two" #\3)
+LISP> (macroexpand-1 '(twice (print 1)))
+(PROGN (PRINT 1) (PRINT 1))
+LISP> (save "two.lsp" 'sq)
+(SQ)
+LISP> (load "nothere")
+
+NOTHERE .LSP not found
+Error: cannot open "nothere"
+LISP> (dir)
+
+Drive A: user  0
+
+TWO     .LSP   1K   WORK    .LSP   1K
+
+176K free
+
+NIL
+LISP> 

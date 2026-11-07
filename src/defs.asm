@@ -23,6 +23,10 @@ TXT_CUR_ON        equ #BB81
 TXT_CUR_OFF       equ #BB84
 SCR_SET_MODE      equ #BC0E
 KL_ROM_WALK       equ #BCCB
+CAS_IN_ABANDON    equ #BC7D         ; the file vectors: a disc ROM takes them
+CAS_IN_CHAR       equ #BC80         ; over, so they work with AMSDOS, Parados
+CAS_OUT_ABANDON   equ #BC92         ; or a tape
+CAS_OUT_CHAR      equ #BC95
 KL_ROM_SELECT     equ #B90F         ; C = ROM -> C = the one before. AF, B corrupt
 KL_CURR_SELECTION equ #B912         ; -> A = the ROM selected now
 MC_WAIT_FLYBACK   equ #BD19
@@ -115,13 +119,15 @@ V_LIBBKT          defs 2            ; the library's symbol hash table
 V_LIBFN           defs 2            ; the library function being called
 V_RCBC            defs 2            ; trampoline: BC in passing
 V_INSRC           defs 1            ; reader: 0 the keyboard, 1 library text,
-                                    ;   2 a string
+                                    ;   2 a string, 3 the file open for input
+V_FILES           defs 1            ; files open: bit 0 input, bit 1 output
 V_LIBEDIT         defs 2            ; the library's line editor, 0 = none
 V_EDDEPTH         defs 1            ; line editor: open parens it remembers
 V_EDSTR           defs 1            ; line editor: the last line ended in a string
 V_SRCPTR          defs 2            ; reader: next character of library text,
                                     ;   or the index into V_SRCOBJ
-V_OUTMODE         defs 1            ; printer: 0 the screen, 1 memory, 2 count only
+V_OUTMODE         defs 1            ; printer: 0 the screen, 1 memory, 2 count
+                                    ;   only, 3 the file open for output
 V_OUTPTR          defs 2            ;   memory: where the next character goes
 V_OUTEND          defs 2            ;   and where it must stop
 V_OUTCNT          defs 2            ;   characters printed (memory and count)

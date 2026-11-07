@@ -63,6 +63,12 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   none), continuation lines come indented Lisp-style, TAB, up-arrow history,
   and the CPC copy cursor. The REPL calls `EDHOOK` (a RET in RAM) before
   every line; the harness watches that, not EDIT.
+* **Files** (`lib/disc.asm`): `(load "name")`, `(save "name" [symbols])`
+  -- everything the user defined if none are named, pretty-printed --
+  and `(dir)`, through the CAS vectors (AMSDOS, Parados, the card, tape).
+  ".LSP" is added to a name without a ".". The reader reads the open input
+  file (`V_INSRC` 3), `putc` writes the output file (`V_OUTMODE` 3); the 2
+  KB buffer is lent like the editor's, and toplevel abandons open files.
 * **The function editor** (`lib/fed.asm`, Mike's idea): `(ed 'foo)` shows
   foo's definition pretty-printed (`lib/pp.asm`, also `pprint`) on a full
   screen; COPY or CTRL-S reads and evaluates it, ESC drops it; `(ed)`
@@ -70,8 +76,8 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   top of block space (`V_BLKSAVE`; toplevel gives it back). The core's
   `putc` can print into memory or just count (`V_OUTMODE`), and the reader
   can read a string by index (`V_INSRC` 2), which the GC may move.
-* **Still to come**: floats, vectors, `&key`, `unwind-protect`, `load` from
-  disc, the 6128's extra RAM; maybe `*print-case*` (all output is upper
+* **Still to come**: floats, vectors, `&key`, `format`, `unwind-protect`,
+  the 6128's extra RAM, speed; maybe `*print-case*` (all output is upper
   case, as in CL).
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
@@ -112,6 +118,14 @@ should see.
     tools/build.sh                      assemble, splice into build/mame
     tools/run.sh [-m 464|6128] [-s shot.png] file.lsp    type it, print the transcript
     tools/test.sh [-m 6128] [-u]        regression: test/*.lsp against test/*.out
+    tools/mame.sh [-m 6128] [disc.mfi]  a MAME window to play in, with a disc
+
+* **MAME writes .mfi floppy images back, not .dsk** (its CPC DSK format is
+  read-only: a SAVE vanishes with the session). `tools/mame.sh` makes and
+  uses `work.mfi`; `floptool flopconvert dsk mfi` converts (name the input
+  format: `auto` takes a CPC .dsk for an Acorn one). Tests use a fresh .dsk,
+  which is fine within one run; `run.sh -d` puts it in the 6128's drive, or
+  a DDI-1's on the 464 with the ROM box behind it.
 
 * **MAME's ROM box cannot answer ROM 0**: it numbers its *filled* sockets
   1, 2, 3... in order (rom1, rom2, rom8 became ROMs 1, 2, 3). So
