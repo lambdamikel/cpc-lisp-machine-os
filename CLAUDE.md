@@ -56,12 +56,15 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   RAM disc and the printers and readers (`lib/streams.asm`); part 1
   (`lib/lib2.asm`, LISPLIB2.ROM) floats, `format`, `sort` (`lib/seq.asm`),
   lists/sequences/`coerce` and what moved out of the core
-  (`lib/lists.asm`), structures, the card, the LOOP expander
-  (`lib/loop.asm`); part 2 (`lib/lib3.asm`, LISPLIB3.ROM) the Lisp-defined
+  (`lib/lists.asm`), structures, the card; part 2 (`lib/lib3.asm`, LISPLIB3.ROM) the Lisp-defined
   functions and macros (`lib/lisp.lsp`) only -- nearly full; part 3
-  (`lib/demo.asm`, LISPDEMO.ROM) `loop` (`lib/loop.lsp`) and the demos
-  (`lib/demo.lsp`), Lisp text too: new Lisp library text goes here. Space
-  (2026-11-07): core 234 bytes free, parts 0-3 763, 350, 263, ~9.6 K. All four parts are used: a fifth needs NLIBS raised. `src/xrom.asm` explains the arrangement: the core finds
+  (`lib/demo.asm`, LISPDEMO.ROM) `loop` (`lib/loop.lsp`, its expander
+  `lib/loop.asm` -- a part may hold natives as well as text), more library
+  Lisp (`lib/lisp2.lsp`) and the demos (`lib/demo.lsp`): new library code
+  goes here or in part 1. **A fifth part is not possible as it is**: an
+  LSUBR's or AUTOLOAD's data word keeps the part in two bits. Space
+  (2026-11-07 late): core 46 bytes free, parts 0-3 335, 3785, 596, 4223.
+  `src/xrom.asm` explains the arrangement: the core finds
   them by signature and build number (all ROMs come from one
   `tools/build.sh` run, and call each other by address), each says which
   part it is (header +22); calls cross through a trampoline in RAM using KL
@@ -161,7 +164,7 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   the remainder; the REPL prints every value.
 * **The extended LOOP**: `loop` is a macro (`lib/loop.lsp`, in the demo
   part); a simple loop becomes the core's `%loop` special form, a keyword
-  loop goes to `%loop-expand` (`lib/loop.asm`, part 1, native: a Lisp
+  loop goes to `%loop-expand` (`lib/loop.asm`, in the demo part, native: a Lisp
   expander cost 2000 cells and 3 s an expansion). It parses the clauses
   into lists in an IX frame and builds forms from byte templates
   (`lp_build`: TQ_L/TQ_E a list, TQ_S a word, TQ_A/TQ_P an argument or its

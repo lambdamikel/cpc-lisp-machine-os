@@ -183,7 +183,7 @@ All **core**.
 
 | Macro | | |
 |---|---|---|
-| `(loop form...)` | forms that are lists: for ever, until `return`. Otherwise the extended LOOP, below | demo, 2 |
+| `(loop form...)` | forms that are lists: for ever, until `return`. Otherwise the extended LOOP, below | demo |
 | `(do ((var init [step])...) (end-test result...) body...)` | `do*` steps in order | 3 |
 | `(psetq var value...)` | in parallel | 3 |
 | `(pushnew x place)` | | 3 |
@@ -224,7 +224,7 @@ The clauses, in CL's words (keywords may be written `:for` too):
 | `initially form...` `finally form...` | before the first pass; after the last -- `(finally (return x))` gives x |
 | `named name` | `(return-from name x)` leaves it; `(loop-finish)` goes to the finally forms |
 
-The expansion is made by native code (in library ROM 2) the first time
+The expansion is made by native code (in the demo ROM) the first time
 the loop runs, and kept. It uses `%0`, `%1`... as its own variables.
 
 ## Functions and evaluation
@@ -478,11 +478,12 @@ either case.
 | `~:[false~;true~]` | by whether the argument is NIL |
 | `~@[...~]` | if the argument is true, the clause (which then takes it); else nothing |
 | `~(...~)` | lower case; `~:(` Each Word Capitalised; `~@(` the first word; `~:@(` UPPER CASE (128 characters at most inside) |
+| `~mincol,colinc,minpad,padchar<a~;b~;...~>` | justified: padding between the segments to make mincol, `(format nil "~10<foo~;bar~>")` is `"foo    bar"`; `~:<` pads before the first too, `~@<` after the last; one segment alone goes right (`~10@<x~>` left, `~10:@<x~>` centred). 128 characters at most inside |
 | `~^` | stop here if no arguments are left: ends a `~{` iteration (or the whole format) |
 | `~` newline | the newline and the blanks after it are left out, to break a long control string; `~:` keeps the blanks, `~@` the newline |
 
-Not there: `~<...~>` (justification), `~/name/`, `~:C`'s names, `~E`'s
-exponent form.
+Not there: `~/name/`, `~:C`'s names, `~E`'s exponent form, `~:;` in
+`~<` (the line-overflow prefix).
 
 ## Files
 
@@ -653,7 +654,7 @@ then use cells like your own; the names cost nothing until then.
   `:start`/`:end`/`:from-end`; `delete` and friends are not destructive.
 - Hash tables do not grow their buckets.
 - Strings that functions build are at most 255 characters.
-- Multi-dimensional arrays, `format`'s `~<...~>`, `*standard-input*`,
+- Multi-dimensional arrays, `*standard-input*`,
   `*terminal-io*` and CLOS are not there; `*standard-output*` is NIL for
   the screen, not a stream object. One file is open for input
   and one for output at most.

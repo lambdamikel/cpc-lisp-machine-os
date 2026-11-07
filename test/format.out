@@ -132,4 +132,40 @@ three bottles
 NIL
 LISP> (format nil "~{[~{~A~^,~}]~}" '((1 2) (3) ()))
 "[1,2][3][]"
+LISP> (format nil "[~10<foo~>]")
+"[       foo]"
+LISP> (format nil "[~10@<foo~>]")
+"[foo       ]"
+LISP> (format nil "[~10:@<foo~>]")
+"[    foo   ]"
+LISP> (format nil "[~10<foo~;bar~>]")
+"[foo    bar]"
+LISP> (format nil "[~10:<foo~;bar~>]")
+"[  foo  bar]"
+LISP> (format nil "[~15<a~;b~;c~>]")
+"[a      b      c]"
+LISP> (format nil "[~5<toolongtext~>]")
+"[toolongtext]"
+LISP> (format nil "[~10,,,'*<~A~;~A~>]" 'x 'y)
+"[X********Y]"
+LISP> (format nil "[~12,4<abc~>]")
+"[         abc]"
+LISP> (format nil "[~10,,2<ab~;cd~;ef~>]")
+"[ab  cd  ef]"
+LISP> (format nil "[~20<~A~;~D~>]" 'total 42)
+"[TOTAL             42]"
+LISP> (format nil "[~10<~{~A~^,~}~>]" '(1 2 3))
+"[     1,2,3]"
+LISP> (format nil "[~<~>]")
+"[]"
+LISP> (format nil "[~8<~(HI~)~>]")
+"[      hi]"
+LISP> (format t "~10<right~>|~%")
+     right|
+NIL
+LISP> (format nil "~{~10<~A~;~3D~>~%~}" '(apple 1 banana 22 kiwi 333))
+"APPLE    1
+BANANA  22
+KIWI   333
+"
 LISP> 

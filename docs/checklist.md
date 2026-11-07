@@ -173,8 +173,8 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 - **Output:** `format` with `t` or `nil` and CL's directives: `~A` `~S`
   `~D` `~B` `~O` `~X` `~R` (radix, words, ordinals, Roman) `~F` `~E` `~G`
   `~$` `~C` `~P` `~%` `~&` `~|` `~~` `~T` `~*` `~?` `~{~}` `~[~;~]` `~(~)`
-  `~^` and `~` newline, with parameters (`V`, `#`, `'c`) and the `:` `@`
-  modifiers -- all but `~<~>`. The CPC has no `~` key: it is **CTRL + 2**
+  `~^` `~<~>` and `~` newline, with parameters (`V`, `#`, `'c`) and the
+  `:` `@` modifiers. The CPC has no `~` key: it is **CTRL + 2**
   (the firmware's own key table; in MAME, Right Alt + 2)
 - **Sorting:** `sort`, `stable-sort` (lists and vectors, `:key`)
 - **Lists:** `member` `assoc` `rassoc` (with `:test`, `:test-not`, `:key`),
@@ -280,7 +280,7 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
    - [x] `defstruct`, hash tables, `defsetf`, `type-of`, `typep`
    - [x] Errors can be caught (`ignore-errors`, `handler-case`);
          `unwind-protect`'s cleanups run on errors and ESC too
-   - [x] `format`: all of CL's directives but `~<~>`
+   - [x] `format`: all of CL's directives, `~<...~>` justification too
    - [x] Files as streams: `open`, `close`, `with-open-file`,
          `probe-file`; every printer and reader (and `format`) takes a
          stream; an input and an output file at once (block space is 11/64
@@ -290,8 +290,8 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
          `until`, `collect` `append` `nconc` `sum` `count` `maximize`
          `minimize` (`into`), `do`, `when`/`if`/`unless`/`else`/`and`,
          `return`, `always` `never` `thereis`, `initially` `finally`,
-         `named`, destructuring -- expanded by native code (library ROM
-         2) once
+         `named`, destructuring -- expanded by native code (the demo
+         ROM) once
    - [x] String streams (`with-output-to-string`,
          `with-input-from-string`, `make-string-output-stream`...) and
          `*standard-output*` (printers without a stream, `format t`)

@@ -33,6 +33,9 @@
 ;;                ~:[false~;true~]; ~@[clause~] if the argument is true
 ;;   ~(...~)      lower case; ~:( each word capitalised, ~@( the first,
 ;;                ~:@( upper case (up to 128 characters)
+;;   ~mincol,colinc,minpad,padchar<a~;b~>  justified: padding between
+;;                the segments to fill mincol; ~:< before the first too,
+;;                ~@< after the last; one segment alone goes to the right
 ;;   ~^           stop here if no arguments are left (the iteration, or
 ;;                everything)
 ;;   ~newline     the newline and the blanks after it are left out (~:
@@ -241,6 +244,7 @@ fmt_table:
     db "{" : dw fmt_iter
     db "[" : dw fmt_cond
     db "(" : dw fmt_case
+    db "<" : dw fmt_just
     db "^" : dw fmt_up
     db 10  : dw fmt_newline
     db 13  : dw fmt_newline
@@ -248,6 +252,7 @@ fmt_table:
     db "]" : dw fmt_close
     db ";" : dw fmt_close
     db ")" : dw fmt_close
+    db ">" : dw fmt_close
     db 0
 
 ;; fmt_next: the next character of the control string -> A. DE, BC kept
@@ -266,7 +271,7 @@ fmt_dch:
     ld hl,(FMT_CN)
     ld a,h
     or l
-    jr z,fmt_bad
+    jp z,fmt_bad
     jr fmt_next
 
 ;; fmt_peek: A = the next character, not taken; 0 if there is none
@@ -1468,6 +1473,240 @@ fmt_case:
     ld sp,hl
     cp ")"
     jp z,fmt_run
+    ret
+
+;; ~mincol,colinc,minpad,padchar<seg~;seg...~>: the segments made into a
+;; buffer on the stack (128 characters in all, 8 segments at most), then
+;; out with padding between them -- before the first too with :, after the
+;; last with @, and on the left of a single one without either -- to make
+;; mincol at least (more in steps of colinc, minpad a gap at least).
+FJ_N      equ 0                 ; segments made
+FJ_END    equ 1                 ; their ends, as offsets from the frame (8)
+FJ_FL     equ 9                 ; the modifiers
+FJ_P      equ 10                ; mincol, colinc, minpad, padchar
+FJ_OUT    equ 14                ; V_OUTPTR, V_OUTEND, V_OUTCNT, V_OUTMODE,
+                                ;   V_OUTCOL as they were
+FJ_BUF    equ 22
+FJ_SIZE   equ FJ_BUF+128
+fmt_just:
+    ld hl,-FJ_SIZE
+    add hl,sp
+    ld sp,hl
+    push hl
+    pop ix
+    ld (ix+FJ_N),0
+    ld a,(FMT_FL)
+    ld (ix+FJ_FL),a
+    ld hl,(FMT_P)
+    ld (ix+FJ_P),l
+    ld (ix+FJ_P+1),h
+    ld hl,(FMT_P+2)
+    ld (ix+FJ_P+2),l
+    ld (ix+FJ_P+3),h
+    ld hl,(V_OUTPTR)
+    ld (ix+FJ_OUT),l
+    ld (ix+FJ_OUT+1),h
+    ld hl,(V_OUTEND)
+    ld (ix+FJ_OUT+2),l
+    ld (ix+FJ_OUT+3),h
+    ld hl,(V_OUTCNT)
+    ld (ix+FJ_OUT+4),l
+    ld (ix+FJ_OUT+5),h
+    ld a,(V_OUTMODE)
+    ld (ix+FJ_OUT+6),a
+    ld a,(V_OUTCOL)
+    ld (ix+FJ_OUT+7),a
+    ld de,FJ_BUF
+    add hl,de
+    push ix
+    pop hl
+    add hl,de
+    ld (V_OUTPTR),hl
+    ld de,128
+    add hl,de
+    ld (V_OUTEND),hl
+    ld a,1
+    ld (V_OUTMODE),a
+.seg:
+    call fmt_run                ; a segment -> A = what ended it
+    ld ix,0
+    add ix,sp
+    ld b,a
+    ld hl,(V_OUTPTR)
+    push ix
+    pop de
+    or a
+    sbc hl,de
+    ld c,l                      ; its end
+    ld e,(ix+FJ_N)
+    ld d,0
+    push ix
+    pop hl
+    add hl,de
+    inc hl
+    ld (hl),c
+    inc (ix+FJ_N)
+    ld a,b
+    cp ";"
+    jr nz,.ended
+    ld a,(ix+FJ_N)
+    cp 8
+    jr c,.seg
+.ended:
+    cp ">"
+    jr z,.made
+.pass:                          ; ~^, or a ninth: on to the ~>
+    call fmt_pass
+    or a
+    jr z,.made
+    cp ">"
+    jr nz,.pass
+.made:
+    ld ix,0
+    add ix,sp
+    ld l,(ix+FJ_OUT)            ; the output as it was
+    ld h,(ix+FJ_OUT+1)
+    ld (V_OUTPTR),hl
+    ld l,(ix+FJ_OUT+2)
+    ld h,(ix+FJ_OUT+3)
+    ld (V_OUTEND),hl
+    ld l,(ix+FJ_OUT+4)
+    ld h,(ix+FJ_OUT+5)
+    ld (V_OUTCNT),hl
+    ld a,(ix+FJ_OUT+6)
+    ld (V_OUTMODE),a
+    ld a,(ix+FJ_OUT+7)
+    ld (V_OUTCOL),a
+    ld e,(ix+FJ_N)              ; C = the characters in all
+    ld d,0
+    push ix
+    pop hl
+    add hl,de
+    ld a,(hl)
+    sub FJ_BUF
+    ld c,a
+    ld a,(ix+FJ_N)              ; B = the gaps
+    dec a
+    ld b,a
+    bit 0,(ix+FJ_FL)
+    jr z,.g1
+    inc b
+.g1:
+    bit 1,(ix+FJ_FL)
+    jr z,.g2
+    inc b
+.g2:
+    ld a,b
+    or a
+    jr nz,.g3
+    inc b                       ; one segment alone: padded on the left
+    set 0,(ix+FJ_FL)
+.g3:
+    ld a,(ix+FJ_P+2)            ; E = the width needed: with minpad a gap
+    inc a
+    ld a,c
+    jr z,.need
+    ld d,(ix+FJ_P+2)
+    ld e,b
+.mp:
+    add a,d
+    jr c,.full
+    dec e
+    jr nz,.mp
+.need:
+    ld e,a
+    ld a,(ix+FJ_P+1)            ; H = colinc (1 if not given, or 0)
+    inc a
+    jr z,.c1
+    dec a
+    jr nz,.c2
+.c1:
+    inc a
+.c2:
+    ld h,a
+    ld a,(ix+FJ_P)              ; the width: mincol, and on by colinc
+    inc a
+    jr z,.w0
+    dec a
+.w0:
+    cp e
+    jr nc,.wd
+    add a,h
+    jr nc,.w0
+.full:
+    ld a,255
+.wd:
+    sub c                       ; the padding
+    jr nc,.pd
+    xor a
+.pd:
+    ld c,0                      ; a gap each: C = pad / gaps, A = the rest
+.dv:
+    cp b
+    jr c,.dvd
+    sub b
+    inc c
+    jr .dv
+.dvd:
+    ld (ix+FJ_P+2),c
+    ld (ix+FJ_P+1),a
+    bit 0,(ix+FJ_FL)
+    call nz,.gap
+    ld bc,FJ_BUF*256            ; B = where a segment starts, C = which
+.sl:
+    push ix
+    pop hl
+    ld e,c
+    ld d,0
+    add hl,de
+    inc hl
+    ld d,(hl)                   ; D = where it ends
+.ch:
+    ld a,b
+    cp d
+    jr nc,.sd
+    push ix
+    pop hl
+    ld e,b
+    ld a,d
+    ld d,0
+    add hl,de
+    ld d,a
+    ld a,(hl)
+    call lputc
+    inc b
+    jr .ch
+.sd:
+    inc c
+    ld a,c
+    cp (ix+FJ_N)
+    jr nc,.last
+    call .gap
+    jr .sl
+.last:
+    bit 1,(ix+FJ_FL)
+    call nz,.gap
+    ld hl,FJ_SIZE
+    add hl,sp
+    ld sp,hl
+    jp fmt_run
+.gap:                           ; the gap's padding: one more while any are
+    push bc                     ;   over
+    ld c,(ix+FJ_P+2)
+    ld a,(ix+FJ_P+1)
+    or a
+    jr z,.gp
+    dec (ix+FJ_P+1)
+    inc c
+.gp:
+    ld a,(ix+FJ_P+3)
+    cp 255
+    jr nz,.gc
+    ld a," "
+.gc:
+    ld e,a
+    call fmt_pad
+    pop bc
     ret
 
 ;; fmt_conv: the characters from HL up to DE out, C the modifiers: none

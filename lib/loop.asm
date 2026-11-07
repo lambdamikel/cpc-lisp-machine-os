@@ -1,4 +1,4 @@
-;; CPC Lisp -- the extended LOOP's expander (library ROM, part 1).
+;; CPC Lisp -- the extended LOOP's expander (library ROM, part 3: the demo ROM).
 ;;
 ;; (%loop-expand clauses) -> the expansion; the macro LOOP (lib/loop.lsp)
 ;; calls it when its first form is a symbol. The clauses are parsed into
