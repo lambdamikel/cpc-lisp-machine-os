@@ -1,0 +1,124 @@
+CPC Lisp -- first run on the real 464
+=====================================
+
+On the card (flashed 2026-11-07, checksums verified against the files):
+
+    slot 4  ROM 0  Lisp core (the CPC boots into it instead of BASIC)
+    slot 5  ROM 4  library 1: screen, graphics, sound, keys, strings,
+                   line editor, function editor, files
+    slot 0  ROM 5  library 2: floats, format, sort, the Lisp-defined
+                   functions
+    slot 2  ROM 7  Parados       -- not touched
+    slot 6  ROM 2  LS AI ROM     -- not touched
+    slots 1, 3 (ROMs 1, 3) as before; slot 7 silent, not touched
+
+Every expected answer below was checked in MAME first. Type each line at
+LISP> and press RETURN. Please note anything that differs.
+
+
+1. Power on
+-----------
+Expect, possibly after the vector head's and Parados's own messages:
+
+    CPC Lisp 0.3, library ROMs 4 5
+    NNNN cells free
+    LISP>
+
+NNNN is about 6800 in MAME; less here is fine (every ROM takes some
+RAM). Please write down the number.
+
+If "library ROMs 4 5" is missing or shows other numbers, or the screen
+stays blank: note exactly what you see and switch off.
+
+
+2. Basics, and * ** ***
+-----------------------
+    (+ 1 2)                          3
+    (* * 10)                         30           * is the last value
+    (list * ** ***)                  (30 3 NIL)   the last three values
+
+
+3. Library 2 (ROM 5)
+--------------------
+    (sqrt 2)                         1.41421356
+    (sort (list 5 3 8 1) #'<)        (1 3 5 8)
+    (format nil "~5D|" 42)           "   42|"
+    (reduce #'+ '(1 2 3 4))          10
+
+
+4. Library 1 (ROM 4): strings and the line editor
+-------------------------------------------------
+    (string-upcase "abc")            "ABC"
+
+  - Type  (+ 1  and RETURN: the next line starts indented.
+    Then type  2)  -- when you type the ")" the cursor jumps briefly to
+    the matching "(". RETURN gives 3.
+  - Type  )  on an empty line: a beep.
+  - Cursor up brings back the last line.
+  - SHIFT + arrows move a copy cursor and COPY copies from under it, as
+    in BASIC.
+
+
+5. Speed, and ESC
+-----------------
+    (defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))
+                                     FIB
+    (fib 17)                         1597, after about 13 seconds
+                                     (please time it)
+    (loop)                           runs forever; press ESC:
+                                     Error: break
+
+  A very short tap of ESC can be missed during a garbage collection
+  (being fixed); press it again.
+
+
+6. Screen mode and colours
+--------------------------
+    (mode 2)                         80 columns
+    (ink 0 0)                        black paper
+    (ink 1 26)                       bright white text
+    (border 0)                       black border
+    (dotimes (i 5) (print (* i i)))  0 1 4 9 16, one per line, then NIL
+    (mode 1)                         back to 40 columns
+    (ink 0 1)                        blue paper again
+    (ink 1 24)                       yellow text again
+    (ink 2 6)                        pen 2 is bright red
+    (border 1)
+    (graphics-pen 2)
+    (plot 0 0)
+    (draw 639 399)                   a red line across the screen
+    (pen 2)                          the text turns red
+    (pen 1)                          back to yellow
+    (sound 1 200 50)                 a half-second beep on channel A
+    (cls)                            clears the screen
+
+
+7. Disc, through Parados
+------------------------
+Use a disc you don't mind writing to.
+
+    (dir)                            the catalogue, then NIL
+    (defun sq (x) (* x x))           SQ
+    (save "test")                    (SQ FIB)  -- what it saved
+    (dir)                            now shows TEST    .LSP
+    (load "test")                    T
+    (sq 12)                          144
+
+
+8. Function editor
+------------------
+    (ed 'fib)       fib, pretty-printed, on a full screen. The cursor
+                    keys move, typing inserts, DEL deletes.
+                    COPY (or CTRL-S) reads it back in: FIB.
+                    ESC leaves it unchanged.
+
+
+9. Getting BASIC back
+---------------------
+Switch the CPC off, then on the PC:
+
+    python3 tools/card.py basic      (silences slot 4: the core)
+
+or type N, then slot 4, then 255 on the card's console. The library
+ROMs at 4 and 5 can stay: from BASIC they do nothing. To boot into Lisp
+again: python3 tools/card.py number 4 0 (CPC off).

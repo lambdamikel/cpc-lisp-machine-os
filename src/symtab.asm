@@ -46,11 +46,11 @@ mend
 symtab:
     SYMBOL NIL,"NIL",SF_CONST,2         ; slot 0: NIL itself is 0
     SYMBOL T,"T",SF_CONST,1
-    SYMBOL AMP_OPTIONAL,"&OPTIONAL",0,0
-    SYMBOL AMP_REST,"&REST",0,0
-    SYMBOL AMP_BODY,"&BODY",0,0
-    SYMBOL AMP_KEY,"&KEY",0,0
-    SYMBOL AMP_AUX,"&AUX",0,0           ; (bind: these five together)
+    SYMBOL AMP_OPTIONAL,"&OPTIONAL",SF_CONST,0  ; (constants: apply_closure_stack)
+    SYMBOL AMP_REST,"&REST",SF_CONST,0
+    SYMBOL AMP_BODY,"&BODY",SF_CONST,0
+    SYMBOL AMP_KEY,"&KEY",SF_CONST,0
+    SYMBOL AMP_AUX,"&AUX",SF_CONST,0           ; (bind: these five together)
     assert S_AMP_AUX-S_AMP_OPTIONAL == 32
     assert (S_AMP_OPTIONAL >> 8) == (S_AMP_AUX >> 8)
     SYMBOL OTHERWISE,"OTHERWISE",0,0
@@ -150,7 +150,9 @@ symtab:
     ; numbers
     SUBR PLUS,"+",subr_plus,0,255
     SUBR MINUS,"-",subr_minus,1,255
-    SUBR TIMES,"*",subr_times,0,255
+    SYMENTRY TIMES,"*",HDR_SUBR,subr_times,0,255,SF_SPECIAL,2 ; and the last value
+    SYMBOL STAR2,"**",SF_SPECIAL,2       ;   the REPL printed, the one before,
+    SYMBOL STAR3,"***",SF_SPECIAL,2      ;   and the one before that
     SUBR ONEPLUS,"1+",subr_inc,1,1
     SUBR ONEMINUS,"1-",subr_dec,1,1
     SUBR TRUNCATE,"TRUNCATE",subr_truncate,1,2

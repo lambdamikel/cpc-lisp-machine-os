@@ -13,9 +13,11 @@ the ones that are known to keep the card's console in step -- and refuses
 to write flash unless kitloader.cpc_is_off() says the CPC is off.
 
 `lisp` stores build/LISP.ROM in slot 4 as ROM 0 (the CPC then boots into
-Lisp), LISPLIB.ROM in slot 5 as ROM 4 and LISPLIB2.ROM in slot 7 as ROM 5:
-slots 4, 5 and 7 held old silent images on 2026-11-07 (check `slots`
-first). `basic` silences slot 4 again.
+Lisp), LISPLIB.ROM in slot 5 as ROM 4 and LISPLIB2.ROM in slot 0 as ROM 5.
+Mike's card, 2026-11-07: slot 2 is Parados (ROM 7) and slot 6 the card's
+LS AI ROM (ROM 2) -- never write those; 4 and 5 held old silent images, 0 a
+silent AMSDOS 0.5 (the DDI-1's, in the MAME romset); 1 the vector head
+(ROM 1) and 3 a ROM 3, left as they are. `basic` silences slot 4 again.
 """
 import os, sys, time
 
@@ -24,8 +26,9 @@ sys.path.insert(0, LS4)
 import romloader, kitloader            # noqa: E402
 
 LISP_SET = [(4, 0, 'build/LISP.ROM'), (5, 4, 'build/LISPLIB.ROM'),
-            (7, 5, 'build/LISPLIB2.ROM')]
+            (0, 5, 'build/LISPLIB2.ROM')]
 CORE_SLOT = 4
+PROTECTED = {2: 'Parados', 6: 'the LS AI ROM'}
 
 
 def drain(card, until, timeout=60):
@@ -64,6 +67,8 @@ def upload(card, port, jobs):
             sys.exit(f'card: {path} is {len(data)} bytes, not 16384')
         if not 0 <= slot <= 7 or not (0 <= num <= 15 or num == 255):
             sys.exit(f'card: slot {slot} / ROM {num}?')
+        if slot in PROTECTED:
+            sys.exit(f'card: slot {slot} is {PROTECTED[slot]} -- not touching it')
         images.append((slot, num, path, data))
     s = card._open(port)
     if not kitloader.cpc_is_off(s):

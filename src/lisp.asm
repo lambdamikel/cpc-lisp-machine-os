@@ -352,6 +352,11 @@ repl:
     ERR m_syntax
 .ev:
     call eval
+    ld de,(S_STAR2+SY_VALUE)    ; *** ** * as in CL
+    ld (S_STAR3+SY_VALUE),de
+    ld de,(S_TIMES+SY_VALUE)
+    ld (S_STAR2+SY_VALUE),de
+    ld (S_TIMES+SY_VALUE),hl
     call fresh_line
     call prin1
     call newline

@@ -520,8 +520,104 @@ apply_core:
 jp_ix:
     jp (ix)
 
-;; apply_closure_stack: DE = closure, C = n, arguments on the stack
+;; apply_closure_stack: DE = closure, C = n, arguments on the stack.
+;; A lambda list of plain lexical variables only (the usual case) is bound
+;; straight from the stack: no argument list, no bind. Anything else -- a
+;; keyword, a special or constant, a destructuring list, a dotted list, the
+;; wrong count -- goes the general way, which also reports the errors.
 apply_closure_stack:
+    ld b,c                      ; B = n, C = arguments left
+    ex de,hl
+    LDHLI                       ; (code . env)
+    ld e,(hl)
+    inc hl
+    ld d,(hl)                   ; DE = code
+    inc hl
+    LDHLI
+    ld (V_ENV),hl
+    ex de,hl
+    LDHLI                       ; HL = the lambda list
+.fl:
+    ld a,h
+    or l
+    jr z,.fend
+    ld a,l
+    and 3
+    jr nz,.slow                 ; dotted
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    inc hl
+    LDHLI
+    push hl                     ; the rest
+    ex de,hl                    ; HL = the parameter
+    ld a,l
+    and 7
+    cp 2
+    jr nz,.slow1
+    ld a,h
+    cp SYM_LO >> 8
+    jr c,.slow1
+    cp SYM_HI >> 8
+    jr nc,.slow1
+    dec hl
+    dec hl
+    ld a,(hl)
+    inc hl
+    inc hl
+    and SF_SPECIAL or SF_CONST  ; (the &-keywords are constants)
+    jr nz,.slow1
+    ld a,c
+    or a
+    jr z,.slow1                 ; more parameters than arguments
+    dec c
+    ex de,hl                    ; DE = the parameter
+    ld l,c
+    ld h,0
+    add hl,hl
+    add hl,sp
+    inc hl
+    inc hl                      ; past the rest: &the argument
+    ld a,(hl)
+    inc hl
+    ld h,(hl)
+    ld l,a
+    ex de,hl                    ; HL = parameter, DE = value
+    call cons
+    ld de,(V_ENV)
+    call cons
+    ld (V_ENV),hl
+    pop hl
+    jr .fl
+.fend:
+    ld a,c
+    or a
+    jr nz,.slow                 ; more arguments than parameters
+    ld l,b
+    ld h,a
+    add hl,hl
+    add hl,sp
+    ld e,(hl)
+    inc hl
+    ld d,(hl)                   ; the closure
+    inc hl
+    ld sp,hl                    ; drop the arguments and the function
+    ex de,hl
+    LDHLI
+    LDHLI                       ; its code
+    CDRHL                       ; the body
+    jp ev_progn
+.slow1:
+    pop hl
+.slow:
+    ld c,b
+    ld l,b
+    ld h,0
+    add hl,hl
+    add hl,sp
+    ld e,(hl)
+    inc hl
+    ld d,(hl)                   ; DE = the closure again
     push de
     ld de,NIL
     ld a,c
