@@ -627,7 +627,8 @@ apply_list:
     LDHLI
     push de
     inc c
-    jr .spread
+    jr nz,.spread
+    jp ev_cons.many             ; 256 or more
 .go:
     jp apply_core
 

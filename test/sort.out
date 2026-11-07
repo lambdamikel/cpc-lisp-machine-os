@@ -1,0 +1,43 @@
+LISP> (sort '(5 3 8 1 9 2) #'<)
+(1 2 3 5 8 9)
+LISP> (sort nil #'<)
+NIL
+LISP> (sort (list 1) #'<)
+(1)
+LISP> (sort (list 2 1) #'<)
+(1 2)
+LISP> (sort (list 3 1 2) #'>)
+(3 2 1)
+LISP> (sort (list '(b . 2) '(a . 1) '(c . 1) '(d . 2)) #'< :key #'cdr)
+((A . 1) (C . 1) (B . 2) (D . 2))
+LISP> (stable-sort (list "bb" "a" "ccc" "dd" "e") #'< :key #'length)
+("a" "e" "bb" "dd" "ccc")
+LISP> (sort (vector 5 2 9 1) #'<)
+#(1 2 5 9)
+LISP> (sort #() #'<)
+#()
+LISP> (let ((v (vector 3 1 2))) (sort v #'<) v)
+#(1 2 3)
+LISP> (sort (list 3.5 1 2.25 -1) #'<)
+(-1 1 2.25 3.5)
+LISP> (sort (list 3 1 2) #'(lambda (a b) (< a b)))
+(1 2 3)
+LISP> (let ((l (sort (let ((l nil)) (dotimes (i 250) (push (random 1000) l)) l) #'<))) (list (length l) (apply #'<= l)))
+(250 T)
+LISP> (defun slow< (a b) (< (car (list a b)) (cadr (list a b))))
+SLOW<
+LISP> (let ((l (sort (let ((l nil)) (dotimes (i 250) (push (random 1000) l)) l) #'slow<))) (list (length l) (apply #'<= l)))
+(250 T)
+LISP> (defvar *v* (make-array 250))
+*V*
+LISP> (dotimes (i 250) (setf (aref *v* i) (format nil "~d" (random 1000))))
+NIL
+LISP> (let ((r nil)) (sort *v* #'slow< :key #'parse-integer) (dotimes (i 250) (push (parse-integer (aref *v* i)) r)) (list (length *v*) (apply #'>= r) (stringp (aref *v* 0))))
+(250 T T)
+LISP> (sort '(3 1 2) #'< :test #'cdr)
+Error: sort: :key only
+LISP> (sort 5 #'<)
+Error: not a list: 5
+LISP> (apply #'+ (make-list 300))
+Error: too many arguments
+LISP> 

@@ -114,22 +114,6 @@
           (push (funcall f l) r)
           (setq l (cdr l)))))
 
-(defun sort (l pred)
-  (if (or (null l) (null (cdr l)))
-      l
-      (let ((a nil) (b nil))
-        (loop (when (null l) (return))
-              (push (pop l) a)
-              (when l (push (pop l) b)))
-        (%merge (sort a pred) (sort b pred) pred))))
-
-(defun %merge (a b pred)
-  (let ((r nil))
-    (loop (cond ((null a) (return (nreconc r b)))
-                ((null b) (return (nreconc r a)))
-                ((funcall pred (car b) (car a)) (push (pop b) r))
-                (t (push (pop a) r))))))
-
 ;;; Sets
 
 (defun adjoin (item l) (if (member item l) l (cons item l)))
