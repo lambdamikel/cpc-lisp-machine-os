@@ -20,7 +20,8 @@
 ;; Library header, at &C010 in its ROM:
 ;;   +0  "CPCLISPLIB"       +10 build number
 ;;   +12 symbol hash table  +14 boot forms (list of text addresses, 0 ends)
-;;   +16 dispatcher         +18 line editor, or 0
+;;   +16 dispatcher         +18 line editor, or 0 (called like EDIT: LINEBUF
+;;                              to fill, carry set for ENTER, clear for ESC)
 ;;
 ;; A symbol entry: [next][kind][min][max][address][length][name...]
 ;;   kind 1 native (address = code), 2 autoload (address = text)
@@ -69,6 +70,12 @@ LIBCALL:
 CORECALL:
     ld a,(V_COREROM)
     jr ROMCALL
+
+;; EDHOOK: called before every line is read from the keyboard. It does
+;; nothing; the MAME harness watches for it (it is in RAM, so its address
+;; means nothing else).
+EDHOOK:
+    ret
 
 ;; LIBPEEK: HL = an address in the library -> A = the byte there. BC, DE,
 ;; HL kept.
@@ -130,6 +137,8 @@ find_library:
     push de                     ; the boot forms
     call lib_word
     ld (V_LIBDISP),de
+    call lib_word
+    ld (V_LIBEDIT),de
     pop hl
 .boot:
     call lib_word

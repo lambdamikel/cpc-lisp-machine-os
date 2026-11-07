@@ -7,8 +7,8 @@
 --               each typed line shown after the prompt it answered
 --   LISP_SHOT   screenshot (PNG) taken at the end, optional
 --   LISP_FRAMES give up after this many frames (default 30000)
---   LISP_EDIT   address of the firmware's EDIT vector: &BD3A on a 464,
---               &BD5E on a 664/6128
+--   LISP_EDIT   the address the REPL calls before reading each line (the
+--               core's EDHOOK, a RET in RAM; tools/run.sh finds it)
 --   LISP_TIMES  optional file: for each line, the frames (1/50 s of CPC
 --               time) from the end of its typing to the next EDIT
 --
@@ -24,7 +24,7 @@
 -- that polls the key with KM TEST KEY.
 --
 -- A line is typed only when the ROM is waiting for one, which is known by a
--- second tap on the EDIT vector: the REPL calls EDIT for every line.
+-- second tap on EDHOOK, which the REPL calls before every line.
 --
 -- Tap tokens and the frame notifier live in globals: a dropped token is
 -- collected and the tap silently stops.

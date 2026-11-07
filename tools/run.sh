@@ -27,10 +27,12 @@ shift $((OPTIND - 1))
 IN=${1:-/dev/null}
 [ -f build/LISP.ROM ] || { echo "run: build/LISP.ROM is missing -- tools/build.sh" >&2; exit 1; }
 case $MACH in
-    464)  SYS=cpc464;  EDIT=0xBD3A ;;
-    6128) SYS=cpc6128; EDIT=0xBD5E ;;
+    464)  SYS=cpc464 ;;
+    6128) SYS=cpc6128 ;;
     *) echo "run: -m 464 or 6128" >&2; exit 2 ;;
 esac
+# the REPL calls EDHOOK, a RET in RAM, before reading each line
+EDIT=0x$(awk '$1 == "EDHOOK" { sub("#", "", $2); print $2 }' build/lisp.sym)
 ROMBOX=
 [ -n "$LIB" ] && ROMBOX="-exp rom -rom1 build/LISPLIB.ROM"
 OUTF=$(mktemp)

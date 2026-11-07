@@ -58,10 +58,14 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   library is assembled against the core's symbols (`build/core.inc`) and may
   use its constants and variables directly, its code only through `CORE`,
   and must hand the core RAM pointers only.
-* **Still to come**: a Lisp-aware line editor in the library (paren
-  matching, auto-indent, history, copy cursor -- asked for by Mike), then a
-  full-screen function editor (`(ed 'foo)`, with a pretty-printer); floats,
-  vectors, `&key`, `unwind-protect`, `load` from disc, the 6128's extra RAM.
+* **The line editor** (`lib/editor.asm`, asked for by Mike) replaces EDIT
+  when the library is present: a typed `)` shows its `(` (beeps if there is
+  none), continuation lines come indented Lisp-style, TAB, up-arrow history,
+  and the CPC copy cursor. The REPL calls `EDHOOK` (a RET in RAM) before
+  every line; the harness watches that, not EDIT.
+* **Still to come**: a full-screen function editor (`(ed 'foo)`, with a
+  pretty-printer -- Mike's idea); floats, vectors, `&key`,
+  `unwind-protect`, `load` from disc, the 6128's extra RAM.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
 same addresses as screen RAM. Screen access from ROM code goes through the

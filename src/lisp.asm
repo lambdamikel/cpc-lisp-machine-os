@@ -303,6 +303,8 @@ toplevel:
     ld (V_PEEK),a
     ld (V_DEPTH),a
     ld (V_INSRC),a
+    ld (V_EDDEPTH),a
+    ld (V_EDSTR),a
 repl:
     ld hl,prompt_main
     ld (V_PROMPT),hl

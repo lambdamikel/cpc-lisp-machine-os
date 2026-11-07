@@ -58,7 +58,7 @@ KL_TIME_PLEASE      equ #BD0D
     dw lib_buckets
     dw lib_boot
     dw lib_dispatch
-    dw 0                        ; the line editor: not yet
+    dw lib_editor
 
 ;; The name has a space so that BASIC cannot call it as a command.
 lib_names:
@@ -733,6 +733,7 @@ lf_nreconc:
     CORE nreverse_onto
     ret
 
+    include "editor.asm"
     include "libtab.asm"
 
 lib_end:

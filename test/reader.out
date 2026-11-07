@@ -59,7 +59,7 @@ LISP> '(a #| block
 LISP> (list 1 2
     3 4)
 (1 2 3 4)
-LISP> )
+LISP> )
 LISP> (1 . )
 Error: syntax error
 LISP> 

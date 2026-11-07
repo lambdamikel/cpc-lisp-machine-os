@@ -77,10 +77,20 @@ ungetc:
     ld (V_PEEK),a
     ret
 
-;; EDIT, the firmware's line editor: HL = buffer holding the text to start
-;; from, zero-terminated. Carry set if the line ended with ENTER, clear for
-;; ESC.
+;; edit_line: a line into LINEBUF, zero-terminated. Carry set if it ended
+;; with ENTER, clear for ESC. The library's editor if there is one, else
+;; EDIT, the firmware's (BASIC's).
 edit_line:
+    call EDHOOK
+    ld hl,(V_LIBEDIT)
+    ld a,h
+    or l
+    jr z,.firm
+    push hl
+    pop ix
+    ld a,(V_LIBROM)
+    jp ROMCALL
+.firm:
     ld hl,(V_EDITV)
     push hl
     ld hl,LINEBUF

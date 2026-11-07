@@ -46,7 +46,7 @@ asm src/lisp.asm build/LISP.ROM build/lisp.sym
 awk '$3 == "B0" && ($4 == "L" || $4 == "A") && $1 !~ /\./ && $1 != "BUILD_ID" && $1 != "SYNCHRO" && $1 != "RASM_VERSION" \
      { print $1 " equ " $2 }' build/lisp.sym > build/core.inc
 python3 tools/mklib.py lib/lib.asm lib/*.lsp > build/libtab.asm
-asm lib/lib.asm build/LISPLIB.ROM build/lisplib.sym
+asm lib/lib.asm build/LISPLIB.ROM build/lisplib.sym -I lib
 
 mkdir -p build/mame/cpc464 build/mame/cpc6128 build/mame/cpc_ddi1
 { head -c 16384 "$ROMS/cpc464/cpc464.rom"; cat build/LISP.ROM; } > build/mame/cpc464/cpc464.rom

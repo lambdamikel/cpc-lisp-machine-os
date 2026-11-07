@@ -64,7 +64,8 @@ STACK_MARGIN      equ 256           ; eval refuses to go deeper than this
 LINEBUF           equ #AC00         ; 256: the EDIT buffer
 TOKBUF            equ #AD00         ; 256: the reader's token
 VARS              equ #AE00         ; the variables, below
-LIBSCR            equ #B000         ; 128: scratch for the library ROM
+LIBSCR            equ #AF00         ; 256: scratch for the library ROM
+HISTBUF           equ #B000         ; 128: the line editor's history
 TRAMP             equ #B080         ; 128: the cross-ROM trampoline, copied at boot
 VARS_END          equ LIBSCR
 
@@ -112,6 +113,9 @@ V_LIBBKT          defs 2            ; the library's symbol hash table
 V_LIBFN           defs 2            ; the library function being called
 V_RCBC            defs 2            ; trampoline: BC in passing
 V_INSRC           defs 1            ; reader: 0 the keyboard, 1 library text
+V_LIBEDIT         defs 2            ; the library's line editor, 0 = none
+V_EDDEPTH         defs 1            ; line editor: open parens it remembers
+V_EDSTR           defs 1            ; line editor: the last line ended in a string
 V_SRCPTR          defs 2            ; reader: next character of library text
 V_S1              defs 2            ; scratch for routines that call nothing
 V_S2              defs 2
