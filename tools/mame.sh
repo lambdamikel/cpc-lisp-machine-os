@@ -35,8 +35,8 @@ if [ ! -f "$DISC" ]; then
 fi
 rm -rf build/mame-live
 cp -r build/mame build/mame-live
-cp build/LISPLIB.ROM build/LISPLIB2.ROM build/LISPLIB3.ROM build/mame-live/
-LIBS=(-rom1 build/mame-live/LISPLIB.ROM -rom2 build/mame-live/LISPLIB2.ROM -rom3 build/mame-live/LISPLIB3.ROM)
+cp build/LISPLIB.ROM build/LISPLIB2.ROM build/LISPLIB3.ROM build/LISPDEMO.ROM build/mame-live/
+LIBS=(-rom1 build/mame-live/LISPLIB.ROM -rom2 build/mame-live/LISPLIB2.ROM -rom3 build/mame-live/LISPLIB3.ROM -rom4 build/mame-live/LISPDEMO.ROM)
 case $MACH in
     464)  ARGS=(cpc464 -exp ddi1 -flop "$DISC" -exp:ddi1:exp rom "${LIBS[@]}") ;;
     6128) ARGS=(cpc6128 -flop1 "$DISC" -exp rom "${LIBS[@]}") ;;

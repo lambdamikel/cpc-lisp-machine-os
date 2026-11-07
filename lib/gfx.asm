@@ -72,7 +72,9 @@ CI_A    equ 12                  ; ci_pair's half-width
 CI_YY   equ 14                  ; ci_row's y
 CI_SIZE equ 16
 
-;; (circle x y r [pen]), (disc x y r [pen]): a circle, a filled one
+;; (circle x y r [pen]), (disc x y r [pen]): a circle, a filled one. The
+;; disc draws each pixel row once (at its even y), so it inverts cleanly
+;; with (ink-mode 1): a ball can be drawn and taken off again.
 ;@ CIRCLE 3 4 lf_circle
 lf_circle:
     xor a
@@ -117,6 +119,8 @@ gx_circle:
     or a
     sbc hl,de
     jp m,.done                  ; until x < y
+    bit 0,(ix+CI_F)
+    jr nz,.disc
     ld l,(ix+CI_DY)             ; (x, y) and (y, x): all eight octants
     ld h,(ix+CI_DY+1)
     ld e,(ix+CI_DX)
@@ -127,6 +131,25 @@ gx_circle:
     ld e,(ix+CI_DY)
     ld d,(ix+CI_DY+1)
     call ci_pair
+    jr .step
+.disc:                          ; the rows cy +- y, x wide, every step
+    ld e,(ix+CI_DX)
+    ld d,(ix+CI_DX+1)
+    ld l,(ix+CI_DY)
+    ld h,(ix+CI_DY+1)
+    call di_rows
+    bit 7,(ix+CI_E+1)
+    jr nz,.step                 ; x stays: the rows cy +- x get wider yet
+    ld l,(ix+CI_DX)             ; x moves in after this: rows cy +- x, as
+    ld h,(ix+CI_DX+1)           ;   wide as they get (y), unless they are
+    ld e,(ix+CI_DY)             ;   the rows just drawn
+    ld d,(ix+CI_DY+1)
+    or a
+    sbc hl,de
+    jr z,.step
+    add hl,de
+    call di_rows
+.step:
     ld l,(ix+CI_DY)             ; y + 1
     ld h,(ix+CI_DY+1)
     inc hl
@@ -154,12 +177,35 @@ gx_circle:
 .err:
     ld (ix+CI_E),l
     ld (ix+CI_E+1),h
-    jr .loop
+    jp .loop
 .done:
     ld hl,CI_SIZE
     add hl,sp
     ld sp,hl
     jp lnil
+
+;; di_rows: DE = a, HL = b -> the disc's rows cy + b and cy - b (once if b
+;; is 0), from cx - a to cx + a; only an even y draws a pixel row
+di_rows:
+    ld (ix+CI_A),e
+    ld (ix+CI_A+1),d
+    ld e,(ix+CI_Y)
+    ld d,(ix+CI_Y+1)
+    push hl
+    add hl,de
+    call .row                   ; cy + b
+    pop de
+    ld a,d
+    or e
+    ret z
+    ld l,(ix+CI_Y)
+    ld h,(ix+CI_Y+1)
+    or a
+    sbc hl,de                   ; cy - b
+.row:
+    bit 0,l
+    ret nz
+    jp ci_row
 
 ;; ci_pair: DE = a, HL = b -> the points (cx +- a, cy +- b), or the lines
 ;; between them for a disc

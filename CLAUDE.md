@@ -56,7 +56,9 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   the RAM disc; part 1 (`lib/lib2.asm`, LISPLIB2.ROM) floats, `format`,
   `sort` (`lib/seq.asm`), lists/sequences/`coerce` and what moved out of
   the core (`lib/lists.asm`); part 2 (`lib/lib3.asm`, LISPLIB3.ROM) the
-  Lisp-defined functions and macros (`lib/lisp.lsp`) only. `src/xrom.asm` explains the arrangement: the core finds
+  Lisp-defined functions and macros (`lib/lisp.lsp`) only; part 3
+  (`lib/demo.asm`, LISPDEMO.ROM) the demos (`lib/demo.lsp`), Lisp text
+  too. All four parts are used: a fifth needs NLIBS raised. `src/xrom.asm` explains the arrangement: the core finds
   them by signature and build number (all ROMs come from one
   `tools/build.sh` run, and call each other by address), each says which
   part it is (header +22); calls cross through a trampoline in RAM using KL
@@ -239,6 +241,10 @@ should see.
   read (it sees its own ROM at those addresses). Compare a builtin by
   address (`S_KW_KEY`...), and get a name through `CORE subr_string`
   (which may allocate). Library symbols' names are in RAM.
+* **A macro call is expanded every time it is evaluated** (no caching): a
+  macro inside a loop body costs an expansion per pass. Library macros
+  should expand to special forms (`do` once used `psetq` and ran 4-5x
+  slower).
 * **ROMCALL hands BC back as the callee left it.** A core routine that
   calls the library and needs B or C afterwards must save them itself
   (the reader's token length did not survive `lnum_read` at first).

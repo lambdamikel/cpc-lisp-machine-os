@@ -5,7 +5,7 @@ instead of BASIC. Common Lisp syntax, lexical closures, macros, a garbage
 collector -- in 16 KB of Z80 assembly, with graphics, sound, files, floats
 and editors in two more ROMs.
 
-    CPC Lisp 0.3, library ROMs 1 2 3
+    CPC Lisp 0.3, library ROMs 1 2 3 4
     7119 cells free
 
     LISP> (defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))
@@ -32,8 +32,9 @@ second has the floats and maths functions (`sqrt`, `sin`, `atan`, `log`,
 with `:test` and `:key`. The third has about seventy CL functions and macros
 written in Lisp (the sequence functions on lists, strings and vectors,
 `reduce`, `map`, `do`, ...) that are loaded from ROM the first time they are
-used. Without one, its functions are undefined and the rest works. It is
-being tried on a real 464 (`docs/cpc-test.txt`).
+used. A fourth, the demo ROM, has example programs: `(demo)` lists them.
+Without one, its functions are undefined and the rest works. It is being
+tried on a real 464 (`docs/cpc-test.txt`).
 
 ## Building and testing
 

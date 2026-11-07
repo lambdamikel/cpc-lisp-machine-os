@@ -1,0 +1,49 @@
+LISP> (demo)
+
+CPC Lisp demos:
+
+(shapes)     discs, boxes, 16 colours
+(rose)       a rose curve, in floats
+(spiral)     a square spiral
+(moire)      lines drawn with XOR
+(bounce)     a ball: a key stops it
+(sierpinski) the chaos game
+(sketch)     cursors draw, COPY, SPACE
+(tune)       Ode to Joy
+(hanoi 4)    the towers of Hanoi
+(queens 6)   n queens on a board
+(primes 100) a sieve
+(fact 20)    20!, as a float
+
+A key ends a picture.
+(ed 'rose) shows how one is written.
+T
+LISP> (hanoi 3)
+disc 1: A to C
+disc 2: A to B
+disc 1: C to B
+disc 3: A to C
+disc 1: B to A
+disc 2: B to C
+disc 1: A to C
+T
+LISP> (queens 6)
+. . . . Q . 
+. . Q . . . 
+Q . . . . . 
+. . . . . Q 
+. . . Q . . 
+. Q . . . . 
+4 solutions
+4
+LISP> (primes 100)
+(2 3 5 7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97)
+LISP> (fact 20)
+2.43290201e18
+LISP> (spiral)
+T
+LISP> (do ((i 0 (1+ i)) (j 10 (1- j))) ((= i 3) (list i j)))
+(3 7)
+LISP> (macroexpand-1 '(do ((a 1 (+ a b)) (b 2 a)) ((> a 5) a)))
+(LET ((A 1) (B 2)) (LOOP (WHEN (> A 5) (RETURN (PROGN A))) (LET ((G10 (+ A B)) (G11 A)) (SETQ A G10 B G11))))
+LISP> 

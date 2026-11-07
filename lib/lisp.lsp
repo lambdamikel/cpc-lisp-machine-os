@@ -283,15 +283,19 @@
     `(let ,(nreverse binds) (setq ,@(nreverse sets)) nil)))
 
 (defmacro do (vars end &body body)
-  (let ((steps nil))
+  ;; the steps go through temporaries in a LET: no macro is left in the
+  ;; expansion, so nothing is expanded again on each pass of the loop
+  (let ((temps nil) (sets nil))
     (dolist (v vars)
       (when (and (consp v) (cddr v))
-        (push (car v) steps)
-        (push (caddr v) steps)))
+        (let ((g (gensym)))
+          (push (list g (caddr v)) temps)
+          (push (car v) sets)
+          (push g sets))))
     `(let ,(mapcar #'(lambda (v) (if (consp v) (list (car v) (cadr v)) v)) vars)
        (loop (when ,(car end) (return (progn ,@(cdr end))))
              ,@body
-             (psetq ,@(nreverse steps))))))
+             ,@(when temps `((let ,(nreverse temps) (setq ,@(nreverse sets)))))))))
 
 (defmacro do* (vars end &body body)
   (let ((steps nil))

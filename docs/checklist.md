@@ -11,7 +11,7 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
       664/6128 jump blocks apart
 - [x] Starts the background ROMs itself (KL ROM WALK), so the disc ROM
       (AMSDOS, Parados) works
-- [x] Library ROMs (three now): up to four, at any ROM numbers 1-6, in any order, found
+- [x] Library ROMs (three, and the demo ROM): up to four, at any ROM numbers 1-6, in any order, found
       by signature and build number. Any of them may be missing; their
       functions are then undefined, and the core alone still works.
 - [x] Library names cost nothing until used; functions written in Lisp are
@@ -180,10 +180,16 @@ lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
   longer one)
 - **Macros:** `pushnew` `psetq` `do` `do*`; the variable `*features*`
 
+### The demo ROM
+
+`(demo)` lists them: `shapes` `rose` `spiral` `moire` `bounce`
+`sierpinski` `sketch` `tune` `hanoi` `queens` `primes` `fact`. They are
+Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
+
 ## Tools
 
 - [x] `tools/build.sh`: the three ROMs, and MAME romsets with the core at ROM 0
-- [x] `tools/test.sh`: 19 regression tests, on a 464 or a 6128
+- [x] `tools/test.sh`: 20 regression tests, on a 464 or a 6128
 - [x] `tools/run.sh`: type a file at the REPL in MAME; screenshots,
       timings, an instruction profile (`tools/profile.py`)
 - [x] `tools/mame.sh`: a MAME window to play in, with a disc
@@ -205,6 +211,10 @@ lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
          rarely used functions moved to library ROM 2)
    - [ ] `pprint` of a long list of data: one element a line, filled lines
          would be a third the size
+   - [x] `do` expands to special forms only (it used `psetq`, a macro,
+         expanded again on every pass): loops with `do` 4-5x faster
+   - [ ] A macro call inside a loop is expanded on every pass; caching
+         expansions would help user macros the same way
 3. [x] **The 6128's extra 64 KB**: a RAM disc, drive `M:`
 4. [ ] **More Common Lisp**
    - [x] `string<` `string>` `string-equal` and the other string comparisons;
@@ -225,6 +235,9 @@ lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
        queue, notes and `play`, joystick, `peek`/`poke`
    - [ ] Still: user-defined characters (SYMBOL), flood fill (the 464's
          firmware has none), PlayCity's extra channels on Mike's card
-6. [ ] **A demo ROM** with example programs
+6. [x] **A demo ROM** with example programs: `(demo)` lists them --
+       pictures (shapes, a rose in floats, a spiral, XOR moire, a bouncing
+       ball, the chaos game, a sketcher on the cursor keys), Ode to Joy,
+       Hanoi, n queens, a sieve, 20!
 7. [ ] **A reference manual**: every function and capability, with examples
 8. [ ] Later, maybe: `*print-case*`; a byte-code compiler
