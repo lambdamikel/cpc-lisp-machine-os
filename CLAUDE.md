@@ -256,10 +256,10 @@ should see.
   read (it sees its own ROM at those addresses). Compare a builtin by
   address (`S_KW_KEY`...), and get a name through `CORE subr_string`
   (which may allocate). Library symbols' names are in RAM.
-* **A macro call is expanded every time it is evaluated** (no caching): a
-  macro inside a loop body costs an expansion per pass. Library macros
-  should expand to special forms (`do` once used `psetq` and ran 4-5x
-  slower).
+* **A macro call keeps its expansion**: the first evaluation rewrites the
+  call to `(%EXPANDED (macro . expansion) op . args)` (mx_displace,
+  sf_expanded); the printers show `(op . args)`. Redefining the macro
+  makes the call expand afresh.
 * **ROMCALL hands BC back as the callee left it.** A core routine that
   calls the library and needs B or C afterwards must save them itself
   (the reader's token length did not survive `lnum_read` at first).

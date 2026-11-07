@@ -241,8 +241,8 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
          would be a third the size
    - [x] `do` expands to special forms only (it used `psetq`, a macro,
          expanded again on every pass): loops with `do` 4-5x faster
-   - [ ] A macro call inside a loop is expanded on every pass; caching
-         expansions would help user macros the same way
+   - [x] A macro call keeps its expansion (displacing macros): a user
+         macro in a loop 2.4x faster
 3. [x] **The 6128's extra 64 KB**: a RAM disc, drive `M:`
 4. [ ] **More Common Lisp**
    - [x] `string<` `string>` `string-equal` and the other string comparisons;

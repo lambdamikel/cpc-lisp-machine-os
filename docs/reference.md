@@ -192,9 +192,9 @@ All **core**.
 | `(defsetf access update)` | `(setf (access a...) v)` becomes `(update a... v)` | 3 |
 | `(defstruct name slot...)` | see [Structures](#structures) | 3 |
 
-`(macroexpand form)`, `(macroexpand-1 form)` (**core**). A macro is
-expanded each time its call is evaluated (there is no cache): a user macro
-in a loop's body costs an expansion each time round.
+`(macroexpand form)`, `(macroexpand-1 form)` (**core**). A macro call is
+expanded the first time it is evaluated and the expansion kept in the call
+(it prints as written); redefining the macro makes the call expand afresh.
 
 ## Functions and evaluation
 
@@ -524,5 +524,7 @@ then use cells like your own; the names cost nothing until then.
 - Multi-dimensional arrays, `loop` with keywords (the extended LOOP),
   `format` directives beyond `~A ~S ~D ~C ~% ~& ~~`, streams, and CLOS are
   not there.
-- A macro is expanded each time its call is evaluated.
+- A macro call keeps its first expansion (displacing): a macro that
+  expands differently each time -- reading a global, say -- is not
+  expanded again.
 - `unwind-protect`'s cleanups do not run on an error or ESC.
