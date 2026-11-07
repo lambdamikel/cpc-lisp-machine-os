@@ -18,10 +18,17 @@
 -- character of a posted string often enough to matter, so every line is
 -- posted with a leading space -- harmless to a Lisp reader.
 --
--- A line "!esc N" is not typed: it holds ESC down (through the key matrix,
--- for 10 frames) N frames after the line before it has been typed -- while
--- that line is running. natkeyboard's press would be too brief for a ROM
--- that polls the key with KM TEST KEY.
+-- Lines starting with ! are not typed. They happen while the line before
+-- them runs, each N frames after the one before it (the first: N frames
+-- after that line has been typed):
+--
+--   !press KEY N   hold CPC key number KEY (row*8+bit) for 8 frames -- or
+--                  KEY+KEY..., together, CTRL (23) first -- through
+--                  the key matrix: natkeyboard's press is too brief for a ROM
+--                  that polls with KM TEST KEY, and cannot reach COPY
+--   !esc N         !press 66 N
+--   !type N text   type text with natkeyboard ({ENTER} etc. as it takes them)
+--   !shot N        a screenshot, LISP_SHOT with -1, -2... before the .png
 --
 -- A line is typed only when the ROM is waiting for one, which is known by a
 -- second tap on EDHOOK, which the REPL calls before every line.
@@ -42,13 +49,7 @@ MAXF    = tonumber(getenv("LISP_FRAMES", "30000"))
 EDITV   = tonumber(getenv("LISP_EDIT", "0xBD3A"))
 TIMESF  = getenv("LISP_TIMES", nil)
 TIMES, TYPED, T0 = {}, false, nil
-ESCAT, ESCDELAY = nil, nil
-
--- ESC is key 66: row 8, bit 2
-ESCFIELD = nil
-for name, f in pairs(manager.machine.ioport.ports[":kbrow.8"].fields) do
-  if f.mask == 4 and name ~= "Keyboard" then ESCFIELD = f end
-end
+ACTIONS, PENDING, SHOTS = {}, nil, 0
 
 LINES = {}
 if INFILE then
@@ -64,7 +65,7 @@ TAPO = MEM:install_read_tap(0xBB5A, 0xBB5A, "txtout", function(offset, data, mas
   return data
 end)
 
-WAITING = false      -- the ROM has entered EDIT and nothing is typed yet
+WAITING = false      -- the ROM wants a line and nothing is typed yet
 EDITS = 0
 TAPE = MEM:install_read_tap(EDITV, EDITV, "edit", function(offset, data, mask)
   local pc = CPU.state["PC"].value
@@ -76,7 +77,43 @@ TAPE = MEM:install_read_tap(EDITV, EDITV, "edit", function(offset, data, mask)
   return data
 end)
 
--- Typing a key is several frames; CPC text is CR LF. natkeyboard's coded
+-- the key matrix: CPC key number -> its field
+KEYFIELD = {}
+for row = 0, 9 do
+  local port = manager.machine.ioport.ports[string.format(":kbrow.%d", row)]
+  if port then
+    for name, f in pairs(port.fields) do
+      if name ~= "Keyboard" then
+        for bit = 0, 7 do
+          if f.mask == (1 << bit) then KEYFIELD[row * 8 + bit] = f end
+        end
+      end
+    end
+  end
+end
+
+-- the directives after line NEXT-1: a list of {delay, what, arg}
+local function directives()
+  local list = {}
+  while LINES[NEXT] and LINES[NEXT]:sub(1, 1) == "!" do
+    local l = LINES[NEXT]; NEXT = NEXT + 1
+    local n = l:match("^!esc (%d+)")
+    if n then list[#list + 1] = { tonumber(n), "press", { 66 } } end
+    local k, d = l:match("^!press ([%d+]+) (%d+)")
+    if k then
+      local keys = {}
+      for n in k:gmatch("%d+") do keys[#keys + 1] = tonumber(n) end
+      list[#list + 1] = { tonumber(d), "press", keys }
+    end
+    local d2, text = l:match("^!type (%d+) (.*)$")
+    if d2 then list[#list + 1] = { tonumber(d2), "type", text } end
+    local d3 = l:match("^!shot (%d+)")
+    if d3 then list[#list + 1] = { tonumber(d3), "shot" } end
+  end
+  return list
+end
+
+-- Typing is several frames a key; CPC text is CR LF. natkeyboard's coded
 -- strings use {ENTER}; braces in the text itself are escaped as {{ and }}.
 local function coded(s)
   s = s:gsub("{", "\1"):gsub("}", "\2")
@@ -105,11 +142,28 @@ NOTIFY = emu.add_machine_frame_notifier(function()
   if F >= MAXF then finish("TIMEOUT") return end
   if TYPED and not NK.is_posting then
     TYPED, T0 = false, F
-    if ESCDELAY then ESCAT, ESCDELAY = F + ESCDELAY, nil end
+    if PENDING then
+      local t = F
+      for _, a in ipairs(PENDING) do
+        t = t + a[1]
+        ACTIONS[#ACTIONS + 1] = { t, a[2], a[3] }
+        if a[2] == "press" then ACTIONS[#ACTIONS + 1] = { t + 8, "release", a[3] } end
+      end
+      PENDING = nil
+    end
   end
-  if ESCAT then
-    if F == ESCAT then ESCFIELD:set_value(1) end
-    if F == ESCAT + 10 then ESCFIELD:set_value(0); ESCAT = nil end
+  for i = #ACTIONS, 1, -1 do
+    local a = ACTIONS[i]
+    if a[1] == F then
+      if a[2] == "press" then for _, k in ipairs(a[3]) do KEYFIELD[k]:set_value(1) end
+      elseif a[2] == "release" then for _, k in ipairs(a[3]) do KEYFIELD[k]:set_value(0) end
+      elseif a[2] == "type" then NK:post_coded(a[3])
+      elseif a[2] == "shot" and SHOT then
+        SHOTS = SHOTS + 1
+        SCR:snapshot((SHOT:gsub("%.png$", "")) .. "-" .. SHOTS .. ".png")
+      end
+      table.remove(ACTIONS, i)
+    end
   end
   if DONEAT then
     if F >= DONEAT then finish("done") end
@@ -121,14 +175,15 @@ NOTIFY = emu.add_machine_frame_notifier(function()
     if SETTLE >= (NEXT == 1 and 50 or 3) then
       SETTLE, WAITING = 0, false
       if NEXT > #LINES then
-        DONEAT = F + 10
+        if #ACTIONS == 0 and not PENDING then DONEAT = F + 10
+        else WAITING = true end      -- look again when they are done
       else
         local l = LINES[NEXT]; NEXT = NEXT + 1
         OUT[#OUT + 1] = l       -- the ROM's own newline follows
         NK:post_coded(" " .. coded(l) .. "{ENTER}")
         TYPED = true
-        local esc = LINES[NEXT] and LINES[NEXT]:match("^!esc (%d+)")
-        if esc then ESCDELAY = tonumber(esc); NEXT = NEXT + 1 end
+        local d = directives()
+        if #d > 0 then PENDING = d end
       end
     end
   end

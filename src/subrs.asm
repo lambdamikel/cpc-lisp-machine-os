@@ -1211,6 +1211,12 @@ rand16:
 ;; SYMBOLS
 
 subr_symbol_name:
+    call sym_to_tokbuf
+    ld hl,TOKBUF
+    jp make_string
+
+;; sym_to_tokbuf: HL = a symbol -> its name copied to TOKBUF, BC = length
+sym_to_tokbuf:
     call sym_slot
     call str_data
     ld de,TOKBUF
@@ -1221,8 +1227,7 @@ subr_symbol_name:
     ldir
 .e:
     pop bc
-    ld hl,TOKBUF
-    jp make_string
+    ret
 
 subr_symbol_value:
     call sym_slot

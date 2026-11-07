@@ -1,0 +1,41 @@
+LISP> (defun fact (n) (if (= n 0) 1 (* n (fact (- n 1)))))
+FACT
+LISP> (pprint '(defun fact (n) (if (= n 0) 1 (* n (fact (- n 1))))))
+
+(DEFUN FACT (N)
+  (IF (= N 0) 1 (* N (FACT (- N 1)))))
+NIL
+LISP> (pprint '(let ((alpha 1) (beta 2) (gamma 3)) (when (> alpha 0) (print alpha) (print beta)) (list alpha beta gamma 'some-long-symbol-name)))
+
+(LET ((ALPHA 1) (BETA 2) (GAMMA 3))
+  (WHEN (> ALPHA 0)
+    (PRINT ALPHA)
+    (PRINT BETA))
+  (LIST ALPHA
+        BETA
+        GAMMA
+        'SOME-LONG-SYMBOL-NAME))
+NIL
+LISP> (prin1-to-string '(a "b" #\c))
+"(A \"b\" #\\c)"
+LISP> (princ-to-string '(a "b" #\c))
+"(A b c)"
+LISP> (read-from-string "(1 2 (3 . 4))")
+(1 2 (3 . 4))
+LISP> (ed 'fact)
+FACT
+LISP> (fact 6)
+720
+LISP> (ed 'twice)
+TWICE
+LISP> (twice 21)
+42
+LISP> (ed 'g)
+G
+LISP> (g)
+A
+LISP> (ed 'nothing-here)
+NIL
+LISP> (ed)
+G
+LISP> 

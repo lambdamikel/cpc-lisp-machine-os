@@ -79,6 +79,8 @@ V_T1              defs 2            ; temporaries natives can park values in
 V_T2              defs 2
 V_T3              defs 2
 V_T4              defs 2
+V_SRCOBJ          defs 2            ; reader: the string it reads from (source 2)
+V_EDITSTR         defs 2            ; the function editor's last text, a string
 ROOTS_END
 V_BLOCKS          defs 2            ; innermost block/catch frame (a stack address)
 V_FREE            defs 2            ; free cell list
@@ -112,11 +114,19 @@ V_LIBDISP         defs 2            ; the library's dispatcher
 V_LIBBKT          defs 2            ; the library's symbol hash table
 V_LIBFN           defs 2            ; the library function being called
 V_RCBC            defs 2            ; trampoline: BC in passing
-V_INSRC           defs 1            ; reader: 0 the keyboard, 1 library text
+V_INSRC           defs 1            ; reader: 0 the keyboard, 1 library text,
+                                    ;   2 a string
 V_LIBEDIT         defs 2            ; the library's line editor, 0 = none
 V_EDDEPTH         defs 1            ; line editor: open parens it remembers
 V_EDSTR           defs 1            ; line editor: the last line ended in a string
-V_SRCPTR          defs 2            ; reader: next character of library text
+V_SRCPTR          defs 2            ; reader: next character of library text,
+                                    ;   or the index into V_SRCOBJ
+V_OUTMODE         defs 1            ; printer: 0 the screen, 1 memory, 2 count only
+V_OUTPTR          defs 2            ;   memory: where the next character goes
+V_OUTEND          defs 2            ;   and where it must stop
+V_OUTCNT          defs 2            ;   characters printed (memory and count)
+V_OUTCOL          defs 1            ;   the column, from 0, kept in every mode
+V_BLKSAVE         defs 2            ; V_BLKHI while space is lent out, else 0
 V_S1              defs 2            ; scratch for routines that call nothing
 V_S2              defs 2
 V_S3              defs 2

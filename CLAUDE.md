@@ -63,9 +63,16 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   none), continuation lines come indented Lisp-style, TAB, up-arrow history,
   and the CPC copy cursor. The REPL calls `EDHOOK` (a RET in RAM) before
   every line; the harness watches that, not EDIT.
-* **Still to come**: a full-screen function editor (`(ed 'foo)`, with a
-  pretty-printer -- Mike's idea); floats, vectors, `&key`,
-  `unwind-protect`, `load` from disc, the 6128's extra RAM.
+* **The function editor** (`lib/fed.asm`, Mike's idea): `(ed 'foo)` shows
+  foo's definition pretty-printed (`lib/pp.asm`, also `pprint`) on a full
+  screen; COPY or CTRL-S reads and evaluates it, ESC drops it; `(ed)`
+  reopens the last text (kept in `V_EDITSTR`). Its buffer is lent from the
+  top of block space (`V_BLKSAVE`; toplevel gives it back). The core's
+  `putc` can print into memory or just count (`V_OUTMODE`), and the reader
+  can read a string by index (`V_INSRC` 2), which the GC may move.
+* **Still to come**: floats, vectors, `&key`, `unwind-protect`, `load` from
+  disc, the 6128's extra RAM; maybe `*print-case*` (all output is upper
+  case, as in CL).
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
 same addresses as screen RAM. Screen access from ROM code goes through the
@@ -117,6 +124,11 @@ should see.
   writes the typed line into the transcript itself.
 * The first keys typed after power-up are lost: the harness waits 50
   frames before the first line, and posts every line with a leading space.
+* Lines starting with `!` in a test are timed actions while the line before
+  runs: `!press KEY[+KEY] N` holds CPC keys through the matrix (COPY is 9,
+  ESC 66, CTRL 23, cursor up/right/down/left 0/1/2/8), `!type N text`,
+  `!shot N`. natkeyboard has no `{RIGHT}` for the CPC, and a second
+  `post_coded` too soon cuts the first one short.
 * `screen:snapshot(path)` works with `-video none`; `-nothrottle` runs at
   about 14x. Long tests outlast a 2-minute tool timeout -- run in background.
 * The LambdaSpeak 4 patterns (`~/git/lambdaspeak4/tools/run_rom.sh`,

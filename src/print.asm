@@ -1,6 +1,63 @@
 ;; CPC Lisp -- the printer.
 
-putc equ TXT_OUTPUT             ; preserves all registers
+;; putc: A = a character. All registers kept. Normally TXT OUTPUT; with
+;; V_OUTMODE 1 it goes into memory instead (V_OUTPTR, up to V_OUTEND, CRs
+;; dropped, so lines end in LF), with 2 it is only counted. V_OUTCOL follows
+;; the column in every mode, for the pretty printer.
+putc:
+    push af
+    cp 10
+    jr z,.col0
+    cp 13
+    jr z,.col0
+    push hl
+    ld hl,V_OUTCOL
+    inc (hl)
+    pop hl
+    jr .out
+.col0:
+    xor a
+    ld (V_OUTCOL),a
+.out:
+    ld a,(V_OUTMODE)
+    or a
+    jr nz,.mem
+    pop af
+    jp TXT_OUTPUT
+.mem:
+    pop af
+    cp 13
+    ret z
+    push hl
+    push de
+    push af
+    ld hl,(V_OUTCNT)
+    inc hl
+    ld (V_OUTCNT),hl
+    ld a,(V_OUTMODE)
+    dec a
+    jr nz,.done                 ; counting only
+    ld hl,(V_OUTPTR)
+    ld de,(V_OUTEND)
+    or a
+    sbc hl,de
+    jr nc,.done                 ; full
+    add hl,de
+    pop af
+    push af
+    ld (hl),a
+    inc hl
+    ld (V_OUTPTR),hl
+.done:
+    pop af
+    pop de
+    pop hl
+    ret
+
+;; putc_e: E = a character, for the library (the trampoline uses A)
+putc_e:
+    ld a,e
+    jr putc
 
 puts:
     ld a,(hl)

@@ -882,6 +882,14 @@ ed_atom_end:
     cp 1
     ret nz
     push hl
+    ld a,(ED_I)
+    sub b
+    ld c,a                      ; the atom's length
+    ld e,b
+    ld d,0
+    ld hl,LINEBUF
+    add hl,de
+    ex de,hl                    ; DE = the atom
     call ed_bodyform
     pop hl
     ret nz
@@ -927,12 +935,10 @@ ed_pop:
     ld (V_EDDEPTH),a
     ret
 
-;; ed_bodyform: B = where an atom starts, ED_I where it ends -> Z if it
-;; names a form whose body is indented by two
+;; ed_bodyform: DE = an atom's text, C = its length -> Z if it names a form
+;; whose body is indented by two, and A = how many of its arguments come
+;; before the body (the pretty printer keeps those on the first line)
 ed_bodyform:
-    ld a,(ED_I)
-    sub b
-    ld c,a
     ld hl,bodyforms
 .t:
     ld a,(hl)
@@ -942,14 +948,8 @@ ed_bodyform:
     jr nz,.skip
     push hl
     push bc
+    push de
     inc hl
-    push hl
-    ld e,b
-    ld d,0
-    ld hl,LINEBUF
-    add hl,de
-    ex de,hl
-    pop hl
     ld b,c
 .c:
     ld a,(de)
@@ -964,16 +964,19 @@ ed_bodyform:
     inc hl
     inc de
     djnz .c
+    ld a,(hl)                   ; how many before the body
+    pop de
     pop bc
     pop hl
-    xor a
+    cp a
     ret
 .ne:
+    pop de
     pop bc
     pop hl
 .skip:
     ld a,(hl)
-    inc a
+    add a,2
     add a,l
     ld l,a
     jr nc,.t
@@ -984,25 +987,25 @@ ed_bodyform:
     ret
 
 bodyforms:
-    db 5,"DEFUN"
-    db 8,"DEFMACRO"
-    db 6,"LAMBDA"
-    db 3,"LET"
-    db 4,"LET*"
-    db 4,"FLET"
-    db 6,"LABELS"
-    db 4,"WHEN"
-    db 6,"UNLESS"
-    db 6,"DOLIST"
-    db 7,"DOTIMES"
-    db 5,"BLOCK"
-    db 4,"LOOP"
-    db 5,"PROGN"
-    db 5,"PROG1"
-    db 4,"CASE"
-    db 5,"CATCH"
-    db 2,"DO"
-    db 3,"DO*"
+    db 5,"DEFUN",2
+    db 8,"DEFMACRO",2
+    db 6,"LAMBDA",1
+    db 3,"LET",1
+    db 4,"LET*",1
+    db 4,"FLET",1
+    db 6,"LABELS",1
+    db 4,"WHEN",1
+    db 6,"UNLESS",1
+    db 6,"DOLIST",1
+    db 7,"DOTIMES",1
+    db 5,"BLOCK",1
+    db 4,"LOOP",0
+    db 5,"PROGN",0
+    db 5,"PROG1",1
+    db 4,"CASE",1
+    db 5,"CATCH",1
+    db 2,"DO",2
+    db 3,"DO*",2
     db 0
 
 ;; scanning helpers

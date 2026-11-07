@@ -305,6 +305,14 @@ toplevel:
     ld (V_INSRC),a
     ld (V_EDDEPTH),a
     ld (V_EDSTR),a
+    ld (V_OUTMODE),a
+    ld hl,(V_BLKSAVE)
+    ld a,h
+    or l
+    jr z,repl
+    ld (V_BLKHI),hl
+    ld hl,0
+    ld (V_BLKSAVE),hl
 repl:
     ld hl,prompt_main
     ld (V_PROMPT),hl
@@ -329,6 +337,8 @@ repl:
 error:
     push de
     push hl
+    xor a
+    ld (V_OUTMODE),a
     call fresh_line
     ld hl,m_error
     call puts

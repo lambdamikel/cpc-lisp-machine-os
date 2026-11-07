@@ -20,6 +20,8 @@ getc:
     ld a,(V_INSRC)
     or a
     jr z,.buf
+    cp 2
+    jr z,.str
     push hl
     ld hl,(V_SRCPTR)
     call LIBPEEK
@@ -28,6 +30,36 @@ getc:
     inc hl
     ld (V_SRCPTR),hl
 .end:
+    pop hl
+    ret
+.str:                           ; from the string, by index: it can move
+    push hl
+    push de
+    push bc
+    ld hl,(V_SRCOBJ)
+    call str_data               ; HL = characters, BC = how many
+    ld de,(V_SRCPTR)
+    ex de,hl
+    or a
+    sbc hl,bc
+    jr nc,.strend
+    add hl,bc
+    inc hl
+    ld (V_SRCPTR),hl
+    dec hl
+    add hl,de
+    ld a,(hl)
+    pop bc
+    pop de
+    pop hl
+    or a
+    ret nz
+    ld a," "                    ; a NUL in a string reads as a blank
+    ret
+.strend:
+    xor a
+    pop bc
+    pop de
     pop hl
     ret
 .buf:
@@ -70,7 +102,7 @@ getc:
     pop bc
     pop de
     pop hl
-    jr getc
+    jp getc
 
 ;; ungetc: A = a character to read again
 ungetc:
