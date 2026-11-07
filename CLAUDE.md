@@ -335,8 +335,10 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
 * Slots since 2026-11-07 (afternoon): 0 LISPLIB2 (ROM 5), 1 vector head
   (ROM 1), 2 Parados (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0),
   5 LISPLIB (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6). All five Lisp
-  ROMs must come from one build: re-flash them together. Flashed: build 6078
-  (2026-11-07 evening: turtle, speech, PlayCity, symbol, flood-fill...). Mike: everything may be replaced **except
+  ROMs must come from one build: re-flash them together. Flashed: build 2078
+  (2026-11-07 night: catchable errors, cleanups on errors, all of format,
+  compound types). Mike keeps the CPC off: flash each build that passes the
+  tests on both machines, no need to ask. Everything may be replaced **except
   Parados and the LS AI ROM**. `tools/card.py lisp` re-flashes the three
   Lisp ROMs (it checks the CPC is off and refuses slots 2 and 6);
   `tools/card.py basic` silences the core. `docs/cpc-test.txt` is the
