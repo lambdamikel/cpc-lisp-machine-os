@@ -41,3 +41,8 @@
 (print 'x)
 (terpri)
 (read-from-string "(a b)")
+(with-open-file (o "t1" :direction :output) (format o "~{~A~}" '(one two three)))
+(with-open-file (i "t1") (list (read-line i) (read-line i nil :eof) (read-line i nil :again)))
+(with-open-file (i "t1") (list (read i) (read i nil :eof) (read-char i nil :eof) (listen i)))
+(with-open-file (i "t1") (list (read-line i) (peek-char nil i nil :eof)))
+(with-open-file (i "t1") (read-line i))

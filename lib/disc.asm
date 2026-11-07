@@ -150,6 +150,7 @@ lf_load:
 .open:
     ld hl,V_FILES
     set 0,(hl)
+    res 2,(hl)
     ld a,(V_INSRC)              ; the reader's state, for afterwards
     ld d,a
     ld a,(V_PEEK)
@@ -180,6 +181,7 @@ lf_load:
     call CAS_IN_CLOSE
     ld hl,V_FILES
     res 0,(hl)
+    res 2,(hl)
     call fl_release
     pop hl
     jp lt

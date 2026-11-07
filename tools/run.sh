@@ -61,7 +61,7 @@ trap 'rm -f "$OUTF"' EXIT
 LISP_IN=$(realpath "$IN") LISP_OUT=$OUTF LISP_SHOT=$SHOT LISP_FRAMES=$FRAMES LISP_EDIT=$EDIT LISP_TIMES=$TIMES \
 LISP_PROF=$PROF LISP_DUMP=${LISP_DUMP:-} \
 env -u WAYLAND_DISPLAY GDK_BACKEND=x11 timeout 600 xvfb-run -a \
-    /usr/games/mame -rompath build/mame -video none -sound none -nothrottle \
+    /usr/games/mame -rompath ${LISP_ROMPATH:-build/mame} -video none -sound none -nothrottle \
     -skip_gameinfo $SYS $ROMBOX ${MAMEARGS} -autoboot_script emu/repl.lua 2>&1 \
   | grep -v -E "^Warning: -video none|WRONG CHECKSUMS|EXPECTED: CRC|FOUND: CRC|might not run correctly|^Average speed" >&2 || true
 cat "$OUTF"

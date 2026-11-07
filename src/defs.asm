@@ -137,7 +137,8 @@ V_LIBFN           defs 2            ; the library function being called
 V_RCBC            defs 2            ; trampoline: BC in passing
 V_INSRC           defs 1            ; reader: 0 the keyboard, 1 library text,
                                     ;   2 a string, 3 the file open for input
-V_FILES           defs 1            ; files open: bit 0 input, bit 1 output
+V_FILES           defs 1            ; files open: bit 0 input, bit 1 output;
+                                    ;   bit 2: the input file is at its end
 V_LIBEDIT         defs 2            ; a library's line editor, 0 = none
 V_EDDEPTH         defs 1            ; line editor: open parens it remembers
 V_EDSTR           defs 1            ; line editor: the last line ended in a string

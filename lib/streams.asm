@@ -542,6 +542,7 @@ lf_open:
     jr nc,.fail
     ld a,(SO_DIR)
     ld hl,V_FILES
+    res 2,(hl)                  ; (an input file not at its end yet)
     or (hl)
     ld (hl),a
     xor a
@@ -587,5 +588,6 @@ lf_close:
     call CAS_IN_CLOSE
     ld hl,V_FILES
     res 0,(hl)
+    res 2,(hl)
     call fl_release
     jp lt

@@ -66,7 +66,10 @@ getc:
     pop hl
     ret
 .file:                          ; the file open for input
-    push hl
+    ld a,(V_FILES)
+    bit 2,a
+    jr nz,.fend                 ; at its end already: it stays there (the
+    push hl                     ;   disc ROM would go on past a CTRL-Z)
     push de
     push bc
     call CAS_IN_CHAR
@@ -75,8 +78,7 @@ getc:
     pop hl
     jr c,.fchar
     jr z,.fesc                  ; ESC pressed
-    xor a                       ; the end of the file
-    ret
+    jr .fend                    ; the end of the file
 .fchar:
     cp #1A                      ; CTRL-Z ends an ASCII file
     jr z,.fend
@@ -85,6 +87,9 @@ getc:
     ld a," "
     ret
 .fend:
+    ld a,(V_FILES)
+    or 4
+    ld (V_FILES),a
     xor a
     ret
 .fesc:
