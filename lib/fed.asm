@@ -38,8 +38,15 @@ FE_SD     equ LIBSCR+58         ;   open forms
 FE_TRIES  equ LIBSCR+59         ; fe_locate: rounds left
 FE_STK    equ LIBSCR+64         ; their column, indentation, tokens, -
 FE_MSTK   equ LIBSCR+64         ; matching: up to 32 "(" positions (shares the room)
-FE_MAX    equ 48
-FE_MAXBUF equ 2048
+FE_MAX    equ 40                ; 160 bytes: below the renderer's variables (fr.asm)
+    assert FE_STK+4*FE_MAX <= FR_MODE
+FE_MAXBUF equ 2048+FR_FONTSIZE
+FE_CURVIS equ LIBSCR+60         ; the cursor is drawn
+FE_CFROM  equ LIBSCR+61         ; drawing: first column, on the first row
+FE_USED   equ LIBSCR+62         ; rows the text took when last drawn: below, blank
+SCR_FILL_BOX equ #BC44
+TXT_CUR_DISABLE equ #BB7E
+SCR_SW_ROLL  equ #BC50
 
 ;@ ED 0 1 lf_ed
 lf_ed:
@@ -201,7 +208,16 @@ lib_error:
 
 ;; fe_reserve: lend the buffer out of block space
 fe_reserve:
+    ld hl,(V_BLKHI)             ; room enough without collecting?
+    ld de,(V_BLKTOP)
+    or a
+    sbc hl,de
+    ld de,2*FE_MAXBUF
+    or a
+    sbc hl,de
+    jr nc,.room
     CORE gc
+.room:
     ld hl,(V_BLKHI)
     ld de,(V_BLKTOP)
     or a
@@ -216,7 +232,7 @@ fe_reserve:
     jr c,.size
     ex de,hl
 .size:
-    ld de,256
+    ld de,256+FR_FONTSIZE
     push hl
     or a
     sbc hl,de
@@ -233,6 +249,8 @@ fe_reserve:
     or a
     sbc hl,de
     ld (V_BLKHI),hl
+    ld de,FR_FONTSIZE           ; the font copy first, then the text
+    add hl,de
     ld (FE_BUF),hl
     ld (FE_END),hl
     ret
@@ -353,47 +371,54 @@ fe_definition:
 
 ;; fe_edit -> C to keep the text, NC to drop it
 fe_edit:
-    call TXT_GET_WINDOW
-    ld a,d
-    sub h
-    inc a
+    call TXT_CUR_OFF
+    call TXT_CUR_DISABLE        ; the firmware's cursor stays out of it
+    call TXT_CLEAR_WINDOW
+    ld hl,(FE_BUF)
+    ld de,FR_FONTSIZE
+    or a
+    sbc hl,de
+    ex de,hl
+    call fr_init                ; draws straight into the screen from here
+    ld a,(FR_COLS)
     ld (FE_W),a
-    ld a,e
-    sub l
-    ld (FE_H),a                 ; the last row is the status line
+    ld a,24
+    ld (FE_H),a                 ; the 25th row is the status line
+    xor a
+    ld (FE_CURVIS),a
+    ld (FE_USED),a              ; the screen is clear
     ld hl,(FE_BUF)
     ld (FE_CUR),hl
     ld (FE_TOP),hl
-    call TXT_CLEAR_WINDOW
-    ld a,(FE_H)
-    inc a
-    ld l,a
-    ld h,1
-    call TXT_SET_CURSOR
-    call TXT_INVERSE
+    call fr_inverse
     ld hl,fe_m_status
+    ld bc,24                    ; B = column 0, C = row 24
 .st:
     ld a,(hl)
     or a
-    jr z,.st2
-    push hl
-    call TXT_WR_CHAR
-    pop hl
+    jr nz,.st1
+    ld a," "
+    dec hl
+.st1:
     inc hl
-    jr .st
-.st2:
-    call TXT_INVERSE
+    push hl
+    call fr_char
+    pop hl
+    inc b
+    ld a,(FE_W)
+    cp b
+    jr nz,.st
+    call fr_normal
     call fe_render_all
-    call TXT_CUR_ENABLE
-    call TXT_CUR_ON
 fe_loop:
     call fe_locate
-    ld a,(FE_COL)
-    ld h,a
-    ld a,(FE_ROW)
-    ld l,a
-    call TXT_SET_CURSOR
+    call fr_inverse
+    call fe_cursor
+    call fr_normal
     call KM_WAIT_CHAR_L
+    push af
+    call fe_cursor
+    pop af
     cp #E0
     jr z,.done
     cp #13
@@ -443,13 +468,37 @@ fe_loop:
     call ed_beep
     jr fe_loop
 .done:
-    call TXT_CUR_OFF
+    call TXT_CUR_ENABLE
     scf
     ret
 .cancel:
-    call TXT_CUR_OFF
+    call TXT_CUR_ENABLE
     or a
     ret
+
+;; fe_cursor: the character under the cursor drawn again -- inverse, after
+;; fr_inverse, is the cursor. (Never read back from the screen: from a ROM,
+;; &C000-&FFFF reads the ROM.)
+fe_cursor:
+    ld hl,(FE_CUR)
+    ld de,(FE_END)
+    call fe_cmp
+    ld a," "
+    jr nc,.at
+    ld a,(hl)
+    cp 10
+    jr nz,.at
+    ld a," "
+.at:
+    push af
+    ld a,(FE_COL)
+    dec a
+    ld b,a
+    ld a,(FE_ROW)
+    dec a
+    ld c,a
+    pop af
+    jp fr_char
 
 ;; fe_redraw: A = the character just put in or taken out, at the cursor's
 ;; row. A line still on one row is drawn again alone, else everything from
@@ -460,6 +509,8 @@ fe_redraw:
     ld (FE_RFROM),a
     ld a,(FE_H)
     ld (FE_RTO),a
+    ld a,1
+    ld (FE_CFROM),a
     pop af
     cp 10
     jr z,.rest
@@ -480,6 +531,8 @@ fe_redraw:
     jr c,.rest
     ld a,(FE_ROW)
     ld (FE_RTO),a
+    ld a,(FE_COL)               ; and only from where it changed
+    ld (FE_CFROM),a
 .rest:
     jp fe_render
 
@@ -686,9 +739,16 @@ fe_blink:
     ld a,(FE_H)
     cp b
     ret c
-    ld h,c
-    ld l,b
-    call TXT_SET_CURSOR
+    ld a,b                      ; fr_char wants B = column, C = row, from 0
+    ld b,c
+    ld c,a
+    dec b
+    dec c
+    push bc
+    call fr_inverse
+    ld a,"("
+    call fr_char
+    call fr_normal
     ld b,15
 .w:
     push bc
@@ -697,11 +757,14 @@ fe_blink:
     jr c,.key
     pop bc
     djnz .w
-    ret
+    jr .off
 .key:
     call KM_CHAR_RETURN
     pop bc
-    ret
+.off:
+    pop bc
+    ld a,"("
+    jp fr_char
 
 ;; ---------------------------------------------------------------------------
 ;; the text
@@ -914,18 +977,17 @@ fe_locate:
 fe_render_all:
     ld a,1
     ld (FE_RFROM),a
+    ld (FE_CFROM),a
     ld a,(FE_H)
     ld (FE_RTO),a
 ;; fe_render: draw rows FE_RFROM to FE_RTO
 fe_render:
-    call TXT_CUR_OFF
     ld hl,(FE_TOP)
     ld bc,#0101                 ; B = row, C = column
-    call .rowstart
 .l:
     ld a,(FE_RTO)
     cp b
-    jr c,.out
+    jr c,.past
     ld de,(FE_END)
     call fe_cmp
     jr z,.blank
@@ -937,17 +999,12 @@ fe_render:
     jr nc,.put
     inc b
     ld c,1
-    call .rowstart
     jr .l
 .put:
     call .drawing
     jr c,.skip
     ld a,(hl)
-    push hl
-    push bc
-    call TXT_WR_CHAR
-    pop bc
-    pop hl
+    call .char
 .skip:
     inc hl
     inc c
@@ -957,59 +1014,102 @@ fe_render:
     inc hl
     inc b
     ld c,1
-    call .rowstart
     jr .l
-.blank:
+.blank:                         ; past the text: the rest is blank
     call .clear
+    ld a,(FE_USED)              ; what was below it before
+    ld c,a
+    ld a,b
+    ld (FE_USED),a
     inc b
-    ld c,1
-    ld a,(FE_RTO)
+    ld a,(FE_RTO)               ; blank up to there, or the last row asked
+    cp c
+    jr c,.lim
+    ld a,c
+.lim:
     cp b
-    jr c,.out
-    call .rowstart
-    jr .blank
-.out:
-    jp TXT_CUR_ON
-;; C if row B is not being drawn
+    ret c                       ; nothing there to blank
+    ld e,a
+    ld a,(FE_RFROM)             ; whole rows from here, in one box
+    cp b
+    jr c,.box
+    ld b,a
+.box:
+    ld a,e
+    cp b
+    ret c                       ; (all of it above where drawing starts)
+    dec e
+    ld a,b
+    dec a
+    ld l,a
+    ld h,0
+    ld a,(FE_W)
+    dec a
+    ld d,a
+    ld a,(FR_PAPER)
+    jp SCR_FILL_BOX
+;; past the last row asked for, with text still to come
+.past:
+    ld a,(FE_RTO)
+    ld hl,FE_H
+    cp (hl)
+    ret nz                      ; a part of the screen: nothing learned
+    ld (FE_USED),a              ; the text fills it
+    ret
+;; A at row B, column C (from 1)
+.char:
+    push hl
+    push bc
+    ld h,b
+    ld b,c
+    ld c,h
+    dec b
+    dec c
+    call fr_char
+    pop bc
+    pop hl
+    ret
+;; C if row B, column C is not being drawn
 .drawing:
     push hl
     ld a,b
     ld hl,FE_RFROM
     cp (hl)
     jr c,.dr
+    jr nz,.dt
+    ld a,c                      ; the first row: from FE_CFROM on
+    ld hl,FE_CFROM
+    cp (hl)
+    jr c,.dr
+.dt:
     ld a,(FE_RTO)
     cp b
 .dr:
-    pop hl
-    ret
-.rowstart:
-    call .drawing
-    ret c
-    push hl
-    push bc
-    ld h,1
-    ld l,b
-    call TXT_SET_CURSOR
-    pop bc
     pop hl
     ret
 ;; blanks from column C to the end of row B
 .clear:
     call .drawing
     ret c
-    push hl
-    push bc
-.c:
     ld a,(FE_W)
     cp c
-    jr c,.cd
+    ret c
+    push hl
     push bc
-    ld a," "
-    call TXT_WR_CHAR
-    pop bc
-    inc c
-    jr .c
-.cd:
+    push de
+    ld a,c
+    dec a
+    ld h,a                      ; left column, from 0
+    ld a,(FE_W)
+    dec a
+    ld d,a                      ; right column
+    ld a,b
+    dec a
+    ld l,a                      ; top row = bottom row
+    ld e,a
+    ld a,(FR_PAPER)
+    call SCR_FILL_BOX
+    pop de
     pop bc
     pop hl
     ret

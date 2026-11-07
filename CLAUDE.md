@@ -150,6 +150,16 @@ should see.
   at ROMs 0-7 (the 664/6128 at 0-15): give library ROMs numbers 1-6.
 * **rasm labels are case-insensitive**: `s_quote` and `S_QUOTE` collide.
   A label in front of a macro that starts with `align` is not aligned.
+* **Reading screen memory from ROM code reads the ROM.** A ROM at &C000
+  sees itself at &C000-&FFFF; only writes reach the screen RAM. The function
+  editor draws straight into the screen (`lib/fr.asm`, ten times the
+  firmware's speed) but never reads it back: its cursor is the character
+  drawn again in inverse. (XORing the cell put the ROM's code on screen.)
+* **The firmware's text output manages ~5 characters a frame** (TXT WR
+  CHAR): fine for a line, far too slow to redraw a screen per key.
+* **MAME's CPC keys** (emulated, not natural, keyboard): COPY is End, DEL is
+  Insert, CLR is Backspace, ESC is backquote, CTRL is Right Alt; Left Ctrl
+  and Left Alt are joystick fire buttons.
 * **ROMDIS**: BASIC's ROM obeys it on all three machines, so a card ROM at 0
   replaces BASIC on the 464, 664 and 6128. **The 664/6128's internal AMSDOS
   ignores ROMDIS** -- never put anything at ROM 7 there (on a 6128, both

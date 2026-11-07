@@ -735,6 +735,7 @@ lf_nreconc:
 
     include "editor.asm"
     include "pp.asm"
+    include "fr.asm"
     include "fed.asm"
     include "libtab.asm"
 
