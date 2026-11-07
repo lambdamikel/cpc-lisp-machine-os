@@ -22,6 +22,7 @@
 ;;   +12 symbol hash table  +14 boot forms (list of text addresses, 0 ends)
 ;;   +16 dispatcher         +18 line editor, or 0 (called like EDIT: LINEBUF
 ;;                              to fill, carry set for ENTER, clear for ESC)
+;;   +20 number routines: three jumps -- arithmetic, read, print (lnum)
 ;;
 ;; A symbol entry: [next][kind][min][max][address][length][name...]
 ;;   kind 1 native (address = code), 2 autoload (address = text); other
@@ -140,6 +141,8 @@ find_library:
     ld (V_LIBDISP),de
     call lib_word
     ld (V_LIBEDIT),de
+    call lib_word
+    ld (V_LIBNUM),de
     pop hl
 .boot:
     call lib_word
@@ -304,6 +307,43 @@ resolve_fn:
     ret nz
     ld hl,m_autoload            ; it did not define what it should have
     jp error
+
+;; Numbers other than fixnums -- floats -- are the library's: lnum_* call
+;; its number routines with HL, DE, BC passed through; carry set if there is
+;; no library.
+;;   lnum_arith: HL = &arg 0, B = n, C as the subr had it, DE = its NUM_
+;;               label -> HL = the result (see nums_v)
+;;   lnum_read:  TOKBUF holds B characters -> NC and HL = a number, or C
+;;   lnum_print: HL = a float -> printed
+lnum_arith:
+    xor a
+    jr lnum
+lnum_read:
+    ld a,3
+    jr lnum
+lnum_print:
+    ld a,6
+lnum:
+    push hl
+    push de
+    ld hl,(V_LIBNUM)
+    ld e,a
+    ld d,0
+    ld a,h
+    or l
+    jr z,.none
+    add hl,de
+    push hl
+    pop ix
+    pop de
+    pop hl
+    ld a,(V_LIBROM)
+    jp ROMCALL
+.none:
+    pop de
+    pop hl
+    scf
+    ret
 
 ;; print_lsubr: HL = a library function -> #<SUBR name>
 print_lsubr:

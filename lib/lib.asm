@@ -59,6 +59,7 @@ KL_TIME_PLEASE      equ #BD0D
     dw lib_boot
     dw lib_dispatch
     dw lib_editor
+    dw lib_numbers
 
 ;; The name has a space so that BASIC cannot call it as a command.
 lib_names:
@@ -138,16 +139,31 @@ lfix_de:
     ld hl,m_notnum
     CORE error
 
-;; lint_hl: a fixnum in HL -> the plain number in HL. lint_de likewise.
+;; lint_hl: a number in HL -> the plain number in HL, a float rounded.
+;; lint_de likewise. All else kept.
 lint_hl:
-    call lfix_hl
+    bit 0,l
+    jr z,.float
     sra h
     rr l
     ret
+.float:
+    push de
+    ex de,hl
+    call fl_plain
+    pop de
+    ret
 lint_de:
-    call lfix_de
+    bit 0,e
+    jr z,.float
     sra d
     rr e
+    ret
+.float:
+    push hl
+    call fl_plain
+    ex de,hl
+    pop hl
     ret
 
 ;; a plain number in HL -> a fixnum, assumed in range
@@ -738,6 +754,7 @@ lf_nreconc:
     include "fr.asm"
     include "fed.asm"
     include "disc.asm"
+    include "float.asm"
     include "libtab.asm"
 
 lib_end:

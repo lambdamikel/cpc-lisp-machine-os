@@ -143,6 +143,8 @@ print_obj:
     pop hl
     cp HDR_STRING and #FF
     jp z,print_string
+    cp HDR_FLOAT and #FF
+    jp z,lnum_print
     ld de,str_function
     cp HDR_CLOSURE and #FF
     jr z,.unread

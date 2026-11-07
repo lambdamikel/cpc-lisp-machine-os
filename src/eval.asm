@@ -527,6 +527,13 @@ apply_list:
     ld a,h
     cp #C0
     jr nc,.subr
+    push hl                     ; a library function goes as a subr does
+    dec hl
+    dec hl
+    ld a,(hl)
+    pop hl
+    cp HDR_LSUBR and #FF
+    jr z,.subr
     ex de,hl
     jr apply_closure_tail
 .subr:

@@ -305,7 +305,7 @@ subr_member:
     jp nz,err_notlist_hl
     push hl
     LDHLI
-    call cmp_hl_de
+    call eql
     pop hl
     ret z
     CDRHL
@@ -325,7 +325,7 @@ subr_assoc:
     jr z,.skip
     push hl
     LDHLI
-    call cmp_hl_de
+    call eql
     pop hl
     jr z,.found
 .skip:
@@ -527,6 +527,11 @@ subr_symbolp:
     jp bool_z
 subr_numberp:
     bit 0,l
+    jp nz,ret_t
+    call is_float
+    jp bool_z
+subr_integerp:
+    bit 0,l
     jp bool_nz
 subr_stringp:
     call is_string
@@ -555,6 +560,29 @@ subr_keywordp:
 subr_eq:
     call cmp_hl_de
     jp bool_z
+subr_eql:
+    call eql
+    jp bool_z
+
+;; eql: HL, DE -> Z if they are the same object, or floats of one value.
+;; All kept but AF.
+eql:
+    call cmp_hl_de
+    ret z
+    call is_float
+    ret nz
+    ex de,hl
+    call is_float
+    ex de,hl
+    ret nz
+    push hl
+    push de
+    push bc
+    call str_equal
+    pop bc
+    pop de
+    pop hl
+    ret
 subr_equal:
     call equal
     jp bool_z
@@ -592,7 +620,7 @@ equal:
     jr .loop
 .atoms:
     call is_string
-    ret nz
+    jr nz,eql
     ex de,hl
     call is_string
     ex de,hl
@@ -643,6 +671,97 @@ tag_hl:
 err_overflow:
     ERR m_overflow
 
+;; Number prologues. A numeric subr starts by calling one, which returns if
+;; the arguments are all fixnums. If not, the whole call is handed to the
+;; library's float arithmetic (lnum_arith), named by the address the call
+;; returns to -- a NUM_ label after it -- and what that gives back is the
+;; subr's result. Without the library, a float cannot exist: the argument
+;; that is not a fixnum is "not a number".
+;;
+;; nums_v: a variadic subr, HL = &arg 0, B = n, C its own. It notes where
+;; the arguments are, so that an integer overflow can start the call again
+;; in floats (num_ovf) -- or report it, without the library.
+nums_v:
+    ld (V_NUMARGS),hl
+    ld (V_NUMBC),bc
+    pop de
+    ld (V_NUMOP),de
+    ld (V_NUMSP),sp             ; the subr's own return on top
+    push de
+    ld a,b
+    or a
+    ret z
+    push hl
+    push bc
+.l:
+    ld a,(hl)
+    rra
+    jr nc,.float
+    dec hl
+    dec hl
+    djnz .l
+    pop bc
+    pop hl
+    ret
+.float:
+num_ovf:
+    ld sp,(V_NUMSP)
+    ld hl,(V_NUMARGS)
+    ld bc,(V_NUMBC)
+    ld de,(V_NUMOP)
+;; float_go: HL = &arg 0, B = n, C, DE = a NUM_ label -> the library's
+;; result, returned for the subr
+float_go:
+    ld a,(V_LIBROM)
+    or a
+    jp nz,lnum_arith
+    ld a,b                      ; no library
+    or a
+    jr z,.ovf
+.l:
+    NEXTARG
+    bit 0,e
+    jp z,err_notnum
+    djnz .l
+.ovf:
+    jp err_overflow
+
+;; nums_1: a subr of one argument, HL
+nums_1:
+    bit 0,l
+    ret nz
+    pop de
+;; num_ovf1: HL = the argument of a one-argument subr, DE = its NUM_ label
+num_ovf1:
+    push hl
+    ld b,1
+    call float_stk
+    pop de
+    ret
+
+;; nums_2: a subr of two arguments, HL and DE
+nums_2:
+    ld a,l
+    and e
+    rra
+    ret c
+    ex (sp),hl                  ; the first argument where the return was
+    push de
+    ex de,hl
+    ld b,2
+    call float_stk
+    pop de
+    pop de
+    ret
+
+;; float_stk: B arguments pushed just before the call -> float_go
+float_stk:
+    ld l,b
+    ld h,0
+    add hl,hl
+    add hl,sp
+    jr float_go
+
 ;; abs_hl, neg_hl: on a plain number. DE, BC kept.
 abs_hl:
     bit 7,h
@@ -658,6 +777,8 @@ neg_hl:
     ret
 
 subr_plus:
+    call nums_v
+NUM_PLUS:
     ld ix,1
     ld a,b
     or a
@@ -671,7 +792,7 @@ subr_plus:
     dec hl
     or a
     adc hl,de
-    jp pe,err_overflow
+    jp pe,num_ovf
     push hl
     pop ix
     pop hl
@@ -682,27 +803,27 @@ subr_plus:
     ret
 
 subr_minus:
+    call nums_v
+NUM_MINUS:
     NEXTARG
-    call fixnum_de
     dec b
     jr nz,.sub
     ld hl,2
     or a
     sbc hl,de
-    jp pe,err_overflow
+    jp pe,num_ovf
     ret
 .sub:
     push de
     pop ix
 .l:
     NEXTARG
-    call fixnum_de
     push hl
     push ix
     pop hl
     or a
     sbc hl,de
-    jp pe,err_overflow
+    jp pe,num_ovf
     inc hl
     push hl
     pop ix
@@ -713,6 +834,8 @@ subr_minus:
     ret
 
 subr_times:
+    call nums_v
+NUM_TIMES:
     ld ix,3
     ld a,b
     or a
@@ -754,6 +877,19 @@ mul_fix:
     jr c,.ovf
     bit 7,h
     jr nz,.ovf
+    ld a,h
+    and #C0
+    jr z,.fits
+    pop af                      ; 16384 or more: only -16384 fits
+    push af
+    jp p,.ovf
+    ld a,h
+    cp #40
+    jr nz,.ovf
+    ld a,l
+    or a
+    jr nz,.ovf
+.fits:
     pop af
     jp m,.neg
     jp tag_hl
@@ -762,7 +898,7 @@ mul_fix:
     jp tag_hl
 .ovf:
     pop af
-    jp err_overflow
+    jp num_ovf
 
 ;; umul: BC * DE -> HL, C if it does not fit 16 bits
 umul:
@@ -879,46 +1015,63 @@ two_nums:
     ret
 
 subr_truncate:
+    call nums_v
+NUM_TRUNCATE:
     call two_nums
     call divide
     jp tag_hl
 subr_floor:
+    call nums_v
+NUM_FLOOR:
     call two_nums
     call floor_div
     jp tag_hl
 subr_mod:
+    call nums_2
+NUM_MOD:
     call floor_div
     ex de,hl
     jp tag_hl
 subr_rem:
+    call nums_2
+NUM_REM:
     call divide
     ex de,hl
     jp tag_hl
 
 subr_inc:
-    call fixnum_hl
+    call nums_1
+NUM_INC:
     ld de,2
     or a
     adc hl,de
-    jp pe,err_overflow
-    ret
+    ret po
+    ld hl,#7FFF                 ; 16383 + 1: again, in floats
+    ld de,NUM_INC
+    jp num_ovf1
 subr_dec:
-    call fixnum_hl
+    call nums_1
+NUM_DEC:
     ld de,2
     or a
     sbc hl,de
-    jp pe,err_overflow
-    ret
+    ret po
+    ld hl,#8001                 ; -16384 - 1
+    ld de,NUM_DEC
+    jp num_ovf1
 subr_abs:
-    call fixnum_hl
+    call nums_1
+NUM_ABS:
     bit 7,h
     ret z
     ex de,hl
     ld hl,2
     or a
     sbc hl,de
-    jp pe,err_overflow
-    ret
+    ret po
+    ld hl,#8001                 ; (abs -16384)
+    ld de,NUM_ABS
+    jp num_ovf1
 
 subr_max:
     ld c,0
@@ -926,15 +1079,15 @@ subr_max:
 subr_min:
     ld c,1
 maxmin:
+    call nums_v
+NUM_MAXMIN:
     NEXTARG
-    call fixnum_de
     push de
     pop ix
     dec b
     jr z,.done
 .l:
     NEXTARG
-    call fixnum_de
     push hl
     push ix
     pop hl
@@ -990,14 +1143,14 @@ subr_numeq:
 subr_numne:
     ld c,5
 compare:
+    call nums_v
+NUM_COMPARE:
     NEXTARG
-    call fixnum_de
     dec b
     jp z,ret_t
 .l:
     push de
     NEXTARG
-    call fixnum_de
     ex (sp),hl
     push de
     ld a,h
@@ -1022,13 +1175,15 @@ compare:
     jp ret_t
 
 subr_zerop:
-    call fixnum_hl
+    call nums_1
+NUM_ZEROP:
     dec hl
     ld a,h
     or l
     jp bool_z
 subr_plusp:
-    call fixnum_hl
+    call nums_1
+NUM_PLUSP:
     bit 7,h
     jp nz,ret_nil
     dec hl
@@ -1036,7 +1191,8 @@ subr_plusp:
     or l
     jp bool_nz
 subr_minusp:
-    call fixnum_hl
+    call nums_1
+NUM_MINUSP:
     bit 7,h
     jp bool_nz
 subr_evenp:
@@ -1168,7 +1324,8 @@ subr_ash:
 
 ;; (random n): 0 <= result < n
 subr_random:
-    call fixnum_hl
+    call nums_1
+NUM_RANDOM:
     sra h
     rr l
     ld a,h

@@ -80,7 +80,17 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   top of block space (`V_BLKSAVE`; toplevel gives it back). The core's
   `putc` can print into memory or just count (`V_OUTMODE`), and the reader
   can read a string by index (`V_INSRC` 2), which the GC may move.
-* **Still to come**: floats, vectors, `&key`, `format`, `unwind-protect`,
+* **Floats** (`lib/float.asm`) are the firmware's 5-byte reals (about nine
+  digits), kept in block space behind a typed cell (`HDR_FLOAT`) as a
+  string's characters are. The core keeps the fixnum arithmetic: each
+  numeric subr starts with `nums_v`/`nums_1`/`nums_2`, which hand the whole
+  call to the library (`lnum_arith`, keyed by the `NUM_` label after the
+  call) when an argument is not a fixnum -- and `num_ovf` does the same on
+  integer overflow, so `(* 200 200)` is 40000.0. The reader and printer
+  call `lnum_read`/`lnum_print`; a token too big for a fixnum reads as a
+  float. `/` gives a fixnum only for a whole quotient of fixnums. Graphics
+  and other natives taking integers round floats (`lint_hl`).
+* **Still to come**: vectors, `&key`, `format`, `unwind-protect`,
   the 6128's extra RAM, speed; maybe `*print-case*` (all output is upper
   case, as in CL).
 
@@ -162,8 +172,19 @@ should see.
 * **The jumpblocks differ past &BD37.** The 664/6128 insert twelve entries
   at &BD3A, so EDIT (the line editor -- firmware ROM, not BASIC) is &BD3A on
   a 464 and &BD5E on a 664/6128, and the maths package starts at &BD3D
-  (464, 49 entries) or &BD61 (6128, 32 entries) -- different sets, not an
-  offset. A 464 is recognised by &EF (FIRM JUMP) at &BD3D; the 6128 has &CF.
+  (464, 49 entries) or &BD61 (6128, 32 entries). The real-number routines
+  are at the same offsets in both (6128 = 464 + &24), except that only the
+  464 has REAL SUBTRACTION (use REVERSE SUBTRACTION) and only the 6128 RND.
+  A 464 is recognised by &EF (FIRM JUMP) at &BD3D; the 6128 has &CF.
+* **The firmware maths routines** return carry set when all went well
+  (clear on overflow), work only on RAM outside &0000-&3FFF (the lower ROM
+  is in), use nothing of BASIC's, and clobber IX and IY. MOVE REAL returns
+  HL = the destination. REAL FIX, INT and REAL TO BINARY say nothing about
+  overflow: check the exponent first. The Firmware Guide's text is in
+  `The_Amstrad_CPC_Firmware_Guide.pdf` (amstrad.eu), pages 76-81.
+* **ROMCALL hands BC back as the callee left it.** A core routine that
+  calls the library and needs B or C afterwards must save them itself
+  (the reader's token length did not survive `lnum_read` at first).
 * **The 464's ROM walk** went 3, 2, 1 in MAME. The docs say it only looks
   at ROMs 0-7 (the 664/6128 at 0-15): give library ROMs numbers 1-6.
 * **rasm labels are case-insensitive**: `s_quote` and `S_QUOTE` collide.

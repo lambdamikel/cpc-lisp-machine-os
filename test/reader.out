@@ -7,7 +7,7 @@ LISP> -16384
 LISP> 16383
 16383
 LISP> 16384
-Error: integer too large
+16384.0
 LISP> (quote (a b c))
 (A B C)
 LISP> '(1 2 . 3)

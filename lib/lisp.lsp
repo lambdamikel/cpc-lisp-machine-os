@@ -6,6 +6,7 @@
 ;;; is evaluated at boot. tools/mklib.py strips the comments.
 
 (defvar *features* '(:cpc :cpc-lisp))
+(defconstant pi (%pi))
 
 ;;; Lists
 
@@ -149,14 +150,18 @@
 ;;; Numbers
 
 (defun expt (base power)
-  (let ((r 1))
-    (dotimes (i power r) (setq r (* r base)))))
+  (if (and (integerp power) (>= power 0))
+      (let ((r 1))
+        (dotimes (i power r) (setq r (* r base))))
+      (%pow base power)))
 
 (defun gcd (a b)
   (if (zerop b) (abs a) (gcd b (mod a b))))
 
 (defun signum (x)
-  (cond ((plusp x) 1) ((minusp x) -1) (t 0)))
+  (cond ((plusp x) (if (floatp x) 1.0 1))
+        ((minusp x) (if (floatp x) -1.0 -1))
+        (t x)))
 
 ;;; Macros
 

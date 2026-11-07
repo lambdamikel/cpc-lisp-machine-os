@@ -135,13 +135,13 @@ symtab:
     SUBR LISTP,"LISTP",subr_listp,1,1
     SUBR SYMBOLP,"SYMBOLP",subr_symbolp,1,1
     SUBR NUMBERP,"NUMBERP",subr_numberp,1,1
-    SUBR INTEGERP,"INTEGERP",subr_numberp,1,1
+    SUBR INTEGERP,"INTEGERP",subr_integerp,1,1
     SUBR STRINGP,"STRINGP",subr_stringp,1,1
     SUBR CHARACTERP,"CHARACTERP",subr_characterp,1,1
     SUBR FUNCTIONP,"FUNCTIONP",subr_functionp,1,1
     SUBR KEYWORDP,"KEYWORDP",subr_keywordp,1,1
     SUBR EQ,"EQ",subr_eq,2,2
-    SUBR EQL,"EQL",subr_eq,2,2
+    SUBR EQL,"EQL",subr_eql,2,2
     SUBR EQUAL,"EQUAL",subr_equal,2,2
 
     ; numbers

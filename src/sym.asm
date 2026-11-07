@@ -195,9 +195,13 @@ str_data:
 ;; make_string: HL = characters (not in block space), BC = how many ->
 ;; HL = a new string.
 make_string:
+    ld de,HDR_STRING
+;; make_blob: the same for any object of bytes in block space: DE = its
+;; header (a float's, for the library)
+make_blob:
     push hl
     push bc
-    ld hl,HDR_STRING
+    ex de,hl
     ld de,0
     call alloc_typed
     pop bc
@@ -216,8 +220,25 @@ make_string:
     pop hl
     ret
 
+;; is_float: HL -> Z if it is a float. HL, BC, DE kept.
+is_float:
+    push bc
+    ld c,HDR_FLOAT and #FF
+    call is_typed
+    pop bc
+    ret
+
 ;; is_string: HL -> Z if it is a string. HL, BC, DE kept.
 is_string:
+    push bc
+    ld c,HDR_STRING and #FF
+    call is_typed
+    pop bc
+    ret
+
+;; is_typed: HL -> Z if it is a typed cell whose header's low byte is C.
+;; HL, BC, DE kept.
+is_typed:
     ld a,l
     and 3
     cp 2
@@ -231,11 +252,11 @@ is_string:
     dec hl
     dec hl
     ld a,(hl)
-    cp HDR_STRING and #FF
+    cp c
     jr nz,.pop
     inc hl
     ld a,(hl)
-    cp HDR_STRING >> 8
+    cp 4
 .pop:
     pop hl
     ret

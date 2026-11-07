@@ -137,6 +137,17 @@ V_OUTCNT          defs 2            ;   characters printed (memory and count)
 V_OUTCOL          defs 1            ;   the column, from 0, kept in every mode
 V_BLKSAVE         defs 2            ; V_BLKHI while space is lent out, else 0
 V_LIBDEF          defs 1            ; 1 while library text is evaluated
+V_LIBNUM          defs 2            ; the library's number routines, 0 = none
+V_NUMARGS         defs 2            ; numeric subr: &arg 0,
+V_NUMBC           defs 2            ;   B = how many, C,
+V_NUMOP           defs 2            ;   its NUM_ label,
+V_NUMSP           defs 2            ;   SP for its return (num_ovf)
+V_FA              defs 5            ; firmware reals: the library's accumulators
+V_FB              defs 5
+V_FC              defs 5
+V_FD              defs 5
+V_FBUF            defs 12           ; digits, printing a float
+V_FOP             defs 2            ; the operation a fold applies
 V_S1              defs 2            ; scratch for routines that call nothing
 V_S2              defs 2
 V_S3              defs 2
@@ -175,6 +186,7 @@ HDR_FSUBR         equ #04CE         ; ROM: [hdr][code] -- a special form
 HDR_NOFN          equ #04D2         ; ROM: a symbol entry with no function
 HDR_LSUBR         equ #04D6         ; data: its entry in the library ROM
 HDR_AUTOLOAD      equ #04DA         ; data: its definition's text in the library ROM
+HDR_FLOAT         equ #04DE         ; data: pointer to [5][0][a firmware real]
 FREEMARK          equ #04FE
 HDR_RAW_L         equ #C0
 

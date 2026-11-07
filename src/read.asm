@@ -355,6 +355,10 @@ read_token:
     ; B = length; a number?
     call parse_int
     ret nc
+    push bc
+    call lnum_read              ; a float?
+    pop bc
+    ret nc
     ; "." alone
     ld a,b
     dec a
@@ -449,6 +453,8 @@ parse_int:
     pop de
 .big2:
     pop bc
+    call lnum_read              ; too big: the library makes it a float
+    ret nc
     ERR m_toobig
 
 ;; read_string: the opening quote is read
