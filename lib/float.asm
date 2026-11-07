@@ -43,10 +43,11 @@ M_COS       equ #BD8B
 M_TAN       equ #BD8E
 M_ATN       equ #BD91
 
-;; FM: call a maths routine by its 464 address
+;; FM: call a maths routine by its 464 address (the byte after the call
+;; says which)
 macro FM addr
-    ld ix,{addr}
     call fmcall
+    db {addr}-M_MOVE
 mend
 
 fl_m_ovf:     db "float overflow",0
@@ -57,18 +58,29 @@ lib_numbers:
     jp ln_read
     jp ln_print
 
-;; fmcall: IX = a maths routine's 464 address; A, BC, DE, HL go in
+;; fmcall: the byte after the call = a maths routine's offset in the 464's
+;; jumpblock; A, BC, DE, HL go in. fmcall_ix: IX = its 464 address.
 fmcall:
-    push af
+    ld (V_FMA),a
+    pop ix
+    ld a,(ix+0)
+    inc ix
+    push ix
+    add a,M_MOVE and #FF
+    ld ixl,a
+    ld ixh,M_MOVE >> 8
+    jr fm_go
+fmcall_ix:
+    ld (V_FMA),a
+fm_go:
     ld a,(FIRM_464_PROBE)
     cp #EF
     jr z,.go
-    push de
-    ld de,#24
-    add ix,de
-    pop de
+    ld a,ixl
+    add a,#24
+    ld ixl,a
 .go:
-    pop af
+    ld a,(V_FMA)
     jp (ix)
 
 ;; f_get: DE = a number, HL = five bytes -> its value there. BC kept. An
@@ -180,7 +192,7 @@ f_div:
 f_op:
     ld hl,V_FA
     ld de,V_FB
-    call fmcall
+    call fmcall_ix
     jr f_chk
 f_div0:
     ld hl,m_div0
@@ -468,7 +480,7 @@ lf_ceiling:
 fl_toint:
     call fl_small
     ld hl,V_FA
-    call fmcall
+    call fmcall_ix
     ld hl,V_FA
     call fl_bin2fix
     ret nc
@@ -550,7 +562,7 @@ fl_modrem:
     call fl_small
     pop ix
     ld hl,V_FA
-    call fmcall                 ; a whole number, four bytes
+    call fmcall_ix              ; a whole number, four bytes
     ld a,b
     ld hl,V_FA
     FM M_BIN2R
@@ -609,7 +621,7 @@ lf_floatp:
 ;; fl_fn1: IX = a maths routine, FA = its argument -> a new float
 fl_fn1:
     ld hl,V_FA
-    call fmcall
+    call fmcall_ix
     call f_chk
     jp fl_result
 

@@ -148,6 +148,7 @@ V_FC              defs 5
 V_FD              defs 5
 V_FBUF            defs 12           ; digits, printing a float
 V_FOP             defs 2            ; the operation a fold applies
+V_FMA             defs 1            ; A, while fmcall finds the routine
 V_S1              defs 2            ; scratch for routines that call nothing
 V_S2              defs 2
 V_S3              defs 2
