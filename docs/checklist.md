@@ -132,7 +132,8 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 - **Floats:** `/` `round` `ceiling` `float` `floatp` `sqrt` `exp` `sin` `cos`
   `tan` `log` `atan` `expt` and the constant `pi`
 - **Output:** `format` with `t` or `nil`: `~A` `~S` `~D` `~C` `~%` `~&` `~~`,
-  with widths
+  with widths. The CPC has no `~` key: it is **CTRL + 2** (the firmware's
+  own key table; in MAME, Right Alt + 2)
 - **Sorting:** `sort`, `stable-sort` (lists and vectors, `:key`)
 - **Written in Lisp** (loaded from the ROM when first used): `identity`
   `complement` `nconc` `copy-list` `make-list` `butlast` `acons` `pairlis`
