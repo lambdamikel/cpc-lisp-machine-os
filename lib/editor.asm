@@ -1010,6 +1010,7 @@ bodyforms:
     db 5,"CATCH",1
     db 2,"DO",2
     db 3,"DO*",2
+    db 14,"UNWIND-PROTECT",1
     db 0
 
 ;; scanning helpers

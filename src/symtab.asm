@@ -94,6 +94,7 @@ symtab:
     FSUBR LOOP,"LOOP",sf_loop
     FSUBR DECLARE,"DECLARE",sf_declare
     FSUBR THE,"THE",sf_the
+    FSUBR UNWIND_PROTECT,"UNWIND-PROTECT",sf_unwind_protect
 
     ; lists
     SUBR CAR,"CAR",car,1,1

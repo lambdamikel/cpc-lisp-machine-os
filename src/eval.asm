@@ -1791,9 +1791,10 @@ nreverse_onto:
     ret
 
 ;; ---------------------------------------------------------------------------
-;; BLOCK, RETURN-FROM, CATCH, THROW. A frame on the stack, innermost in
-;; V_BLOCKS:   SP -> [specs][env][tag][kind][previous frame]
-;; kind 0 is a block, 1 a catch.
+;; BLOCK, RETURN-FROM, CATCH, THROW, UNWIND-PROTECT. A frame on the stack,
+;; innermost in V_BLOCKS:   SP -> [specs][env][tag][kind][previous frame]
+;; kind 0 is a block, 1 a catch, 2 an unwind-protect (tag: the cleanup
+;; forms, run by whatever leaves through it -- but not by an error).
 
 macro PUSHFRAME                 ; BC = kind, DE = tag. HL kept.
     push hl
@@ -1877,6 +1878,8 @@ unwind_to:
     or ixl
     jr z,.none
     ld a,(ix+6)
+    cp 2
+    jr z,.protect
     cp c
     jr nz,.next
     ld a,(ix+4)
@@ -1897,6 +1900,56 @@ unwind_to:
 .none:
     ld hl,m_noblock
     jp error
+;; an unwind-protect on the way: leave through it, run its cleanup forms,
+;; then on from the frame before it
+.protect:
+    ld sp,ix
+    push hl                     ; the value, the tag, the kind
+    push de
+    push bc
+    ld l,(ix+8)
+    ld h,(ix+9)
+    ld (V_BLOCKS),hl
+    ld l,(ix+2)
+    ld h,(ix+3)
+    ld (V_ENV),hl
+    ld l,(ix+4)
+    ld h,(ix+5)
+    push hl
+    ld e,(ix+0)
+    ld d,(ix+1)
+    call unwind_specs
+    pop hl
+    call progn
+    pop bc
+    pop de
+    pop hl
+    jr unwind_to
+
+;; (unwind-protect form cleanup...): form's value, the cleanup forms run
+;; however it is left
+sf_unwind_protect:
+    push hl
+    call cdr
+    ex de,hl                    ; the tag: the cleanup forms
+    pop hl
+    call car
+    ld bc,2
+    PUSHFRAME
+    call eval
+    pop de
+    call unwind_specs
+    pop de
+    ld (V_ENV),de
+    pop de                      ; the cleanup forms
+    pop bc
+    pop bc
+    ld (V_BLOCKS),bc
+    push hl
+    ex de,hl
+    call progn
+    pop hl
+    jp ev_done
 
 sf_dolist:
     ld bc,0

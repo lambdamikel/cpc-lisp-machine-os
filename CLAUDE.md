@@ -96,7 +96,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   ~D ~C ~% ~& ~~, with a width (~5D pads left, ~8A right). `nil` prints
   into TOKBUF through `to_string_ix` (255 characters at most). On the
   screen a lone LF in output is a new line (`putc` adds the CR).
-* **Still to come**: vectors, `unwind-protect`,
+* **`unwind-protect`** is a third frame kind (2) beside block and catch;
+  `throw`/`return-from` run the cleanups of the frames they pass. An error
+  or ESC does not: it goes straight to toplevel.
+* **Still to come**: vectors,
   the 6128's extra RAM, speed; maybe `*print-case*` (all output is upper
   case, as in CL).
 
