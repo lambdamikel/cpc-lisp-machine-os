@@ -225,6 +225,7 @@ A photo of the screen is as good as ticks.
     then SHIFT + up to the first row of the digits, and COPY held down
                                      the copy goes on at the start of the
                                      next row: ...789 then 0123...
+(Checked on the 464, 2026-11-07: both as above.)
 
 
 16. Getting BASIC back
