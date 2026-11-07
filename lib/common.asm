@@ -17,6 +17,12 @@ macro SCORE routine
     pop ix
 mend
 
+;; streams.asm's (and format's) state, in the library's scratch RAM
+SO_FCOL   equ LIBSCR+252        ; the output file's column, while not in use
+SO_FPEEK  equ LIBSCR+253        ; the input file's pushed-back character
+SO_PTYPE  equ LIBSCR+254        ; peek-char's peek-type: not 0 to skip blanks
+SO_DIR    equ LIBSCR+255        ; %open: 1 input, 2 output
+
 lib_init:
     scf
     ret

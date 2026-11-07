@@ -89,6 +89,17 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   reader reads the open input
   file (`V_INSRC` 3), `putc` writes the output file (`V_OUTMODE` 3); the 2
   KB buffer is lent like the editor's, and toplevel abandons open files.
+* **Streams** (`lib/streams.asm`, `open`/`close`/`with-open-file` in
+  `lisp.lsp`): the printers and readers moved out of the core into part 0
+  with CL's stream argument. NIL/T is the screen and keyboard, anything
+  else the firmware's one input or one output file: `so_from`/`si_from`
+  switch V_OUTMODE/V_INSRC for the call (the file's column and pushed-back
+  character live in SO_FCOL/SO_FPEEK in between) and leave what to put
+  back on the stack under the caller's return -- the native ends with
+  `jp so_back`/`si_back`/`si_eof`. An input and an output file may be open
+  at once: `fl_lend` lends a second 2 KB below the first, `fl_release`
+  gives both back when neither is open (block space became 5/32 of the
+  heap for that). A stream is `#S(FILE-STREAM name direction open-p)`.
 * **The RAM disc** (`lib/ramdisc.asm`): drive `M:` in the 6128's second
   64 KB, one linear space read and written a byte at a time through the
   gate array (configurations &C4-&C7 map a bank at &4000-&7FFF, &C0 maps

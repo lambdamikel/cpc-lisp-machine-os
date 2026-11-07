@@ -376,24 +376,33 @@ All in library ROM 3.
 
 ## Input and output
 
+Every printer takes a stream after its object, and every reader a stream
+first: `NIL` or `T` (or nothing) is the screen and the keyboard, a stream
+from `open` is a file (see *Files*). The readers' `eof-error-p` (T) and
+`eof-value` (NIL) say what the end of a file gives: an error, or that
+value -- `(read-line s nil nil)` is NIL at the end.
+
 | Function | | |
 |---|---|---|
-| `(print x)` | a new line, x readably, a blank | core |
-| `(prin1 x)` `(princ x)` | readably / as text | core |
-| `(terpri)` `(write-char c)` | | core |
+| `(print x [stream])` | a new line, x readably, a blank | 1 |
+| `(prin1 x [stream])` `(princ x [stream])` | readably / as text | 1 |
+| `(terpri [stream])` `(write-char c [stream])` | a new line; a character | 1 |
+| `(fresh-line [stream])` | a new line unless at the start of one; T if it was needed | 1 |
+| `(write-string s [stream])` `(write-line s [stream])` | s; s and a new line | 1 |
 | `(write x)` | as prin1 | 1 |
-| `(write-string s)` `(write-line s)` `(fresh-line)` | | 1 |
-| `(pprint x)` | broken up to fit the screen: code laid out, data (a list that is not a call, anything quoted) filled | 1 |
-| `(read)` | the next object typed | core |
-| `(read-line)` | the next line typed (with the line editor), as a string; ESC breaks | 1 |
-| `(read-char)` | the next key, waiting for it (`wait-key`) | 1 |
-| `(read-char-no-hang)` | the next key, or NIL (`inkey`) | 1 |
-| `(peek-char)` `(unread-char c)` | the next key, left to be read again; c read next | 1 |
-| `(listen)` | T if a key is waiting | 1 |
+| `(pprint x [stream])` | broken up to fit the screen (72 columns in a file): code laid out, data (a list that is not a call, anything quoted) filled | 1 |
+| `(read [stream eof-error-p eof-value])` | the next object | 1 |
+| `(read-line [stream eof-error-p eof-value])` | the next line, a string; from the keyboard with the line editor, ESC breaks | 1 |
+| `(read-char [stream eof-error-p eof-value])` | the next character; from the keyboard the next key, waiting for it (`wait-key`) | 1 |
+| `(read-char-no-hang [stream ...])` | the same, but NIL if no key is waiting (`inkey`) | 1 |
+| `(peek-char [peek-type stream eof-error-p eof-value])` | the next character, left to be read again; peek-type T passes over blanks first (in a file) | 1 |
+| `(unread-char c [stream])` | c is the next read | 1 |
+| `(listen [stream])` | T if a key is waiting, or the file has more | 1 |
 | `(y-or-n-p [message arg...])` `(yes-or-no-p ...)` | asks; T for y, NIL for n | 3 |
-| `(format dest control arg...)` | dest `t` (the screen) or `nil` (a string, 255 characters at most); the directives below. **Type `~` as CTRL + 2** | 2 |
+| `(format dest control arg...)` | dest `t` (the screen), `nil` (a string, 255 characters at most) or a stream; the directives below. **Type `~` as CTRL + 2** | 2 |
 
-All output is upper case for symbols.
+All output is upper case for symbols. A file being loaded is not
+`read`'s input: `(read)` in it reads the keyboard.
 
 ### format directives
 
@@ -440,6 +449,26 @@ Parados) -- or the tape. A name without a `.` gets `.LSP`.
 | `(save "name" [symbol...])` | the symbols' definitions, pretty-printed: functions, macros, variables (as `defparameter`); with none named, everything you defined | 1 |
 | `(dir)` | the catalogue | 1 |
 | `(delete-file "name")` | through the disc ROM's `|ERA` | 1 |
+| `(probe-file "name")` | the name if the file is there, else NIL (the disc ROM says so too) | 3 |
+
+**Streams.** `(open "name" [:direction :input or :output])` opens a file
+and gives a stream for the printers and readers above (and `format`);
+`(close stream)` closes it (T, or NIL if it was closed). Better,
+`with-open-file` closes it however its body is left -- an error or ESC
+too:
+
+    (with-open-file (out "notes" :direction :output)
+      (format out "~{~A~%~}" '(one two three)))
+    (with-open-file (in "notes")
+      (loop (let ((line (read-line in nil nil)))
+              (if line (print line) (return)))))
+
+One file can be open for input and one for output at a time (the
+firmware's): `load` or a second input file while one is open is an
+error. A file open for output is only complete once closed. Also
+`(streamp x)`, `(open-stream-p s)`, `(input-stream-p s)`,
+`(output-stream-p s)`. A stream prints as `#S(FILE-STREAM "notes"
+:OUTPUT T)` (the last: open). **3**, the printers and readers **1**.
 
 **The RAM disc** (a 6128, or a CPC with 64 KB more): names starting
 `M:` are kept in the second 64 KB -- `(save "m:work")`, `(load "m:work")`,
@@ -576,7 +605,9 @@ then use cells like your own; the names cost nothing until then.
 - Hash tables do not grow their buckets.
 - Strings that functions build are at most 255 characters.
 - Multi-dimensional arrays, `loop` with keywords (the extended LOOP),
-  `format`'s `~<...~>`, streams, and CLOS are not there.
+  `format`'s `~<...~>`, string streams (`with-output-to-string`),
+  `*standard-output*`, and CLOS are not there. One file is open for input
+  and one for output at most.
 - A macro call keeps its first expansion (displacing): a macro that
   expands differently each time -- reading a global, say -- is not
   expanded again.

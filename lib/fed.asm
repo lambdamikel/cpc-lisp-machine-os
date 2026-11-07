@@ -183,8 +183,16 @@ fe_m_status:  db " COPY or CTRL-S: done   ESC: cancel",0
 fe_m_cannot:  db "cannot edit a builtin:",0
 
 
-;; fe_reserve: lend the buffer out of block space
+;; fe_reserve: lend the buffer out of block space (not while a file has it)
 fe_reserve:
+    ld hl,(V_BLKSAVE)
+    ld a,h
+    or l
+    jr z,.free
+    ld hl,fl_m_busy
+    ld de,UNBOUND
+    jp lib_error
+.free:
     ld hl,(V_BLKHI)             ; room enough without collecting?
     ld de,(V_BLKTOP)
     or a

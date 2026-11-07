@@ -43,3 +43,7 @@
 (sq 6)
 (delete-file "disc")
 (dir)
+(with-open-file (s "m:st" :direction :output) (print '(on the ram disc) s) (format s "~R~%" 42))
+(with-open-file (s "m:st") (list (read s) (read-line s) (read-line s nil :end)))
+(with-open-file (in "m:st") (with-open-file (out "m:st2" :direction :output) (loop (let ((l (read-line in nil nil))) (if l (write-line l out) (return t))))))
+(with-open-file (s "m:st2") (read s))

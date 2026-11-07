@@ -207,12 +207,6 @@ symtab:
     SUBR STRING,"STRING",subr_string,1,1
 
     ; input, output, evaluation
-    SUBR PRINT,"PRINT",subr_print,1,1
-    SUBR PRIN1,"PRIN1",prin1,1,1
-    SUBR PRINC,"PRINC",princ,1,1
-    SUBR TERPRI,"TERPRI",subr_terpri,0,0
-    SUBR WRITE_CHAR,"WRITE-CHAR",subr_write_char,1,1
-    SUBR READ,"READ",subr_read,0,0
     SUBR EVAL,"EVAL",subr_eval,1,1
     SUBR MACROEXPAND_1,"MACROEXPAND-1",subr_macroexpand_1,1,1
     SUBR MACROEXPAND,"MACROEXPAND",subr_macroexpand,1,1

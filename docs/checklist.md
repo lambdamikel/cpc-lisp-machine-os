@@ -116,8 +116,7 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
   `set` `boundp` `fboundp` `makunbound` `fmakunbound` `get`
 - **Characters, strings, vectors:** `char-code` `code-char` `char` `string`
   `make-array` (`:initial-element`) `vector` `aref` `svref` `elt`
-- **Input, output, evaluation:** `print` `prin1` `princ` `terpri`
-  `write-char` `read` `eval` `error`
+- **Evaluation:** `eval`
 - **System:** `gc`
 
 ### Library ROM 1
@@ -154,9 +153,11 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
   `alphanumericp` `graphic-char-p` `digit-char-p` `digit-char`
 - **Printing to and from strings:** `pprint` `prin1-to-string`
   `princ-to-string` `read-from-string`
-- **Input and output, CL's names:** `read-line` `read-char`
-  `read-char-no-hang` `peek-char` `unread-char` `listen` `write`
-  `write-string` `write-line` `fresh-line`
+- **Input and output, with a stream argument** (`lib/streams.asm`; the
+  screen and keyboard, or a file): `print` `prin1` `princ` `terpri`
+  `write-char` `write-string` `write-line` `fresh-line` `pprint`; `read`
+  `read-line` `read-char` `read-char-no-hang` `peek-char` `unread-char`
+  `listen`, with `eof-error-p` and `eof-value`; `write`
 - **Function editor:** `ed`
 - **Files** (through the firmware's cassette vectors, so with any disc ROM;
   tested with AMSDOS in MAME, tape not tried): `load`, `save` (what you
@@ -276,8 +277,10 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
    - [x] Errors can be caught (`ignore-errors`, `handler-case`);
          `unwind-protect`'s cleanups run on errors and ESC too
    - [x] `format`: all of CL's directives but `~<~>`
-   - [ ] Files as streams: `open`, `close`, `with-open-file`, reading and
-         printing to a stream
+   - [x] Files as streams: `open`, `close`, `with-open-file`,
+         `probe-file`; every printer and reader (and `format`) takes a
+         stream; an input and an output file at once (block space is 5/32
+         of the heap now, room for both buffers)
    - [ ] The extended `loop` (`for`, `collect`, `sum`...)
    - [ ] `|...|` symbols in the reader
 5. [x] **More graphics and sound**: circles, discs, boxes, XOR drawing,

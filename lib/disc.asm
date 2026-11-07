@@ -5,6 +5,7 @@
 ;; has one input and one output file, each needing a 2 KB buffer, lent from
 ;; the top of block space as the function editor's is; the reader reads the
 ;; input file (V_INSRC 3) and putc writes the output file (V_OUTMODE 3).
+;; Streams (streams.asm, and open and close in lisp.lsp) use them too.
 ;; An error anywhere abandons whatever is open and gives the buffer back
 ;; (toplevel, in the core).
 ;;
@@ -20,6 +21,7 @@ FL_BUF        equ 2048
 
 fl_m_open:    db "cannot open",0
 fl_m_busy:    db "a file buffer is in use already",0
+fl_m_twice:   db "a file is open that way already:",0
 fl_m_name:    db "bad file name:",0
 fl_m_none:    db "nothing to save",0
 
@@ -72,13 +74,18 @@ fl_name:
 fl_ext:
     db ".LSP"
 
-;; fl_lend -> DE = a 2 KB buffer lent from block space
+;; fl_lend -> DE = a 2 KB buffer lent from block space. One file may be
+;; open already (one each way): the second buffer goes below the first,
+;; and both are given back when neither is open (fl_release).
 fl_lend:
     ld hl,(V_BLKSAVE)
     ld a,h
     or l
     jr z,.free
-    ld hl,fl_m_busy
+    ld a,(V_FILES)
+    or a
+    jr nz,.free                 ; lent to the other file
+    ld hl,fl_m_busy             ; to the function editor
     ld de,UNBOUND
     jp lib_error
 .free:
@@ -91,8 +98,13 @@ fl_lend:
     ld de,UNBOUND
     CORE error
 .ok:
+    ld hl,(V_BLKSAVE)
+    ld a,h
+    or l
     ld hl,(V_BLKHI)
+    jr nz,.lent                 ; V_BLKSAVE has the top already
     ld (V_BLKSAVE),hl
+.lent:
     ld de,FL_BUF
     or a
     sbc hl,de
@@ -110,10 +122,20 @@ fl_lend:
     sbc hl,de
     ret
 
+;; fl_release: the file buffers given back, unless a file is still open
+fl_release:
+    ld a,(V_FILES)
+    or a
+    ret nz
+    jp fe_release
+
 ;; (load "name"): read and evaluate everything in the file -> T
 ;@ LOAD 1 1 lf_load
 lf_load:
     push hl                     ; the name, for an error
+    ld a,(V_FILES)
+    rra
+    jp c,fl_busy                ; a file is open for input already
     call fl_name
     push bc
     call fl_lend                ; DE = the buffer
@@ -121,7 +143,7 @@ lf_load:
     ld hl,TOKBUF
     call fl_in_open
     jr c,.open
-    call fe_release
+    call fl_release
     pop de
     ld hl,fl_m_open
     jp lib_error
@@ -158,9 +180,14 @@ lf_load:
     call CAS_IN_CLOSE
     ld hl,V_FILES
     res 0,(hl)
-    call fe_release
+    call fl_release
     pop hl
     jp lt
+
+fl_busy:
+    pop de
+    ld hl,fl_m_twice
+    jp lib_error
 
 ;; (save "name" symbol...): their definitions, pretty-printed, into the file;
 ;; with no symbols, everything defined since the start (functions, macros,
@@ -197,6 +224,9 @@ lf_save:
     pop hl
     ex (sp),hl                  ; the symbols on the stack, HL = the name
     push hl
+    ld a,(V_FILES)
+    and 2
+    jp nz,fl_busy               ; a file is open for output already
     call fl_name
     push bc
     call fl_lend
@@ -204,7 +234,7 @@ lf_save:
     ld hl,TOKBUF
     call fl_out_open
     jr c,.open
-    call fe_release
+    call fl_release
     pop de
     ld hl,fl_m_open
     jp lib_error
@@ -241,7 +271,7 @@ lf_save:
 .closed:
     ld hl,V_FILES
     res 1,(hl)
-    call fe_release
+    call fl_release
     pop hl
     ret
 
@@ -439,7 +469,7 @@ lf_dir:
 .disc:
     call fl_lend
     call CAS_CATALOG
-    call fe_release
+    call fl_release
     jp lnil
 
 ;; fl_in_open, fl_out_open: as CAS IN OPEN and CAS OUT OPEN, or the RAM

@@ -68,8 +68,9 @@ boot:
 .not464:
     ld (V_EDITV),hl
 
-    ; THE LAYOUT, from the top down: the machine stack, block space (an
-    ; eighth of what is left), the mark bitmap, the cells.
+    ; THE LAYOUT, from the top down: the machine stack, block space (5/32
+    ; of what is left: room for both file buffers), the mark bitmap, the
+    ; cells.
     ld hl,(V_MEMTOP)
     inc hl
     res 0,l
@@ -92,9 +93,16 @@ boot:
     srl h
     rr l
     srl h
-    rr l
+    rr l                        ; an eighth,
+    ld d,h
+    ld e,l
+    srl d
+    rr e
+    srl d
+    rr e
+    add hl,de                   ;   and a 32nd: for blocks
     res 0,l
-    ex de,hl                    ; an eighth, for blocks
+    ex de,hl
     pop hl
     or a
     sbc hl,de

@@ -447,6 +447,30 @@
        (typecase ,k ,@clauses
          (otherwise (error "~S fits no clause of etypecase" ,k))))))
 
+;;; Files as streams. The firmware has one file open for input and one for
+;;; output at a time; a stream is #S(FILE-STREAM name direction open-p), and
+;;; the printers and readers (lib/streams.asm) take it as their stream.
+
+(defun open (name &key (direction :input))
+  (%open name (eq direction :output))
+  (%make-struct 'file-stream name direction t))
+
+(defun close (stream &key abort)
+  (when (%struct-ref stream 3 'file-stream)
+    (%struct-set stream 3 nil 'file-stream)
+    (%close (eq (%struct-ref stream 2 'file-stream) :output))))
+
+(defmacro with-open-file (spec &body body)
+  `(let ((,(car spec) (open ,@(cdr spec))))
+     (unwind-protect (progn ,@body) (close ,(car spec)))))
+
+(defun streamp (x) (%struct-is x 'file-stream))
+(defun open-stream-p (s) (%struct-ref s 3 'file-stream))
+(defun input-stream-p (s) (eq (%struct-ref s 2 'file-stream) :input))
+(defun output-stream-p (s) (eq (%struct-ref s 2 'file-stream) :output))
+(defun probe-file (name)
+  (when (car (%catch-errors (%open name nil))) (%close nil) name))
+
 ;;; Macros
 
 (defmacro pushnew (item place)

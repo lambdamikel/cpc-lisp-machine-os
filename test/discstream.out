@@ -1,0 +1,96 @@
+LISP> (setq out (open "data" :direction :output))
+#S(FILE-STREAM "data" :OUTPUT T)
+LISP> (output-stream-p out)
+T
+LISP> (print '(1 2 3) out)
+(1 2 3)
+LISP> (prin1 "text" out)
+"text"
+LISP> (terpri out)
+NIL
+LISP> (princ 'abc out)
+ABC
+LISP> (write-char #\! out)
+#\!
+LISP> (list (fresh-line out) (fresh-line out))
+(T NIL)
+LISP> (write-line "a line" out)
+"a line"
+LISP> (format out "~A plus ~A is ~D~%" 2 3 5)
+NIL
+LISP> (pprint '(defun f (x) (if (> x 0) (* x (f (- x 1))) 1)) out)
+NIL
+LISP> (close out)
+T
+LISP> (close out)
+NIL
+LISP> (print 'gone out)
+Error: the stream is not open #S(FILE-STREAM "data" :OUTPUT NIL)
+LISP> (with-open-file (s "data") (list (read s) (read s) (read-line s) (read-line s) (read-line s)))
+((1 2 3) "text" "" "ABC!" "a line")
+LISP> (with-open-file (s "data") (dotimes (i 5) (read-line s)) (list (read-char s) (peek-char nil s) (read-char s) (read-line s)))
+(#\Newline #\( #\( "DEFUN F (X) (IF (> X 0) (* X (F (- X 1))) 1))")
+LISP> (with-open-file (s "data") (let ((n 0)) (loop (if (read-line s nil nil) (incf n) (return n)))))
+8
+LISP> (with-open-file (s "data") (read s) (read s) (read s) (read s) (read s nil :done))
+LINE
+LISP> (with-open-file (s "data") (dotimes (i 9) (read s)) (read s))
+5
+LISP> (with-open-file (s "data") (read-char s) (unread-char #\z s) (list (read-char s) (read-char s) (listen s)))
+(#\z #\( T)
+LISP> (setq s (open "data"))
+#S(FILE-STREAM "data" :INPUT T)
+LISP> (streamp s)
+T
+LISP> (input-stream-p s)
+T
+LISP> (read s)
+(1 2 3)
+LISP> (close s)
+T
+LISP> (open-stream-p s)
+NIL
+LISP> (read s)
+Error: the stream is not open #S(FILE-STREAM "data" :INPUT NIL)
+LISP> (defun copy (from to) (with-open-file (in from) (with-open-file (out to :direction :output) (loop (let ((l (read-line in nil nil))) (if l (write-line l out) (return 'copied)))))))
+COPY
+LISP> (copy "data" "copy")
+COPIED
+LISP> (with-open-file (s "copy") (read s))
+(1 2 3)
+LISP> (probe-file "copy")
+"copy"
+LISP> (probe-file "nothere")
+
+NOTHERE .LSP not found
+NIL
+LISP> (with-open-file (s "data") (car 5))
+Error: not a list: 5
+LISP> (with-open-file (s "data") (read s))
+(1 2 3)
+LISP> (defun f (x) x)
+F
+LISP> (save "fsave")
+(COPY F)
+LISP> (with-open-file (s "data") (load "fsave"))
+Error: a file is open that way already: "fsave"
+LISP> (load "fsave")
+T
+LISP> (with-open-file (s "out2" :direction :output) (print 1 s) (format t "screen ~A~%" 'too) (print 2 t) (print 3))
+screen TOO
+
+2 
+3 
+3
+LISP> (with-open-file (s "out2") (list (read s) (read s nil 'eof)))
+(1 EOF)
+LISP> (print 'x)
+
+X 
+X
+LISP> (terpri)
+
+NIL
+LISP> (read-from-string "(a b)")
+(A B)
+LISP> 

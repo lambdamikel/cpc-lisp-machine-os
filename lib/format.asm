@@ -2,6 +2,7 @@
 ;;
 ;;   (format t control arg...)    prints, -> NIL
 ;;   (format nil control arg...)  -> the output as a string (255 at most)
+;;   (format stream control arg...)  into the file open for output
 ;;
 ;; A directive is ~, up to five parameters separated by commas (a number,
 ;; 'c a character, V the next argument, # how many arguments are left),
@@ -89,11 +90,42 @@ lf_format:
     ld a,h
     or l
     jr z,.string
-    call fmt_run                ; T (or anything else): the screen
+    ld de,S_T
+    or a
+    sbc hl,de
+    jr nz,.file
+    call fmt_run                ; T: the screen
     jp lnil
 .string:
     ld ix,fmt_run
     jp to_string_ix
+.file:                          ; a stream: the file open for output
+    ld a,(V_FILES)
+    and 2
+    jr z,.closed
+    ld a,(V_OUTMODE)
+    ld c,a
+    ld a,(V_OUTCOL)
+    ld b,a
+    push bc
+    ld a,3
+    ld (V_OUTMODE),a
+    ld a,(SO_FCOL)
+    ld (V_OUTCOL),a
+    call fmt_run
+    ld a,(V_OUTCOL)
+    ld (SO_FCOL),a
+    pop bc
+    ld a,c
+    ld (V_OUTMODE),a
+    ld a,b
+    ld (V_OUTCOL),a
+    jp lnil
+.closed:
+    ld hl,fmt_m_closed
+    ld de,UNBOUND
+    jp lib_error
+fmt_m_closed: db "the stream is not open",0
 
 ;; fmt_run: the control string from FMT_CP on, until it ends (A = 0), a
 ;; directive that closes a group -- ~} ~] ~; ~) (A = it, FMT_FL its

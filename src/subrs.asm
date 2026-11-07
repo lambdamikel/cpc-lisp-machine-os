@@ -1820,31 +1820,6 @@ subr_string:
     jp subr_symbol_name
 
 ;; ---------------------------------------------------------------------------
-;; INPUT AND OUTPUT
-
-subr_print:
-    call newline
-    call prin1
-    ld a," "
-    jp putc
-subr_terpri:
-    call newline
-    jp ret_nil
-subr_write_char:
-    call check_char
-    push hl
-    srl h
-    rr l
-    srl h
-    rr l
-    ld a,l
-    call putc
-    pop hl
-    ret
-subr_read:
-    jp read_obj
-
-;; ---------------------------------------------------------------------------
 ;; EVALUATION
 
 subr_eval:

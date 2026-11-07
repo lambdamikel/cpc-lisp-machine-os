@@ -431,16 +431,6 @@ pp_bodycount:
     ret
 
 ;; (pprint object): on a new line, broken up to fit the screen
-;@ PPRINT 1 1 lf_pprint
-lf_pprint:
-    push hl
-    call pp_setw
-    CORE newline
-    pop hl
-    push hl
-    call pp_start
-    pop hl
-    jp lnil
 
 ;; ---------------------------------------------------------------------------
 ;; printing into strings, reading from them
