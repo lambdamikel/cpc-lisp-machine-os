@@ -237,8 +237,8 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
    - [ ] `apply` and `mapcar` without the general `bind`
    - [ ] More from the profiler (the core has ~840 bytes free again: some
          rarely used functions moved to library ROM 2)
-   - [ ] `pprint` of a long list of data: one element a line, filled lines
-         would be a third the size
+   - [x] `pprint` fills data -- a list that is not a call, and anything
+         quoted -- as many to a line as fit: saved data a third the size
    - [x] `do` expands to special forms only (it used `psetq`, a macro,
          expanded again on every pass): loops with `do` 4-5x faster
    - [x] A macro call keeps its expansion (displacing macros): a user

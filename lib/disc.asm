@@ -273,7 +273,7 @@ fl_write_def:
     ld hl,S_DEFPARAMETER
     CORE cons
 .out:
-    call pp
+    call pp_start
     ld a,13
     call lputc
     ld a,10

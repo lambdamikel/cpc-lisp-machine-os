@@ -109,7 +109,7 @@ lf_ed:
     push hl
     call pp_setw                ; (TXT GET WINDOW returns in HL)
     pop hl
-    call pp
+    call pp_start
     jr .printed
 .template:
     push de

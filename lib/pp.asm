@@ -17,6 +17,8 @@
 ;; V_OUTMODE 2, which only counts.
 
 PP_W      equ LIBSCR+10         ; the width to fit
+PP_DATA   equ LIBSCR+12         ; non-zero inside a quote: every list is data
+                                ;   (format, sharing these, never runs pp)
 
 ;; pp_setw: fit to the window's width
 pp_setw:
@@ -84,6 +86,11 @@ pp_fits:
     or 1
     ret
 
+;; pp_start: HL = an object, pretty-printed from the top (the callers'
+;; way in: no quote is open)
+pp_start:
+    xor a
+    ld (PP_DATA),a
 ;; pp: HL = an object
 pp:
     CORE check_stack
@@ -111,8 +118,31 @@ pp:
     CDRHL
     jr pp
 .notx:
+    push hl                     ; (quote x)? then x is data, all of it
+    LDHLI
+    ld de,S_QUOTE
+    or a
+    sbc hl,de
+    pop hl
+    ld a,0
+    jr nz,.q0
+    inc a
+.q0:
+    push af
     call pp_prefix
-    jr z,pp                     ; 'x: the prefix is out, now x
+    jr nz,.notq
+    pop af                      ; the prefix is out, now x
+    ld e,a
+    ld a,(PP_DATA)
+    push af
+    or e
+    ld (PP_DATA),a
+    call pp
+    pop af
+    ld (PP_DATA),a
+    ret
+.notq:
+    pop af
     ld a,(V_OUTCOL)
     push af                     ; the column of the "("
     ld a,"("
@@ -136,11 +166,18 @@ pp:
     push af
     inc a
     ld c,a
-    jr .lines
+    jp .lines
 .atomop:
     push hl
     CORE prin1
     pop hl
+    push hl
+    CORE is_symbol
+    pop hl
+    jr nz,.fill                 ; not a call: data
+    ld a,(PP_DATA)
+    or a
+    jr nz,.fill                 ; quoted: data
     call pp_bodycount           ; A = arguments before the body, 255 if no body
     pop hl
     cp 255
@@ -152,10 +189,10 @@ pp:
     jr z,.body
     ld a,l
     and 3
-    jr nz,.tail
+    jp nz,.tail
     ld a,h
     or l
-    jr z,.tail
+    jp z,.tail
     push bc
     push hl
     ld a," "
@@ -172,14 +209,14 @@ pp:
     push af
     add a,2
     ld c,a
-    jr .lines
+    jp .lines
 .call:
     ld a,l
     and 3
-    jr nz,.tail
+    jp nz,.tail
     ld a,h
     or l
-    jr z,.tail
+    jp z,.tail
     ld a,(PP_W)                 ; past half way: all of them one in
     srl a
     ld c,a
@@ -190,7 +227,7 @@ pp:
     push af
     inc a
     ld c,a
-    jr .lines
+    jp .lines
 .first:
     push hl
     ld a," "
@@ -205,14 +242,67 @@ pp:
     pop hl
     CDRHL
     pop bc
+    jp .lines
+;; data, a list that is not a call -- (1 2 3...), ("a" "b"...): as many
+;; to a line as fit, the next line under the first
+.fill:
+    pop hl                      ; the rest
+    pop af
+    push af
+    inc a
+    ld c,a
+.fl:
+    ld a,l
+    and 3
+    jp nz,.tail
+    ld a,h
+    or l
+    jp z,.tail
+    push bc
+    push hl
+    LDHLI                       ; the next one
+    push hl
+    ld hl,V_OUTCOL              ; does it fit after a blank?
+    inc (hl)
+    pop hl
+    call pp_fits
+    ld a,0
+    jr nz,.ff
+    inc a
+.ff:
+    push hl
+    ld hl,V_OUTCOL
+    dec (hl)
+    pop hl
+    or a
+    jr z,.fnl
+    push hl
+    ld a," "
+    call lputc
+    pop hl
+    jr .fpp
+.fnl:
+    pop de                      ; (C, which pp_fits took, back)
+    pop bc
+    push bc
+    push de
+    push hl
+    call pp_newline
+    pop hl
+.fpp:
+    call pp
+    pop hl
+    CDRHL
+    pop bc
+    jr .fl
 ;; the rest of the elements, each on its own line at column C
 .lines:
     ld a,l
     and 3
-    jr nz,.tail
+    jp nz,.tail
     ld a,h
     or l
-    jr z,.tail
+    jp z,.tail
     push bc
     push hl
     call pp_newline
@@ -223,7 +313,7 @@ pp:
     pop hl
     CDRHL
     pop bc
-    jr .lines
+    jp .lines
 .tail:
     ld a,h
     or l
@@ -348,7 +438,7 @@ lf_pprint:
     CORE newline
     pop hl
     push hl
-    call pp
+    call pp_start
     pop hl
     jp lnil
 

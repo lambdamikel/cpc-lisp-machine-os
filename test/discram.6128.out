@@ -73,7 +73,7 @@ LISP> (save "m:bad" 'sq 'car)
 Error: nothing to save for CAR
 LISP> (save "m:bad" 'nosuch)
 Error: nothing to save for NOSUCH
-LISP> (defparameter *big* (make-list 1000 'abcdefghij))
+LISP> (defparameter *big* (make-list 3000 'abcdefghij))
 *BIG*
 LISP> (save "m:b1" '*big*)
 (*BIG*)
@@ -84,9 +84,9 @@ LISP> (dir "m:")
 Drive M: (RAM)
 
 ONE.LSP       30
-B1.LSP        38986
+B1.LSP        43225
 
-25496 bytes free
+21257 bytes free
 NIL
 LISP> (delete-file "m:b1")
 T
@@ -97,7 +97,7 @@ NIL
 LISP> (load "m:b2")
 T
 LISP> (length *big*)
-1000
+3000
 LISP> (delete-file "m:b2")
 T
 LISP> (dir "m:")
