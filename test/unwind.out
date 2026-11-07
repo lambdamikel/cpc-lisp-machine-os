@@ -37,7 +37,23 @@ LISP> *log*
 LISP> (unwind-protect (car 5) (push 'error *log*))
 Error: not a list: 5
 LISP> *log*
-(2 1 BOUND OUTER INNER BLOCK -1 5)
+(ERROR 2 1 BOUND OUTER INNER BLOCK -1 5)
+LISP> (setq *log* nil)
+NIL
+LISP> (unwind-protect (unwind-protect (error "boom ~A" 1) (push 'in *log*)) (push 'out *log*))
+Error: boom 1
+LISP> (unwind-protect (unwind-protect (car 5) (car 6)) (push 'last *log*))
+Error: not a list: 5
+Error: not a list: 6
+LISP> (defun spin () (unwind-protect (loop) (push 'esc *log*)))
+SPIN
+LISP> (spin)
+Error: break
+LISP> (ignore-errors (unwind-protect (car 5) (push 'caught *log*)))
+NIL
+"not a list: 5"
+LISP> *log*
+(CAUGHT ESC LAST OUT IN)
 LISP> (pprint '(unwind-protect (progn (open-it) (use-it)) (close-it) (say-so)))
 
 (UNWIND-PROTECT (PROGN

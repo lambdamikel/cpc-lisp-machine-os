@@ -305,8 +305,44 @@ intern_builtins:
 ;; ---------------------------------------------------------------------------
 ;; THE REPL
 
-;; toplevel: where errors and breaks come back to
+;; tl_state: the reader, printer and editor as at a fresh prompt
+tl_state:
+    ld hl,NIL
+    ld (V_INPTR),hl
+    xor a
+    ld (V_PEEK),a
+    ld (V_DEPTH),a
+    ld (V_INSRC),a
+    ld (V_EDDEPTH),a
+    ld (V_EDSTR),a
+    ld (V_OUTMODE),a
+    ld (V_LIBDEF),a
+    ret
+
+;; toplevel: where errors and breaks come back to. An unwind-protect still
+;; on the stack has its cleanup forms run first, innermost first, as CL's
+;; abort does; each frame is taken off before its forms run, so an error or
+;; ESC in them only goes on outwards.
 toplevel:
+    ld ix,(V_BLOCKS)
+.up:
+    ld a,ixh
+    or ixl
+    jr z,.reset
+    ld a,(ix+6)
+    cp 2
+    jr z,.protect
+    ld a,(ix+8)
+    ld b,(ix+9)
+    ld ixl,a
+    ld ixh,b
+    jr .up
+.protect:
+    ld sp,ix
+    call tl_state
+    call run_cleanup
+    jr toplevel
+.reset:
     ld sp,(V_TOPSP)
     ld de,NIL
     call unwind_specs
@@ -317,15 +353,7 @@ toplevel:
     ld (V_T3),hl
     ld (V_T4),hl
     ld (V_BLOCKS),hl
-    ld (V_INPTR),hl
-    xor a
-    ld (V_PEEK),a
-    ld (V_DEPTH),a
-    ld (V_INSRC),a
-    ld (V_EDDEPTH),a
-    ld (V_EDSTR),a
-    ld (V_OUTMODE),a
-    ld (V_LIBDEF),a
+    call tl_state
     ld a,(V_FILES)              ; a file left open by an error
     rra
     call c,CAS_IN_ABANDON

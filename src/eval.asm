@@ -2156,7 +2156,8 @@ nreverse_onto:
 ;; BLOCK, RETURN-FROM, CATCH, THROW, UNWIND-PROTECT. A frame on the stack,
 ;; innermost in V_BLOCKS:   SP -> [specs][env][tag][kind][previous frame]
 ;; kind 0 is a block, 1 a catch, 2 an unwind-protect (tag: the cleanup
-;; forms, run by whatever leaves through it -- but not by an error).
+;; forms, run by whatever leaves through it: a throw, a return-from, an
+;; error, ESC -- toplevel runs those left), 3 an error handler.
 
 macro PUSHFRAME                 ; BC = kind, DE = tag. HL kept.
     push hl
@@ -2309,6 +2310,15 @@ unwind_to:
     push hl                     ; the value, the tag, the kind
     push de
     push bc
+    call run_cleanup
+    pop bc
+    pop de
+    pop hl
+    jr unwind_to
+
+;; run_cleanup: IX = an unwind-protect's frame (SP at or below it) -> the
+;; frame taken off, its cleanup forms run in the scope it was made in
+run_cleanup:
     ld l,(ix+8)
     ld h,(ix+9)
     ld (V_BLOCKS),hl
@@ -2322,11 +2332,7 @@ unwind_to:
     ld d,(ix+1)
     call unwind_specs
     pop hl
-    call progn
-    pop bc
-    pop de
-    pop hl
-    jr unwind_to
+    jp progn
 
 ;; (unwind-protect form cleanup...): form's value, the cleanup forms run
 ;; however it is left

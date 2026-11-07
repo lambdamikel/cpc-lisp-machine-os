@@ -169,7 +169,7 @@ All **core**.
 | `(defvar var [value])` `(defparameter var value)` `(defconstant var value)` | defvar does not change a value already there |
 | `(block name body...)` `(return-from name [value])` `(return [value])` | |
 | `(catch tag body...)` `(throw tag value)` | |
-| `(unwind-protect form cleanup...)` | the cleanups run when throw or return-from passes; not on an error or ESC |
+| `(unwind-protect form cleanup...)` | the cleanups run however form is left: a normal end, `throw`, `return-from`, an error (caught or not), ESC |
 | `(dolist (var list [result]) body...)` | |
 | `(dotimes (var n [result]) body...)` | |
 | `(loop body...)` | for ever, until `return` |
@@ -542,4 +542,3 @@ then use cells like your own; the names cost nothing until then.
 - A macro call keeps its first expansion (displacing): a macro that
   expands differently each time -- reading a global, say -- is not
   expanded again.
-- `unwind-protect`'s cleanups do not run on an error or ESC.

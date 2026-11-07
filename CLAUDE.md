@@ -122,8 +122,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   into TOKBUF through `to_string_ix` (255 characters at most). On the
   screen a lone LF in output is a new line (`putc` adds the CR).
 * **`unwind-protect`** is a third frame kind (2) beside block and catch;
-  `throw`/`return-from` run the cleanups of the frames they pass. An error
-  or ESC does not: it goes straight to toplevel.
+  `throw`/`return-from` run the cleanups of the frames they pass, and
+  `toplevel` runs any left (an uncaught error, ESC), each frame taken off
+  before its forms run (`run_cleanup`, `tl_state` resets the reader and
+  printer first).
 * **Errors can be caught**: `%catch-errors` (a special form) pushes frame
   kind 3, with the reader's and printer's state under it, and answers
   `(T . value)` or `(NIL . (message . objects))`. `error` (lisp.asm) and

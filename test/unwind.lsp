@@ -17,4 +17,12 @@
 *log*
 (unwind-protect (car 5) (push 'error *log*))
 *log*
+(setq *log* nil)
+(unwind-protect (unwind-protect (error "boom ~A" 1) (push 'in *log*)) (push 'out *log*))
+(unwind-protect (unwind-protect (car 5) (car 6)) (push 'last *log*))
+(defun spin () (unwind-protect (loop) (push 'esc *log*)))
+(spin)
+!esc 100
+(ignore-errors (unwind-protect (car 5) (push 'caught *log*)))
+*log*
 (pprint '(unwind-protect (progn (open-it) (use-it)) (close-it) (say-so)))
