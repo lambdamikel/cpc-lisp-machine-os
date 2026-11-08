@@ -223,9 +223,24 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   `compile` lets it go again, `%vm-release`); a constant that names one
   of the compiler's functions becomes a reference to it, so they cost no
   symbols. A change to the compiler is a change to the ROM: rebuild.
-  How it works (variables, boxes, the restarts when a variable turns out
-  to be captured) is at the top of compiler.lsp. Space: VM ROM 1.5 KB
-  free, core 26.
+  The compiler's calls of its own functions become CALLR k n (no
+  constant, no cell). How it works (variables, boxes, the restarts when
+  a variable turns out to be captured) is at the top of compiler.lsp.
+  Space: VM ROM 580 bytes free, core 26; the pool 178 of 256 constants;
+  the dispatch page is full (85 operations: a new one must replace one).
+* **What a compiled call costs**: a call of something not compiled goes
+  out through ROMCALL (KL ROM SELECT twice) and apply_n -- some 2000
+  T-states, more than the interpreter's own call. So the usual builtins
+  are operations (car... list, +, *, <, oddp, aref and its setf), and
+  `vm_fn` takes a symbol's function as it is (only an autoload goes to
+  `coerce_fn`). Measured (MAME, frames): sum of a 300-list 18 -> 2,
+  dotimes with oddp 67 -> 21, vector fill and sum 22 -> 3, fib 17
+  660 -> 197.
+* **`compile-file`** reads the whole source first (two open files take
+  4 KB of string space; with the compiler's pool that does not fit on a
+  464 with a disc ROM), then writes `(setf (symbol-function 'f) (%code
+  '("hex"...) (list constants...) 'f))` per defun -- `%code` (a VM
+  native) makes the function again, so `load` needs no compiler.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the

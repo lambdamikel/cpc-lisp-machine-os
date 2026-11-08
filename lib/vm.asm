@@ -113,6 +113,7 @@ VM_N    equ V_VM+7              ;   the argument count
 VM_XP   equ V_VM+8              ;   &the first argument past the optionals
 VM_XN   equ V_VM+10             ;   how many there are
 VM_FUN  equ V_VM+12             ; the function being entered (messages)
+VM_TD   equ V_VM+14             ; TCALL: the data of the one called
 
 ;; ---------------------------------------------------------------------------
 ;; THE DISPATCH PAGE: operation k's stub at vm_page + 3k
@@ -187,7 +188,7 @@ mend
     OP op_zerop                 ; 59 ZEROP
     OP op_specs                 ; 60 SPECS        push V_SPECS
     OP op_bind                  ; 61 BIND b       pop; bind constant b to it
-    OP op_unbind                ; 62 UNBIND       [specs][v] -> v, unbound
+    OP op_list                  ; 62 LIST b       the b values on the top, a list
     OP op_mvlist                ; 63 MVLIST       the top -> all its values
     OP op_symbolp               ; 64 SYMBOLP
     OP op_jsup                  ; 65 JSUP s w     jump if ix+s is not UNBOUND
@@ -203,6 +204,14 @@ mend
     OP op_jtks                  ; 75 JTKS s
     OP op_callg                 ; 76 CALLG k n    [arg]*n: constant k's function
     OP op_tcallg                ; 77 TCALLG k n   the same in tail position
+    OP op_callr                 ; 78 CALLR k n    this ROM's kth function
+    OP op_tcallr                ; 79 TCALLR k n
+    OP op_oddp                  ; 80 ODDP
+    OP op_evenp                 ; 81 EVENP
+    OP op_mul                   ; 82 MUL
+    OP op_aref                  ; 83 AREF         [v][i]: a vector's (or SVREF)
+    OP op_setaref               ; 84 SETAREF k    [v][i][x] -> x; else constant
+                                ;                 k's function does it
 VM_NOPS equ opnum
     assert opnum <= 85
 
@@ -223,6 +232,8 @@ vm_enter2:
     ld e,(hl)
     inc hl
     ld d,(hl)                   ; DE = its data
+;; vm_enter2d: DE = the data
+vm_enter2d:
     ld hl,NIL                   ; HL = its environment
     ld a,e
     and 3
@@ -653,7 +664,8 @@ vm_iscode:
     ret
 
 ;; vm_fn: HL = a function, or a symbol naming a global one -> HL = the
-;; function; Z if it is compiled. DE (the PC) kept, moved if need be.
+;; function; Z if it is compiled. DE (the PC) kept, moved if need be; BC
+;; kept.
 vm_fn:
     ld a,l
     and 7
@@ -665,63 +677,40 @@ vm_fn:
     cp SYM_HI >> 8
     jr nc,vm_iscode
     push hl
-    ld bc,SY_FUNC
-    add hl,bc
+    ld a,l
+    add a,SY_FUNC               ; (the slot is 8-aligned: no carry)
+    ld l,a
     LDHLI
     call vm_iscode
     jr z,.code
-    pop hl                      ; anything else: the core's way (autoload,
-    push de                     ;   or an error)
+    ld a,l                      ; a builtin, a library native, a closure:
+    and 3                       ;   apply_core takes it as it is
+    cp 2
+    jr nz,.core
+    ld a,h
+    cp #C0
+    jr nc,.done
+    cp CELL_LO >> 8
+    jr c,.core
+    push hl
+    dec hl
+    dec hl
+    ld a,(hl)
+    pop hl
+    cp HDR_AUTOLOAD and #FF
+    jr nz,.done
+.core:
+    pop hl                      ; an autoload, or not a function: the core's
+    push de                     ;   way
     SCORE coerce_fn
     pop de
     call vm_fix
     jr vm_iscode
+.done:
+    or 1                        ; NZ: not compiled
 .code:
-    pop bc
-    ret
-
-;; vm_quick: HL = a call's function, or a symbol -> Z and HL = it if it
-;; is compiled (for a symbol: its global function); else NZ, HL as it was.
-;; BC, DE kept
-vm_quick:
-    push hl
-    ld a,l
-    and 7
-    cp 2
-    jr nz,.fn
-    ld a,h
-    cp SYM_LO >> 8
-    jr c,.fn
-    cp SYM_HI >> 8
-    jr nc,.fn
-    ld a,l
-    add a,SY_FUNC               ; (the slot is 8-aligned: no carry)
-    ld l,a
-    LDHLI                       ; the symbol's function
-.fn:
-    ld a,l
-    and 3
-    cp 2
-    jr nz,.no
-    ld a,h
-    cp CELL_LO >> 8
-    jr c,.no1
-    cp #C0
-    jr nc,.no1
-    dec hl
-    dec hl
-    ld a,(hl)
-    inc hl
-    inc hl
-    cp HDR_CODE and #FF
-    jr nz,.no
+    inc sp                      ; (the symbol: not wanted)
     inc sp
-    inc sp
-    ret
-.no1:
-    or 1
-.no:
-    pop hl
     ret
 
 ;; vm_out: (jumped to) HL = a function, C = n arguments on the stack; B
@@ -1158,13 +1147,40 @@ op_call:
 ;; vm_call: HL = the function, or a symbol; C = n; B = 2 with a slot, 0
 ;; without
 vm_call:
-    call vm_quick
-    jr z,vm_callvm
-    push bc
     call vm_fn
-    pop bc
     jr z,vm_callvm
     jp vm_out
+;; CALLR k n, TCALLR k n: this ROM's kth function (the compiler's calls
+;; of its own: no constant, no cell)
+op_callr:
+    ld a,(de)
+    inc de
+    call vm_fixa
+    ld (VM_TD),hl
+    ld a,(de)
+    inc de
+    ld b,a
+    ld c,0                      ; [bc]: B = n, no slot
+    push bc
+    push de
+    push de
+    ld hl,vm_ret
+    push hl
+    push ix
+    ld hl,NIL
+    ld (VM_FUN),hl
+    ld de,(VM_TD)
+    jp vm_enter2d
+op_tcallr:
+    ld a,(de)
+    inc de
+    call vm_fixa
+    ld a,(de)
+    inc de
+    ld c,a
+    ld de,NIL
+    ld (VM_FUN),de
+    jp vm_taild
 op_callg:
     call vm_constb
     ld a,(de)
@@ -1234,11 +1250,7 @@ op_tcall:
     LDHLI                       ; the slot
     ld b,3
 vm_tcall:
-    call vm_quick
-    jr z,vm_tail
-    push bc
     call vm_fn
-    pop bc
     jr z,vm_tail
     jp vm_out
 op_tcallg:
@@ -1251,6 +1263,10 @@ op_tcallg:
 ;; vm_tail: HL = a compiled function, C = n: it takes this frame's place
 vm_tail:
     ld (VM_FUN),hl               ; the function
+    LDHLI
+;; vm_taild: HL = the data of a compiled function, C = n
+vm_taild:
+    ld (VM_TD),hl
     ld a,c
     ld (VM_N),a
     cp (ix+F_N)
@@ -1273,8 +1289,7 @@ vm_tail:
     add hl,sp                   ; HL = the new ones' last byte
     lddr
 .copied:
-    ld hl,(VM_FUN)
-    LDHLI                       ; its data
+    ld hl,(VM_TD)               ; its data
     ld e,(ix+F_V)
     ld d,(ix+F_V+1)
     or a
@@ -1292,10 +1307,10 @@ vm_tail:
     pop de
     add hl,de
     ld sp,hl                    ; down to the caller's IX
-    ld de,(VM_FUN)
+    ld de,(VM_TD)
     ld a,(VM_N)
     ld b,a
-    jp vm_enter2
+    jp vm_enter2d
 vm_tother:
     ld l,(ix+18)                ; the four words and the caller's IX
     ld h,c                      ;   (B = n in the highest)
@@ -1353,10 +1368,10 @@ vm_tother:
     inc de                      ; T-2n-10: the new SP
     ex de,hl
     ld sp,hl
-    ld de,(VM_FUN)
+    ld de,(VM_TD)
     ld a,(VM_N)
     ld b,a
-    jp vm_enter2
+    jp vm_enter2d
 
 ;; ENTER n: exactly n arguments
 op_enter:
@@ -1846,6 +1861,204 @@ op_zerop:
     ld hl,E_ZEROP+2
     jp vm_un
 
+op_oddp:
+    pop hl
+    bit 0,l
+    jr z,.slow
+    bit 1,l                     ; 2v+1: v is odd if bit 1 is
+    jp nz,vm_true
+    jp vm_false
+.slow:
+    push hl
+    ld hl,E_ODDP+2
+    jp vm_un
+op_evenp:
+    pop hl
+    bit 0,l
+    jr z,.slow
+    bit 1,l
+    jp z,vm_true
+    jp vm_false
+.slow:
+    push hl
+    ld hl,E_EVENP+2
+    jp vm_un
+
+;; MUL: two fixnums, the smaller magnitude the multiplier; a result too
+;; big for a fixnum (or anything else) is *'s
+op_mul:
+    pop bc
+    pop hl
+    ld a,c
+    and l
+    rra
+    jp nc,.slow
+    push hl
+    push bc
+    push de
+    sra h
+    rr l
+    sra b
+    rr c
+    ld a,h
+    xor b
+    push af                     ; the sign of the product
+    call .abs
+    push hl
+    ld h,b
+    ld l,c
+    call .abs
+    pop de                      ; DE, HL: the magnitudes
+    ld b,h
+    ld c,l
+    ld hl,0
+.m:
+    srl d
+    rr e
+    jr nc,.n
+    add hl,bc
+    jr c,.ovf
+.n:
+    ld a,d
+    or e
+    jr z,.done
+    sla c
+    rl b
+    jr c,.ovf
+    bit 6,b
+    jr z,.m
+.ovf:
+    pop af
+    pop de
+    pop bc
+    pop hl
+.slow:
+    push hl
+    push bc
+    ld hl,E_TIMES+2
+    jp vm_bin
+.done:
+    ld a,h
+    cp #40
+    jr nc,.ovf                  ; 16384 and up
+    pop af
+    jp p,.pos
+    ld a,h                      ; negative
+    cpl
+    ld h,a
+    ld a,l
+    cpl
+    ld l,a
+    inc hl
+.pos:
+    add hl,hl
+    inc hl
+    pop de
+    pop bc
+    pop bc
+    push hl
+    NEXT
+.abs:
+    bit 7,h
+    ret z
+    ld a,h
+    cpl
+    ld h,a
+    ld a,l
+    cpl
+    ld l,a
+    inc hl
+    ret
+
+;; AREF: [v][i], v a vector and i in range; anything else is AREF's
+op_aref:
+    pop bc
+    pop hl
+    push hl
+    push bc
+    call vm_vref
+    jr c,.slow
+    LDHLI
+    pop bc
+    pop bc
+    push hl
+    NEXT
+.slow:
+    ld hl,E_AREF+2
+    jp vm_bin
+;; SETAREF k: [v][i][x]
+op_setaref:
+    ld a,(de)
+    inc de
+    pop bc
+    ld (VM_PC),bc               ; x
+    pop bc
+    pop hl
+    push hl
+    push bc
+    push af
+    call vm_vref
+    jr c,.slow
+    pop af
+    ld bc,(VM_PC)
+    ld (hl),c
+    inc hl
+    ld (hl),b
+    pop hl
+    pop hl
+    push bc
+    NEXT
+.slow:
+    pop af
+    ld hl,(VM_PC)
+    push hl
+    call vm_const               ; the constant's function: (v i x)
+    ld bc,3
+    jp vm_call
+;; vm_vref: HL = v, BC = i -> NC and HL = &its element if v is a vector
+;; and i an index of it; C otherwise
+vm_vref:
+    bit 0,c
+    jr z,.no
+    ld a,l
+    and 3
+    cp 2
+    jr nz,.no
+    ld a,h
+    cp CELL_LO >> 8
+    jr c,.no
+    cp #C0
+    jr nc,.no
+    push hl
+    dec hl
+    dec hl
+    ld a,(hl)
+    pop hl
+    cp HDR_VECTOR and #FF
+    jr nz,.no
+    sra b
+    rr c
+    bit 7,b
+    jr nz,.no
+    LDHLI                       ; [len][elements]
+    ld a,(hl)
+    inc hl
+    push hl
+    ld h,(hl)
+    ld l,a                      ; its length
+    scf
+    sbc hl,bc                   ; len - i - 1: C if i >= len
+    pop hl
+    ret c
+    inc hl
+    add hl,bc
+    add hl,bc
+    or a
+    ret
+.no:
+    scf
+    ret
+
 op_lt:
     ld hl,E_LT+2
     call vm_fix2
@@ -1912,15 +2125,32 @@ op_bind:
     pop de
     call vm_fix
     NEXT
-op_unbind:
-    pop hl
-    pop bc
+;; LIST b: the last value pushed is the list's last; consed from there
+op_list:
+    ld a,(de)
+    inc de
+    or a
+    jp z,vm_false               ; (list): NIL (or a JNIL's jump)
+    push de
+    ld b,a
+    ld hl,2
+    add hl,sp                   ; the last value
+    ld de,NIL
+.l:
     push hl
+    LDHLI
+    SCORE cons                  ; (B, DE kept)
+    ex de,hl
+    pop hl
+    inc hl
+    inc hl
+    djnz .l
+    pop bc                      ; the PC
+    ld sp,hl                    ; the values dropped
     push de
     ld d,b
     ld e,c
-    SCORE unwind_specs
-    pop de
+    call vm_fix
     NEXT
 
 op_mvclr:
@@ -2004,7 +2234,7 @@ vf_make_code:
 .f:
     ld a,h
     or l
-    jr z,.filled
+    jr z,vm_mkcode
     ld c,(hl)
     inc hl
     ld a,(hl)                   ; a fixnum's high byte: its bit 0 is the
@@ -2016,7 +2246,9 @@ vf_make_code:
     inc de
     LDHLI
     jr .f
-.filled:
+;; vm_mkcode: the stack [string][name][constants][x], the string the
+;; bytecode -> HL = the function, the four dropped
+vm_mkcode:
     ld hl,4
     add hl,sp
     LDHLI                       ; the constants
@@ -2112,9 +2344,7 @@ vf_vm_release:
 ;@vm %FN-INFO 1 1 vf_fn_info
 vf_fn_info:
     LDHLI
-    ex de,hl
     SCORE is_symbol
-    ex de,hl
     jr nz,.fn
     ex de,hl
     ld hl,SY_FUNC
@@ -2206,6 +2436,239 @@ vf_symbol_flags:
     ld a,(hl)
     and SF_SPECIAL or SF_CONST
     jp vm_fixa
+
+;; (%op-name k), (%op-kind k): for disassemble: operation k's name, a
+;; string, and its operands' kind
+;@vm %OP-NAME 1 1 vf_op_name
+vf_op_name:
+    LDHLI
+    srl h
+    rr l
+    ld b,l                      ; k
+    ld hl,vm_opnames
+    inc b
+.f:
+    dec b
+    jr z,.at
+.s:
+    bit 7,(hl)
+    inc hl
+    jr z,.s
+    jr .f
+.at:
+    push hl
+    ld bc,0
+.n:
+    inc bc
+    bit 7,(hl)
+    inc hl
+    jr z,.n
+    pop hl
+    ld de,TOKBUF
+    push bc
+    push de
+    ldir
+    dec de
+    ld a,(de)
+    and #7F
+    ld (de),a
+    pop hl
+    pop bc
+    SCORE make_string
+    ret
+;@vm %OP-KIND 1 1 vf_op_kind
+vf_op_kind:
+    LDHLI
+    srl h
+    rr l
+    ld de,vm_opkinds
+    add hl,de
+    ld a,(hl)
+    sub "0"
+    jp vm_fixa
+macro OPNAME str,last
+    db {str},{last}+#80
+mend
+vm_opnames:
+    OPNAME "BA","D"
+    OPNAME "CONS","T"
+    OPNAME "NI","L"
+    db "T"+#80
+    OPNAME "FI","X"
+    OPNAME "LO","C"
+    OPNAME "SETLO","C"
+    OPNAME "LOC","B"
+    OPNAME "SETLOC","B"
+    OPNAME "CL","O"
+    OPNAME "CLO","B"
+    OPNAME "SETCLO","B"
+    OPNAME "GLO","B"
+    OPNAME "SETGLO","B"
+    OPNAME "BO","X"
+    OPNAME "A","0"
+    OPNAME "A","1"
+    OPNAME "A","2"
+    OPNAME "A","3"
+    OPNAME "L","0"
+    OPNAME "L","1"
+    OPNAME "L","2"
+    OPNAME "L","3"
+    OPNAME "DRO","P"
+    OPNAME "DU","P"
+    OPNAME "SLID","E"
+    OPNAME "JM","P"
+    OPNAME "JNI","L"
+    OPNAME "J","T"
+    OPNAME "JNIL","K"
+    OPNAME "JT","K"
+    OPNAME "CAL","L"
+    OPNAME "TCAL","L"
+    OPNAME "RE","T"
+    OPNAME "ENTE","R"
+    OPNAME "ARG","S"
+    OPNAME "MKCL","O"
+    OPNAME "GF","N"
+    OPNAME "CA","R"
+    OPNAME "CD","R"
+    OPNAME "CON","S"
+    OPNAME "E","Q"
+    OPNAME "NO","T"
+    OPNAME "CONS","P"
+    OPNAME "ATO","M"
+    OPNAME "AD","D"
+    OPNAME "SU","B"
+    OPNAME "ADD","1"
+    OPNAME "SUB","1"
+    OPNAME "L","T"
+    OPNAME "G","T"
+    OPNAME "L","E"
+    OPNAME "G","E"
+    OPNAME "NUME","Q"
+    OPNAME "SETCA","R"
+    OPNAME "SETCD","R"
+    OPNAME "CAD","R"
+    OPNAME "CDD","R"
+    OPNAME "EQ","L"
+    OPNAME "ZERO","P"
+    OPNAME "SPEC","S"
+    OPNAME "BIN","D"
+    OPNAME "LIS","T"
+    OPNAME "MVLIS","T"
+    OPNAME "SYMBOL","P"
+    OPNAME "JSU","P"
+    OPNAME "SUP","P"
+    OPNAME "MVCL","R"
+    OPNAME "UNBIND","L"
+    OPNAME "SPI","X"
+    OPNAME "POPLO","C"
+    OPNAME "JMP","S"
+    OPNAME "JNIL","S"
+    OPNAME "JT","S"
+    OPNAME "JNILK","S"
+    OPNAME "JTK","S"
+    OPNAME "CALL","G"
+    OPNAME "TCALL","G"
+    OPNAME "CALL","R"
+    OPNAME "TCALL","R"
+    OPNAME "ODD","P"
+    OPNAME "EVEN","P"
+    OPNAME "MU","L"
+    OPNAME "ARE","F"
+    OPNAME "SETARE","F"
+;; operands: 0 none, 1 a constant, 2 a place, 3 a jump, 4 a count, 5 ARGS,
+;; 6 MKCLO, 7 JSUP, 8 a short jump, 9 CALLG, a CALLR
+vm_opkinds:
+    db "0100222224441100000000000433333440456100000000000000000000000140072020288888999900001"
+    assert $-vm_opkinds == VM_NOPS
+
+;; (%code hex constants name): a compiled function from what compile-file
+;; wrote: hex a list of strings of hex digits, two a byte. The bytes are
+;; put in one string, made first, so nothing moves while they are.
+;@vm %CODE 3 3 vf_code
+vf_code:
+    NEXTARG
+    push de                     ; hex
+    NEXTARG
+    push de                     ; constants
+    NEXTARG
+    push de                     ; name
+    ld hl,4
+    add hl,sp
+    LDHLI
+    ld bc,0                     ; how many bytes
+.n:
+    ld a,h
+    or l
+    jr z,.counted
+    push hl
+    LDHLI
+    LDHLI
+    ld e,(hl)
+    inc hl
+    ld d,(hl)                   ; its length
+    srl d
+    rr e
+    ex de,hl
+    add hl,bc
+    ld b,h
+    ld c,l
+    pop hl
+    CDRHL
+    jr .n
+.counted:
+    ld hl,LINEBUF
+    SCORE make_string
+    push hl                     ; [string][name][constants][hex]
+    LDHLI
+    inc hl
+    inc hl
+    ex de,hl                    ; DE = where the bytes go
+    ld hl,6
+    add hl,sp
+    LDHLI                       ; the strings
+.s:
+    ld a,h
+    or l
+    jp z,vm_mkcode
+    push hl
+    LDHLI
+    LDHLI
+    ld c,(hl)
+    inc hl
+    ld b,(hl)
+    inc hl                      ; HL = its digits, BC = how many
+    srl b
+    rr c
+.b:
+    ld a,b
+    or c
+    jr z,.next
+    call .hex
+    add a,a
+    add a,a
+    add a,a
+    add a,a
+    ld (de),a
+    call .hex
+    ex de,hl
+    or (hl)
+    ld (hl),a
+    ex de,hl
+    inc de
+    dec bc
+    jr .b
+.next:
+    pop hl
+    CDRHL
+    jr .s
+.hex:
+    ld a,(hl)
+    inc hl
+    sub "0"
+    cp 10
+    ret c
+    sub "A"-"0"-10
+    ret
 
 ;; (%code-bytes f): a compiled function's bytecode, a list of fixnums
 ;@vm %CODE-BYTES 1 1 vf_code_bytes

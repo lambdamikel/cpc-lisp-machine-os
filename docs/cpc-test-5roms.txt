@@ -228,7 +228,24 @@ A photo of the screen is as good as ticks.
 (Checked on the 464, 2026-11-07: both as above.)
 
 
-16. Getting BASIC back
+16. The compiler: the VM ROM in slot 1
+--------------------------------------
+[ ] The banner, as before           (the VM ROM is not listed there)
+[ ] (defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))
+    (fib 17)                         1597, in about 13 s
+[ ] (compile 'fib)                   FIB, in about 2 s
+    (fib 17)                         1597, in about 4 s
+[ ] (disassemble 'fib)               about 16 lines, ENTER 1 ... RET
+[ ] A disc, through Parados:
+    (defun sq (x) (* x x))
+    (save "sq")                      (SQ)
+    (compile-file "sq")              ;; 1 compiled   "sq.FAS"
+    (fmakunbound 'sq)
+    (load "sq.fas")                  T
+    (sq 12)                          144
+
+
+17. Getting BASIC back
 ----------------------
 Switch the CPC off, then on the PC:
 

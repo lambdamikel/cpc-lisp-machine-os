@@ -1,0 +1,45 @@
+LISP> (defun sq (x) (* x x))
+SQ
+LISP> (defun sumsq (l) (let ((s 0)) (dolist (x l s) (incf s (sq x)))))
+SUMSQ
+LISP> (defmacro twice (x) `(* 2 ,x))
+TWICE
+LISP> (defun tw (n) (twice n))
+TW
+LISP> (defun greet (who) (format nil "hello, ~A!" who))
+GREET
+LISP> (defun adder (n) #'(lambda (x) (+ x n)))
+ADDER
+LISP> (save "src")
+(TW SQ GREET TWICE ADDER SUMSQ)
+LISP> (compile-file "src")
+;; 5 compiled
+"src.FAS"
+LISP> (fmakunbound 'sq)
+SQ
+LISP> (fmakunbound 'sumsq)
+SUMSQ
+LISP> (fmakunbound 'tw)
+TW
+LISP> (fmakunbound 'greet)
+GREET
+LISP> (fmakunbound 'adder)
+ADDER
+LISP> (load "src.fas")
+T
+LISP> (sumsq '(1 2 3))
+14
+LISP> (tw 21)
+42
+LISP> (greet "CPC")
+"hello, CPC!"
+LISP> (funcall (adder 5) 10)
+15
+LISP> (disassemble 'sq)
+  0 ENTER 1
+  2 A0
+  3 A0
+  4 MUL
+  5 RET
+NIL
+LISP> 

@@ -90,7 +90,8 @@
   (dolist (b bytes) (push b *cc-code*))
   (setq *cc-depth* (+ *cc-depth* (nth op '(0 1 1 1 1 1 0 1 0 1  1 0 1 0 0 1 1 1 1 1
       1 1 1 -1 1 0 0 -1 -1 -1  -1 0 0 0 0 0 1 1 0 0  -1 -1 0 0 0 -1 -1 0 0 -1
-      -1 -1 -1 -1 -1 -1 0 0 -1 0  1 -1 -1 0 0 0 1 0 0 0  -1 0 -1 -1 -1 -1 1 0)))))
+      -1 -1 -1 -1 -1 -1 0 0 -1 0  1 -1 0 0 0 0 1 0 0 0  -1 0 -1 -1 -1 -1 1 0 1 0
+      0 0 -1 -1 -2)))))
 
 (defun cc-label () (list nil))
 (defun cc-place (l) (push l *cc-code*))
@@ -301,12 +302,15 @@
                              (consp 43 . 1) (atom 44 . 1) (1+ 47 . 1) (1- 48 . 1)
                              (< 49 . 2) (> 50 . 2) (<= 51 . 2) (>= 52 . 2) (= 53 . 2)
                              (cadr 56 . 1) (second 56 . 1) (cddr 57 . 1) (eql 58 . 2)
-                             (zerop 59 . 1) (symbolp 64 . 1))))))
+                             (zerop 59 . 1) (symbolp 64 . 1) (oddp 80 . 1) (evenp 81 . 1)
+                             (aref 83 . 2) (svref 83 . 2))))))
     (cond ((and p (= n (cdr p))) (cc-args a env) (cc-emit (car p)) (cc-tail tail))
           ((and (eq op 'funcall) a) (cc-args a env) (cc-callop (1- n) tail))
-          ((and (member op '(+ -)) (> n 1))
+          ((and (eq op 'list) (< n 256))
+           (cc-args a env) (cc-emit 62 n) (decf *cc-depth* (1- n)) (cc-tail tail))
+          ((and (member op '(+ - *)) (> n 1))
            (cc (car a) env nil)
-           (dolist (b (cdr a)) (cc b env nil) (cc-emit (if (eq op '+) 45 46)))
+           (dolist (b (cdr a)) (cc b env nil) (cc-emit (cdr (assoc op '((+ . 45) (- . 46) (* . 82))))))
            (cc-tail tail))
           ((and (eq op '-) (= n 1)) (cc-literal 0) (cc (car a) env nil) (cc-emit 46) (cc-tail tail))
           ((and (eq op '+) (= n 0)) (cc-literal 0) (cc-tail tail))
@@ -438,6 +442,9 @@
                    ((member acc '(cdr rest)) (cc (car a) env nil) (cc form env nil) (cc-emit 55))
                    ((member acc '(cadr second))
                     (cc (car a) env nil) (cc-emit 39) (cc form env nil) (cc-emit 54))
+                   ((and (member acc '(aref svref)) (= (length a) 2))
+                    (cc (car a) env nil) (cc (cadr a) env nil) (cc form env nil)
+                    (cc-emit 84 (cc-const '%set-aref)))
                    ((eql (%fn-info acc) 1) (cc-store (cc-expand pl) form env))
                    (t (let ((s (or (cdr (assoc acc '((aref . %set-aref) (svref . %set-aref)
                                                      (char . %set-char) (nth . %set-nth)
@@ -678,20 +685,73 @@
     (cc-place l)
     (cc-param name key d env)))
 
+;;; ------------------------------------------------------------ files
+
+;; (compile-file "name" [out]): name.LSP's defuns compiled, into out
+;; (name.FAS): (setf (symbol-function 'f) (%code ...)) for each, which
+;; load reads back; defmacro, defvar and the like are evaluated too (later
+;; forms may need them), and copied, as is everything else. The source is
+;; read first: one file at a time (each takes 2 KB of string space)
+(defun compile-file (in &optional out)
+  (let ((src (open in)) (eof (list nil)) (forms nil) (k 0) (dst nil))
+    (unwind-protect
+        (%loop
+          (let ((f (read src nil eof)))
+            (when (eq f eof) (return))
+            (push f forms)))
+      (close src))
+    (setq out (or out (format nil "~A.FAS" (cc-base in)))
+          dst (open out :direction :output))
+    (unwind-protect
+        (dolist (f (nreverse forms))
+          (if (and (consp f) (eq (car f) 'defun))
+              (let ((r (%catch-errors (cc-top (cadr f) (caddr f)
+                                              (list (list* 'block (cadr f) (cdddr f)))))))
+                (if (car r)
+                    (progn (format dst "(SETF (SYMBOL-FUNCTION '~S) " (cadr f))
+                           (cc-write (cdr r) dst)
+                           (format dst ")~%")
+                           (incf k))
+                    (progn (format t "~&;; ~A not compiled: ~A~{ ~S~}~%" (cadr f) (cadr r) (cddr r))
+                           (prin1 f dst) (terpri dst))))
+              (progn
+                (when (and (consp f) (member (car f) '(defmacro defvar defparameter defconstant defstruct)))
+                  (eval f))
+                (prin1 f dst) (terpri dst))))
+      (close dst))
+    (%vm-release)
+    (format t "~&;; ~D compiled~%" k)
+    out))
+
+(defun cc-base (name)
+  (let ((d (position #\. name)))
+    (if d (subseq name 0 d) name)))
+
+;; a compiled function as a form that makes it again: its bytes in hex,
+;; 127 to a string
+(defun cc-write (f s)
+  (let ((b (%code-bytes f)) (c (%code-consts f)) (i 0))
+    (format s "(%CODE '(\"")
+    (dolist (x b)
+      (when (= i 127) (format s "\" \"") (setq i 0))
+      (format s "~2,'0X" x)
+      (incf i))
+    (format s "\") (LIST")
+    (dolist (x (cdr c))
+      (if (eql (%fn-info x) 3)
+          (progn (format s " ") (cc-write x s))
+          (format s " '~S" x)))
+    (format s ") '~S)" (car c))))
+
 ;;; ------------------------------------------------------------ disassemble
 
 (defun disassemble (f)
   (when (symbolp f) (setq f (symbol-function f)))
-  (let ((b (%code-bytes f)) (c (cdr (%code-consts f))) (pc 0)
-        (n1 "BAD CONST NIL T FIX LOC SETLOC LOCB SETLOCB CLO CLOB SETCLOB GLOB SETGLOB BOX A0 A1 A2 A3 L0 L1 L2 L3 DROP DUP SLIDE JMP JNIL JT JNILK JTK CALL TCALL RET ENTER ARGS MKCLO GFN ")
-        (n2 "CAR CDR CONS EQ NOT CONSP ATOM ADD SUB ADD1 SUB1 LT GT LE GE NUMEQ SETCAR SETCDR CADR CDDR EQL ZEROP SPECS BIND UNBIND MVLIST SYMBOLP JSUP SUPP MVCLR UNBINDL SPIX POPLOC JMPS JNILS JTS JNILKS JTKS CALLG TCALLG ")
-        ;; operands: 0 none, 1 a constant, 2 a place, 3 a jump, 4 a count,
-        ;; 5 ARGS, 6 MKCLO, 7 JSUP, 8 a short jump, 9 CALLG
-        (kinds "010022222444110000000000043333344045610000000000000000000000010007202028888899"))
+  (let ((b (%code-bytes f)) (c (cdr (%code-consts f))) (pc 0))
     (unless b (error "not compiled:" f))
     (%loop
       (when (null b) (return))
-      (let* ((op (floor (car b) 3)) (k (- (char-code (char kinds op)) 48)) (s (if (< op 38) (cc-opname n1 op) (cc-opname n2 (- op 38)))))
+      (let* ((op (floor (car b) 3)) (k (%op-kind op)) (s (%op-name op)))
         (format t "~&~3D ~A" pc s)
         (setq b (cdr b) pc (1+ pc))
         (case k
@@ -709,17 +769,11 @@
            (setq b (cdddr b) pc (+ pc 3)))
           (8 (format t " ~D" (+ pc 1 (if (> (car b) 127) (- (car b) 256) (car b))))
            (setq b (cdr b) pc (1+ pc)))
-          (9 (format t " ~S ~D" (nth (car b) c) (cadr b)) (setq b (cddr b) pc (+ pc 2))))))
+          (9 (format t " ~S ~D" (if (> op 77) (car b) (nth (car b) c)) (cadr b))
+           (setq b (cddr b) pc (+ pc 2))))))
     (terpri)
     (%vm-release)
     nil))
 
 (defun cc-dis-jump (b pc)
   (+ pc 2 (car b) (* 256 (if (> (cadr b) 127) (- (cadr b) 256) (cadr b)))))
-
-(defun cc-opname (names op)
-  (let ((i 0) (j 0))
-    (%loop (when (zerop op) (return)) (when (eql (char names i) #\Space) (decf op)) (incf i))
-    (setq j i)
-    (%loop (when (eql (char names j) #\Space) (return)) (incf j))
-    (subseq names i j)))

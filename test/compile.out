@@ -190,4 +190,26 @@ LISP> (compile 'fib)
 FIB
 LISP> (fib 10)
 55
+LISP> (defmacro twice (x) `(* 2 ,x))
+TWICE
+LISP> (defun tw (n) (twice (1+ n)))
+TW
+LISP> (compile 'tw)
+TW
+LISP> (tw 20)
+42
+LISP> (defmacro my-while (test &body body) `(%loop (unless ,test (return)) ,@body))
+MY-WHILE
+LISP> (defun countdown (n) (let ((r nil)) (my-while (> n 0) (push n r) (decf n)) r))
+COUNTDOWN
+LISP> (compile 'countdown)
+COUNTDOWN
+LISP> (countdown 5)
+(1 2 3 4 5)
+LISP> (defun usesloop (l) (loop for x in l when (oddp x) collect (* x x)))
+USESLOOP
+LISP> (compile 'usesloop)
+USESLOOP
+LISP> (usesloop '(1 2 3 4 5))
+(1 9 25)
 LISP> 

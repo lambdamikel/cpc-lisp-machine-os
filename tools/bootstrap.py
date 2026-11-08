@@ -750,7 +750,7 @@ def asm_bytes(label, data):
 
 # operation k: its length (ARGS: 4, 6 with keys) and which byte is a
 # constant's index, from lib/compiler.lsp's "kinds" in disassemble
-KINDS = "0100222224441100000000000433333440456100000000000000000000000100072020288888" "99"
+KINDS = "0100222224441100000000000433333440456100000000000000000000000140072020288888" "9999" "00001"
 LENGTH = {'0': 1, '1': 2, '2': 2, '4': 2, '3': 3, '6': 3, '7': 4, '8': 2, '9': 3}
 
 def main():
@@ -803,11 +803,22 @@ def main():
             pool.append(x)
             return len(pool) - 1
         return where[key]
+    def fnum(x):
+        if isinstance(x, Code):
+            return num[id(x)]
+        if isinstance(x, Sym) and x.name in byname:
+            return byname[x.name]
+        return None
     for c in order:
         b, i = c.bytes, 0
         while i < len(b):
             op = b[i] // 3
             kind = KINDS[op]
+            if op in (76, 77) and fnum(c.consts[b[i + 1]]) is not None:
+                b[i] = 3 * (op + 2)             # CALLG -> CALLR: the number
+                b[i + 1] = fnum(c.consts[b[i + 1]])
+                i += 3
+                continue
             if kind == '5':
                 n = 6 if b[i + 3] & 2 else 4
                 if n == 6:
@@ -830,7 +841,7 @@ def main():
             refs.append((i, byname[x.name])); consts.append(NIL)
         else:
             consts.append(x)
-    exported = {'COMPILE', 'DISASSEMBLE'}
+    exported = {'COMPILE', 'DISASSEMBLE', 'COMPILE-FILE'}
     lines = ['; made by tools/bootstrap.py from lib/compiler.lsp -- do not edit', '',
              'vm_pooldata:', f'    dw vm_pooltext',
              f'    db {len(refs)}']

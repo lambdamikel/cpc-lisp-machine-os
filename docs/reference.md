@@ -253,22 +253,27 @@ the loop runs, and kept. It uses `%0`, `%1`... as its own variables.
 |---|---|---|
 | `(compile 'name)` | compiles name's definition in place; the name, or NIL (and why) if it could not | vm |
 | `(compile nil '(lambda (x) ...))` | a compiled function | vm |
+| `(compile-file "name" [out])` | compiles the defuns of name.LSP into name.FAS (or out); `(load "name.fas")` loads them compiled. Macros, `defvar`s and the like in the file are evaluated as it goes, for what comes after | vm |
 | `(disassemble 'name)` | lists the bytecode of a compiled function | vm |
 
 `compile` turns an interpreted function into bytecode for the VM ROM.
-Compiled, `(fib 17)` takes 4 s instead of 13, a loop or a `dolist` is
-about three times faster, and the definition's conses are freed: code
-takes much less memory than the list it came from. Compiled and
-interpreted functions call each other freely.
+Compiled, `(fib 17)` takes 4 s instead of 13; a `dolist` adding up a
+list is nine times faster, a `dotimes` over a vector seven, one calling
+`oddp` three. The definition's conses are freed: code takes much less
+memory than the list it came from. Compiled and interpreted functions
+call each other freely. What gains least is code that spends its time
+in builtins the machine has no operation for (`append`, `format`...):
+each such call goes out to the core ROM and back.
 
 Everything compiles: the special forms, `&optional` `&rest` `&key`
 `&aux`, closures (a variable a closure assigns is shared, as when
 interpreted), `labels`/`flet`, `block`/`return-from` -- from inside a
 `lambda` too --, `catch`/`throw`, `unwind-protect`, special variables
 bound by `let`, multiple values, backquote. Macros are expanded once,
-when compiling. `car` `cdr` `cons` `eq` `eql` `not` `+` `-` `1+` `1-` `<`
-`>` `=` `zerop`... are operations of the machine, on fixnums; anything
-else goes to the function. A call of the function itself in tail
+when compiling. `car` `cdr` `cons` `list` `eq` `eql` `not` `+` `-` `*`
+`1+` `1-` `<` `>` `=` `zerop` `oddp` `aref` (and its `setf`)... are
+operations of the machine, on fixnums and vectors; anything else goes to
+the function. A call of the function itself in tail
 position becomes a jump: a recursive loop runs in no stack.
 
 Not compiled (it says why, and the function stays as it was): a function
@@ -694,6 +699,6 @@ then use cells like your own; the names cost nothing until then.
 - A macro call keeps its first expansion (displacing): a macro that
   expands differently each time -- reading a global, say -- is not
   expanded again.
-- `compile` compiles one function, in place; `compile-file` is not there
-  yet. A compiled function prints as `#<FUNCTION>`; `ed` cannot show it
-  and `save` leaves it out.
+- A compiled function prints as `#<FUNCTION>`; `ed` cannot show it and
+  `save` leaves it out (`compile-file` the source instead). A `.FAS`
+  file is from one build of the ROMs: compile again after new ROMs.
