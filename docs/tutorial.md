@@ -187,7 +187,9 @@ Logo's turtle draws as it moves. It starts in the middle facing up;
 drawing, `(turtle-position)` and `(heading)` say where it is. Its
 position is kept to a 256th of a pixel, so many small steps come back
 where they started. `(koch 4)` and `(tree)` in the demos are turtle
-programs; `(ed 'koch)` shows how.
+programs; `(ed 'koch)` shows how, and `(ed '%koch-side)` the recursive
+part that draws a side. (A name starting with `%` is a helper of the
+system's: an ordinary function, named so as not to collide with yours.)
 
 ## 7. Keys, time and moving things
 

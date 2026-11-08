@@ -16,9 +16,11 @@ own memory.
 
 ## The design
 
-`docs/design.md` is the readable account of how it all works (and the
-README, `docs/tutorial.md`, `docs/reference.md` the user's side); this
-file is the working notes behind it. Settled with Mike on 2026-11-06:
+`docs/design.md` is the readable account of how it all works, and
+`docs/internals.md` the deep end (the `%` names, closures, tail calls,
+the speed work, the bootstrap step by step, with real listings); the
+README, `docs/tutorial.md`, `docs/reference.md` are the user's side;
+this file is the working notes behind it. Settled with Mike on 2026-11-06:
 
 * **It must run on every CPC** (464, 664, 6128). Firmware is called **only
   through its vectors**, never at ROM-internal addresses. Past &BD37 the

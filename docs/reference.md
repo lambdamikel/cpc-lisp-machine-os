@@ -288,8 +288,13 @@ Not compiled (it says why, and the function stays as it was): a function
 that closes over variables (one `defun`ed inside a `let`), a special
 variable as a parameter (bind it with `let` inside instead), and `defun`,
 `defmacro` or `defvar` inside a function. The compiler itself is
-bytecode in the VM ROM; the first `compile` costs about thirty symbols
+bytecode in the VM ROM; the first `compile` costs about forty symbols
 (the compiler's names), nothing else once it is done.
+
+A compiled call takes more stack than an interpreted one (20 bytes, and
+2 an argument): a recursion that is not a tail call goes about 175 deep
+compiled, 385 interpreted, before `stack overflow`. How the compiler
+works: [the internals](internals.md).
 
 ## Symbols
 
@@ -302,6 +307,14 @@ bytecode in the VM ROM; the first `compile` costs about thirty symbols
 | `(gensym [prefix])` | G1, G2... | 2 |
 | `(intern string)` | | 2 |
 | `(symbolp x)` `(keywordp x)` | | core |
+
+**Names starting with `%`** -- `%AGAIN`, `%KOCH-SIDE`, `%LOOP`,
+`%CODE`... -- are the system's own: helpers of the library and the
+demos, and the machinery under the documented functions. They are
+ordinary symbols (CPC Lisp has no packages; the `%` keeps them apart
+from yours), not listed here, and may change from one version to the
+next. `(ed '%koch-side)` shows one written in Lisp.
+[The internals](internals.md#names-with-a-percent-sign) list them.
 
 ## Lists
 
@@ -696,7 +709,7 @@ in the library ROMs are read from ROM the first time they are called and
 then use cells like your own; the names cost nothing until then. A
 compiled function takes far less than its interpreted definition (whose
 cells go back): its bytecode and constants are in string space. The
-compiler costs about thirty symbols the first time it runs, its working
+compiler costs about forty symbols the first time it runs, its working
 memory only while it does.
 
 ## Differences from Common Lisp

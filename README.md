@@ -133,6 +133,9 @@ it is **CTRL + 2** (in MAME, Right Alt + 2).
   REPL, the editors, the syntax, and every function, form and macro
 * [`docs/design.md`](docs/design.md): how it is made -- the memory, the
   objects, the evaluator, the ROMs, the bytecode machine and the compiler
+* [`docs/internals.md`](docs/internals.md): the internals in detail --
+  the `%` names, lexical closures, tail calls, the speed work, and how
+  the compiler was bootstrapped
 * [`docs/checklist.md`](docs/checklist.md): everything implemented, by
   ROM, and what is still open
 * [`docs/hardware-test.txt`](docs/hardware-test.txt): what to type on a

@@ -9,6 +9,8 @@ collector and the evaluator, the library, and the bytecode machine and the
 compiler that runs on it -- the compiler that is compiled by itself at
 build time. The source is the final word; each part of it starts with a
 header that says what it does, and this document says where to look.
+[The internals](internals.md) go deeper: the `%` names, closures, tail
+calls, the speed work, and the bootstrap step by step.
 
 ## The constraints
 
@@ -208,6 +210,10 @@ their count; every call clears the count as it starts, and
 `multiple-value-list` takes them only if the value it got is still the
 first of them.
 
+In detail: [closures](internals.md#in-the-interpreter),
+[tail calls](internals.md#tail-calls),
+[what made it faster](internals.md#the-interpreter).
+
 ## Numbers
 
 Fixnums are the core's: the arithmetic and comparisons have a fast path
@@ -391,6 +397,11 @@ writes `(setf (symbol-function 'f) (%code '("hex"...) (list
 constants...) 'f))`: `load` reads that back, and `%code` makes the
 function again, without the compiler.
 
+In detail, with listings: [compiled closures and their
+boxes](internals.md#in-the-compiler), [tail calls in the
+VM](internals.md#in-the-vm), [the compiler's
+optimizations](internals.md#the-compiler-and-the-machine).
+
 ## The bootstrap
 
 Run interpreted on a CPC, the compiler would take 5500 of its 6600 cells
@@ -419,6 +430,9 @@ to the compiler is a change to the ROM; `tools/build.sh` runs the
 bootstrap every time. The Python interpreter only has to agree with CPC
 Lisp on the subset the compiler uses (no library macros: `%loop` instead
 of `loop`), and the tests check the compiler's results on the CPC.
+[The bootstrap, step by step](internals.md#the-bootstrap): the Python
+Lisp, the eight steps, what `build/vmcode.asm` holds, what happens on
+the CPC, and what to mind when changing the compiler.
 
 ## Building and testing
 
