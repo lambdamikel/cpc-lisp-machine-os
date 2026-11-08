@@ -331,44 +331,6 @@ vec_index:
     ld hl,m_notvec
     jp error
 
-;; (vector x ...)
-subr_vector:
-    push hl
-    push bc
-    ld c,b
-    ld b,0
-    ld de,NIL
-    call make_vector
-    pop bc
-    pop de                      ; &arg 0
-    push hl
-    LDHLI
-    inc hl
-    inc hl
-    ex de,hl
-.c:
-    ld a,b
-    or a
-    jr z,.done
-    push bc
-    ld c,(hl)
-    inc hl
-    ld b,(hl)
-    dec hl
-    dec hl
-    dec hl
-    ex de,hl
-    ld (hl),c
-    inc hl
-    ld (hl),b
-    inc hl
-    ex de,hl
-    pop bc
-    djnz .c
-.done:
-    pop hl
-    ret
-
 ;; list_to_vector: HL = a list -> HL = a vector of its elements
 list_to_vector:
     push hl

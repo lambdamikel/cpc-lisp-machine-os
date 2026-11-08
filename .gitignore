@@ -1,3 +1,4 @@
 build/
 *.sna
 *.mfi
+__pycache__/

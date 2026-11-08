@@ -86,8 +86,8 @@ PROFF = getenv("LISP_PROF", nil)
 PROF = {}
 if PROFF then
   local function load(p) local f = io.open(p, "rb"); local d = f:read("a"); f:close(); return d end
-  ROMS = { { "core", load("build/LISP.ROM") }, { "lib1", load("build/LISPLIB.ROM") },
-           { "lib2", load("build/LISPLIB2.ROM") } }
+  ROMS = { { "core", load("build/LISP.ROM") }, { "vm", load("build/LISPVM.ROM") },
+           { "lib1", load("build/LISPLIB.ROM") }, { "lib2", load("build/LISPLIB2.ROM") } }
   -- an opcode fetch is a read at PC; above &C000 the byte read tells the
   -- ROMs apart (the same byte in two of them is rare enough)
   TAPP = MEM:install_read_tap(0x0000, 0xFFFF, "prof", function(offset, data, mask)

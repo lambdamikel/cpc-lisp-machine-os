@@ -8,8 +8,8 @@
 #
 # -d puts a disc in drive A: the 6128's own, or on a 464 a DDI-1 with the
 # ROM box behind it.
-# The library ROMs and the demo ROM go in MAME's ROM box (which makes them
-# ROMs 1-4); -n leaves them out, -1 all but the first.
+# The library ROMs, the demo ROM and the VM ROM go in MAME's ROM box (which
+# makes them ROMs 1-5); -n leaves them out, -1 all but the first.
 # The ROM must be built first (tools/build.sh). It boots as ROM 0 from the
 # spliced romsets in build/mame, so this is what a CPC with the ROM at 0 and
 # ROMDIS asserted sees. Lines of input.lsp are typed one per EDIT call; the
@@ -17,7 +17,7 @@
 # after its prompt) goes to stdout.
 set -e
 cd "$(dirname "$0")/.."
-MACH=464 SHOT= FRAMES=30000 TIMES= LIB=4 DISC= PROF=
+MACH=464 SHOT= FRAMES=30000 TIMES= LIB=5 DISC= PROF=
 while getopts "m:s:f:t:n1d:p:" o; do
     case $o in
         m) MACH=$OPTARG ;;
@@ -46,6 +46,7 @@ LIBROMS=
 [ "${LIB:-0}" -ge 2 ] && LIBROMS="$LIBROMS -rom2 build/LISPLIB2.ROM"
 [ "${LIB:-0}" -ge 3 ] && LIBROMS="$LIBROMS -rom3 build/LISPLIB3.ROM"
 [ "${LIB:-0}" -ge 4 ] && LIBROMS="$LIBROMS -rom4 build/LISPDEMO.ROM"
+[ "${LIB:-0}" -ge 5 ] && LIBROMS="$LIBROMS -rom5 build/LISPVM.ROM"
 ROMBOX=
 [ -n "$LIB" ] && ROMBOX="-exp rom $LIBROMS"
 if [ -n "$DISC" ]; then

@@ -1,0 +1,193 @@
+LISP> (defun f1 (a b) (let ((c (* a b)) (d 2)) (list a b c d)))
+F1
+LISP> (compile 'f1)
+F1
+LISP> (f1 3 4)
+(3 4 12 2)
+LISP> (defun f2 (n) (let* ((x n) (y (+ x 1))) (cond ((= x 0) 'zero) ((< x 0) 'neg) (t y))))
+F2
+LISP> (compile 'f2)
+F2
+LISP> (list (f2 0) (f2 -3) (f2 5))
+(ZERO NEG 6)
+LISP> (defun f3 (l) (let ((s 0)) (dolist (x l s) (setq s (+ s x)))))
+F3
+LISP> (compile 'f3)
+F3
+LISP> (f3 '(1 2 3 4))
+10
+LISP> (defun f4 (n) (let ((r nil)) (dotimes (i n) (push i r)) r))
+F4
+LISP> (compile 'f4)
+F4
+LISP> (f4 5)
+(4 3 2 1 0)
+LISP> (defun f5 (k l) (mapcar #'(lambda (x) (* x k)) l))
+F5
+LISP> (compile 'f5)
+F5
+LISP> (f5 3 '(1 2 3))
+(3 6 9)
+LISP> (defun f6 () (let ((n 0)) (list #'(lambda () (incf n)) #'(lambda () n))))
+F6
+LISP> (compile 'f6)
+F6
+LISP> (setq p (f6))
+(#<FUNCTION> #<FUNCTION>)
+LISP> (list (funcall (car p)) (funcall (car p)) (funcall (cadr p)))
+(1 2 2)
+LISP> (defun f7 (x &optional (y 10) z) (list x y z))
+F7
+LISP> (compile 'f7)
+F7
+LISP> (list (f7 1) (f7 1 2) (f7 1 2 3))
+((1 10 NIL) (1 2 NIL) (1 2 3))
+LISP> (defun f8 (&rest r) (length r))
+F8
+LISP> (compile 'f8)
+F8
+LISP> (list (f8) (f8 1 2 3))
+(0 3)
+LISP> (defun f9 (a &key b (c 5 cp)) (list a b c cp))
+F9
+LISP> (compile 'f9)
+F9
+LISP> (list (f9 1) (f9 1 :c 7) (f9 1 :b 2 :c 3))
+((1 NIL 5 NIL) (1 NIL 7 T) (1 2 3 T))
+LISP> (defun f10 (n acc) (if (zerop n) acc (f10 (1- n) (+ acc n))))
+F10
+LISP> (compile 'f10)
+F10
+LISP> (f10 1000 0)
+500500.0
+LISP> (defun f11 (x) (case x (1 'one) ((2 3) 'few) (t 'many)))
+F11
+LISP> (compile 'f11)
+F11
+LISP> (mapcar 'f11 '(1 2 3 9))
+(ONE FEW FEW MANY)
+LISP> (defun f12 (l) (dolist (x l) (when (> x 2) (return x))))
+F12
+LISP> (compile 'f12)
+F12
+LISP> (f12 '(1 2 3 4))
+3
+LISP> (defun f13 (x) (and x (or (car x) 'empty)))
+F13
+LISP> (compile 'f13)
+F13
+LISP> (list (f13 nil) (f13 '(nil)) (f13 '(5)))
+(NIL EMPTY 5)
+LISP> (defun f14 (x) `(a ,x ,@(list 1 2) b))
+F14
+LISP> (compile 'f14)
+F14
+LISP> (f14 7)
+(A 7 1 2 B)
+LISP> (defun f15 (v) (setf (car v) 9) (incf (cadr v) 5) v)
+F15
+LISP> (compile 'f15)
+F15
+LISP> (f15 (list 1 2 3))
+(9 7 3)
+LISP> (defun f16 (n) (labels ((ev (n) (if (zerop n) t (od (1- n)))) (od (n) (if (zerop n) nil (ev (1- n))))) (ev n)))
+F16
+LISP> (compile 'f16)
+F16
+LISP> (list (f16 10) (f16 7))
+(T NIL)
+LISP> (defun f17 () (catch 'k (throw 'k 42) 1))
+F17
+LISP> (compile 'f17)
+F17
+LISP> (f17)
+42
+LISP> (defvar *sp* 1)
+*SP*
+LISP> (defun spget () *sp*)
+SPGET
+LISP> (defun f18 () (let ((*sp* 2)) (spget)))
+F18
+LISP> (compile 'f18)
+F18
+LISP> (list (f18) *sp*)
+(2 1)
+LISP> (defun f19 (x) (multiple-value-list (floor x 3)))
+F19
+LISP> (compile 'f19)
+F19
+LISP> (f19 10)
+(3 1)
+LISP> (defun f20 (l) (block b (dolist (x l) (mapc #'(lambda (y) (when (eq y 'stop) (return-from b x))) x)) 'none))
+F20
+LISP> (compile 'f20)
+F20
+LISP> (list (f20 '((a b) (c stop) (d))) (f20 '((a))))
+((C STOP) NONE)
+LISP> (disassemble 'f10)
+  0 ENTER 2
+  2 A1
+  3 ZEROP
+  4 JNILS 8
+  6 A0
+  7 RET
+  8 A1
+  9 SUB1
+ 10 A0
+ 11 A1
+ 12 ADD
+ 13 POPLOC 20
+ 15 POPLOC 22
+ 17 SPIX
+ 18 JMPS 2
+NIL
+LISP> (defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))
+FIB
+LISP> (compile 'fib)
+FIB
+LISP> (fib 15)
+610
+LISP> (disassemble 'fib)
+  0 ENTER 1
+  2 A0
+  3 FIX 2
+  5 LT
+  6 JNILS 10
+  8 A0
+  9 RET
+ 10 A0
+ 11 FIX 1
+ 13 SUB
+ 14 CALLG FIB 1
+ 17 A0
+ 18 FIX 2
+ 20 SUB
+ 21 CALLG FIB 1
+ 24 ADD
+ 25 RET
+NIL
+LISP> (fib 1 2)
+Error: wrong number of arguments for FIB
+LISP> (compile nil '(lambda (x) (* x x)))
+#<FUNCTION>
+LISP> (funcall * 12)
+144
+LISP> (let ((y 1)) (defun closed () y))
+CLOSED
+LISP> (compile 'closed)
+;; CLOSED closes over variables: not compiled
+NIL
+LISP> (compile 'car)
+CAR
+LISP> (defun bad () (defun inner () 1))
+BAD
+LISP> (compile 'bad)
+;; BAD not compiled: cannot compile DEFUN
+NIL
+LISP> (bad)
+INNER
+LISP> (compile 'fib)
+FIB
+LISP> (fib 10)
+55
+LISP> 

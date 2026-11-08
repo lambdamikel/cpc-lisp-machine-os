@@ -168,10 +168,61 @@ def part_table(main):
                     variables.append(v.group(2).upper())
     return natives, autoloads, boots, variables
 
-def write_table(natives, autoloads, boots):
+def vm_table(vm):
+    """The VM ROM's functions: ';@vm NAME MIN MAX label' lines in its sources,
+    then the defuns of its ';@vmlisp file.lsp' files (min 254: Lisp text,
+    read the first time it is called), numbered in order. Their other
+    top-level forms are boot forms of the part that names them.
+    -> ([(name, min, max, label)], [texts], [boot forms], [variables])"""
+    import os
+    fns, texts, boots, variables = [], [], [], []
+    srcs = part_sources(vm)[0]
+    code = os.path.join('build', 'vmcode.asm')
+    for path in srcs + ([code] if os.path.exists(code) else []):
+        for line in open(path):
+            m = re.match(r';@vm\s+(\S+)\s+(\d+)\s+(\d+)\s+(\w+)\s*$', line)
+            if m:
+                fns.append((m.group(1), int(m.group(2)), int(m.group(3)), m.group(4)))
+            m = re.match(r';@vmcode\s+(\S+)\s+(\S+)\s*$', line)
+            if m:
+                fns.append((m.group(1), 255, 0, m.group(2)))
+            m = re.match(r';@vmlisp\s+(\S+)\s*$', line)
+            if m:
+                lsp = os.path.join(os.path.dirname(path), m.group(1))
+                for form, p, ln in lisp_forms(open(lsp, encoding='latin-1').read(), lsp):
+                    d = re.match(r'\(defun\s+([^\s()]+)', form, re.I)
+                    if d:
+                        fns.append((d.group(1).upper(), 254, 0, f'vt_{len(texts)}'))
+                        texts.append(form)
+                    elif re.match(r'\(defmacro\s', form, re.I):
+                        sys.exit(f'{p}:{ln}: no macros in the VM ROM')
+                    else:
+                        boots.append((form, p, ln))
+                        v = re.match(r'\((defvar|defparameter|defconstant)\s+([^\s()]+)', form, re.I)
+                        if v:
+                            variables.append(v.group(2).upper())
+    return fns, texts, boots, variables
+
+def write_vmtab(fns, texts):
+    out = ['; made by tools/mklib.py -- do not edit', '',
+           f'VM_NFNS equ {len(fns)}', 'vm_fntab:']
+    for k, (name, mn, mx, label) in enumerate(fns):
+        out.append(f'    db {mn},{mx}')
+        out.append(f'    dw {label}                ; {k} {name}')
+    nbytes = 0
+    for k, form in enumerate(texts):
+        data = form.encode('latin-1') + b'\0'
+        nbytes += len(data)
+        out += asm_bytes(f'vt_{k}', data)
+    return '\n'.join(out) + '\n', nbytes
+
+def write_table(natives, autoloads, boots, vmfns=()):
     entries = []
     for name, mn, mx, label in natives:
         entries.append((name, 1, mn, mx, label))
+    for k, (name, mn, mx, label) in enumerate(vmfns):
+        if name != '-':
+            entries.append((name, 3, 0, 0, str(2 * k + 1)))
     for k, (name, form, p, line) in enumerate(autoloads):
         entries.append((name, 2, 0, 0, f'lt_{k}'))
     buckets = [[] for _ in range(64)]
@@ -209,8 +260,18 @@ def write_table(natives, autoloads, boots):
 def main():
     import os
     outdir, mains = sys.argv[1], sys.argv[2:]
+    vm = vmpart = None
+    if '--vm' in mains:
+        k = mains.index('--vm')
+        vm, vmpart = mains[k + 1], mains[k + 2]
+        mains = mains[:k] + mains[k + 3:]
+    vmfns, vmtexts, vmboots, vmvars = vm_table(vm) if vm else ([], [], [], [])
     core = core_names()
     seen = {}
+    for name in [f[0] for f in vmfns if f[0] != '-'] + vmvars:
+        if name in core or name in seen:
+            sys.exit(f'mklib: {name} (the VM ROM\'s) is defined twice')
+        seen[name] = vm
     parts = []
     for main in mains:
         natives, autoloads, boots, variables = part_table(main)
@@ -222,9 +283,18 @@ def main():
             if len(name) > 255:
                 sys.exit(f'mklib: {name} is too long')
             seen[name] = main
+        if main == vmpart:
+            boots = boots + vmboots
         parts.append((main, natives, autoloads, boots))
+    if vm:
+        text, nbytes = write_vmtab(vmfns, vmtexts)
+        with open(os.path.join(outdir, 'vmtab.asm'), 'w') as f:
+            f.write(text)
+        print(f'mklib: vm: {len(vmfns)} functions ({len(vmtexts)} in Lisp, {nbytes} '
+              f'bytes of text), named in {vmpart}', file=sys.stderr)
     for main, natives, autoloads, boots in parts:
-        text, textbytes = write_table(natives, autoloads, boots)
+        text, textbytes = write_table(natives, autoloads, boots,
+                                      vmfns if main == vmpart else ())
         base = os.path.splitext(os.path.basename(main))[0]
         with open(os.path.join(outdir, base + 'tab.asm'), 'w') as f:
             f.write(text)

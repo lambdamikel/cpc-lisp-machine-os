@@ -458,10 +458,17 @@ apply_core:
     cp HDR_CLOSURE and #FF
     jp z,apply_closure_stack
     cp HDR_LSUBR and #FF
+    jr z,.lib
+    cp HDR_CODE and #FF
     jp nz,.notfn
+    ld (V_LIBFN),de             ; compiled: the VM ROM runs it
+    ld de,VMCALL
+    jr .libv
+.lib:
     ; a library function: its dispatcher checks the arguments
     ld (V_LIBFN),de
     ld de,LIBCALL
+.libv:
     ld a,255
     ld b,0
     jr .check
@@ -807,6 +814,34 @@ apply2:
     ld c,2
     jp apply_core
 
+;; apply_n: DE = a function (not a symbol), HL = &arg 0, C = how many --
+;; arguments on the stack of library code that called through CORE ->
+;; HL = the value. The call is copied: apply_core wants its eval frame
+;; right above. (The VM's way to call what is not compiled.)
+apply_n:
+    call .go
+    ret
+.go:
+    push hl
+    ld hl,(V_ENV)
+    ex (sp),hl                  ; an eval frame
+    push de                     ; the function
+    ld b,c
+    inc b
+    dec b
+    jr z,.call
+.l:
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    dec hl
+    dec hl
+    dec hl
+    push de
+    djnz .l
+.call:
+    jp apply_core
+
 ;; coerce_fn: HL = a function or a symbol with a global one -> HL = the
 ;; function. Errors on anything else. BC, DE kept.
 coerce_fn:
@@ -850,6 +885,8 @@ is_function:
     cp HDR_SUBR and #FF
     jr z,.rom
     cp HDR_LSUBR and #FF
+    jr z,.cell
+    cp HDR_CODE and #FF
     jr z,.cell
     cp HDR_CLOSURE and #FF
     ret nz

@@ -43,3 +43,17 @@
   (if (%struct-is s 'file-stream)
       (eq (%struct-ref s 2 'file-stream) :output)
       (%struct-is s 'string-output-stream)))
+
+;; What compiled code calls (lib/compiler.lsp compiles catch, throw,
+;; unwind-protect, %catch-errors and some setf places to these).
+
+(defun %catch (tag f) (catch tag (funcall f)))
+(defun %throw (tag v) (throw tag v))
+(defun %unwind-protect (f c) (unwind-protect (funcall f) (funcall c)))
+(defun %catch-errors-fn (f) (%catch-errors (funcall f)))
+(defun %set-aref (v i x) (setf (aref v i) x))
+(defun %set-char (s i x) (setf (char s i) x))
+(defun %set-nth (n l x) (setf (nth n l) x))
+(defun %set-get (s p x) (setf (get s p) x))
+(defun %set-fn (s f) (setf (symbol-function s) f))
+(defun %set-plist (s p) (setf (symbol-plist s) p))

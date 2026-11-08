@@ -29,15 +29,18 @@
 ;;   +20 number routines, or 0: five jumps -- arithmetic, read, print, round,
 ;;       and a 16-bit word to a float (the reader's big #x numbers)
 ;;       (lnum)
-;;   +22 the part, 0-3
+;;   +22 the part, 0-3; 4 is the VM ROM (lib/vm.asm), which has no names:
+;;       a compiled function (HDR_CODE) calls VM_ENTRY in it (VMCALL)
 ;; The first part with an editor (or number routines) gives them.
 ;;
 ;; A symbol entry: [next][kind][min][max][address][length][name...]
-;;   kind 1 native (address = code), 2 autoload (address = text); other
-;;   kinds are skipped
+;;   kind 1 native (address = code), 2 autoload (address = text), 3 the VM
+;;   ROM's function (address = its number as a fixnum: the symbol gets a
+;;   HDR_CODE cell for it); other kinds are skipped
 
 LIBHDR            equ #C010
 LH_PART           equ 22
+VM_ENTRY          equ LIBHDR+24     ; the VM ROM: a compiled function's call
 LE_KIND           equ 2
 LE_MIN            equ 3
 LE_MAX            equ 4
@@ -121,6 +124,13 @@ LIBCALL:
     push hl
     pop ix                      ; the dispatcher
     pop hl
+    jp ROMCALL
+
+;; VMCALL: a compiled function (HDR_CODE), called as a subr: V_LIBFN says
+;; which, HL = &arg 0, B = how many. Into the VM ROM.
+VMCALL:
+    ld a,(V_VMROM)
+    ld ix,VM_ENTRY
     jp ROMCALL
 
 ;; lib_part: H = the high byte of a library address, the part in its top
@@ -230,6 +240,7 @@ lib_try:
     ld hl,LIBHDR+LH_PART
     call LIBPEEK
     cp NLIBS
+    jr z,.vm
     ret nc
     rrca
     rrca
@@ -267,6 +278,10 @@ lib_try:
     ld (V_LIBNUM),de
     ld a,c
     ld (V_NUMROM),a
+    ret
+.vm:                            ; "part 4": the VM ROM, called by address
+    ld a,c
+    ld (V_VMROM),a
     ret
 ;; a word of the ROM at HL to DE; both + 2
 .copy:
@@ -351,6 +366,8 @@ lib_find:
     call LIBPEEK
     cp 1
     jr z,.native
+    cp 3
+    jr z,.vm
     cp 2
     jr nz,.none
     ld hl,LE_ADDR
@@ -358,6 +375,12 @@ lib_find:
     call lib_word               ; DE = the text
     ld hl,HDR_AUTOLOAD
     jr .set
+.vm:                            ; the VM ROM's function: its number, a
+    ld hl,LE_ADDR               ;   fixnum (HDR_CODE takes it as that)
+    add hl,de
+    call lib_word
+    ld hl,HDR_CODE
+    jr .typed
 .native:
     ld hl,HDR_LSUBR             ; DE = the entry
 .set:
@@ -365,6 +388,7 @@ lib_find:
     and #3F
     or b
     ld d,a                      ; with its part
+.typed:
     call alloc_typed
     ex de,hl
     pop bc

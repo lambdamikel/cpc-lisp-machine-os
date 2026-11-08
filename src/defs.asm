@@ -99,6 +99,7 @@ V_EDITSTR         defs 2            ; the function editor's last text, a string
 V_MV1             defs 2            ; multiple values: the first,
 V_MV2             defs 2            ;   the second,
 V_MVL             defs 2            ;   the rest, a list (V_MVN says how many)
+V_VMROOT          defs 2            ; the VM ROM's: its functions' objects
 ROOTS_END
 V_BLOCKS          defs 2            ; innermost block/catch frame (a stack address)
 V_FREE            defs 2            ; free cell list
@@ -172,6 +173,8 @@ V_UDG             defs 2            ; 128 bytes under the top: the matrices of
                                     ;   characters 240-255 (the library's symbol)
 V_MFORM           defs 2            ; eval: the call form ev_cons is on (a macro
                                     ;   call is rewritten to cache its expansion)
+V_VMROM           defs 1            ; the VM ROM (lib/vm.asm), 0 = none
+V_VM              defs 16           ;   and its scratch (never Lisp values)
 V_S1              defs 2            ; scratch for routines that call nothing
 V_S2              defs 2
 V_S3              defs 2
@@ -204,6 +207,10 @@ CLOSEMARK         equ #040E         ; the reader's ")"
 ;; &0481..&04FF, and only the low bit tells a cons holding one from a header.
 HDR_CLOSURE       equ #0482         ; data: (code . env), code = (lambda-list . body)
 HDR_MACRO         equ #0486         ; data: a closure
+HDR_CODE          equ #048A         ; data: a compiled function's code vector,
+                                    ;   (code vector . environment) for a
+                                    ;   closure, or a fixnum: the VM ROM's
+                                    ;   function of that number (lib/vm.asm)
 HDR_STRING        equ #04C2         ; data: pointer to [len lo][len hi][chars]
 HDR_VECTOR        equ #04C6         ; data: pointer to [len][elements, a word each]
 HDR_SUBR          equ #04CA         ; ROM: [hdr][code][min][max]

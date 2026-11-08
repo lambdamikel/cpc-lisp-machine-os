@@ -578,8 +578,8 @@ lf_coerce:
     ld de,S_LIST
     call lq_is
     jr z,.list
-    ld de,S_VECTOR
-    call lq_is
+    ld de,lq_n_vec
+    call lq_named
     jr z,.vector
     ld de,lq_n_svec
     call lq_named
@@ -715,6 +715,7 @@ lq_named:
     jr .no
 
 lq_n_svec:   db 13,"SIMPLE-VECTOR"
+lq_n_vec:    db 6,"VECTOR"
 lq_n_sstr:   db 13,"SIMPLE-STRING"
 lq_n_char:   db 9,"CHARACTER"
 lq_n_float:  db 5,"FLOAT"

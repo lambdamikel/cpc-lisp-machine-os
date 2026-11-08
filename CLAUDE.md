@@ -62,8 +62,9 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   `lib/loop.asm` -- a part may hold natives as well as text), more library
   Lisp (`lib/lisp2.lsp`) and the demos (`lib/demo.lsp`): new library code
   goes here or in part 1. **A fifth part is not possible as it is**: an
-  LSUBR's or AUTOLOAD's data word keeps the part in two bits. Space
-  (2026-11-07 late): core 46 bytes free, parts 0-3 335, 3785, 596, 4223.
+  LSUBR's or AUTOLOAD's data word keeps the part in two bits (the VM ROM,
+  below, is no part). Space (2026-11-07 night): core 26 bytes free,
+  parts 0-3 335, 3699, 596, 3555; the VM ROM 1527.
   `src/xrom.asm` explains the arrangement: the core finds
   them by signature and build number (all ROMs come from one
   `tools/build.sh` run, and call each other by address), each says which
@@ -193,6 +194,38 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   fib 17 went from 1103 to 778 frames. What is left is spread out: apply
   conses the arguments into a list that bind takes apart again; the
   interrupt-time firmware is ~8%.
+* **The compiler** (Mike, 2026-11-07: "compile" and "compile-file" for
+  bytecode). `lib/vm.asm` is a sixth ROM, the VM ROM (MAME rom5, the
+  card's slot 1 as ROM 1): it says "part 4" in the library header, which
+  `lib_try` takes as V_VMROM -- not a part: it has no names of its own.
+  A compiled function is a typed cell, HDR_CODE (&8A: its data is a Lisp
+  value), data = its code vector V ([0] the bytecode, a string; [1] the
+  name; then the constants), (V . env) for a closure, or a fixnum k --
+  the VM ROM's kth function (vmtab.asm: natives, and bytecode kept in
+  that ROM). `apply_core` sends HDR_CODE to VMCALL (like LIBCALL, to
+  VM_ENTRY = &C028 in the VM ROM); the VM calls anything else through
+  `apply_n` (DE = function, HL = &arg 0, C = n: copies the call into a
+  frame of its own). `lib/vm.asm`'s header explains the machine: a stack
+  machine, DE = PC, IX = the frame, operation k = byte 3k = the low byte
+  of its JP stub in a dispatch page; the frame has the same four words
+  under the arguments whether the interpreter (apply_core + ROMCALL) or
+  the VM called, so RET is `ld sp,ix`, pops and `ret`. Blocks move only
+  in a GC (V_GCS counts them): after anything that allocates, `vm_fix`
+  moves the PC along if the code moved. The VM's names (`;@vm` lines)
+  are kind 3 entries in part 1's table: the symbol gets a HDR_CODE cell
+  with the number.
+* **The compiler is Lisp** (`lib/compiler.lsp`), too big to run
+  interpreted on a CPC (5500 cells), so `tools/bootstrap.py` -- a small
+  interpreter of the Lisp it uses, no library macros (no `do`, `loop`:
+  `%loop`) -- runs it on itself at build time and writes its bytecode
+  into the VM ROM (build/vmcode.asm). All of it shares one pool of
+  constants (vm_pool, read from its text the first time, V_VMROOT;
+  `compile` lets it go again, `%vm-release`); a constant that names one
+  of the compiler's functions becomes a reference to it, so they cost no
+  symbols. A change to the compiler is a change to the ROM: rebuild.
+  How it works (variables, boxes, the restarts when a variable turns out
+  to be captured) is at the top of compiler.lsp. Space: VM ROM 1.5 KB
+  free, core 26.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
@@ -369,9 +402,10 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   boots into it every time** -- to get BASIC back, set it to 255. Check `n`
   before Mike powers on after any change.
 * Slots since 2026-11-07 (afternoon): 0 LISPLIB2 (ROM 5), 1 vector head
-  (ROM 1), 2 Parados (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0),
-  5 LISPLIB (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6). All five Lisp
-  ROMs must come from one build: re-flash them together. Flashed: build 8423
+  (ROM 1) -- the VM ROM LISPVM goes there now, as ROM 1 --, 2 Parados
+  (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0), 5 LISPLIB (ROM 4),
+  6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6). All six Lisp ROMs must come from
+  one build: re-flash them together. Flashed: build 8423
   (2026-11-07 night: catchable errors, all of format, compound types,
   file streams -- checked on the 464 through Parados --, the extended
   loop, the line editor's wrap and copy fixes, faster apply/mapcar,
@@ -379,7 +413,7 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   tests on both machines, no need to ask. Slot 1 (the vector head) may become a sixth
   Lisp ROM -- for the byte-code machine (Mike, 2026-11-07: "the vector head
   can go ... use the space instead for common lisp"). Everything may be replaced **except
-  Parados and the LS AI ROM**. `tools/card.py lisp` re-flashes the three
+  Parados and the LS AI ROM**. `tools/card.py lisp` re-flashes the six
   Lisp ROMs (it checks the CPC is off and refuses slots 2 and 6);
   `tools/card.py basic` silences the core. `docs/cpc-test.txt` is the
   sheet of what to type on the real machine.

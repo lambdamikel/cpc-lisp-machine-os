@@ -32,7 +32,7 @@ args = [a for a in sys.argv[1:] if not a.startswith('-')]
 local = '-l' in sys.argv
 top = int(args[1]) if len(args) > 1 else 30
 tabs = {'core': symbols('build/lisp.sym', local), 'lib1': symbols('build/lisplib.sym', local),
-        'lib2': symbols('build/lisplib2.sym', local)}
+        'lib2': symbols('build/lisplib2.sym', local), 'vm': symbols('build/lispvm.sym', local)}
 count = collections.Counter()
 total = 0
 for line in open(args[0]):

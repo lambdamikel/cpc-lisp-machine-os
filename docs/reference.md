@@ -7,14 +7,16 @@ Common Lisp the descriptions are short; where it differs, it says so (and
 them).
 
 Each function is marked with where it lives: **core** (the core ROM),
-**1**, **2**, **3** (the library ROMs) or **demo**. A library ROM can be
-left out; its functions are then undefined, and everything else works.
+**1**, **2**, **3** (the library ROMs), **demo** or **vm** (the VM ROM,
+which runs compiled code). A library ROM can be left out; its functions
+are then undefined, and everything else works.
 
 Contents: [Starting](#starting) · [The REPL](#the-repl) ·
 [The editors](#the-editors) · [Syntax](#syntax) ·
 [Data types](#data-types) · [Evaluation](#evaluation) ·
 [Special forms](#special-forms) · [Macros](#macros) ·
 [Functions and evaluation](#functions-and-evaluation) ·
+[The compiler](#the-compiler) ·
 [Symbols](#symbols) · [Lists](#lists) · [Sequences](#sequences) ·
 [Numbers](#numbers) · [Characters](#characters) · [Strings](#strings) ·
 [Vectors](#vectors) · [Structures](#structures) ·
@@ -244,6 +246,37 @@ the loop runs, and kept. It uses `%0`, `%1`... as its own variables.
 | `(handler-case form (error (c) body...) (:no-error (v) body...))` | as CL; every error is one kind, so the first clause that is not `:no-error` takes it | 3 |
 | `(warn control arg...)` | prints `Warning:` and the message, and goes on | 3 |
 | `(assert form)` | an error if form is false | 3 |
+
+## The compiler
+
+| Function | | |
+|---|---|---|
+| `(compile 'name)` | compiles name's definition in place; the name, or NIL (and why) if it could not | vm |
+| `(compile nil '(lambda (x) ...))` | a compiled function | vm |
+| `(disassemble 'name)` | lists the bytecode of a compiled function | vm |
+
+`compile` turns an interpreted function into bytecode for the VM ROM.
+Compiled, `(fib 17)` takes 4 s instead of 13, a loop or a `dolist` is
+about three times faster, and the definition's conses are freed: code
+takes much less memory than the list it came from. Compiled and
+interpreted functions call each other freely.
+
+Everything compiles: the special forms, `&optional` `&rest` `&key`
+`&aux`, closures (a variable a closure assigns is shared, as when
+interpreted), `labels`/`flet`, `block`/`return-from` -- from inside a
+`lambda` too --, `catch`/`throw`, `unwind-protect`, special variables
+bound by `let`, multiple values, backquote. Macros are expanded once,
+when compiling. `car` `cdr` `cons` `eq` `eql` `not` `+` `-` `1+` `1-` `<`
+`>` `=` `zerop`... are operations of the machine, on fixnums; anything
+else goes to the function. A call of the function itself in tail
+position becomes a jump: a recursive loop runs in no stack.
+
+Not compiled (it says why, and the function stays as it was): a function
+that closes over variables (one `defun`ed inside a `let`), a special
+variable as a parameter (bind it with `let` inside instead), and `defun`,
+`defmacro` or `defvar` inside a function. The compiler itself is
+bytecode in the VM ROM; the first `compile` costs about thirty symbols
+(the compiler's names), nothing else once it is done.
 
 ## Symbols
 
@@ -661,3 +694,6 @@ then use cells like your own; the names cost nothing until then.
 - A macro call keeps its first expansion (displacing): a macro that
   expands differently each time -- reading a global, say -- is not
   expanded again.
+- `compile` compiles one function, in place; `compile-file` is not there
+  yet. A compiled function prints as `#<FUNCTION>`; `ed` cannot show it
+  and `save` leaves it out.

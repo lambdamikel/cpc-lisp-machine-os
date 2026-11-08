@@ -67,6 +67,45 @@ lf_make_array:
     CORE error
 
 ;; (%make-struct type value...) -> a new structure of them
+;; (vector x ...)
+;@ VECTOR 0 255 lf_vector
+lf_vector:
+    push hl
+    push bc
+    ld c,b
+    ld b,0
+    ld de,NIL
+    CORE make_vector
+    pop bc
+    pop de                      ; &arg 0
+    push hl
+    LDHLI
+    inc hl
+    inc hl
+    ex de,hl
+.c:
+    ld a,b
+    or a
+    jr z,.done
+    push bc
+    ld c,(hl)
+    inc hl
+    ld b,(hl)
+    dec hl
+    dec hl
+    dec hl
+    ex de,hl
+    ld (hl),c
+    inc hl
+    ld (hl),b
+    inc hl
+    ex de,hl
+    pop bc
+    djnz .c
+.done:
+    pop hl
+    ret
+
 ;@ %MAKE-STRUCT 1 255 lf_make_struct
 lf_make_struct:
     CORE args_to_list

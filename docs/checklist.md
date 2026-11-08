@@ -313,4 +313,9 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
        Hanoi, n queens, a sieve, 20!
 7. [x] **A reference manual**: `docs/reference.md` -- every function, form
        and macro, the editors' keys, the differences from Common Lisp
-8. [ ] Later, maybe: `*print-case*`; a byte-code compiler
+8. [x] **A byte-code compiler**: `compile`, `disassemble` -- the VM ROM
+       (lib/vm.asm, the sixth ROM) runs the code; the compiler
+       (lib/compiler.lsp) is compiled by itself at build time
+       (tools/bootstrap.py) and runs from that ROM too
+   - [ ] `compile-file`, `save` of compiled functions
+9. [ ] Later, maybe: `*print-case*`

@@ -162,6 +162,8 @@ print_obj:
     ld de,str_function
     cp HDR_CLOSURE and #FF
     jr z,.unread
+    cp HDR_CODE and #FF
+    jr z,.unread
     ld de,str_macro
     cp HDR_MACRO and #FF
     jr z,.unread
