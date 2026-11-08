@@ -1,6 +1,6 @@
 # CPC Lisp: what is done, what is to come
 
-Version 0.3, 2026-11-07. Ticked items are built and covered by the regression
+Version 0.9, 2026-11-07. Ticked items are built and covered by the regression
 tests in MAME on a 464 and a 6128 (`tools/test.sh`) unless they say
 otherwise. `docs/hardware-test.txt` is the sheet for trying it on a real
 CPC; the README says how to install the ROMs.

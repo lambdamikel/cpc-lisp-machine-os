@@ -5,7 +5,7 @@ BASIC. Common Lisp syntax, lexical closures, macros, a garbage collector
 -- in 16 KB of Z80 assembly -- with graphics, sound, files, floats and
 editors in four more ROMs, and a bytecode compiler in a fifth.
 
-    CPC Lisp 0.3, library ROMs 4 5 6 3
+    CPC Lisp 0.9, library ROMs 4 5 6 3
     6402 cells free
 
     LISP> (defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))

@@ -1,6 +1,6 @@
 # CPC Lisp reference
 
-CPC Lisp 0.3 -- a Common Lisp dialect in ROM for the Amstrad CPC 464, 664
+CPC Lisp 0.9 -- a Common Lisp dialect in ROM for the Amstrad CPC 464, 664
 and 6128. This manual lists everything built in. Where CPC Lisp follows
 Common Lisp the descriptions are short; where it differs, it says so (and
 [Differences from Common Lisp](#differences-from-common-lisp) collects
@@ -36,7 +36,7 @@ Contents: [Starting](#starting) · [The REPL](#the-repl) ·
 
 With the core ROM at ROM 0 (replacing BASIC), the CPC starts in Lisp:
 
-    CPC Lisp 0.3, library ROMs 4 5 6 3
+    CPC Lisp 0.9, library ROMs 4 5 6 3
     6402 cells free
     LISP>
 

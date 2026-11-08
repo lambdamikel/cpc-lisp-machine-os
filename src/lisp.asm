@@ -24,7 +24,7 @@ BUILD_ID = 0                    ; tools/build.sh gives both ROMs the same one
 
     org #C000
     db 0                        ; foreground ROM
-    db 0,1,0                    ; mark, version, modification
+    db 0,9,0                    ; mark, version, modification
     dw rsx_names
     jp boot                     ; entry 0: power-up, or |LISP
 
@@ -563,7 +563,7 @@ err_nostr:
     include "subrs.asm"
     include "xrom.asm"
 
-banner:      db "CPC Lisp 0.3",0
+banner:      db "CPC Lisp 0.9",0
 banner_lib:  db ", library ROMs"
 banner_sp:   db " ",0
 banner2:     db " cells free",13,10,13,10,0

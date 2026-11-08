@@ -8,7 +8,7 @@
 
     org #C000
     db 1                        ; a background ROM
-    db 0,2,0
+    db 0,9,0                    ; mark, version, modification
     dw lib_names
     jp lib_init                 ; the ROM walk: nothing to do
 
