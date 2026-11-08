@@ -2045,7 +2045,9 @@ vm_vref:
     inc hl
     push hl
     ld h,(hl)
-    ld l,a                      ; its length
+    ld l,a                      ; its length, in bytes
+    srl h
+    rr l                        ; how many
     scf
     sbc hl,bc                   ; len - i - 1: C if i >= len
     pop hl
@@ -2721,7 +2723,9 @@ vf_code_consts:
     LDHLI
     ld c,(hl)
     inc hl
-    ld b,(hl)                   ; BC = its length
+    ld b,(hl)                   ; its length, in bytes
+    srl b
+    rr c                        ; BC = how many
     ld de,NIL
 .l:
     dec bc

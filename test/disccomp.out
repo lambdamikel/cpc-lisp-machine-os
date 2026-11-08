@@ -15,6 +15,15 @@ LISP> (save "src")
 LISP> (compile-file "src")
 ;; 5 compiled
 "src.FAS"
+LISP> (with-open-file (s "src.fas") (loop for l = (read-line s nil) while l do (print l)))
+
+"(SETF (SYMBOL-FUNCTION 'TW) (%CODE '(\"66010C022DF663\") (LIST) 'TW))" 
+"(SETF (SYMBOL-FUNCTION 'SQ) (%CODE '(\"66012D2DF663\") (LIST) 'SQ))" 
+"(SETF (SYMBOL-FUNCTION 'GREET) (%CODE '(\"66010603002DE70103\") (LIST '\"hello, ~A!\" 'FORMAT) 'GREET))" 
+"(DEFMACRO TWICE (X) `(* 2 ,X))" 
+"(SETF (SYMBOL-FUNCTION 'ADDER) (%CODE '(\"66012D6C000163\") (LIST (%CODE '(\"66012D1B008763\") (LIST) 'NIL)) 'ADDER))" 
+"(SETF (SYMBOL-FUNCTION 'SUMSQ) (%CODE '(\"66010C002D063CD8143C7212FA453C75D2FC393FE400018712FE45D5E90612FA45394B0263\") (LIST 'SQ) 'SUMSQ))" 
+NIL
 LISP> (fmakunbound 'sq)
 SQ
 LISP> (fmakunbound 'sumsq)

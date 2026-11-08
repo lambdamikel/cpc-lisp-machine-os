@@ -6,6 +6,7 @@
 (defun adder (n) #'(lambda (x) (+ x n)))
 (save "src")
 (compile-file "src")
+(with-open-file (s "src.fas") (loop for l = (read-line s nil) while l do (print l)))
 (fmakunbound 'sq)
 (fmakunbound 'sumsq)
 (fmakunbound 'tw)
