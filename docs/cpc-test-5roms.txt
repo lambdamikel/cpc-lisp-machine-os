@@ -243,6 +243,8 @@ A photo of the screen is as good as ticks.
     (fmakunbound 'sq)
     (load "sq.fas")                  T
     (sq 12)                          144
+(Checked on the 464, 2026-11-07, build 22482: compile and the
+compile-file round trip through Parados.)
 
 
 17. Getting BASIC back
