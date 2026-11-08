@@ -1,7 +1,7 @@
 #!/bin/bash
 # Boot the Lisp ROM in MAME, type a file at it, print the transcript.
 #
-#     tools/run.sh [-m 464|6128] [-n|-1] [-d disc.dsk] [-s shot.png] [-f frames]
+#     tools/run.sh [-m 464|6128] [-n|-1|-l N] [-d disc.dsk] [-s shot.png] [-f frames]
 #                  [-t times.txt] [-p profile.txt] input.lsp
 #
 # -t: frames each line took; -p: an instruction profile (tools/profile.py).
@@ -9,7 +9,8 @@
 # -d puts a disc in drive A: the 6128's own, or on a 464 a DDI-1 with the
 # ROM box behind it.
 # The library ROMs, the demo ROM and the VM ROM go in MAME's ROM box (which
-# makes them ROMs 1-5); -n leaves them out, -1 all but the first.
+# makes them ROMs 1-5); -n leaves them out, -1 keeps the first only, -l N
+# the first N (-l 4: all but the VM ROM).
 # The ROM must be built first (tools/build.sh). It boots as ROM 0 from the
 # spliced romsets in build/mame, so this is what a CPC with the ROM at 0 and
 # ROMDIS asserted sees. Lines of input.lsp are typed one per EDIT call; the
@@ -18,7 +19,7 @@
 set -e
 cd "$(dirname "$0")/.."
 MACH=464 SHOT= FRAMES=30000 TIMES= LIB=5 DISC= PROF=
-while getopts "m:s:f:t:n1d:p:" o; do
+while getopts "m:s:f:t:n1l:d:p:" o; do
     case $o in
         m) MACH=$OPTARG ;;
         s) SHOT=$(realpath -m "$OPTARG") ;;
@@ -27,6 +28,7 @@ while getopts "m:s:f:t:n1d:p:" o; do
         p) PROF=$(realpath -m "$OPTARG") ;;
         n) LIB= ;;
         1) LIB=1 ;;
+        l) LIB=$OPTARG ;;
         d) DISC=$(realpath "$OPTARG") ;;
         *) exit 2 ;;
     esac

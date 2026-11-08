@@ -25,9 +25,14 @@
 ;; Anything handed to the core must be in RAM: the core cannot read this
 ;; ROM. Its messages (m_...) are the core's and can be passed as they are.
 ;;
-;; Part 0 (this file): the text screen, graphics, sound, keys, strings, the
-;; line editor, the pretty printer, the function editor, files. Part 1
-;; (lib/lib2.asm): floats, format, and the functions written in Lisp.
+;; Part 0 (this file, LISPLIB): the text screen, graphics, sound, keys,
+;; strings and characters, the printers and readers (streams), the line
+;; editor, the pretty printer, the function editor, files and the RAM disc.
+;; Part 1 (lib/lib2.asm, LISPLIB2): floats, format, sort, lists and
+;; sequences, structures and hash tables, the LambdaSpeak card. Part 2
+;; (lib/lib3.asm, LISPLIB3): functions and macros written in Lisp. Part 3
+;; (lib/demo.asm, LISPDEMO): loop, string streams, the demos. The VM ROM
+;; (lib/vm.asm) is no part: it runs compiled code.
 
     include "core.inc"
     include "macros.asm"

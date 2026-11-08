@@ -1,9 +1,12 @@
 ;; CPC Lisp -- the reader.
 ;;
-;; Input comes a line at a time from the firmware's EDIT, the same editor
-;; BASIC uses, so the copy cursor works. A line's end reads as a newline; an
-;; expression may run over several lines, each prompted for when it is
-;; needed. Symbols are upcased, as in Common Lisp.
+;; Input comes from V_INSRC: 0 the keyboard, a line at a time from the
+;; library's line editor (V_LIBEDIT) or, without the library, the
+;; firmware's EDIT; 1 Lisp text in a library ROM (autoload, boot forms);
+;; 2 a string (the function editor, string streams); 3 the file open for
+;; input. A line's end reads as a newline; an expression may run over
+;; several lines, each prompted for when it is needed. Symbols are
+;; upcased, as in Common Lisp.
 
 ;; getc -> A = the next character, 0 at the end of library text (and
 ;; again after that). BC, DE, HL kept.

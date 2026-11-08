@@ -58,7 +58,7 @@ RD_ERA      equ TOKBUF+64       ; delete-file on a disc: |ERA's name,
 RD_DESC     equ TOKBUF+68       ;   the file name's descriptor,
 RD_PARM     equ TOKBUF+71       ;   the parameter
 
-rd_m_noram: db "no RAM disc (M: needs a 6128)",0
+rd_m_noram: db "no RAM disc (M: needs 128 KB)",0
 rd_m_none:  db "no such file:",0
 rd_m_head:  db 13,10,"Drive M: (RAM)",13,10,13,10,0
 rd_m_free:  db " bytes free",13,10,0

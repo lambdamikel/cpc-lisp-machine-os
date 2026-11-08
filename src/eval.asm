@@ -17,8 +17,10 @@
 ;;
 ;; and apply_core takes it from there with C = n. A subr with fixed arity up
 ;; to 3 gets its arguments in HL, DE, BC; any other gets HL = address of
-;; arg 0 (the rest below it, see NEXTARG) and B = n. A closure gets them as
-;; a list, bound by bind.
+;; arg 0 (the rest below it, see NEXTARG) and B = n. A closure with a plain
+;; lambda list binds them straight from the stack (apply_closure_stack); any
+;; other gets them as a list, bound by bind. A compiled function (HDR_CODE)
+;; goes to the VM ROM (VMCALL), a library native to its part (LIBCALL).
 ;;
 ;; The environment is an alist: (symbol . value) for a variable, and
 ;; ((symbol) . function) for flet/labels.

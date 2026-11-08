@@ -7,9 +7,12 @@ Common Lisp the descriptions are short; where it differs, it says so (and
 them).
 
 Each function is marked with where it lives: **core** (the core ROM),
-**1**, **2**, **3** (the library ROMs), **demo** or **vm** (the VM ROM,
-which runs compiled code). A library ROM can be left out; its functions
-are then undefined, and everything else works.
+**1**, **2**, **3** (the library ROMs LISPLIB, LISPLIB2, LISPLIB3),
+**demo** (LISPDEMO) or **vm** (LISPVM, which runs compiled code). Any
+ROM but the core can be left out; its functions are then undefined, and
+everything else works. The [README](../README.md#installing-the-roms) says
+how to install them; [the tutorial](tutorial.md) is a tour, and
+[the design](design.md) how it all works.
 
 Contents: [Starting](#starting) · [The REPL](#the-repl) ·
 [The editors](#the-editors) · [Syntax](#syntax) ·
@@ -37,8 +40,9 @@ With the core ROM at ROM 0 (replacing BASIC), the CPC starts in Lisp:
     6402 cells free
     LISP>
 
-The numbers are the ROMs where the library parts were found. At any other
-ROM number, `|LISP` from BASIC starts it.
+The numbers are the ROMs where the library parts were found (LISPLIB,
+LISPLIB2, LISPLIB3, LISPDEMO); the VM ROM is not listed. At any other ROM
+number, `|LISP` from BASIC starts it.
 
 ## The REPL
 
@@ -121,12 +125,12 @@ in the firmware's EDIT alike (in MAME, CTRL is Right Alt: Right Alt + 2).
 | float | the firmware's five-byte reals, about nine digits, to 10^38 |
 | character | codes 0-255 |
 | string | any length; functions that build strings make them up to 255 characters |
-| symbol | 512 at most (about 150 are built in); keywords are symbols |
+| symbol | 512 at most (about 160 are built in); keywords are symbols |
 | cons, list | `NIL` is the empty list and false |
 | vector | one-dimensional, any objects |
 | structure | `defstruct`; prints as `#S(POINT 1 2)` |
 | hash table | a structure, `#S(HASH-TABLE ...)` |
-| function | built in (`#<SUBR CAR>`), closure, or Lisp text not read yet (autoload) |
+| function | built in (`#<SUBR CAR>`), interpreted (a closure), compiled, or Lisp text not read yet (autoload); closures and compiled functions print as `#<FUNCTION>` |
 
 ## Evaluation
 
@@ -310,7 +314,8 @@ bytecode in the VM ROM; the first `compile` costs about thirty symbols
 | `(assoc x alist &key test test-not key)` `(rassoc ...)` | | 2 |
 | `(member-if p list &key key)` `(member-if-not ...)` | | 3 |
 | `(assoc-if p alist &key key)` `(rassoc-if ...)` | | 3 |
-| `(nconc list...)` `(copy-list l)` `(make-list n [x])` `(butlast l [n])` | | 3 |
+| `(nconc list...)` `(copy-list l)` `(make-list n &key initial-element)` `(butlast l [n])` | | 3 |
+| `(endp l)` | T for NIL (an end of list) | demo |
 | `(nreconc l tail)` | l reversed in place onto tail | 1 |
 | `(acons k v alist)` `(pairlis keys values [alist])` `(subst new old tree)` | | 3 |
 | `(adjoin x l)` `(union a b)` `(intersection a b)` `(set-difference a b)` `(subsetp a b)` | by eql | 3 |
@@ -406,7 +411,8 @@ strings (see [Sequences](#sequences)).
 | Function | | |
 |---|---|---|
 | `(make-array n [:initial-element x])` | one dimension | 2 |
-| `(vector x...)` `(vectorp x)` | | core |
+| `(vector x...)` | | 2 |
+| `(vectorp x)` | | core |
 | `(aref v i)` `(svref v i)` | `setf`-able; aref takes strings too | core |
 
 ## Structures
@@ -471,7 +477,7 @@ value -- `(read-line s nil nil)` is NIL at the end.
 | `(unread-char c [stream])` | c is the next read | 1 |
 | `(listen [stream])` | T if a key is waiting, or the file has more | 1 |
 | `(y-or-n-p [message arg...])` `(yes-or-no-p ...)` | asks; T for y, NIL for n | 3 |
-| `(format dest control arg...)` | dest `t` (the screen), `nil` (a string, 255 characters at most) or a stream; the directives below. **Type `~` as CTRL + 2** | 2 |
+| `(format dest control arg...)` | dest `t` (`*standard-output*`: the screen unless bound), `nil` (a string, 255 characters at most) or a stream; the directives below. **Type `~` as CTRL + 2** | 2 |
 
 All output is upper case for symbols. A file being loaded is not
 `read`'s input: `(read)` in it reads the keyboard.
@@ -558,7 +564,8 @@ error. A file open for output is only complete once closed. Also
 **The RAM disc** (a 6128, or a CPC with 64 KB more): names starting
 `M:` are kept in the second 64 KB -- `(save "m:work")`, `(load "m:work")`,
 `(dir "m:")`, `(delete-file "m:work")`. 63 files, 63 KB; they survive a
-reset, not a power-off. On a 464, `M:` says there is none.
+reset, not a power-off. On a 464 without a RAM expansion, `M:` says there
+is none.
 
 ## The text screen
 
@@ -578,8 +585,12 @@ reset, not a power-off. On a 464, `M:` says there is none.
 
 ## Graphics
 
-Coordinates are 0-639 across and 0-399 up, whatever the mode, as in
-BASIC. A `pen` argument sets the graphics pen first; it stays set.
+Coordinates are 0-639 across and 0-399 up, whatever the mode -- the
+firmware's own, as in BASIC. The screen has 200 rows of pixels, so a
+pixel is two units high (y 100 and 101 are the same row), and one unit
+wide in mode 2, two in mode 1, four in mode 0. So a picture comes out
+the same in every mode, and a circle round. A `pen` argument sets the
+graphics pen first; it stays set.
 
 | Function | | |
 |---|---|---|
@@ -656,6 +667,7 @@ Without the card these do nothing (the bytes go to a port nobody answers).
 | `(time)` | the firmware's clock, 1/300 s, modulo 16384 | 1 |
 | `(peek address)` `(poke address byte)` | RAM, all 64 KB (`#xC000` is the screen); an address past 16383 is a float, which is fine | 1 |
 | `(gc)` | collects; the cells free | core |
+| `*features*` | `(:cpc :cpc-lisp)` | 3 |
 | `(room)` | cells, symbols and string space free | 2 |
 | `(reset)` | the machine, as at power-up | 1 |
 
@@ -676,7 +688,11 @@ the stack; `(room)` says what is free. A file open takes 2 KB of the
 string space while it is open (two files, 4 KB).
 The garbage collector runs when cells run out. Functions written in Lisp
 in the library ROMs are read from ROM the first time they are called and
-then use cells like your own; the names cost nothing until then.
+then use cells like your own; the names cost nothing until then. A
+compiled function takes far less than its interpreted definition (whose
+cells go back): its bytecode and constants are in string space. The
+compiler costs about thirty symbols the first time it runs, its working
+memory only while it does.
 
 ## Differences from Common Lisp
 
@@ -701,4 +717,4 @@ then use cells like your own; the names cost nothing until then.
   expanded again.
 - A compiled function prints as `#<FUNCTION>`; `ed` cannot show it and
   `save` leaves it out (`compile-file` the source instead). A `.FAS`
-  file is from one build of the ROMs: compile again after new ROMs.
+  file holds bytecode: compile it again after a new VM ROM.

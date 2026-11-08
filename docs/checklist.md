@@ -2,7 +2,8 @@
 
 Version 0.3, 2026-11-07. Ticked items are built and covered by the regression
 tests in MAME on a 464 and a 6128 (`tools/test.sh`) unless they say
-otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
+otherwise. `docs/hardware-test.txt` is the sheet for trying it on a real
+CPC; the README says how to install the ROMs.
 
 ## The machine
 
@@ -11,8 +12,9 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
       664/6128 jump blocks apart
 - [x] Starts the background ROMs itself (KL ROM WALK), so the disc ROM
       (AMSDOS, Parados) works
-- [x] Library ROMs (three, and the demo ROM): up to four, at any ROM numbers 1-6, in any order, found
-      by signature and build number. Any of them may be missing; their
+- [x] Five library ROMs -- four parts (library 1-3 and the demo ROM) and
+      the VM ROM -- at any ROM numbers 1-6, in any order, found by
+      signature and build number. Any of them may be missing; their
       functions are then undefined, and the core alone still works.
 - [x] Library names cost nothing until used; functions written in Lisp are
       read from the ROM on first use (autoload)
@@ -73,7 +75,8 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 ### Data types
 
 - [x] Integers, floats, symbols, keywords, conses and lists, strings,
-      characters, vectors (one-dimensional), closures, built-in functions
+      characters, vectors (one-dimensional), structures, hash tables,
+      closures, compiled functions, built-in functions
 
 ### The reader and printer
 
@@ -119,9 +122,9 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 - **Symbols:** `symbol-name` `symbol-value` `symbol-function` `symbol-plist`
   `set` `boundp` `fboundp` `makunbound` `fmakunbound` `get`
 - **Characters, strings, vectors:** `char-code` `code-char` `char` `string`
-  `make-array` (`:initial-element`) `vector` `aref` `svref` `elt`
-- **Evaluation:** `eval`
-- **System:** `gc`
+  `aref` `svref` `elt`
+- **Evaluation:** `eval` `macroexpand` `macroexpand-1`
+- **System:** `gc`, and the variables `*standard-output*`, `*` `**` `***`
 
 ### Library ROM 1
 
@@ -174,7 +177,7 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
 
 - **Floats:** `/` `round` `ceiling` `float` `floatp` `sqrt` `exp` `sin` `cos`
   `tan` `log` `atan` `expt` and the constant `pi`
-- **Output:** `format` with `t` or `nil` and CL's directives: `~A` `~S`
+- **Output:** `format` to `t`, `nil` or a stream, with CL's directives: `~A` `~S`
   `~D` `~B` `~O` `~X` `~R` (radix, words, ordinals, Roman) `~F` `~E` `~G`
   `~$` `~C` `~P` `~%` `~&` `~|` `~~` `~T` `~*` `~?` `~{~}` `~[~;~]` `~(~)`
   `~^` `~<~>` and `~` newline, with parameters (`V`, `#`, `'c`) and the
@@ -190,6 +193,7 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
   `float`)
 - **Bits:** `logand` `logior` `logxor` `lognot` `ash`
 - **Multiple values:** `values`
+- **Vectors:** `make-array` (`:initial-element`) `vector`
 - **Structures and hashing:** `copy-structure` `gethash` `remhash` `sxhash`
   (and the `%` functions `defstruct` and the hash tables use)
 - **Symbols, system:** `gensym` `intern` `remprop` `room`
@@ -213,6 +217,8 @@ lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
   `intersection` `set-difference` `subsetp`
 - **Numbers:** `expt` `gcd` `signum`
 - **Questions:** `y-or-n-p` `yes-or-no-p`
+- **Errors:** `error` `warn` `assert` `ignore-errors` `handler-case`
+- **Files as streams:** `open` `close` `with-open-file` `probe-file`
 - **Music:** `note` (`'c4` is middle C, 239, `'a4` 440 Hz, 142 -- the AY
   runs at 1 MHz; `#` sharp, `B` flat), `play` (a list of notes, `R` a rest, `(G4 40)` a
   longer one)
@@ -228,15 +234,31 @@ lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
 
 ### The demo ROM
 
-`(demo)` lists them: `shapes` `rose` `spiral` `moire` `bounce`
-`sierpinski` `sketch` `koch` (the Koch snowflake) `tree` `tune` `talk`
-`sing` `chords` (PlayCity) `hanoi` `queens` `primes` `fact`. They are
-Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
+- **`loop`**, simple and extended (its expander native), `loop-finish`,
+  `endp`
+- **String streams:** `with-output-to-string` `make-string-output-stream`
+  `get-output-stream-string` `with-input-from-string`
+  `make-string-input-stream` `streamp` `input-stream-p` `output-stream-p`
+  `open-stream-p`
+- What compiled code calls for `catch`, `throw`, `unwind-protect` and some
+  `setf` places (`%catch`, `%set-aref`...)
+- **The demos:** `(demo)` lists them: `shapes` `rose` `spiral` `moire`
+  `bounce` `sierpinski` `sketch` `koch` (the Koch snowflake) `tree` `tune`
+  `talk` `sing` `chords` (PlayCity) `hanoi` `queens` `primes` `fact`.
+  They are Lisp text in the ROM, read when first called, so `(ed 'rose)`
+  shows one.
+
+### The VM ROM
+
+`compile` `compile-file` `disassemble`, and the machine that runs
+compiled code (`docs/design.md` describes both)
 
 ## Tools
 
-- [x] `tools/build.sh`: the three ROMs, and MAME romsets with the core at ROM 0
-- [x] `tools/test.sh`: 25 regression tests, on a 464 or a 6128
+- [x] `tools/build.sh`: the six ROMs, and MAME romsets with the core at ROM 0
+- [x] `tools/bootstrap.py`: the compiler compiled by itself, for the VM ROM;
+      `tools/mklib.py`: the library ROMs' symbol tables
+- [x] `tools/test.sh`: 34 regression tests, on a 464 or a 6128
 - [x] `tools/run.sh`: type a file at the REPL in MAME; screenshots,
       timings, an instruction profile (`tools/profile.py`)
 - [x] `tools/mame.sh`: a MAME window to play in, with a disc
@@ -258,8 +280,9 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
          stack: no argument lists. Closures through `mapcar` a third
          faster, builtins twice, `apply` of a lambda 3.3x, `sort` 40%;
          a multiply that stops when the smaller factor runs out
-   - [ ] More from the profiler (the core has ~840 bytes free again: some
-         rarely used functions moved to library ROM 2)
+   - [x] The compiler (below): 3-9x on compiled code
+   - [ ] More from the profiler (the ROMs are nearly full: the core has
+         10 bytes free, the VM ROM 574)
    - [x] `pprint` fills data -- a list that is not a call, and anything
          quoted -- as many to a line as fit: saved data a third the size
    - [x] `do` expands to special forms only (it used `psetq`, a macro,
@@ -316,7 +339,9 @@ Lisp text in the ROM, read when first called, so `(ed 'rose)` shows one.
        ball, the chaos game, a sketcher on the cursor keys), Ode to Joy,
        Hanoi, n queens, a sieve, 20!
 7. [x] **A reference manual**: `docs/reference.md` -- every function, form
-       and macro, the editors' keys, the differences from Common Lisp
+       and macro, the editors' keys, the differences from Common Lisp;
+       a tutorial (`docs/tutorial.md`), the design (`docs/design.md`), and
+       how to install the ROMs (the README)
 8. [x] **A byte-code compiler**: `compile`, `compile-file`,
        `disassemble` -- the VM ROM (lib/vm.asm, the sixth ROM) runs the
        code; the compiler (lib/compiler.lsp) is compiled by itself at

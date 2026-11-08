@@ -1,37 +1,40 @@
-CPC Lisp -- trying it on the real 464, five-ROM set
-===================================================
+CPC Lisp -- trying it on a real CPC
+===================================
 
-For the five-ROM set (python3 tools/card.py lisp, with the CPC off):
+The six ROMs on the LambdaSpeak 4 card (python3 tools/card.py lisp, with
+the CPC off; the README's "Installing the ROMs" has the details):
 
-    slot 4  ROM 0  Lisp core (the CPC boots into it instead of BASIC)
-    slot 5  ROM 4  library 1: screen, graphics, sound, keys, strings and
-                   characters, line editor, function editor, files
-    slot 0  ROM 5  library 2: floats, format, sort, lists, coerce
-    slot 7  ROM 6  library 3: the functions written in Lisp (sequences...)
-    slot 3  ROM 3  the demos
+    slot 4  ROM 0  LISP.ROM      the core: the CPC boots into it
+    slot 5  ROM 4  LISPLIB.ROM   library 1: screen, graphics, sound, keys,
+                                 strings, streams, editors, files
+    slot 0  ROM 5  LISPLIB2.ROM  library 2: floats, format, sequences,
+                                 structures, hash tables, the card
+    slot 7  ROM 6  LISPLIB3.ROM  library 3: the functions written in Lisp
+    slot 3  ROM 3  LISPDEMO.ROM  loop, string streams, the demos
+    slot 1  ROM 1  LISPVM.ROM    the compiler and its bytecode machine
     slot 2  ROM 7  Parados       -- not touched
     slot 6  ROM 2  LS AI ROM     -- not touched
-    slot 1  ROM 1  the vector head, as before
 
 Every expected answer below was checked in MAME with the ROMs at these
 numbers. Type each line at LISP> and press RETURN, and tick its [ ] when
 you see what it says. Please note anything that differs.
-docs/checklist.md lists everything that is implemented.
+docs/checklist.md lists everything that is implemented. Sections 1-13
+were checked on the real 464 with the five-ROM set (2026-11-07); what
+was checked since is noted at the end of each section.
 
 
 1. Power on
 -----------
-[ ] Expect, possibly after the vector head's and Parados's own messages:
+[ ] Expect, possibly after Parados's own message:
 
     CPC Lisp 0.3, library ROMs 4 5 6 3
     NNNN cells free
     LISP>
 
-NNNN is about 6850 in MAME; less here is fine (every ROM takes some
-RAM). Please write down the number.
-
-If the four library numbers are not all there, or the screen stays
-blank: note exactly what you see and switch off.
+NNNN is about 6650 in MAME without a disc ROM; less here is fine (every
+ROM takes some RAM). The VM ROM is not listed. If the four library
+numbers are not all there, or the screen stays blank: note exactly what
+you see and switch off.
 
 
 2. Basics, and * ** ***
@@ -144,7 +147,8 @@ Use a disc you don't mind writing to.
 [ ] (load "test")                    T
 [ ] (sq 12)                          144
 [ ] (delete-file "test")             T, and (dir) no longer shows it
-[ ] (dir "m:")                       Error: no RAM disc (M: needs a 6128)
+[ ] (dir "m:")                       on a 464 without a RAM expansion:
+                                     Error: no RAM disc (M: needs 128 KB)
 
 
 12. Function editor
@@ -156,12 +160,10 @@ Use a disc you don't mind writing to.
 [ ] (ed 'rose)  the demo's definition (ESC to leave it)
 [ ] (ed 'queens) SHIFT + down: a page down; SHIFT + up: back up. CTRL +
                 up/down: the top/bottom. ESC to leave it.
-                (Not in the ROMs flashed at 15:00 on 2026-11-07 -- the
-                next flash.)
 
 
-13. New since the flash of 15:00 (needs the next flash)
---------------------------------------------------------
+13. Speech, the turtle, and more
+-------------------------------
 Speech is the one thing MAME cannot check -- it has no LambdaSpeak.
 
 [ ] (say "Hello from Lisp")         the card speaks it (DECtalk), and
@@ -189,14 +191,13 @@ Speech is the one thing MAME cannot check -- it has no LambdaSpeak.
                                      the circle filled (a few seconds)
 [ ] (symbol 240 60 66 165 129 165 153 66 60) (princ (code-char 240))
                                      a smiley
-[ ] (ed 'queens), SHIFT + down / up  a page down and up
 
 
-14. Build 4326: files as streams, through Parados
--------------------------------------------------
-Only the card's disc can tell -- MAME has AMSDOS. Use a disc with room
-(see the note at the top on "disc full"). Two files open at once is the
-new part.
+
+14. Files as streams, through Parados
+-------------------------------------
+Only the card's disc can tell -- MAME has AMSDOS. Use a disc with room.
+Two files open at once is the point of the last steps.
 
 [ ] (with-open-file (o "t1" :direction :output) (format o "~{~A~%~}" '(one two three)))
                                      NIL
@@ -210,11 +211,12 @@ new part.
 [ ] (dir)                            T1.LSP and T2.LSP, the same size
 
 A photo of the screen is as good as ticks.
-(Checked on the 464, 2026-11-07: all as above.)
+(Checked on the 464 through Parados, 2026-11-07, build 4326: all as
+above.)
 
 
-15. Build 5743: the line editor
--------------------------------
+15. The line editor at the screen's edge
+---------------------------------------
 [ ] (dotimes (i 30) (print i))   then, at the bottom of the screen, type a
     line longer than the screen is wide:
     (list 'aaaaaaaaaa 'bbbbbbbbbb 'cccccccccc 'dddddddddd)
@@ -225,12 +227,11 @@ A photo of the screen is as good as ticks.
     then SHIFT + up to the first row of the digits, and COPY held down
                                      the copy goes on at the start of the
                                      next row: ...789 then 0123...
-(Checked on the 464, 2026-11-07: both as above.)
+(Checked on the 464, 2026-11-07, build 5743: both as above.)
 
 
-16. The compiler: the VM ROM in slot 1
---------------------------------------
-[ ] The banner, as before           (the VM ROM is not listed there)
+16. The compiler
+----------------
 [ ] (defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))
     (fib 17)                         1597, in about 13 s
 [ ] (compile 'fib)                   FIB, in about 2 s
@@ -247,14 +248,29 @@ A photo of the screen is as good as ticks.
 compile-file round trip through Parados.)
 
 
-(Also on the 464 with the 1.1 firmware and a RAM expansion, 2026-11-07:
-floats, the editor, ESC, the compiler, Parados; the RAM disc M: with the
-1.0 firmware too:
-    (defun sq (x) (* x x))  (save "m:sq")  (dir "m:")
-    (fmakunbound 'sq)  (load "m:sq")  (sq 9) -> 81)
+
+17. The 664/6128 firmware, and a RAM expansion
+----------------------------------------------
+With BASIC 1.1 firmware in the 464 (or on a 6128):
+[ ] (sqrt 2)                         1.41421356
+[ ] (- 10.5 0.25)                    10.25
+[ ] (sin 1.0)                        0.841470985
+[ ] (format nil "~,3F" pi)           "3.142"
+[ ] (rose)                           a rose; a key ends it
+[ ] the line editor and ESC, as in sections 6 and 7; the compiler, as in
+    section 16
+With a RAM expansion (or a 6128), under either firmware:
+[ ] (defun sq (x) (* x x))  (save "m:sq")
+                                     (SQ)
+[ ] (dir "m:")                       Drive M: (RAM)  SQ.LSP  ...  bytes free
+[ ] (fmakunbound 'sq)  (load "m:sq")  (sq 9)
+                                     T, then 81
+(Checked on the 464 with an unofficial 1.1 firmware ROM and a RAM
+expansion, 2026-11-07, build 22482: all as above; the RAM disc under the
+1.0 firmware too.)
 
 
-17. Getting BASIC back
+18. Getting BASIC back
 ----------------------
 Switch the CPC off, then on the PC:
 

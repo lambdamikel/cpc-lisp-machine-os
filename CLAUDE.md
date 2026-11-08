@@ -1,7 +1,7 @@
 # CPC Lisp — working notes for Claude
 
-A Lisp machine for the Amstrad CPC: an **auto-boot ROM** (maybe two) that
-starts a Lisp instead of BASIC. Mike's brief, 2026-11-06: a modern dialect
+A Lisp machine for the Amstrad CPC: **six ROMs** -- an auto-boot core and
+five library ROMs -- that start a Lisp instead of BASIC. Mike's brief, 2026-11-06: a modern dialect
 with Common Lisp syntax; speed is not the point and no byte-code compiler is
 needed, though one would be nice later; closures; graphics, disc and sound.
 
@@ -13,7 +13,9 @@ own memory.
 
 ## The design
 
-Settled with Mike on 2026-11-06:
+`docs/design.md` is the readable account of how it all works (and the
+README, `docs/tutorial.md`, `docs/reference.md` the user's side); this
+file is the working notes behind it. Settled with Mike on 2026-11-06:
 
 * **It must run on every CPC** (464, 664, 6128). Firmware is called **only
   through its vectors**, never at ROM-internal addresses. Past &BD37 the
@@ -22,7 +24,8 @@ Settled with Mike on 2026-11-06:
   firmware ROM, not BASIC's, so it survives replacing BASIC).
 * **Don't worry about ROM slots or numbers**: any number that does not
   collide with a built-in ROM (0 is BASIC, 7 the disc ROM). Development is
-  in MAME; the real CPC comes much later.
+  in MAME; each build that passes the tests goes on the card, for the
+  real 464.
 
 What is built (`src/`, read `src/lisp.asm`'s header first):
 
@@ -47,10 +50,11 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   allocation (blocks move).
 * **Eval** is a loop with proper tail calls; the Lisp has its own 4 KB
   machine stack (the firmware's is tiny), checked against overflow.
-* **Input** is the firmware's EDIT (BASIC's line editor, copy cursor and
-  all); ESC is polled with KM TEST KEY during evaluation.
+* **Input** is the library's line editor (below), or the firmware's EDIT
+  without library 1; ESC is polled during evaluation (a counter, and the
+  key buffer).
 * **The library ROMs** (`lib/`, any numbers 1-6; MAME's ROM box makes them
-  1 and 2) are up to four *parts*, each its own ROM: part 0
+  1-5, the VM ROM last) are up to four *parts*, each its own ROM: part 0
   (`lib/lib.asm`, LISPLIB.ROM) has graphics, sound, keys, the text screen,
   strings and characters (`lib/strings.asm`), the editors, pp, files, the
   RAM disc and the printers and readers (`lib/streams.asm`); part 1
@@ -63,8 +67,8 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   Lisp (`lib/lisp2.lsp`) and the demos (`lib/demo.lsp`): new library code
   goes here or in part 1. **A fifth part is not possible as it is**: an
   LSUBR's or AUTOLOAD's data word keeps the part in two bits (the VM ROM,
-  below, is no part). Space (2026-11-07 night): core 26 bytes free,
-  parts 0-3 335, 3699, 596, 3555; the VM ROM 1527.
+  below, is no part). Space (2026-11-07 night): core 10 bytes free,
+  parts 0-3 335, 3489, 596, 3555; the VM ROM 574.
   `src/xrom.asm` explains the arrangement: the core finds
   them by signature and build number (all ROMs come from one
   `tools/build.sh` run, and call each other by address), each says which
@@ -143,10 +147,12 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   call `lnum_read`/`lnum_print`; a token too big for a fixnum reads as a
   float. `/` gives a fixnum only for a whole quotient of fixnums. Graphics
   and other natives taking integers round floats (`lint_hl`).
-* **`format`** (`lib/format.asm`): `t` or `nil` as the destination; ~A ~S
-  ~D ~C ~% ~& ~~, with a width (~5D pads left, ~8A right). `nil` prints
-  into TOKBUF through `to_string_ix` (255 characters at most). On the
-  screen a lone LF in output is a new line (`putc` adds the CR).
+* **`format`** (`lib/format.asm`, its header lists the routines): all of
+  CL's directives but `~/name/`, parameters, `:` and `@`, `~{` `~[` `~(`
+  `~<` recursively. The destination: `t` (`*standard-output*`), a stream,
+  or `nil` -- printed into TOKBUF through `to_string_ix` (255 characters at
+  most). On the screen a lone LF in output is a new line (`putc` adds the
+  CR).
 * **`unwind-protect`** is a third frame kind (2) beside block and catch;
   `throw`/`return-from` run the cleanups of the frames they pass, and
   `toplevel` runs any left (an uncaught error, ESC), each frame taken off
@@ -179,7 +185,9 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   the hash tables (`lib/structs.asm`, `lisp.lsp`) are built on it.
   `setf` on an unknown place calls the operator's SETF property with the
   arguments and the value (`defsetf`).
-* **Vectors** (one-dimensional, `src/subrs.asm`): a typed cell
+* **Vectors** (one-dimensional; `aref`, `svref`, `elt`, `vectorp` in
+  `src/subrs.asm`, `make-array` and `vector` in part 1, `lib/structs.asm`,
+  for the core's room): a typed cell
   (`HDR_VECTOR`) whose block holds the elements, a word each. Its header is
   "raw" (the data word is not a Lisp value), but `mark_value` and `rescan`
   follow the elements, and a block-less vector (mid-allocation) is skipped.
@@ -190,10 +198,11 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   sums them by routine. Done so far: arguments that are constants or
   variables skip `eval` (ev_cons), `FNBOUND` (a byte per symbol at &0300)
   spares calls the flet/labels search, two-fixnum `+ - <`... skip
-  `nums_v`, ESC is polled per body (progn), not per eval, `sort` is native.
-  fib 17 went from 1103 to 778 frames. What is left is spread out: apply
-  conses the arguments into a list that bind takes apart again; the
-  interrupt-time firmware is ~8%.
+  `nums_v`, ESC is polled per body (progn), not per eval, `sort` is native,
+  plain lambda lists bind straight from the stack, `apply`/`mapcar`/
+  `funcall` and the library's calls build no argument lists. fib 17 went
+  from 1103 to 660 frames (197 compiled). The interrupt-time firmware is
+  ~8% of any run; a cross-ROM call (KL ROM SELECT twice) is expensive.
 * **The compiler** (Mike, 2026-11-07: "compile" and "compile-file" for
   bytecode). `lib/vm.asm` is a sixth ROM, the VM ROM (MAME rom5, the
   card's slot 1 as ROM 1): it says "part 4" in the library header, which
@@ -226,7 +235,7 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   The compiler's calls of its own functions become CALLR k n (no
   constant, no cell). How it works (variables, boxes, the restarts when
   a variable turns out to be captured) is at the top of compiler.lsp.
-  Space: VM ROM 580 bytes free, core 26; the pool 178 of 256 constants;
+  Space: VM ROM 574 bytes free, core 10; the pool 178 of 256 constants;
   the dispatch page is full (85 operations: a new one must replace one).
 * **What a compiled call costs**: a call of something not compiled goes
   out through ROMCALL (KL ROM SELECT twice) and apply_n -- some 2000
@@ -421,10 +430,10 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   (255 = silent). `n` lists the slots. **Giving a slot ROM 0 means the CPC
   boots into it every time** -- to get BASIC back, set it to 255. Check `n`
   before Mike powers on after any change.
-* Slots since 2026-11-07 (afternoon): 0 LISPLIB2 (ROM 5), 1 vector head
-  (ROM 1) -- the VM ROM LISPVM goes there now, as ROM 1 --, 2 Parados
-  (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0), 5 LISPLIB (ROM 4),
-  6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6). All six Lisp ROMs must come from
+* Slots (2026-11-07 night): 0 LISPLIB2 (ROM 5), 1 LISPVM (ROM 1), 2
+  Parados (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0), 5 LISPLIB
+  (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6) -- the README's
+  installation section has the table. All six Lisp ROMs must come from
   one build: re-flash them together. Flashed: build 22482
   (2026-11-07 night: the compiler -- the VM ROM in slot 1 as ROM 1, the
   .FAS junk fixed,
@@ -437,8 +446,8 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   instead for common lisp". Everything may be replaced **except
   Parados and the LS AI ROM**. `tools/card.py lisp` re-flashes the six
   Lisp ROMs (it checks the CPC is off and refuses slots 2 and 6);
-  `tools/card.py basic` silences the core. `docs/cpc-test.txt` is the
-  sheet of what to type on the real machine.
+  `tools/card.py basic` silences the core. `docs/hardware-test.txt` is
+  the sheet of what to type on the real machine (and what was checked).
 * **Before flash writes or a firmware flash, the CPC should be off.** Check
   with `kitloader.cpc_is_off()` (`~/git/lambdaspeak4/tools/kitloader.py`):
   two `d` readings with `/IORQ /RD /WR` all zero. Counters standing still do

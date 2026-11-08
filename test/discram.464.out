@@ -1,51 +1,51 @@
 LISP> (dir "m:")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (defun sq (x) (* x x))
 SQ
 LISP> (defvar *v* 42)
 *V*
 LISP> (save "m:one")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (defun cube (x) (* x x x))
 CUBE
 LISP> (save "m:two" 'cube)
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (dir "m:")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (fmakunbound 'sq)
 SQ
 LISP> (fmakunbound 'cube)
 CUBE
 LISP> (load "m:one")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (sq 5)
 Error: undefined function SQ
 LISP> *v*
 42
 LISP> (load "m:two")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (cube 3)
 Error: undefined function CUBE
 LISP> (save "m:one" 'cube)
 Error: nothing to save for CUBE
 LISP> (dir "m:")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (fmakunbound 'cube)
 CUBE
 LISP> (load "m:two")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (cube 4)
 Error: undefined function CUBE
 LISP> (delete-file "m:two")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (load "m:two")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (load "m:one")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (cube 2)
 Error: undefined function CUBE
 LISP> (delete-file "m:nosuch")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (dir "x:")
 Error: bad file name: "x:"
 LISP> (save "m:abcdefghijklm" 'sq)
@@ -57,25 +57,25 @@ Error: nothing to save for NOSUCH
 LISP> (defparameter *big* (make-list 3000 :initial-element 'abcdefghij))
 *BIG*
 LISP> (save "m:b1" '*big*)
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (save "m:b2" '*big*)
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (dir "m:")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (delete-file "m:b1")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (save "m:b2" '*big*)
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (setq *big* nil)
 NIL
 LISP> (load "m:b2")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (length *big*)
 0
 LISP> (delete-file "m:b2")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (dir "m:")
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (save "disc" 'sq)
 Error: nothing to save for SQ
 LISP> (fmakunbound 'sq)
@@ -99,11 +99,11 @@ Drive A: user  0
 
 NIL
 LISP> (with-open-file (s "m:st" :direction :output) (print '(on the ram disc) s) (format s "~R~%" 42))
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (with-open-file (s "m:st") (list (read s) (read-line s) (read-line s nil :end)))
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (with-open-file (in "m:st") (with-open-file (out "m:st2" :direction :output) (loop (let ((l (read-line in nil nil))) (if l (write-line l out) (return t))))))
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> (with-open-file (s "m:st2") (read s))
-Error: no RAM disc (M: needs a 6128)
+Error: no RAM disc (M: needs 128 KB)
 LISP> 

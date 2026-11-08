@@ -127,11 +127,18 @@ LIBCALL:
     jp ROMCALL
 
 ;; VMCALL: a compiled function (HDR_CODE), called as a subr: V_LIBFN says
-;; which, HL = &arg 0, B = how many. Into the VM ROM.
+;; which, HL = &arg 0, B = how many. Into the VM ROM -- an error if there
+;; is none (part 1 names the compiler even then).
 VMCALL:
     ld a,(V_VMROM)
+    or a
+    jr z,.none
     ld ix,VM_ENTRY
     jp ROMCALL
+.none:
+    ld de,(V_LIBFN)
+    ld hl,m_undef
+    jp error
 
 ;; lib_part: H = the high byte of a library address, the part in its top
 ;; two bits -> HL = the part's place in V_LIBS. BC, DE kept.
