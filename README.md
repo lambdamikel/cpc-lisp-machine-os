@@ -132,3 +132,17 @@ it is **CTRL + 2** (in MAME, Right Alt + 2).
   real CPC, and what it should answer
 * `CLAUDE.md`: working notes -- what was learned about the CPC, MAME and
   the card along the way
+
+## Licence
+
+CPC Lisp is free software under the
+[GNU General Public License, version 3](LICENSE) (GPL-3.0), like
+LambdaSpeak 4: use it, change it, pass it on -- and whoever passes on a
+changed version, ROM images included, passes on its source with it.
+Copyright (C) 2026 Michael Wessel.
+
+**Your programs are yours.** As an additional permission under section 7
+of the GPL, programs written in CPC Lisp, and the files `save` and
+`compile-file` make of them, may be distributed on any terms their
+authors choose, even though they run on these ROMs and use their
+functions.

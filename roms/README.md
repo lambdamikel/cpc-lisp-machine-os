@@ -74,3 +74,9 @@ The [README](../README.md) is the overview, the
 [tutorial](../docs/tutorial.md) a tour at the keyboard, and the
 [reference](../docs/reference.md) has every function. Type `~` as
 **CTRL + 2**: the CPC has no tilde key.
+
+## Licence
+
+GPL-3.0 -- [`LICENSE`](../LICENSE) is the text, and the source is this
+repository. Programs you write in CPC Lisp are not covered: they are
+yours (the [README](../README.md#licence) says so in full).
