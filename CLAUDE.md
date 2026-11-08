@@ -473,6 +473,12 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   everybody wants to make their own"): copy them from `build/` -- one
   tested build -- when a release changes, and say the build in
   `roms/README.md`. Never commit Amstrad's ROMs (the MAME romsets in
-  `build/mame`) or disc images; `build/` is ignored. No LICENSE yet --
-  Mike's choice.
+  `build/mame`) or disc images; `build/` is ignored. **GPL-3.0** since 2026-11-07 (`LICENSE`, Mike's
+  choice, as LambdaSpeak 4), with a section 7 permission: programs
+  written in CPC Lisp, and what `save`/`compile-file` make, are their
+  authors' own (README, *Licence*). **Releases**: GitHub release `v0.9`
+  = build 25063, the six ROMs and `cpc-lisp-0.9.zip` (the ROMs,
+  `roms/README.md`, `LICENSE`). A new one: refresh `roms/` from one
+  tested build, bump the version (banner, ROM headers, document
+  titles), tag, `gh release create` with the same files.
 * Commit with the attribution lines the session gives you.
