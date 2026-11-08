@@ -420,14 +420,15 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   (ROM 1) -- the VM ROM LISPVM goes there now, as ROM 1 --, 2 Parados
   (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0), 5 LISPLIB (ROM 4),
   6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6). All six Lisp ROMs must come from
-  one build: re-flash them together. Flashed: build 8423
-  (2026-11-07 night: catchable errors, all of format, compound types,
-  file streams -- checked on the 464 through Parados --, the extended
-  loop, the line editor's wrap and copy fixes, faster apply/mapcar,
-  string streams, |symbols|, ~<). Mike keeps the CPC off: flash each build that passes the
-  tests on both machines, no need to ask. Slot 1 (the vector head) may become a sixth
-  Lisp ROM -- for the byte-code machine (Mike, 2026-11-07: "the vector head
-  can go ... use the space instead for common lisp"). Everything may be replaced **except
+  one build: re-flash them together. Flashed: build 21072
+  (2026-11-07 night: the compiler -- the VM ROM in slot 1 as ROM 1,
+  compile, compile-file, disassemble -- on top of build 8423's catchable
+  errors, format, types, file streams (checked on the 464 through
+  Parados), the extended loop, the editor's fixes, string streams,
+  |symbols|, ~<). Mike keeps the CPC off: flash each build that passes
+  the tests on both machines, no need to ask. Slot 1 held the vector
+  head: Mike, 2026-11-07, "the vector head can go ... use the space
+  instead for common lisp". Everything may be replaced **except
   Parados and the LS AI ROM**. `tools/card.py lisp` re-flashes the six
   Lisp ROMs (it checks the CPC is off and refuses slots 2 and 6);
   `tools/card.py basic` silences the core. `docs/cpc-test.txt` is the
