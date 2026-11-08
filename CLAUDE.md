@@ -265,6 +265,11 @@ fixed it (the drive is PSRAM: lost at power-off; store it in a free slot,
   burning -- the reason this project is cheap to iterate. It also emulates
   the disc drive (54 flash discs) with **Parados as ROM 7**, and does speech,
   PlayCity (six more AY channels), MIDI, PCM drums and an RTC.
+* **The 464 with BASIC 1.1 firmware** (an unofficial 1.1 ROM) **and a RAM
+  expansion** (2026-11-07, build 22482): everything checked there --
+  floats through the 664/6128 maths package, the line editor, ESC, the
+  compiler, Parados; the RAM disc `M:` on the expansion under 1.0 and
+  1.1 alike.
 * **CPC 6128** with a Gotek on its own drive -- put away for now. The card
   runs a separate 664/6128 firmware build there.
 * The 664 is untried.

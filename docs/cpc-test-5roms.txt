@@ -247,6 +247,13 @@ A photo of the screen is as good as ticks.
 compile-file round trip through Parados.)
 
 
+(Also on the 464 with the 1.1 firmware and a RAM expansion, 2026-11-07:
+floats, the editor, ESC, the compiler, Parados; the RAM disc M: with the
+1.0 firmware too:
+    (defun sq (x) (* x x))  (save "m:sq")  (dir "m:")
+    (fmakunbound 'sq)  (load "m:sq")  (sq 9) -> 81)
+
+
 17. Getting BASIC back
 ----------------------
 Switch the CPC off, then on the PC:

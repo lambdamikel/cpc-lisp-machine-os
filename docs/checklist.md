@@ -23,7 +23,11 @@ otherwise. `docs/cpc-test.txt` is the sheet for trying it on a real CPC.
       ESC, and `(fib 17)` in about 13 s -- as in MAME
 - [ ] `|LISP` from BASIC, with the core at a ROM number other than 0: built
       in, not tried yet
-- [ ] Real 6128, 664: not tried
+- [x] The 664/6128 firmware (BASIC 1.1) on the real 464 (2026-11-07,
+      build 22482): floats through its maths package, the line editor,
+      ESC, the compiler, Parados -- and the RAM disc `M:` on a RAM
+      expansion, under the 1.0 firmware too
+- [ ] A real 6128, 664: not tried
 
 ## The language (Common Lisp syntax and semantics where they fit)
 
