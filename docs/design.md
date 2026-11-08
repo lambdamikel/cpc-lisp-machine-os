@@ -1,4 +1,6 @@
-# How CPC Lisp is made
+# CPC Lisp 0.9 -- how it is made
+
+*A Lisp machine for the Amstrad CPC*
 
 CPC Lisp is a Common Lisp dialect for a 4 MHz Z80 with 64 KB of RAM, in
 six 16 KB ROMs. This document explains how it works: the ROMs and how

@@ -189,7 +189,6 @@ symtab:
 
     ; characters and strings
     SUBR CHAR_CODE,"CHAR-CODE",subr_char_code,1,1
-    SUBR CODE_CHAR,"CODE-CHAR",subr_code_char,1,1
     SUBR CHAR,"CHAR",subr_char,2,2
     SUBR AREF,"AREF",subr_aref,2,2
     SUBR SVREF,"SVREF",subr_aref,2,2

@@ -1,4 +1,6 @@
-# A tour of CPC Lisp
+# CPC Lisp 0.9 -- a tour
+
+*A Lisp machine for the Amstrad CPC*
 
 This is a walk through CPC Lisp at the keyboard: first the language, then
 what makes it a CPC language -- the screen, graphics, the turtle, keys,
@@ -15,7 +17,9 @@ types `~`.
 
 When the CPC is switched on it says
 
-    CPC Lisp 0.9, library ROMs 4 5 6 3
+    CPC Lisp 0.9
+    A Lisp machine for the Amstrad CPC
+    library ROMs 4 5 6 3
     6402 cells free
     LISP>
 

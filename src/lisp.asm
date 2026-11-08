@@ -563,8 +563,9 @@ err_nostr:
     include "subrs.asm"
     include "xrom.asm"
 
-banner:      db "CPC Lisp 0.9",0
-banner_lib:  db ", library ROMs"
+banner:      db "CPC Lisp 0.9",13,10
+             db "A Lisp machine for the Amstrad CPC",13,10,0
+banner_lib:  db "library ROMs"
 banner_sp:   db " ",0
 banner2:     db " cells free",13,10,13,10,0
 prompt_main: db "LISP> ",0

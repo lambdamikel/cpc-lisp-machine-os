@@ -1,4 +1,6 @@
-# CPC Lisp: what is done, what is to come
+# CPC Lisp 0.9 -- what is done, what is to come
+
+*A Lisp machine for the Amstrad CPC*
 
 Version 0.9, 2026-11-07. Ticked items are built and covered by the regression
 tests in MAME on a 464 and a 6128 (`tools/test.sh`) unless they say
@@ -121,7 +123,7 @@ CPC; the README says how to install the ROMs.
   `oddp` `random`
 - **Symbols:** `symbol-name` `symbol-value` `symbol-function` `symbol-plist`
   `set` `boundp` `fboundp` `makunbound` `fmakunbound` `get`
-- **Characters, strings, vectors:** `char-code` `code-char` `char` `string`
+- **Characters, strings, vectors:** `char-code` `char` `string`
   `aref` `svref` `elt`
 - **Evaluation:** `eval` `macroexpand` `macroexpand-1`
 - **System:** `gc`, and the variables `*standard-output*`, `*` `**` `***`
@@ -153,7 +155,7 @@ CPC; the README says how to install the ROMs.
   they differ, as in CL): `string=` `string/=` `string<` `string>`
   `string<=` `string>=` `string-equal` `string-not-equal` `string-lessp`
   `string-greaterp` `string-not-greaterp` `string-not-lessp`
-- **Characters:** `char=` `char/=` `char<` `char>` `char<=` `char>=`
+- **Characters:** `code-char` `char=` `char/=` `char<` `char>` `char<=` `char>=`
   `char-equal` `char-not-equal` `char-lessp` `char-greaterp`
   `char-not-greaterp` `char-not-lessp` (any number of arguments),
   `alpha-char-p` `upper-case-p` `lower-case-p` `both-case-p`

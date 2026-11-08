@@ -1,4 +1,7 @@
-# CPC Lisp — working notes for Claude
+# CPC Lisp 0.9 — working notes for Claude
+
+*A Lisp machine for the Amstrad CPC.* Version 0.9 since 2026-11-07 (the
+banner, the ROM headers' version bytes and the documents' titles say so).
 
 A Lisp machine for the Amstrad CPC: **six ROMs** -- an auto-boot core and
 five library ROMs -- that start a Lisp instead of BASIC. Mike's brief, 2026-11-06: a modern dialect
@@ -463,8 +466,12 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
 * Concise reports; say what was verified and how.
 * **Never crawl the NAS**: no `find`/`grep -r` from `/` or over all of
   `~`. Look in known places; `find <dir> -xdev` with a timeout if needed.
-* GitHub: **private** repo `lambdamikel/cpc-lisp-machine-os` (created at
-  Mike's request, 2026-11-07, so he can read it from another computer).
-  Keep it private; push when work is committed. Never commit ROM images
-  (`build/` is ignored): the system ROMs are Amstrad's.
+* GitHub: repo `lambdamikel/cpc-lisp-machine-os`, **public** since
+  2026-11-07 (Mike: "make it public!"; private before). Push when work is
+  committed. `roms/` holds our six ROM images, ready to use (Mike: "not
+  everybody wants to make their own"): copy them from `build/` -- one
+  tested build -- when a release changes, and say the build in
+  `roms/README.md`. Never commit Amstrad's ROMs (the MAME romsets in
+  `build/mame`) or disc images; `build/` is ignored. No LICENSE yet --
+  Mike's choice.
 * Commit with the attribution lines the session gives you.

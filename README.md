@@ -1,11 +1,14 @@
-# CPC Lisp
+# CPC Lisp 0.9
 
-A Lisp machine for the Amstrad CPC: ROMs that start a Lisp instead of
-BASIC. Common Lisp syntax, lexical closures, macros, a garbage collector
+*A Lisp machine for the Amstrad CPC*
+
+ROMs that start a Lisp instead of BASIC. Common Lisp syntax, lexical closures, macros, a garbage collector
 -- in 16 KB of Z80 assembly -- with graphics, sound, files, floats and
 editors in four more ROMs, and a bytecode compiler in a fifth.
 
-    CPC Lisp 0.9, library ROMs 4 5 6 3
+    CPC Lisp 0.9
+    A Lisp machine for the Amstrad CPC
+    library ROMs 4 5 6 3
     6402 cells free
 
     LISP> (defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))
@@ -40,11 +43,15 @@ the 464 and the 6128.
 
 ## Installing the ROMs
 
-`tools/build.sh` makes the six ROM images in `build/`: `LISP.ROM` (the
-core), `LISPLIB.ROM`, `LISPLIB2.ROM`, `LISPLIB3.ROM`, `LISPDEMO.ROM` and
-`LISPVM.ROM`, 16 KB each. **All six must come from the same build**: the
-core finds the others by a signature with the build number, and leaves
-out any from another build (they call each other by address).
+**Ready-made images are in [`roms/`](roms/)** -- `LISP.ROM` (the core),
+`LISPLIB.ROM`, `LISPLIB2.ROM`, `LISPLIB3.ROM`, `LISPDEMO.ROM` and
+`LISPVM.ROM`, 16 KB each; [`roms/README.md`](roms/README.md) says what
+each is. Or build your own: `tools/build.sh` makes them in `build/`.
+**All six must come from the same build**: the core finds the others by
+a signature with the build number, and leaves out any from another build
+(they call each other by address).
+
+Any ROM box or ROM board takes them, or the LambdaSpeak card (below).
 
 **ROM numbers.**
 
@@ -60,8 +67,12 @@ out any from another build (they call each other by address).
   found (the VM ROM is not listed).
 * Like any expansion ROM, each lowers the free memory a little.
 
-**On the LambdaSpeak 4 card** (which serves eight ROMs from flash, and
-whose own Parados and LS AI ROMs keep their slots):
+**On the LambdaSpeak card** --
+[LambdaSpeak 4, aka LambdaSpeak AI](https://github.com/lambdamikel/lambdaspeak4)
+([Hackaday](https://hackaday.io/project/206813-lambdaspeak-4-aka-lambdaspeak-ai)),
+which serves eight ROMs from flash, uploaded over USB, and does the
+speech and PlayCity Lisp's `say` and `pc-tone` use. CPC Lisp was
+developed on it; its own Parados and LS AI ROMs keep their slots:
 
 | slot | ROM number | image |
 |---|---|---|
@@ -74,8 +85,10 @@ whose own Parados and LS AI ROMs keep their slots):
 | 2 | 7 | Parados (the card's) -- not touched |
 | 6 | 2 | LS AI (the card's) -- not touched |
 
-With the CPC **switched off**, `python3 tools/card.py lisp` uploads all
-six (it checks that the CPC is off first, and refuses slots 2 and 6);
+Upload the images with the card's ROM loader, with the CPC **switched
+off**. From this repository, `python3 tools/card.py lisp` uploads the six
+in `build/` (it checks that the CPC is off first, and refuses slots 2
+and 6);
 `tools/card.py slots` lists the slots. To get BASIC back:
 `tools/card.py basic` silences slot 4 (the other ROMs do nothing from
 BASIC), and `tools/card.py number 4 0` brings Lisp back. `card.py` drives
@@ -104,6 +117,8 @@ it is **CTRL + 2** (in MAME, Right Alt + 2).
 
 ## Documents
 
+* [`roms/README.md`](roms/README.md): the ready-made ROM images -- what
+  each is, and how to install them
 * [`docs/tutorial.md`](docs/tutorial.md): a tour at the keyboard -- the
   language, then the screen, graphics, the turtle, keys, sound, speech,
   files and the compiler

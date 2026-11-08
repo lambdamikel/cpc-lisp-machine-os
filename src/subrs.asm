@@ -1720,19 +1720,6 @@ subr_char_code:
     rr l
     set 0,l
     ret
-subr_code_char:
-    call fixnum_hl
-    bit 7,h
-    jr nz,.bad
-    add hl,hl
-    ld a,h
-    cp 4
-    ret c
-.bad:
-    ex de,hl
-    ld hl,m_notchar
-    jp error
-
 ;; (char string index)
 subr_char:
     call string_index

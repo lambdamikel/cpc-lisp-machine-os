@@ -376,6 +376,25 @@ lf_digit_char_p:
     ret
 
 ;; (digit-char weight [radix]) -> the character, or NIL
+;; (code-char n): the character of code n, 0-255 (a character is its code
+;; times 4 plus 2: the fixnum's word doubled)
+;@ CODE-CHAR 1 1 lf_code_char
+lf_code_char:
+    call lfix_hl
+    push hl
+    bit 7,h
+    jr nz,.bad
+    add hl,hl
+    ld a,h
+    cp 4
+    jr nc,.bad
+    pop de
+    ret
+.bad:
+    pop de
+    ld hl,m_notchar
+    CORE error
+
 ;@ DIGIT-CHAR 1 2 lf_digit_char
 lf_digit_char:
     NEXTARG
