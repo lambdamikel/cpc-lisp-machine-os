@@ -20,7 +20,8 @@ CPC; the README says how to install the ROMs.
       functions are then undefined, and the core alone still works.
 - [x] Library names cost nothing until used; functions written in Lisp are
       read from the ROM on first use (autoload)
-- [x] Runs on the 464 and the 6128 in MAME, with and without a disc drive
+- [x] Runs on the 464 and the 6128 in MAME, with and without a disc drive;
+      the disc tests run under AMSDOS (the 6128's own, a DDI-1 on the 464)
 - [x] Flashed to the LambdaSpeak 4 card (`tools/card.py`), checksums verified
 - [x] The real 464 (2026-11-07, build 6078 on the LambdaSpeak 4 card):
       boots to `LISP>`, speech and singing, PlayCity, disc through Parados,

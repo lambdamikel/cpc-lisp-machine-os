@@ -550,7 +550,9 @@ Not there: `~/name/`, `~:C`'s names, `~E`'s exponent form, `~:;` in
 ## Files
 
 Through the firmware's cassette vectors, so any disc ROM (AMSDOS,
-Parados) -- or the tape. A name without a `.` gets `.LSP`.
+Parados) -- or the tape. Nothing in it is particular to one disc ROM:
+AMSDOS is what the tests use (in MAME, on the 464 and the 6128), and
+Parados what the real 464 has. A name without a `.` gets `.LSP`.
 
 | Function | | |
 |---|---|---|
