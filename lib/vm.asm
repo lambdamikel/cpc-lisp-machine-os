@@ -50,7 +50,7 @@
 
     org #C000
     db 1                        ; a background ROM
-    db 0,9,0                    ; mark, version, modification
+    db 0,9,5                    ; mark, version, modification: 0.95
     dw vm_names
     jp vm_init                  ; the ROM walk: nothing to do
 

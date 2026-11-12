@@ -1,4 +1,4 @@
-# CPC Lisp 0.9
+# CPC Lisp 0.95
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -6,7 +6,7 @@ ROMs that start a Lisp instead of BASIC. Common Lisp syntax, lexical closures, m
 -- in 16 KB of Z80 assembly -- with graphics, sound, files, floats and
 editors in four more ROMs, and a bytecode compiler in a fifth.
 
-    CPC Lisp 0.9
+    CPC Lisp 0.95
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -152,7 +152,7 @@ the cassette port, floats through the Level II ROM, files through LDOS,
 a RAM disc in X-MEM/80's spare pages, speech through Talker/80, MIDI
 through MIDI/80 -- is in `mach/trs80/`.
 
-    CPC Lisp 0.9
+    CPC Lisp 0.95
     A Lisp machine for the TRS-80
     library ROMs 3 4 5 6
     2832 cells free

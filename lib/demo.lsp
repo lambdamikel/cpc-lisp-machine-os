@@ -190,8 +190,12 @@
 ;; MIDI/80's): a harpsichord on channel 1 and a cello's bass under it on 2.
 ;; A bar is its bass note, then the tune's notes and their eighths. Each
 ;; note ends at its time from the start (e, in 1/300 s), so the time spent
-;; between notes is not added up.
+;; between notes is not added up. A collection in the middle would be
+;; heard: there is one first, and the notes go out by midi-out, a native,
+;; whose arguments cost no cells (midi-note's &optional and let cost a few
+;; each time) -- the tune then fits in 2500 cells.
 (defun midi-tune ()
+  (gc)
   (midi-program 1 7) (midi-program 2 43)
   (let* ((t0 (time)) (e 0)
          (a '((43 74 2 67 1 69 1 71 1 72 1) (47 74 2 67 2 67 2)
@@ -200,13 +204,13 @@
          (bars (append a '((50 66 2 67 1 69 1 71 1 67 1) (50 69 6))
                        a '((50 69 2 71 1 69 1 67 1 66 1) (43 67 6)))))
     (dolist (bar bars)
-      (midi-note 2 (car bar) 64)
+      (midi-out #x91 (car bar) 64)              ; channel 2, on
       (do ((l (cdr bar) (cddr l)) (v 96 80)) ((null l))
-        (midi-note 1 (car l) v)
+        (midi-out #x90 (car l) v)               ; channel 1
         (incf e (* 75 (cadr l)))
         (loop (when (>= (logand (- (time) t0) 16383) e) (return)))
-        (midi-note 1 (car l) 0))
-      (midi-note 2 (car bar) 0)))
+        (midi-out #x90 (car l) 0))
+      (midi-out #x91 (car bar) 0)))
   t)
 
 ;; The LambdaSpeak card (speech and PlayCity are in library 2). Without

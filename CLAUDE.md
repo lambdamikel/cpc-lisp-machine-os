@@ -1,6 +1,6 @@
-# CPC Lisp 0.9 — working notes for Claude
+# CPC Lisp 0.95 — working notes for Claude
 
-*A Lisp machine for the Amstrad CPC.* Version 0.9 since 2026-11-07 (the
+*A Lisp machine for the Amstrad CPC.* Version 0.95 since 2026-11-12, 0.9 from 2026-11-07 (the
 banner, the ROM headers' version bytes and the documents' titles say so).
 
 A Lisp machine for the Amstrad CPC: **six ROMs** -- an auto-boot core and

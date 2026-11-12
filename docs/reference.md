@@ -1,4 +1,4 @@
-# CPC Lisp 0.9 -- reference
+# CPC Lisp 0.95 -- reference
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -38,7 +38,7 @@ Contents: [Starting](#starting) · [The REPL](#the-repl) ·
 
 With the core ROM at ROM 0 (replacing BASIC), the CPC starts in Lisp:
 
-    CPC Lisp 0.9
+    CPC Lisp 0.95
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -700,6 +700,11 @@ values 0-127, masked, so that none is taken for a status byte.
     (midi-program 1 7)                    ; a harpsichord
     (dolist (n '(60 64 67 72)) (midi-note 1 n 100 25))
     (midi-tune)                           ; the demo: a minuet, two voices
+
+A collection in the middle of a tune is heard as a pause. The interpreter
+takes cells as it goes, so start with `(gc)`; and in a loop that plays,
+`midi-out`, a native, costs none for its arguments where `midi-note` takes
+a few each call. `(ed 'midi-tune)` does both.
 
 ## Keys, time and the machine
 

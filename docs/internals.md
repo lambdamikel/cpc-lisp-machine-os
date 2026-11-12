@@ -1,4 +1,4 @@
-# CPC Lisp 0.9 -- the internals in detail
+# CPC Lisp 0.95 -- the internals in detail
 
 *A Lisp machine for the Amstrad CPC*
 

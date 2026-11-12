@@ -1,4 +1,4 @@
-# CPC Lisp 0.9 -- how it is made
+# CPC Lisp 0.95 -- how it is made
 
 *A Lisp machine for the Amstrad CPC*
 
