@@ -12,6 +12,7 @@ CPC Lisp demos:
 (koch 4)     a Koch snowflake, turtle
 (tree)       a tree, by turtle
 (tune)       Ode to Joy
+(midi-tune)  a minuet, out of MIDI OUT
 (talk)       speech: LambdaSpeak, Talker/80
 (sing)       singing: LambdaSpeak, Talker/80
 (chords)     PlayCity's six voices

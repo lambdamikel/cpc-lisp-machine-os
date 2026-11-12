@@ -27,5 +27,8 @@ X-MEM mode (not SuperMem).
        press RESET, LISP again, (dir "m:")  : still there
 7. [ ] (shapes)  : discs and boxes in blocks; a key clears it.
        (demo) lists the others
-8. [ ] On a Model III: 1, 4 and 6 again (its clock and ROM are
-       elsewhere; (time) should count up: type it twice)
+8. [ ] With MIDI/80 (its DIP switches to the Waveblaster or MIDI OUT):
+       (midi-tune)  : a minuet, harpsichord and cello, about 25 s
+9. [ ] On a Model III: 1, 4 and 6 again (its clock and ROM are
+       elsewhere), and  (let ((t0 (time))) (sleep 2) (- (time) t0))
+       : about 600

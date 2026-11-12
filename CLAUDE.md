@@ -202,6 +202,17 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   follow the elements, and a block-less vector (mid-allocation) is skipped.
   `make-array` (`:initial-element`), `vector`, `aref`/`svref` (also on
   strings) with `setf`, `elt`, `length`, `vectorp`, `#(...)` both ways.
+* **MIDI** (2026-11-12, Mike: "midi-note"): `midi-out` is each machine's
+  native (mach/*/card.asm), `midi-note` and the rest Lisp
+  (lib/lisp2.lsp), numbered as the card's own RSXs (channels 1-16,
+  instruments 1-128, values masked to 0-127). On the CPC the card goes
+  into its MIDI mode (&D0 &42 0) at the first MIDI byte, V_MIDI says so,
+  and every native that writes &FBEE otherwise calls `cd_speech` first
+  (&FF 20 out; it sends a System Reset down the wire). MAME has no card:
+  `LISP_CARDLOG=file` logs the bytes written to &FBEE, and a test named
+  `card*` gets them at the end of its transcript. On the TRS-80,
+  `M_MIDI` (port 8, 470 us after each byte) copies them to the printer
+  under `-ee`, as `<90>`.
 * **Speed** (2026-11-06): `tools/run.sh -p prof.txt` counts every
   instruction fetched while lines run, `tools/profile.py prof.txt [-l]`
   sums them by routine. Done so far: arguments that are constants or
@@ -311,6 +322,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     window, where the machine page itself runs: `RS_XFER` (resident)
     maps a page for one LDIR to or from RAM below &C000 (the file's
     buffer). A machine call (`M_DELETE`...) is a line in mkjumps.py.
+  * LDOS's ticks: a Model I's at &4040, 25 ms, a byte running on
+    through the seconds (&4041 seconds, &4042 minutes, &4043 hours); a
+    Model III's at &4216 count 30 down to 1 within each second (&4217).
+    Measured in trs80gp with probe programs. (time) is built on them.
   * rasm evaluates `assert` and `repeat` where they stand: a symbol in
     them must be defined above (an equate after it is "not found").
   * The images are compressed (`tools/trs80/lz.py`, decoded by the

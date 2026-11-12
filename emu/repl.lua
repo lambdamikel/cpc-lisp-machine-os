@@ -60,6 +60,18 @@ if INFILE then
   for l in io.lines(INFILE) do LINES[#LINES + 1] = l end
 end
 
+-- LISP_CARDLOG=file: every byte written to &FBEE (the LambdaSpeak card,
+-- which MAME has not got), in hex, written to the file at the end
+CARDLOG = getenv("LISP_CARDLOG", nil)
+CARD = {}
+if CARDLOG then
+  IOS = CPU.spaces["io"]
+  TAPC = IOS:install_write_tap(0xFBEE, 0xFBEE, "card", function(offset, data, mask)
+    CARD[#CARD + 1] = string.format("%02X", data & 0xFF)
+    return data
+  end)
+end
+
 OUT = {}
 TAPO = MEM:install_read_tap(0xBB5A, 0xBB5A, "txtout", function(offset, data, mask)
   local pc = CPU.state["PC"].value
@@ -166,6 +178,11 @@ local function finish(why)
       f:write(string.format("%04X %s %d\n", k & 0xFFFF,
         rom > 0 and ROMS[rom][1] or (k < 0x4000 and "firmware" or "ram"), n))
     end
+    f:close()
+  end
+  if CARDLOG then
+    local f = io.open(CARDLOG, "w")
+    f:write(table.concat(CARD, " "), "\n")
     f:close()
   end
   -- LISP_DUMP="BC77-BC9F,B0C0-B0FF": RAM in hex on stderr, for debugging

@@ -108,6 +108,8 @@ V_VM              defs 16           ;   and its scratch (never Lisp values)
 V_S1              defs 2            ; scratch for routines that call nothing
 V_S2              defs 2
 V_S3              defs 2
+V_MIDI            defs 1            ; the CPC's LambdaSpeak card is in its MIDI
+                                    ;   mode (mach/cpc/card.asm)
 V_END
                   code
     assert V_END <= VARS_END

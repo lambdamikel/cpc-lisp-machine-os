@@ -89,3 +89,29 @@ tk_setting:
     out (TK_PORT),a
     pop hl
     ret
+
+;; ---------------------------------------------------------------------------
+;; MIDI through MIDI/80, Michael Wessel's MIDI card for the TRS-80: a byte
+;; to port 8 goes out of its MIDI OUT (and to its Waveblaster module, as its
+;; DIP switches say). The machine page sends it and waits its time
+;; (M_MIDI). midi-note and the rest are Lisp (lib/lisp2.lsp).
+
+;; (midi-out byte...) -> NIL: the bytes as they are, out of MIDI OUT
+;@ MIDI-OUT 0 255 lf_midi_out
+lf_midi_out:
+    ld a,b
+    or a
+    jp z,lnil
+.l:
+    NEXTARG
+    call lint_de                ; (B kept)
+    ld a,e
+    call M_MIDI
+    djnz .l
+    jp lnil
+
+;; (midi-off) -> NIL: nothing to do here (on the CPC it takes the
+;; LambdaSpeak card out of its MIDI mode)
+;@ MIDI-OFF 0 0 lf_midi_off
+lf_midi_off:
+    jp lnil

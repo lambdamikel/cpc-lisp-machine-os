@@ -159,3 +159,5 @@
     dw m_m_delete
     assert $ == MTAB+2*J_M_FILL
     dw m_m_fill
+    assert $ == MTAB+2*J_M_MIDI
+    dw m_m_midi

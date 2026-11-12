@@ -124,15 +124,25 @@ without KI/DVR; with KI/DVR loaded this is untried.)
   LambdaSpeak does on the CPC (so `(sing)` sings); `speech-stop`,
   `speech-voice`, `speech-rate`, `speech-volume`. Not tried on a real
   Talker/80 yet (trs80gp has none).
-* `time` counts in seconds (LDOS's clock: &4041 on a Model I, &4217 on a
-  Model III), in the CPC's 1/300 s.
-* Not yet: music through MIDI/80. Not to be: `symbol` -- the characters
-  are the character generator's, a ROM.
+* **MIDI** through MIDI/80 (port 8, its MIDI OUT and its Waveblaster as
+  its DIP switches say): `midi-note`, `midi-program`, `midi-control`,
+  `midi-panic`, `midi-out`, and `(midi-tune)`, a minuet in two voices.
+  Not tried on a real MIDI/80 yet (trs80gp has none: with `-ee` the
+  bytes go to the transcript too, as `<90><3C><64>`).
+* `time` counts LDOS's ticks, in the CPC's 1/300 s. A Model I's are 25
+  ms, a byte at &4040 running on through the seconds (theirs at &4041):
+  the ticks between two calls are the byte's difference that is nearest
+  40 times the seconds gone by, exact however long between them. A Model
+  III's, 33 ms, count 30 down to 1 at &4216 within each second (&4217).
+  A call takes 3.5 ms.
+* Not to be: `symbol` -- the characters are the character generator's, a
+  ROM.
 
 ## In trs80gp
 
 `-m1 -mem xmem80` is a Model I with X-MEM/80. With `-ee` the machine
-page copies everything the Lisp prints, and each line typed, to the
-printer -- `-batch` writes that to `trs80-printer.txt`, the transcript --
-and `(quit)` ends the emulator. Typed input (`-i`) arrives when a program
-waits in the ROM's key routine (&0049), which is where `KEY_WAIT` waits.
+page copies everything the Lisp prints, each MIDI byte, and each line
+typed, to the printer -- `-batch` writes that to `trs80-printer.txt`,
+the transcript -- and `(quit)` ends the emulator. Typed input (`-i`)
+arrives when a program waits in the ROM's key routine (&0049), which is
+where `KEY_WAIT` waits.

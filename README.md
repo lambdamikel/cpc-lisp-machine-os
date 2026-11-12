@@ -20,6 +20,20 @@ editors in four more ROMs, and a bytecode compiler in a fifth.
     LISP> (mapcar #'(lambda (x) (* x x)) '(1 2 3 4 5))
     (1 4 9 16 25)
 
+## Machines
+
+* **The Amstrad CPC** -- 464, 664 and 6128 -- is its home: six ROMs, on
+  an expansion ROM board or the LambdaSpeak 4 card (below).
+* **The TRS-80 Model I and Model III with
+  [X-MEM/80](https://github.com/lambdamikel/x-mem-80)** run it too, as a
+  port: the same six images, under LDOS ([*On a
+  TRS-80*](#on-a-trs-80), below).
+* **More Z80 machines are on the way**, in this order: the ZX Spectrum
+  128/+2/+3, the TRS-80 Model 4, MSX1, the TA alphatronic PC and the
+  Sharp MZ-700. Everything a machine provides is behind one interface
+  ([`mach/README.md`](mach/README.md)); the CPC's is `mach/cpc/`, the
+  TRS-80's `mach/trs80/`.
+
 ## Videos
 
 | | |
@@ -40,7 +54,7 @@ The **library** comes in five more ROMs:
 | ROM | file | what |
 |---|---|---|
 | library 1 | LISPLIB.ROM | the screen, graphics (circles, flood fill, XOR, turtle graphics), sound, keys and joystick; strings and characters; the printers and readers with CL's streams; files through the disc ROM, and a RAM disc on a 6128; the line editor and a full-screen function editor |
-| library 2 | LISPLIB2.ROM | floats and the maths functions through the firmware, `format` with all its directives, `sort`, the sequence functions with all their keywords, hash tables, structures, `coerce`, speech and PlayCity on the LambdaSpeak card |
+| library 2 | LISPLIB2.ROM | floats and the maths functions through the firmware, `format` with all its directives, `sort`, the sequence functions with all their keywords, hash tables, structures, `coerce`, speech, PlayCity and MIDI out on the LambdaSpeak card |
 | library 3 | LISPLIB3.ROM | about eighty CL functions and macros written in Lisp (`reduce`, `map`, `defstruct`, `typep`, `handler-case`, `with-open-file`...), read from ROM the first time each is used |
 | demo | LISPDEMO.ROM | `loop` (the extended one too), string streams, and demo programs: `(demo)` lists them |
 | VM | LISPVM.ROM | the bytecode machine, and the compiler: `compile`, `compile-file`, `disassemble` |
@@ -78,7 +92,8 @@ Any ROM box or ROM board takes them, or the LambdaSpeak card (below).
 [LambdaSpeak 4, aka LambdaSpeak AI](https://github.com/lambdamikel/lambdaspeak4)
 ([Hackaday](https://hackaday.io/project/206813-lambdaspeak-4-aka-lambdaspeak-ai)),
 which serves eight ROMs from flash, uploaded over USB, and does the
-speech and PlayCity Lisp's `say` and `pc-tone` use. CPC Lisp was
+speech, PlayCity and MIDI Lisp's `say`, `pc-tone` and `midi-note`
+use. CPC Lisp was
 developed on it; its own Parados and LS AI ROMs keep their slots:
 
 | slot | ROM number | image |
@@ -128,16 +143,55 @@ it is **CTRL + 2** (in MAME, Right Alt + 2).
 
 ## On a TRS-80
 
-The same Lisp runs on a **TRS-80 Model I or III with
-[X-MEM/80](https://github.com/lambdamikel/x-mem-80)**, the 512 KB paged
-memory card, under LDOS: the six images are built from the same sources
-and run unchanged in the card's 16 KB window at &C000; what is the
-TRS-80's -- the screen, keys, graphics in the 2 x 3 blocks, sound on the
-cassette port, floats through the Level II ROM, files through LDOS -- is
-in `mach/trs80/`. `MACH=trs80 tools/build.sh` makes LDOS discs to boot,
-and `tools/trs80/play.sh` runs it in trs80gp.
-[`mach/trs80/README.md`](mach/trs80/README.md) has the rest -- among it
-the keys a TRS-80 has not got: **SHIFT down-arrow, then `-`** is `~`.
+The same Lisp -- the same six images, built from the same sources --
+runs on a **TRS-80 Model I or Model III** with Michael Wessel's and Mark
+Pruden's [X-MEM/80](https://github.com/lambdamikel/x-mem-80), 512 KB in
+16 KB pages: the images run unchanged in its window at &C000. What is the
+TRS-80's -- the screen, the keys, graphics in the 2 x 3 blocks, sound on
+the cassette port, floats through the Level II ROM, files through LDOS,
+a RAM disc in X-MEM/80's spare pages, speech through Talker/80, MIDI
+through MIDI/80 -- is in `mach/trs80/`.
+
+    CPC Lisp 0.9
+    A Lisp machine for the TRS-80
+    library ROMs 3 4 5 6
+    2832 cells free
+
+**What it needs**: a Model I or III; X-MEM/80 with its jumper in X-MEM
+mode (not SuperMem); a disc drive, real or emulated. Talker/80 for
+speech, MIDI/80 for MIDI and a printer are optional.
+
+**The disc**: `MACH=trs80 tools/build.sh` (rasm and Python 3, as for the
+CPC, above) makes `build/trs80/lisp-a.dsk` for a Model I -- LDOS 5.3.1,
+single density, JV1, with `LISP/CMD` and the seven images on it,
+compressed -- and `build/trs80/lisp-m3.dsk` for a Model III -- LDOS
+5.1.4, double density, JV3.
+
+**Starting**: boot that disc, give LDOS the date (and on a Model I the
+time), and at `LDOS Ready` type
+
+    LISP
+
+It loads the images into X-MEM/80's pages and starts; without X-MEM/80
+in its X-MEM mode it says so and goes back to LDOS. `(quit)` goes back to
+LDOS; the RAM disc `M:` keeps its files.
+
+**In an emulator**: [trs80gp](http://48k.ca/trs80gp.html) has X-MEM/80
+for the Model I:
+
+    trs80gp -m1 -mem xmem80 -d0 build/trs80/lisp-a.dsk
+
+(`tools/trs80/play.sh` does that, and types the date, the time and
+`LISP` for you.)
+
+**What is different**: the screen is 64 by 16 and the graphics 128 by
+48 blocks, in one colour; sound is one voice; BREAK is ESC; about 2800
+cells instead of 6400. The keys a TRS-80 has not got: **SHIFT
+down-arrow, then `-`** is `~`, then `/` is `\`, `8` `9` are `[` `]`...
+[`mach/trs80/README.md`](mach/trs80/README.md) has it all, and
+[`mach/trs80/hardware-test.txt`](mach/trs80/hardware-test.txt) what to
+try on a real one. It was made and tested in trs80gp; the real Model I
+and III are next.
 
 ## Documents
 

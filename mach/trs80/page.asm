@@ -1613,15 +1613,173 @@ s_2500:
 ;; ---------------------------------------------------------------------------
 ;; SYSTEM
 
-;; SYS_TIME: -> DEHL = the time of day in 1/300 s, from LDOS's clock
-;; (seconds, minutes, hours at &4041 on a Model I, &4217 on a Model III)
+;; SYS_TIME: -> DEHL = a count of 1/300 s, from LDOS's clock and its
+;; ticks. A Model III's LDOS counts 30 down to 1 at &4216 within each
+;; second (seconds, minutes, hours at &4217): the second * 300 and the
+;; ticks into it * 10. A Model I's counts 25 ms ticks at &4040, a byte that
+;; runs on through the seconds (theirs at &4041): the ticks since the last
+;; call are the number that is the byte's difference, modulo 256, and
+;; nearest 40 times the seconds that went by -- exact for any time between
+;; calls, the clock being less than 40 ticks out. They are added up, from
+;; the time of day at the first call, and made 1/300 s (* 15 / 2).
 m_sys_time:
-    ld ix,L_TIME                ; seconds, minutes, hours: a Model I's
+    ld ix,t_raw
     ld a,(c_m3)
     or a
-    jr z,.m1
-    ld ix,L_TIME3               ;   or a Model III's
-.m1:
+    jp nz,.m3
+    di
+    ld a,(L_TIME-1)             ; the ticks
+    ld (ix+3),a
+    ld hl,(L_TIME)              ; seconds, minutes
+    ld a,(L_TIME+2)             ;   hours
+    ei
+    ld (ix+0),l
+    ld (ix+1),h
+    ld (ix+2),a
+    ld a,(t_init)
+    or a
+    jr z,.first
+    ld de,(t_lastR)             ; the same second as last time? Then the
+    or a                        ;   ticks since are the byte's difference
+    sbc hl,de
+    jr nz,.new
+    ld a,(t_lastR+2)
+    cp (ix+2)
+    jr nz,.new
+    ld a,(t_lastT)
+    ld b,a
+    ld a,(ix+3)
+    ld (t_lastT),a
+    sub b
+    ld l,a
+    ld h,0
+    ld de,0
+    jr .add
+.first:
+    inc a
+    ld (t_init),a
+    call .secs                  ; DEHL = the second of the day
+    call .last
+    ld c,40
+    call mul32                  ; the ticks, as the clock has them
+    jr .total
+.new:
+    call .secs
+    push de
+    push hl
+    ld bc,(t_lastS)             ; the seconds since, modulo a day
+    or a
+    sbc hl,bc
+    ex de,hl
+    ld bc,(t_lastS+2)
+    sbc hl,bc
+    ex de,hl
+    jr nc,.pos
+    ld bc,#5180                 ; + 86400
+    add hl,bc
+    ex de,hl
+    ld bc,1
+    adc hl,bc
+    ex de,hl
+.pos:
+    ld c,40
+    call mul32                  ; DEHL: about the ticks since
+    ld a,(t_lastT)
+    ld b,a
+    ld a,(ix+3)
+    sub b                       ; the byte's difference,
+    sub l                       ;   less the estimate's: -128..127 off
+    ld c,a
+    ld b,0
+    bit 7,a
+    jr z,.adj
+    dec b
+.adj:
+    add hl,bc
+    ld a,e
+    adc a,b
+    ld e,a
+    ld a,d
+    adc a,b
+    ld d,a
+    pop bc                      ; this second, for next time
+    ld (t_lastS),bc
+    pop bc
+    ld (t_lastS+2),bc
+    ld bc,(t_raw)
+    ld (t_lastR),bc
+    ld a,(ix+2)
+    ld (t_lastR+2),a
+    ld a,(ix+3)
+    ld (t_lastT),a
+    bit 7,d
+    jr z,.add
+    ld hl,0                     ; (never: none the less, not backwards)
+    ld de,0
+.add:
+    ld bc,(t_tot)
+    add hl,bc
+    ex de,hl
+    ld bc,(t_tot+2)
+    adc hl,bc
+    ex de,hl                    ; DEHL = the new total
+.total:
+    ld (t_tot),hl
+    ld (t_tot+2),de
+    ld c,15
+    call mul32
+    srl d
+    rr e
+    rr h
+    rr l
+    ret
+.last:
+    ld (t_lastS),hl
+    ld (t_lastS+2),de
+    ld bc,(t_raw)
+    ld (t_lastR),bc
+    ld a,(ix+2)
+    ld (t_lastR+2),a
+    ld a,(ix+3)
+    ld (t_lastT),a
+    ret
+.m3:
+    di
+    ld a,(L_TIME3-1)            ; the ticks left of this second
+    ld (ix+3),a
+    ld hl,(L_TIME3)
+    ld a,(L_TIME3+2)
+    ei
+    ld (ix+0),l
+    ld (ix+1),h
+    ld (ix+2),a
+    call .secs
+    ld c,100
+    call mul32
+    ld c,3
+    call mul32                  ; the second * 300
+    ld a,(ix+3)
+    cp 31
+    jr c,.in
+    ld a,30
+.in:
+    or a
+    jr nz,.nz
+    inc a
+.nz:
+    ld b,a
+    ld a,30
+    sub b                       ; the ticks into it, 0-29
+    ld b,a
+    add a,a
+    add a,a
+    add a,b                     ; * 5, twice
+    push af
+    call add32a
+    pop af
+    jp add32a
+;; .secs: t_raw (IX) -> DEHL = the second of the day
+.secs:
     ld l,(ix+2)
     ld h,0
     ld de,0
@@ -1632,11 +1790,13 @@ m_sys_time:
     ld c,60
     call mul32
     ld a,(ix+0)
-    call add32a
-    ld c,100
-    call mul32
-    ld c,3
-    ;; fall through
+    jp add32a
+t_raw:      db 0,0,0,0          ; seconds, minutes, hours as read; the ticks
+t_init:     db 0                ; 1 once the Model I's count has begun
+t_lastS:    dw 0,0              ;   the second of the day at the last call,
+t_lastT:    db 0                ;   the ticks then,
+t_lastR:    db 0,0,0            ;   and the clock as read
+t_tot:      dw 0,0              ;   the ticks so far
 ;; mul32: DEHL *= C (1 or more)
 mul32:
     ld (t32),hl
@@ -1716,6 +1876,50 @@ m_m_edit:
     pop hl
     or a
     ret
+
+;; M_MIDI: A = a byte -> out of MIDI/80 (port 8), and its time on the
+;; wire after it (a MIDI byte takes 320 us; TRACKER waits about 430). In
+;; trs80gp (-ee), which has no MIDI/80, copied to the printer as <hex>, so
+;; that a transcript shows it. All kept but AF.
+MIDI_PORT   equ 8
+m_m_midi:
+    out (MIDI_PORT),a
+    push bc
+    ld c,a
+    ld a,(c_echo)
+    or a
+    call nz,.echo
+    ld b,64                     ; ~830 T: 470 us on a Model I, 410 on a III
+.w:
+    djnz .w
+    pop bc
+    ret
+.echo:
+    push bc
+    ld b,c
+    ld c,'<'
+    call c_print
+    ld a,b
+    rrca
+    rrca
+    rrca
+    rrca
+    call .hex
+    ld a,b
+    call .hex
+    ld c,'>'
+    call c_print
+    pop bc
+    ret
+.hex:
+    and 15
+    add a,'0'
+    cp '9'+1
+    jr c,.h
+    add a,7
+.h:
+    ld c,a
+    jp c_print
 
 ;; M_QUIT: back to LDOS -- or out of trs80gp, with -ee
 m_m_quit:

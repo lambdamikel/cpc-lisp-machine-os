@@ -90,4 +90,5 @@ J_M_RDOUT        equ 76
 J_M_RDCAT        equ 77
 J_M_DELETE       equ 78
 J_M_FILL         equ 79
-NJ             equ 80
+J_M_MIDI         equ 80
+NJ             equ 81

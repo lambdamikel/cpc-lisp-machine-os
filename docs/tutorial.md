@@ -252,7 +252,7 @@ number after the volume:
 the pitch (BASIC's ENT); `(release channels)`, `(sound-hold)` and
 `(sound-continue)` work the queues.
 
-## 9. Speech and PlayCity
+## 9. Speech, PlayCity and MIDI
 
 With the LambdaSpeak card, `say` speaks, and Lisp goes on meanwhile:
 
@@ -274,6 +274,18 @@ them (0-5) until changed, `(pc-off)` silences them all:
 
 `(chords)` in the demos plays six-note chords that way. Without the card
 all these simply do nothing.
+
+**MIDI**: with a synthesizer on the card's MIDI OUT (or MIDI/80's, on a
+TRS-80), `midi-note` plays a note -- channel, note (60 is middle C),
+velocity, and a duration in 1/100 s if it should end by itself:
+
+    (midi-program 1 20)                        ; a church organ
+    (dolist (n '(60 64 67 72)) (midi-note 1 n 100 40))
+    (midi-note 1 48 90) (midi-note 1 48 0)     ; on, and off
+    (midi-tune)                                ; the demo: a minuet
+
+`(ed 'midi-tune)` shows how two voices are kept in time. The card is in
+its MIDI mode while it plays; `say` takes it out again by itself.
 
 ## 10. Files as streams
 

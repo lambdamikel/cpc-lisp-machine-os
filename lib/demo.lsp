@@ -15,6 +15,7 @@
                ("(koch 4)" "a Koch snowflake, turtle")
                ("(tree)" "a tree, by turtle")
                ("(tune)" "Ode to Joy")
+               ("(midi-tune)" "a minuet, out of MIDI OUT")
                ("(talk)" "speech: LambdaSpeak, Talker/80")
                ("(sing)" "singing: LambdaSpeak, Talker/80")
                ("(chords)" "PlayCity's six voices" :cpc)
@@ -183,6 +184,29 @@
     (let ((d 20))
       (when (consp n) (setq d (cadr n) n (car n)))
       (sound 1 (note n) d 15 1)))
+  t)
+
+;; Bach's -- or Petzold's -- Minuet in G, out of MIDI OUT (LambdaSpeak's,
+;; MIDI/80's): a harpsichord on channel 1 and a cello's bass under it on 2.
+;; A bar is its bass note, then the tune's notes and their eighths. Each
+;; note ends at its time from the start (e, in 1/300 s), so the time spent
+;; between notes is not added up.
+(defun midi-tune ()
+  (midi-program 1 7) (midi-program 2 43)
+  (let* ((t0 (time)) (e 0)
+         (a '((43 74 2 67 1 69 1 71 1 72 1) (47 74 2 67 2 67 2)
+              (48 76 2 72 1 74 1 76 1 78 1) (47 79 2 67 2 67 2)
+              (45 72 2 74 1 72 1 71 1 69 1) (43 71 2 72 1 71 1 69 1 67 1)))
+         (bars (append a '((50 66 2 67 1 69 1 71 1 67 1) (50 69 6))
+                       a '((50 69 2 71 1 69 1 67 1 66 1) (43 67 6)))))
+    (dolist (bar bars)
+      (midi-note 2 (car bar) 64)
+      (do ((l (cdr bar) (cddr l)) (v 96 80)) ((null l))
+        (midi-note 1 (car l) v)
+        (incf e (* 75 (cadr l)))
+        (loop (when (>= (logand (- (time) t0) 16383) e) (return)))
+        (midi-note 1 (car l) 0))
+      (midi-note 2 (car bar) 0)))
   t)
 
 ;; The LambdaSpeak card (speech and PlayCity are in library 2). Without

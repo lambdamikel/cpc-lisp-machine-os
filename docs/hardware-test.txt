@@ -273,7 +273,21 @@ expansion, 2026-11-07, build 22482: all as above; the RAM disc under the
 1.0 firmware too.)
 
 
-18. Getting BASIC back
+18. MIDI, through the card
+--------------------------
+A synthesizer (or a GM module) on the card's MIDI OUT. MAME has no
+card: what it checked is the bytes written to &FBEE (test/card.lsp).
+[ ] (midi-note 1 60 100 50)          middle C for half a second
+[ ] (midi-tune)                      a minuet, harpsichord and cello,
+                                     about 25 s; T
+[ ] (say "back to speech")           the card speaks it (the synth may
+                                     reset: speech takes the card out
+                                     of MIDI mode with &FF 20)
+[ ] (midi-program 1 20) (midi-note 1 48 100 100)
+                                     a church organ, two seconds
+
+
+19. Getting BASIC back
 ----------------------
 Switch the CPC off, then on the PC:
 

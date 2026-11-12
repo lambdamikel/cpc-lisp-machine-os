@@ -33,8 +33,14 @@ for n in "${names[@]}"; do
         "$IDSK" "$tmp/$n.dsk" -n >/dev/null 2>&1
         disc=(-d "$tmp/$n.dsk")
     fi
-    ( tools/run.sh -m "$MACH" "${disc[@]}" -f 400000 "test/$n.lsp" 2>"$tmp/$n.err" \
-        | sed -n '/^LISP> /,$p' > "$tmp/$n.got" ) &
+    # card*: what was written to the LambdaSpeak card (&FBEE) goes at the
+    # end of the transcript, in hex
+    ( if [[ $n == card* ]]; then export LISP_CARDLOG=$tmp/$n.card; fi
+      tools/run.sh -m "$MACH" "${disc[@]}" -f 400000 "test/$n.lsp" 2>"$tmp/$n.err" \
+        | sed -n '/^LISP> /,$p' > "$tmp/$n.got"
+      if [ -n "${LISP_CARDLOG:-}" ]; then
+          { echo; echo "card:"; fold -w 48 "$LISP_CARDLOG"; } >> "$tmp/$n.got"
+      fi ) &
 done
 wait
 fail=0

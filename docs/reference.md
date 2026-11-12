@@ -29,7 +29,7 @@ Contents: [Starting](#starting) · [The REPL](#the-repl) ·
 [Input and output](#input-and-output) · [Files](#files) ·
 [The text screen](#the-text-screen) · [Graphics](#graphics) ·
 [Turtle graphics](#turtle-graphics) · [Sound and music](#sound-and-music) ·
-[Speech and PlayCity](#the-lambdaspeak-card-speech-and-playcity) ·
+[Speech and PlayCity](#the-lambdaspeak-card-speech-and-playcity) · [MIDI](#midi) ·
 [Keys, time and the machine](#keys-time-and-the-machine) ·
 [The demos](#the-demos) · [Memory](#memory) ·
 [Differences from Common Lisp](#differences-from-common-lisp)
@@ -678,6 +678,29 @@ Its position is kept to 1/256, so thousands of short steps do not drift:
 
 Without the card these do nothing (the bytes go to a port nobody answers).
 
+## MIDI
+
+Out of the LambdaSpeak card's MIDI OUT on a CPC -- the first MIDI byte
+puts the card in its MIDI mode, the Ultimate MIDI Card's (`|MIDI`), and
+`say`, the `speech-` functions and `playcity` take it out again (which
+sends a System Reset down the wire) -- or MIDI/80's on a TRS-80. The
+card's RSXs' numbering: channels 1-16 and instruments 1-128, as the
+General MIDI chart has them; notes (60 is middle C), velocities and
+values 0-127, masked, so that none is taken for a status byte.
+
+| Function | | |
+|---|---|---|
+| `(midi-note channel note velocity [duration])` | a Note On; velocity 0 is the note off. With a duration, in 1/100 s as `sound`'s: on, a wait, off | 3 |
+| `(midi-program channel instrument)` | a Program Change: `(midi-program 1 20)` is a church organ | 3 |
+| `(midi-control channel controller value)` | a Control Change: `(midi-control 1 7 64)` the channel's volume to half | 3 |
+| `(midi-panic)` | All Notes Off, on every channel | 3 |
+| `(midi-out byte...)` | the bytes as they are | 2 |
+| `(midi-off)` | the card out of MIDI mode, as `\|MIDIOFF` -- after a reset of the CPC it may still be in it, and speak MIDI | 2 |
+
+    (midi-program 1 7)                    ; a harpsichord
+    (dolist (n '(60 64 67 72)) (midi-note 1 n 100 25))
+    (midi-tune)                           ; the demo: a minuet, two voices
+
 ## Keys, time and the machine
 
 | Function | | |
@@ -688,6 +711,7 @@ Without the card these do nothing (the bytes go to a port nobody answers).
 | `(joystick [n])` | 1 up, 2 down, 4 left, 8 right, 16 fire 2, 32 fire 1, added | 1 |
 | `(frame)` | waits for the next frame, 1/50 s | 1 |
 | `(time)` | the firmware's clock, 1/300 s, modulo 16384 | 1 |
+| `(sleep seconds)` | waits, a whole number of seconds or a float; ESC stops it | 3 |
 | `(peek address)` `(poke address byte)` | RAM, all 64 KB (`#xC000` is the screen); an address past 16383 is a float, which is fine | 1 |
 | `(gc)` | collects; the cells free | core |
 | `*features*` | `(:cpc :cpc-lisp)` on a CPC, `(:trs-80 :cpc-lisp)` on a TRS-80 | 1 |
@@ -698,7 +722,7 @@ Without the card these do nothing (the bytes go to a port nobody answers).
 
 The demo ROM: `(demo)` lists them. `(shapes)` `(rose [k])` `(spiral)`
 `(moire)` `(bounce)` `(sierpinski [n])` `(sketch)` `(koch [level])`
-`(tree [level])` `(tune)` `(talk)` `(sing)` `(chords)` `(hanoi n)`
+`(tree [level])` `(tune)` `(midi-tune)` `(talk)` `(sing)` `(chords)` `(hanoi n)`
 `(queens n)` `(primes n)` `(fact n)`. A key ends a picture.
 They are Lisp text, so `(ed 'rose)` shows one.
 
@@ -753,7 +777,8 @@ What is different there:
   from the same logical 640 by 400; a pen is lit or not. `ink-mode`
   draws with XOR, AND, OR as on the CPC.
 - **Sound**: one voice, played there and then on the cassette port;
-  envelopes are taken and not heard.
+  envelopes are taken and not heard. **MIDI** through MIDI/80 (port 8).
+- `(time)` counts LDOS's ticks: 25 ms on a Model I, 33 ms on a III.
 - **Floats**: + - * / and `sqrt` as on the CPC; `exp`, `log` and the
   trigonometry to about seven digits (the Level II ROM's single
   precision).

@@ -57,3 +57,40 @@
 (defun %set-get (s p x) (setf (get s p) x))
 (defun %set-fn (s f) (setf (symbol-function s) f))
 (defun %set-plist (s p) (setf (symbol-plist s) p))
+
+;; Time: (sleep seconds) waits, a whole number of them or a float; ESC or
+;; BREAK stops it. (%wait n) waits n/300 s (n < 16384, (time)'s modulus).
+
+(defun %wait (n)
+  (let ((t0 (time)))
+    (loop (when (>= (logand (- (time) t0) 16383) n) (return nil)))))
+
+(defun sleep (seconds)
+  (loop (when (< seconds 50) (return)) (%wait 15000) (decf seconds 50))
+  (%wait (round (* seconds 300))))
+
+;; MIDI, out of the LambdaSpeak card's MIDI OUT on a CPC, MIDI/80's on a
+;; TRS-80 (midi-out, each machine's). As the card's |MIDINOTE, |MIDIPROG,
+;; |MIDICC, |MIDIPANIC: channels 1-16 and instruments 1-128, as the General
+;; MIDI chart numbers them; notes, velocities and values 0-127, masked (a
+;; byte with bit 7 set would be taken for a status byte); velocity 0 is the
+;; note off. A duration, in 1/100 s as sound's: the note on, a wait, the
+;; note off.
+
+(defun %midi-status (kind channel) (logior kind (logand (1- channel) 15)))
+
+(defun midi-note (channel note velocity &optional duration)
+  (let ((s (%midi-status #x90 channel)) (n (logand note 127)))
+    (midi-out s n (logand velocity 127))
+    (when duration (%wait (* 3 duration)) (midi-out s n 0))
+    nil))
+
+(defun midi-program (channel instrument)
+  (midi-out (%midi-status #xC0 channel) (logand (1- instrument) 127)))
+
+(defun midi-control (channel controller value)
+  (midi-out (%midi-status #xB0 channel) (logand controller 127)
+            (logand value 127)))
+
+(defun midi-panic ()
+  (dotimes (c 16) (midi-out (logior #xB0 c) 123 0)))

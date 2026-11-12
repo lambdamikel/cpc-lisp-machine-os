@@ -51,6 +51,7 @@ cd_crend:
 ;; a second line waits its turn. -> T
 ;@ SAY 1 1 lf_say
 lf_say:
+    call cd_speech
     call sd_text                ; HL = the characters, BC = how many
     ld a,#EE                    ; DECtalk mode
     call cd_send
@@ -80,6 +81,7 @@ sd_text:
 ;; (speech-stop): the card stops speaking
 ;@ SPEECH-STOP 0 0 lf_speech_stop
 lf_speech_stop:
+    call cd_speech
     ld a,#DF
     call cd_send
     jp lnil
@@ -99,6 +101,7 @@ lf_speech_rate:
 lf_speech_volume:
     ld c,#A0
 cd_setting:
+    call cd_speech
     push hl
     call lint_hl
     ld a,l
@@ -109,6 +112,64 @@ cd_setting:
     ret
 
 ;; ---------------------------------------------------------------------------
+;; MIDI, through the card's MIDI mode (&D0 &42 0, the Ultimate MIDI Card's
+;; way: every byte to &FBEE goes out of MIDI OUT; the card's
+;; docs/serial-and-midi.md). The first MIDI byte puts the card in it; speech
+;; and PlayCity take it out again (&FF 20, which also sends a System Reset
+;; down the wire). cd_send's 0.8 ms is more than a MIDI byte's 320 us.
+;; midi-note and the rest are Lisp (lib/lisp2.lsp).
+
+;; (midi-out byte...) -> NIL: the bytes as they are, out of MIDI OUT
+;@ MIDI-OUT 0 255 lf_midi_out
+lf_midi_out:
+    call cd_midi
+    ld a,b
+    or a
+    jp z,lnil
+.l:
+    NEXTARG
+    call lint_de                ; (B kept)
+    ld a,e
+    call cd_send
+    djnz .l
+    jp lnil
+
+;; (midi-off) -> NIL: the card out of MIDI mode, as |MIDIOFF: sent even if
+;; Lisp thinks it is not in it -- after a reset of the CPC it can be (the
+;; card keeps its mode; Lisp starts afresh)
+;@ MIDI-OFF 0 0 lf_midi_off
+lf_midi_off:
+    ld a,1
+    ld (V_MIDI),a
+    call cd_speech
+    jp lnil
+
+;; cd_midi: the card in MIDI mode, if it is not. BC, DE, HL kept.
+cd_midi:
+    ld a,(V_MIDI)
+    or a
+    ret nz
+    inc a
+    ld (V_MIDI),a
+    ld a,#D0
+    call cd_send
+    ld a,#42
+    call cd_send
+    xor a
+    jp cd_send
+;; cd_speech: the card out of MIDI mode, if it is in it. BC, DE, HL kept.
+cd_speech:
+    ld a,(V_MIDI)
+    or a
+    ret z
+    xor a
+    ld (V_MIDI),a
+    ld a,#FF
+    call cd_send
+    ld a,20
+    jp cd_send
+
+;; ---------------------------------------------------------------------------
 ;; PLAYCITY: two more AY chips, three channels each. On the card it must be
 ;; switched on first; a real PlayCity needs nothing, and takes no harm.
 
@@ -116,6 +177,7 @@ cd_setting:
 ;; all six channels silent; NIL off
 ;@ PLAYCITY 1 1 lf_playcity
 lf_playcity:
+    call cd_speech
     push hl
     ld a,#D0                    ; &D0 &43 n: the card's PlayCity on or off
     call cd_send

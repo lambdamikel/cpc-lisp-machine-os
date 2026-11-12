@@ -366,6 +366,12 @@ compiled code (`docs/design.md` describes both)
           graphics in blocks, sound on the cassette port, the demos;
           speech through Talker/80; the RAM disc `M:` in X-MEM/80's
           spare pages, `delete-file`; `flood-fill`; the images
-          compressed onto one Model I disc (2026-11-12)
-    - [ ] The TRS-80 on the real Model I and Model III, and a real
-          Talker/80; MIDI/80
+          compressed onto one Model I disc; `(time)` from LDOS's ticks;
+          MIDI through MIDI/80 (2026-11-12)
+    - [ ] The TRS-80 on the real Model I and Model III, with a real
+          Talker/80 and MIDI/80
+11. [x] **MIDI** (Mike, 2026-11-12): `midi-note`, `midi-program`,
+        `midi-control`, `midi-panic`, `midi-out`, `midi-off`, `sleep`,
+        and the `(midi-tune)` demo -- the LambdaSpeak card's MIDI mode
+        on a CPC, MIDI/80 on a TRS-80; the bytes checked in MAME
+        (test/card.lsp) and trs80gp, not yet on a synthesizer

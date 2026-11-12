@@ -62,7 +62,7 @@ fi
 OUTF=$(mktemp)
 trap 'rm -f "$OUTF"' EXIT
 LISP_IN=$(realpath "$IN") LISP_OUT=$OUTF LISP_SHOT=$SHOT LISP_FRAMES=$FRAMES LISP_EDIT=$EDIT LISP_TIMES=$TIMES \
-LISP_PROF=$PROF LISP_DUMP=${LISP_DUMP:-} \
+LISP_PROF=$PROF LISP_DUMP=${LISP_DUMP:-} LISP_CARDLOG=${LISP_CARDLOG:-} \
 env -u WAYLAND_DISPLAY GDK_BACKEND=x11 timeout 600 xvfb-run -a \
     /usr/games/mame -rompath ${LISP_ROMPATH:-build/mame} -video none -sound none -nothrottle \
     -skip_gameinfo $SYS $ROMBOX ${MAMEARGS} -autoboot_script emu/repl.lua 2>&1 \

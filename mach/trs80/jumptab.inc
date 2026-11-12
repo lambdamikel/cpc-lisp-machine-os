@@ -79,3 +79,4 @@
     call mfar : db 2*J_M_RDCAT
     call mfar : db 2*J_M_DELETE
     call mfar : db 2*J_M_FILL
+    call mfar : db 2*J_M_MIDI
