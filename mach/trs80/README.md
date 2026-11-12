@@ -13,13 +13,17 @@ and Mark Pruden's [X-MEM/80](https://github.com/lambdamikel/x-mem-80)
     tools/trs80/run.sh file.lsp   # type a file at it in trs80gp, print the
                                   #   transcript
 
-The discs are LDOS 5.3.1 for the Model I, single density: `lisp-a.dsk`
-boots and holds `LISP/CMD` and the first images, `lisp-b.dsk` the rest
-(LDOS looks for a file in every drive). At `LDOS Ready`, `LISP` loads the
-seven pages and starts. `(quit)` goes back to LDOS.
+For the **Model I**, LDOS 5.3.1 single density: `lisp-a.dsk` boots and
+holds `LISP/CMD` and the first images, `lisp-b.dsk` the rest (LDOS looks
+for a file in every drive). For the **Model III**, `lisp-m3.dsk`, LDOS
+5.1.4 double density, holds it all. At `LDOS Ready`, `LISP` loads the
+seven pages and starts; without X-MEM/80 in its X-MEM mode it says so
+and goes back to LDOS. `(quit)` goes back to LDOS.
 
-`tools/trs80/ldos-m1.dsk` is the starting disc: a minimal LDOS 5.3.1
-system disc with nothing else on it (from the MIDI/80 project's discs).
+`tools/trs80/ldos-m1.dsk` and `ldos-m3.dsk` are the starting discs:
+LDOS system discs with nothing of the user's on them (from the MIDI/80
+project's discs). The machine page tells a Model III by its ROM (an "I"
+at &0125).
 
 ## How it is arranged
 
@@ -71,11 +75,14 @@ About 3150 cells are free at start, half a CPC's.
   logical 640 by 400; `ink-mode` (XOR, AND, OR); the turtle; circles,
   discs, boxes. One colour: a pen is lit or not.
 * **Files** through LDOS: `load`, `save`, `open`, `with-open-file`,
-  `probe-file`, `compile-file`. A name `B:FOO.LSP` is LDOS's
-  `FOO/LSP:1`.
+  `probe-file`, `compile-file`; `dir` lists each drive's files (LDOS's
+  DIR/SYS, read as a file). A name `B:FOO.LSP` is LDOS's `FOO/LSP:1`.
 * `*features*` is `(:trs-80 :cpc-lisp)`; the demos look at it.
-* Not yet: `dir`, sound (`sound` is silent), `symbol`, `flood-fill`,
-  speech and music (Talker/80 and MIDI/80 belong here), the Model III, a
+* The Model III: the same images and machine page (its ROM has the
+  maths routines at the same places); not tried on one yet -- trs80gp
+  has X-MEM/80 only for the Model I.
+* Not yet: sound (`sound` is silent), `symbol`, `flood-fill`,
+  speech and music (Talker/80 and MIDI/80 belong here), a
   RAM disc in X-MEM/80's spare pages, the images compressed onto one
   disc.
 

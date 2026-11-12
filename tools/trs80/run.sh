@@ -13,7 +13,7 @@
 set -e
 cd "$(dirname "$0")/../.."
 GP=${TRS80GP:-$HOME/claude/midi80/gp.sh}
-B=$PWD/build/trs80
+B=${TRS80_BUILD:-$PWD/build/trs80}
 src=$(realpath "$1")
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT

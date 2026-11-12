@@ -13,6 +13,24 @@ start:
     call L_DSPLY
     ld a,HEAPPAGE
     out (XM_LO),a               ; &8000-&BFFF: the heap's, for good
+    ; X-MEM/80, in its X-MEM mode? Then two pages at &C000 differ
+    ld a,COREPAGE
+    out (XM_HI),a
+    ld a,#A5
+    ld (#C000),a
+    ld a,COREPAGE+1
+    out (XM_HI),a
+    ld a,#5A
+    ld (#C000),a
+    ld a,COREPAGE
+    out (XM_HI),a
+    ld a,(#C000)
+    cp #A5
+    jr z,.xmem
+    ld hl,m_noxmem
+    call L_DSPLY
+    jp L_EXIT
+.xmem:
     ld ix,images
 .next:
     ld l,(ix+0)
@@ -96,6 +114,7 @@ n5: db "LISP5/IMG",13
 nm: db "LISPM/IMG",13
 m_hello:  db "CPC Lisp for the TRS-80 with X-MEM/80: loading",13
 m_nofile: db "Cannot load it: is the Lisp disc in a drive?",13
+m_noxmem: db "No X-MEM/80 -- or its jumper is set to SuperMem mode",13
 fcb:      defs 50,0
 iobuf:    defs 256,0
 loader_end:

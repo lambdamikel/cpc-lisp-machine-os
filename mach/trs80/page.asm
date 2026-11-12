@@ -37,6 +37,7 @@ c_under:    db 0                ;   over this character
 c_esc:      db 0                ; 31 (locate): bytes still to come
 c_parm:     db 0                ;   the column, when the row comes
 c_echo:     db 0                ; 1: the printer gets it all too
+c_m3:       db 0                ; 1: a Model III
 k_back:     db 0                ; KEY_UNREAD's character, 0 if none
 p_col:      db 0                ; the printer has had the screen up to here
 p_row:      db 0
@@ -60,6 +61,13 @@ t32:        dw 0,0
 
 ;; m_init: from the loader, once
 m_init:
+    ld a,(#0125)                ; the Model III's ROM has an "I" there
+    cp 'I'
+    ld a,0
+    jr nz,.m1
+    inc a
+.m1:
+    ld (c_m3),a
     ld a,255
     out (EE_PORT),a             ; trs80gp -ee answers 1
     in a,(EE_PORT)
@@ -147,13 +155,25 @@ c_show:
     pop hl
     ret
 
-;; c_print: C to the printer
+;; c_print: C to the printer: the Model I's at &37E8, the Model III's at
+;; port &F8; bit 7 of the status is busy
 c_print:
+    ld a,(c_m3)
+    or a
+    jr nz,.m3
+.w1:
     ld a,(PRINTER)
     rlca
-    jr c,c_print                ; busy
+    jr c,.w1
     ld a,c
     ld (PRINTER),a
+    ret
+.m3:
+    in a,(#F8)
+    rlca
+    jr c,.m3
+    ld a,c
+    out (#F8),a
     ret
 
 ;; c_put: A = a character, at the cursor; the cursor on. BC, DE corrupt.

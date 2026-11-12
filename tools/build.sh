@@ -26,7 +26,7 @@ ROMS=${ROMS:-$HOME/claude/cpc/mame-roms}
 # the machine: mach/$MACH holds everything that depends on it
 export MACH=${MACH:-cpc}
 # where the ROMs go: build/ for the CPC, build/<machine>/ for another
-if [ "$MACH" = cpc ]; then OUT=build; else OUT=build/$MACH; fi
+if [ "$MACH" = cpc ]; then OUT=build; else OUT=${OUT:-build/$MACH}; fi
 export OUT
 mkdir -p "$OUT"
 
