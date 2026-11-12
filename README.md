@@ -166,6 +166,15 @@ through MIDI/80 -- is in `mach/trs80/`.
 mode (not SuperMem); a disc drive, real or emulated. Talker/80 for
 speech, MIDI/80 for MIDI and a printer are optional.
 
+**Talker/80 on a Model I: reprogram its U1 first.** The Model I
+Talker/80's address decoder (U1, a GAL22V10) answers ports 64-67 as
+well as 11 -- the VS-100's ports -- and X-MEM/80's page registers are 65
+and 66: every page switch lands in Talker/80 as text, and it falls
+silent. Program U1 with
+[`Talker80-decoder-xmem.jed`](https://github.com/lambdamikel/Talker-80/blob/master/src/gal22v10/m1/Talker80-decoder-xmem.jed) from the Talker/80 repository
+([why](https://github.com/lambdamikel/Talker-80#the-model-1-address-decoder-and-x-mem80)); the VS-100 and TRS Voice Synthesizer modes are unchanged.
+The Model III Talker/80 needs nothing.
+
 **The disc**: ready to boot with each
 [release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases) --
 `cpc-lisp-0.95-trs80-model1` and `-model3`, as `.dsk` for emulators and

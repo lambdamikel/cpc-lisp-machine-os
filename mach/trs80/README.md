@@ -129,14 +129,17 @@ without KI/DVR; with KI/DVR loaded this is untried.)
   the CR, and DECtalk speaks a clause only once it ends; a control byte
   makes it wait until Talker/80 is done with it (it empties its text
   buffer then); DECtalk mode is set once each time Lisp starts.
-  **On a Model I, Talker/80 and X-MEM/80 clash**: the Model I version's
-  decoder (`src/gal22v10/m1/Talker80-decoder.PLD` in the Talker/80
-  repository) answers ports 0-3, 8-11, 64-67 and 72-75 -- the VS-100's --
-  so every page switch (`out (65)`, `out (66)`) lands in its text buffer
-  (it spoke once, then only its LEDs flickered, on Mike's). The Model III
-  version decodes port 11 alone. A decoder with `adr3 & !adr6` added to
-  its NATIVE term would answer 8-11 only; port 8 is MIDI/80's, though,
-  and without A0 and A1 the two cannot be told apart.
+  **On a Model I, reprogram Talker/80's U1 (its address decoder, a
+  GAL22V10) with `Talker80-decoder-xmem.jed`** from the
+  [Talker/80 repository](https://github.com/lambdamikel/Talker-80#the-model-1-address-decoder-and-x-mem80): the original answers ports 0-3, 8-11,
+  64-67 and 72-75, the VS-100's, so every X-MEM/80 page switch (`out
+  (65)`, `out (66)`) lands in its text buffer -- it spoke once, then only
+  its LEDs flickered, on Mike's. The new one answers 8-11 in the native
+  modes and leaves the VS-100 and TRS modes as they were; with it, `say`
+  and `(sing)` work on a Model I with X-MEM/80 (2026-11-12, programmed on
+  a T48). Port 8 is MIDI/80's, though, and without A0 and A1 the two
+  cannot be told apart: MIDI bytes reach Talker/80 too. The Model III
+  version decodes port 11 alone and needs nothing.
 * **MIDI** through MIDI/80 (port 8, its MIDI OUT and its Waveblaster as
   its DIP switches say): `midi-note`, `midi-program`, `midi-control`,
   `midi-panic`, `midi-out`, and `(midi-tune)`, a minuet in two voices.
