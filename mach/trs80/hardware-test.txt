@@ -39,7 +39,7 @@ X-MEM mode (not SuperMem).
 2026-11-12: it runs; (midi-tune); say, (talk) and (sing) -- after three
 fixes: DECtalk mode once per Lisp start, a wait after each control byte,
 and a line feed ending each line, which DECtalk needs to speak a clause;
-SHIFT @.)
+SHIFT @; the function editor, its cursor and the arrows.)
 
 9. [ ] On a Model III: 1, 4 and 6 again (its clock and ROM are
        elsewhere), and  (let ((t0 (time))) (sleep 2) (- (time) t0))
