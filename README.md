@@ -41,6 +41,25 @@ editors in four more ROMs, and a bytecode compiler in a fifth.
 | <a href="https://youtu.be/rrI9Di3qzVM"><img src="https://img.youtube.com/vi/rrI9Di3qzVM/maxresdefault.jpg" width="400" alt="A Modern Lisp OS for the Amstrad CPC"></a> | <a href="https://youtu.be/qcSBfZ-axFA"><img src="https://img.youtube.com/vi/qcSBfZ-axFA/maxresdefault.jpg" width="400" alt="CPC Lisp 0.9 demos"></a> |
 | [A Modern Lisp OS for the Amstrad CPC -- Common Lisp in ROM!](https://youtu.be/rrI9Di3qzVM) (11:32) | [CPC Lisp 0.9 Demos -- Turn your Amstrad CPC into a Lisp Machine!](https://youtu.be/qcSBfZ-axFA) (6:51) |
 
+## Screenshots
+
+From the emulators: MAME for the CPC, trs80gp for the TRS-80. The same
+programs, the same Lisp.
+
+**On the Amstrad CPC**
+
+<table>
+<tr><td align="center" valign="top"><img src="docs/images/cpc-repl.png" width="190" alt="The REPL: <code>defun</code>, <code>mapcar</code>, <code>loop</code>, <code>format</code>, floats, the compiler"><br>The REPL: <code>defun</code>, <code>mapcar</code>, <code>loop</code>, <code>format</code>, floats, the compiler</td><td align="center" valign="top"><img src="docs/images/cpc-ed.png" width="190" alt="The function editor: <code>(ed 'rose)</code>, pretty-printed"><br>The function editor: <code>(ed 'rose)</code>, pretty-printed</td><td align="center" valign="top"><img src="docs/images/cpc-rose.png" width="190" alt="<code>(rose)</code>: a rose curve, in floats"><br><code>(rose)</code>: a rose curve, in floats</td><td align="center" valign="top"><img src="docs/images/cpc-koch.png" width="190" alt="<code>(koch 4)</code>: a Koch snowflake, turtle graphics"><br><code>(koch 4)</code>: a Koch snowflake, turtle graphics</td></tr>
+<tr><td align="center" valign="top"><img src="docs/images/cpc-tree.png" width="190" alt="<code>(tree)</code>: a recursive tree"><br><code>(tree)</code>: a recursive tree</td><td align="center" valign="top"><img src="docs/images/cpc-shapes.png" width="190" alt="<code>(shapes)</code>: discs and boxes in 16 colours"><br><code>(shapes)</code>: discs and boxes in 16 colours</td><td align="center" valign="top"><img src="docs/images/cpc-sierpinski.png" width="190" alt="<code>(sierpinski)</code>: the chaos game"><br><code>(sierpinski)</code>: the chaos game</td><td align="center" valign="top"><img src="docs/images/cpc-moire.png" width="190" alt="<code>(moire)</code>: lines drawn with XOR"><br><code>(moire)</code>: lines drawn with XOR</td></tr>
+</table>
+
+**On the TRS-80 Model I with X-MEM/80**
+
+<table>
+<tr><td align="center" valign="top"><img src="docs/images/trs80-repl.png" width="250" alt="The REPL on a TRS-80 Model I with X-MEM/80"><br>The REPL on a TRS-80 Model I with X-MEM/80</td><td align="center" valign="top"><img src="docs/images/trs80-ed.png" width="250" alt="The function editor, 64 by 16"><br>The function editor, 64 by 16</td><td align="center" valign="top"><img src="docs/images/trs80-shapes.png" width="250" alt="<code>(shapes)</code> in the 2 x 3 blocks"><br><code>(shapes)</code> in the 2 x 3 blocks</td></tr>
+<tr><td align="center" valign="top"><img src="docs/images/trs80-koch.png" width="250" alt="<code>(koch 4)</code>"><br><code>(koch 4)</code></td><td align="center" valign="top"><img src="docs/images/trs80-tree.png" width="250" alt="<code>(tree)</code>"><br><code>(tree)</code></td><td align="center" valign="top"><img src="docs/images/trs80-sierpinski.png" width="250" alt="<code>(sierpinski)</code>"><br><code>(sierpinski)</code></td></tr>
+</table>
+
 ## What it has
 
 The **core** ROM boots to `LISP>`: integers and floats, symbols, conses,
