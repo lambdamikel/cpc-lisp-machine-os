@@ -166,7 +166,10 @@ through MIDI/80 -- is in `mach/trs80/`.
 mode (not SuperMem); a disc drive, real or emulated. Talker/80 for
 speech, MIDI/80 for MIDI and a printer are optional.
 
-**The disc**: `MACH=trs80 tools/build.sh` (rasm and Python 3, as for the
+**The disc**: ready to boot with each
+[release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases) --
+`cpc-lisp-0.95-trs80-model1` and `-model3`, as `.dsk` for emulators and
+`.hfe` for a Gotek. Or build it: `MACH=trs80 tools/build.sh` (rasm and Python 3, as for the
 CPC, above) makes `build/trs80/lisp-a.dsk` for a Model I -- LDOS 5.3.1,
 single density, JV1, with `LISP/CMD` and the seven images on it,
 compressed -- and `build/trs80/lisp-m3.dsk` for a Model III -- LDOS
