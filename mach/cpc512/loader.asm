@@ -153,6 +153,11 @@ start:
 .none:
     call map_main
     ld hl,m_none
+    call puts
+    ld a,(nbanks)
+    add a,"0"
+    call TXT_OUTPUT
+    ld hl,m_found
 .say:
     call puts
     ret
@@ -183,7 +188,9 @@ puts:
 
 m_hello:  db "CPC Lisp for the 512K expansion: loading",13,10,0
 m_none:   db 13,10,"No 512K expansion found: CPC Lisp needs",13,10
-          db "banks 0-5 of a DK'tronics-type expansion.",13,10,0
+          db "banks 0-5 of a DK'tronics-type expansion.",13,10
+          db "Banks of 64K that answer: ",0
+m_found:  db " (of 8).",13,10,0
 m_nofile: db 13,10,"Cannot load it: is the CPC Lisp disc in?",13,10,0
 m_rom:    db "Too many ROMs: their workspace is where CPC Lisp's",13,10
           db "resident part goes, under &A6F0.",13,10,0
