@@ -457,6 +457,13 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   truncates it (the ROM's). Part 1 code must not call the core for
   trivia in a hot path: is_typed/vec_data/str_data inline in `fa_get`
   took a far-ref from 3.7 to 2.9 ms (aref 1.2). test/discfar.lsp.
+  **trs80gp crashes when M: is written past ~256 KB** (X-MEM pages 17
+  and up -- a file reaching there by a few hundred bytes survives, tens
+  of KB reset the machine into LDOS): its X-MEM/80 seems to have 16
+  pages, page 17 aliasing the Lisp's own page 1. The real card has 32;
+  mach/trs80/hardware-test.txt item 10 checks it. TRS-80 far-refs are
+  slow too (100 setf in 3.7 s, not looked into). Don't probe trs80gp's
+  options by running it by hand: it pops up windows on Mike's screen.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the

@@ -51,3 +51,11 @@ repository): (talk) and (sing) work, and VOICDEMO still runs.)
 9. [ ] On a Model III: 1, 4 and 6 again (its clock and ROM are
        elsewhere), and  (let ((t0 (time))) (sleep 2) (- (time) t0))
        : about 600
+
+10. [ ] The RAM disc past 256 KB (trs80gp crashes there: its X-MEM/80
+       seems to have 16 pages, and page 17 lands on the Lisp's own):
+       (far-length (make-far-array "a" 65000))   : 65000.0
+       (far-length (make-far-array "b" 30000))   : 30000
+       (setf (far-ref b 29999) 7)  (far-ref b 29999)   : 7, 7
+       (dir "m:")   : A.FAR 127K, B.FAR 59K, about 180K free
+       (Each make-far-array takes some seconds.)
