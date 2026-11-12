@@ -374,7 +374,8 @@ compiled code (`docs/design.md` describes both)
           runs; the clock, (sleep 2) 675 the first time -- the definition
           read too)
     - [x] On the Model I: MIDI/80 and sound
-    - [ ] On the Model I: Talker/80
+    - [ ] On the Model I: Talker/80 -- its decoder answers X-MEM/80's ports
+          (64-67) as well as 8-11: a GAL change (mach/trs80/README.md)
 11. [x] **MIDI** (Mike, 2026-11-12): `midi-note`, `midi-program`,
         `midi-control`, `midi-panic`, `midi-out`, `midi-off`, `sleep`,
         and the `(midi-tune)` demo -- the LambdaSpeak card's MIDI mode
