@@ -553,7 +553,9 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   everybody wants to make their own"): copy them from `build/` -- one
   tested build -- when a release changes, and say the build in
   `roms/README.md`. Never commit Amstrad's ROMs (the MAME romsets in
-  `build/mame`) or disc images; `build/` is ignored. **GPL-3.0** since 2026-11-07 (`LICENSE`, Mike's
+  `build/mame`) or disc images -- except the two LDOS system discs the
+  TRS-80 build starts from (`tools/trs80/ldos-m1.dsk`, `ldos-m3.dsk`:
+  Mike, 2026-11-12, "publish them"); `build/` is ignored. **GPL-3.0** since 2026-11-07 (`LICENSE`, Mike's
   choice, as LambdaSpeak 4), with a section 7 permission: programs
   written in CPC Lisp, and what `save`/`compile-file` make, are their
   authors' own (README, *Licence*). **Releases**: GitHub release `v0.9`
