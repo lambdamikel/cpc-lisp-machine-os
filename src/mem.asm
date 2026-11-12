@@ -25,7 +25,9 @@
 ;; allocation (cons pushes them). What it must not do is keep a raw pointer
 ;; into block space across an allocation: blocks move.
 
-;; cons: HL = car, DE = cdr -> HL = the new cell. BC and DE preserved.
+;; cons: HL = car, DE = cdr -> HL = the new cell. BC and DE preserved
+;; (and IX). If a GC frees nothing, the library drops what it can read in
+;; again (lnum +15: lib/short.asm) before memory is out.
 cons:
     push de
     push hl
@@ -37,6 +39,11 @@ cons:
     ld hl,(V_FREE)
     ld a,h
     or l
+    jr nz,.have
+    push ix
+    ld a,15
+    call lnum                   ; -> HL = V_FREE, Z if none (or no library)
+    pop ix
     jp z,err_nomem
 .have:
     ld e,l

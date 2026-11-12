@@ -407,7 +407,7 @@ the firmware's maths package.
 | `(sqrt x)` `(exp x)` `(log x [base])` `(expt b p)` | expt of integers to whole powers stays exact | 2, `expt` 3 |
 | `(sin x)` `(cos x)` `(tan x)` `(atan y [x])` | radians | 2 |
 | `pi` | a constant | 3 |
-| `(random n)` | 0 <= result < n; an integer or a float, as n is | core |
+| `(random n)` | 0 <= result < n; an integer or a float, as n is | 2 |
 | `(gcd a b)` `(signum x)` | | 3 |
 | `(logand n...)` `(logior n...)` `(logxor n...)` `(lognot n)` `(ash n count)` | | 2 |
 
@@ -773,7 +773,11 @@ the stack; `(room)` says what is free. A file open takes 2 KB of the
 string space while it is open (two files, 4 KB).
 The garbage collector runs when cells run out. Functions written in Lisp
 in the library ROMs are read from ROM the first time they are called and
-then use cells like your own; the names cost nothing until then. A
+then use cells like your own; the names cost nothing until then. When
+a collection finds no cell free, such a function is dropped again if
+nothing holds it (no call of it running, no variable keeping it) and read
+from ROM once more when next called; a function you defined yourself,
+with `defun` or `setf` of `symbol-function`, is never dropped. A
 compiled function takes far less than its interpreted definition (whose
 cells go back): its bytecode and constants are in string space. The
 compiler costs about forty symbols the first time it runs, its working

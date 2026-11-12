@@ -1462,47 +1462,6 @@ subr_oddp:
     jp bool_nz
 
 ;; (random n): 0 <= result < n
-subr_random:
-    call nums_1
-NUM_RANDOM:
-    sra h
-    rr l
-    ld a,h
-    or l
-    jr z,.bad
-    bit 7,h
-    jr nz,.bad
-    ex de,hl
-    call rand16
-    res 7,h
-    call udiv16
-    ex de,hl
-    jp tag_hl
-.bad:
-    ex de,hl
-    ld hl,m_index
-    jp error
-
-;; rand16 -> HL: a 16-bit xorshift
-rand16:
-    ld hl,(V_RAND)
-    ld a,h
-    rra
-    ld a,l
-    rra
-    xor h
-    ld h,a
-    ld a,l
-    rra
-    ld a,h
-    rra
-    xor l
-    ld l,a
-    xor h
-    ld h,a
-    ld (V_RAND),hl
-    ret
-
 ;; ---------------------------------------------------------------------------
 ;; SYMBOLS
 

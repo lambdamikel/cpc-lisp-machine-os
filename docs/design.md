@@ -111,7 +111,11 @@ each part, and a hit gives the symbol its function:
   (ROM addresses always start with binary 11, so those bits are free);
 * an **AUTOLOAD** (kind 2), a function written in Lisp: the address of
   its text. The first call reads the text from ROM and evaluates it --
-  a `defun` -- and calls what it defined;
+  a `defun` -- and calls what it defined. When the cells run out
+  (`cons` finds none free after a GC), `ln_short` (`lib/short.asm`,
+  part 1) drops such functions again: it hides each from a second GC
+  (the pointer made odd, a fixnum to the GC) and gives the ones that GC
+  freed their autoload stub back;
 * a **VM function** (kind 3), the VM ROM's: a compiled function (below)
   holding its number.
 

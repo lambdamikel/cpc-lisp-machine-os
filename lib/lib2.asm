@@ -1,5 +1,6 @@
 ;; CPC Lisp -- the library ROMs, part 1: floats, format, sort, lists and
-;; sequences, coerce. lib/lib.asm explains the parts.
+;; sequences, coerce, and what is dropped when the cells run out (short).
+;; lib/lib.asm explains the parts.
 
     include "core.inc"
     include "macros.asm"
@@ -29,6 +30,7 @@ lib_names:
 
     include "common.asm"
     include "float.asm"
+    include "short.asm"
     include "format.asm"
     include "seq.asm"
     include "lists.asm"

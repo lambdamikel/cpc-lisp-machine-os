@@ -25,6 +25,7 @@ lib_numbers:
     jp ln_print
     jp ln_int
     jp ln_uint
+    jp ln_short                 ; +15: no cell free after a GC (lib/short.asm)
 
 ;; ln_uint: HL = 0..65535 -> NC, HL = it as a float (the reader's #x past a
 ;; fixnum)
@@ -240,7 +241,6 @@ ln_ops:
     dw NUM_FLOOR,fl_floor
     dw NUM_MOD,fl_mod
     dw NUM_REM,fl_rem
-    dw NUM_RANDOM,fl_random
 
 fl_plus:
     ld de,1                     ; 0
@@ -653,9 +653,37 @@ fl_modrem:
     call f_chk
     jp fl_result
 
-;; (random x), x a float: [0, x)
+;; (random n): 0 <= the result < n, an integer or a float as n is (moved
+;; out of the core; its state, V_RAND, is the core's, seeded at boot)
+;@ RANDOM 1 1 lf_random
+lf_random:
+    bit 0,l
+    jr z,.float
+    sra h
+    rr l
+    ld a,h
+    or l
+    jr z,.bad
+    bit 7,h
+    jr nz,.bad
+    ex de,hl                    ; DE = n
+    call rand16
+    res 7,h
+    CORE udiv16                 ; DE = the remainder
+    ex de,hl
+    add hl,hl
+    inc hl                      ; (0 <= it < n: a fixnum)
+    ret
+.bad:
+    add hl,hl
+    inc hl                      ; (the argument again)
+    ex de,hl
+    ld hl,m_index               ; (the core's message: not lib_error's)
+    CORE error
+.float:
+    ex de,hl
+;; (random x), x a float (DE): [0, x)
 fl_random:
-    NEXTARG
     push de
     call fl_first
     ld hl,V_FA
@@ -663,7 +691,7 @@ fl_random:
     pop de
     dec a
     jp nz,fl_range
-    CORE rand16
+    call rand16
     xor a
     ld de,V_FB
     FM FP_INT2R                  ; 0..65535
@@ -676,6 +704,26 @@ fl_random:
 .zero:
     call f_mul
     jp fl_result
+
+;; rand16 -> HL: a 16-bit xorshift, on the core's V_RAND
+rand16:
+    ld hl,(V_RAND)
+    ld a,h
+    rra
+    ld a,l
+    rra
+    xor h
+    ld h,a
+    ld a,l
+    rra
+    ld a,h
+    rra
+    xor l
+    ld l,a
+    xor h
+    ld h,a
+    ld (V_RAND),hl
+    ret
 
 ;; fl_range: DE = an argument out of a function's range
 fl_range:

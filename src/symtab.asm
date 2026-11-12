@@ -173,7 +173,6 @@ symtab:
     SUBR MINUSP,"MINUSP",subr_minusp,1,1
     SUBR EVENP,"EVENP",subr_evenp,1,1
     SUBR ODDP,"ODDP",subr_oddp,1,1
-    SUBR RANDOM,"RANDOM",subr_random,1,1
 
     ; symbols
     SUBR SYMBOL_NAME,"SYMBOL-NAME",subr_symbol_name,1,1

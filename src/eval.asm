@@ -2962,12 +2962,14 @@ set_global:
 setf_symfn:
     call car
     call sym_slot
+    push hl
     ld bc,SY_FUNC
     add hl,bc
     ld (hl),e
     inc hl
     ld (hl),d
-    ret
+    pop hl
+    jp mark_def                 ; the library's, or the user's now
 setf_plist:
     call car
     call sym_slot

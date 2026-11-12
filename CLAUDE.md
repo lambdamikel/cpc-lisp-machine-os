@@ -76,8 +76,9 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   Lisp (`lib/lisp2.lsp`) and the demos (`lib/demo.lsp`): new library code
   goes here or in part 1. **A fifth part is not possible as it is**: an
   LSUBR's or AUTOLOAD's data word keeps the part in two bits (the VM ROM,
-  below, is no part). Space (2026-11-12): core 22 bytes free,
-  parts 0-3 251, 3489, 636, 3103; the VM ROM 574.
+  below, is no part). Space (2026-11-12, later): core 70 bytes free
+  (cpc512 62, cpc6128 86, TRS-80 114), parts 0-3 251, 2745, 519, 1410;
+  the VM ROM 574.
   `src/xrom.asm` explains the arrangement: the core finds
   them by signature and build number (all ROMs come from one
   `tools/build.sh` run, and call each other by address), each says which
@@ -407,6 +408,21 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     tests the variant's runner skips (`tools/cpc6128/test.sh`).
   * The RAM disc refuses (rd_ready: RD_NBANKS < 6) -- else `M:` would
     write over the code in blocks 4-6.
+* **Dropping library functions** (2026-11-12, Mike asked how programs
+  could use more memory): when `cons` finds no cell after a GC it calls
+  `lnum` +15, `ln_short` (`lib/short.asm`, part 1). Pass 0 hides every
+  closure on a LIBDEFS symbol whose name is an autoload in a part's
+  table (pointer + 1: odd, a fixnum to the GC), a second GC runs, pass 1
+  puts back the ones still held (their cell's car is not FREEMARK) and
+  marks the freed ones 1, pass 2 gives those a HDR_AUTOLOAD stub
+  (`ls_probe` finds the text again). Boot forms' functions, macros,
+  compiled code and the user's own definitions (`mark_def`, also from
+  `setf` of `symbol-function` now) are never touched. Its scratch is
+  V_PEEKROM (saved) and the stack: LIBSCR+254/255 are SO_PTYPE/SO_DIR.
+  `random` moved to part 1 (`lf_random`, float.asm) to make room in the
+  core; a part's error with a core message goes through `CORE error`, not
+  `lib_error` (it reads the message from its own ROM: `(random 0)` reset
+  the machine).
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
