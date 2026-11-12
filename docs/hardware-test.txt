@@ -297,6 +297,7 @@ switch the slot):
                                      Parados's message as at power-up
 [ ] |BOOTLISP                        (in BASIC) it resets into Lisp:
                                      CPC Lisp 0.95, LISP>
+(Checked on the 464, 2026-11-12, build 30351: both.)
 
 Or switch the CPC off, then on the PC:
 
