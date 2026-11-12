@@ -376,6 +376,11 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   * The file dispatchers (RS_FGETC...) keep everything but AF, as CAS IN
     CHAR / OUT CHAR do (DE was lost at first).
   * `(basic)` is a reset; |BOOTLISP is a stub (the images are no ROMs).
+  * **On the real 464 with Revaldinho's universal 512K card**
+    (2026-11-12): "No 512K expansion found" until its DIP switches
+    went to configuration 4 (0100, DK'tronics mode, 512K): in shadow
+    mode (8, 12) bank 3 shadows the base RAM, so only banks 0-2
+    answer. The loader now says how many answer. Then it booted.
   * MAME: `-ramsize 576K` on cpc464 (with the DDI-1) or cpc6128, the
     stock romsets; the harness types `RUN"LISP` at BASIC's EDIT
     (`LISP_EDIT2` in repl.lua), then lines at EDHOOK. `tools/cpc512/

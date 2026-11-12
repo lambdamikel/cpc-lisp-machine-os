@@ -13,10 +13,15 @@ and no LambdaSpeak card needed.
 
 * A CPC 464, 664 or 6128 with a **512K RAM expansion** that banks the
   DK'tronics/Amstrad way -- configurations &C0-&C7 on port &7Fxx, bits
-  3-5 the 64K bank: Revaldinho's universal RAM cards (in their 464/664
-  or 6128 mode), the DK'tronics 512K, the RAM of an X-MEM. It needs six
-  64K banks, so a 256K expansion is not enough, and neither is a 6128 on
-  its own (its second 64K is one bank).
+  3-5 the 64K bank: Revaldinho's universal RAM cards, the DK'tronics
+  512K, the RAM of an X-MEM. It needs six 64K banks, so a 256K expansion
+  is not enough, and neither is a 6128 on its own (its second 64K is one
+  bank). **Revaldinho's universal 512K card on a 464 or 664: DIP
+  configuration 4** (switches 1234 = 0100: "overdrive", DK'tronics
+  mode, all eight banks); on a 6128, configuration 0. Its shadow modes
+  (8 and 12, for the 6128's C3 mode) give bank 3 to the base RAM, and
+  the loader stops: "Banks of 64K that answer: 3". Checked on Mike's
+  464, 2026-11-12.
 * A disc drive: AMSDOS (a 6128's, a 464's DDI-1) or Parados.
 
 ## Starting
