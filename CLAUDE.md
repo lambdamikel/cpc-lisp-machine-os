@@ -648,8 +648,9 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   Parados (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0), 5 LISPLIB
   (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6) -- the README's
   installation section has the table. All six Lisp ROMs must come from
-  one build: re-flash them together. Flashed: build 1797 (2026-11-12,
-  0.95: the incf and 512-639 read fixes, MIDI, (basic), the
+  one build: re-flash them together. Flashed: build 28423 (2026-11-12, later:
+  dropping library functions, lazy loading, far arrays; build 1797
+  before it, 0.95: the incf and 512-639 read fixes, MIDI, (basic), the
   machine layer); `roms/` is still 25063 (2026-11-07 night: version 0.9, the banner's subtitle; build 22482
   before it, checked on the 464: the compiler -- the VM ROM in slot 1 as
   ROM 1, the .FAS junk fixed,
@@ -676,7 +677,13 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   NOT mean it is off.
 * **Discs**: `tools/mkcpcdisk.py` builds a DSK and an HFE; `tools/dskloader.py`
   puts a `.dsk` in a flash slot or the drive (`--list`, `--slot N`,
-  `--load N`, `--get N`). Free flash disc slots: 8, 14, 50-54.
+  `--load N`, `--get N`). Flash disc 8 is the 512K disc version, 14 the plain
+  6128's (2026-11-12; slots 50-54 hold Mike's discs now: no free slot is
+  left but 8 and 14). For testing them, the six Lisp ROM slots were
+  silenced (`tools/card.py number SLOT 255`: 4, 5, 0, 7, 3, 1) -- too
+  many background ROMs leave the disc version's resident part no room
+  ("Too many ROMs"). Back: `number 4 0`, `5 4`, `0 5`, `7 6`, `3 3`,
+  `1 1` (or `tools/card.py lisp`).
 * **The Gotek serves a cached image**: after copying a disc to its stick,
   Mike must re-select it. **AMSDOS caches the catalogue** too.
 
