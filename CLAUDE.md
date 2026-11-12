@@ -340,6 +340,13 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     Epson chip is DECtalk 5.01: arpabet is two characters a phoneme, the
     L is `ll` (a bare `l` ends the song there); LambdaSpeak 4's DECtalk
     Mini takes both.
+  * A TRS-80 has no COPY and no CTRL: SHIFT down-arrow then C is COPY
+    (&E0), then S is CTRL-S (&13) -- the function editor's "done" was
+    out of reach before (k_comp in page.asm). `(reset)` goes back to
+    LDOS (SYS_RESET = M_QUIT): RST 0 with X-MEM/80's pages switched hung.
+  * What works where is marked in docs/reference.md (**CPC only**,
+    **TRS-80 only**, *TRS-80:*) and the tutorial; keep it so when adding a
+    machine-specific function (mach/*/ natives are the list).
   * rasm evaluates `assert` and `repeat` where they stand: a symbol in
     them must be defined above (an equate after it is "not found").
   * The images are compressed (`tools/trs80/lz.py`, decoded by the

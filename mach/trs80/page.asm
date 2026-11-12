@@ -601,6 +601,8 @@ k_comp:
     db '.','}', '>','}'
     db '@','^'                  ; ^ format's ~^
     db '0','_'
+    db 'S',#13, 's',#13         ; CTRL-S: the function editor's "done"
+    db 'C',#E0, 'c',#E0         ; COPY: from the copy cursor; also "done"
     db #1A,#F5                  ; SHIFT DOWN-ARROW again: copy cursor down
     db 0
 

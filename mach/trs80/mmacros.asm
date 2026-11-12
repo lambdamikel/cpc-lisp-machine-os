@@ -38,7 +38,8 @@ macro MACH_TITLE
     db "A Lisp machine for the TRS-80",13,10,0
 mend
 
-;; SYS_RESET: start again -- the ROM, then LDOS from its disc
+;; SYS_RESET: back to LDOS, as (quit) -- RST 0, the ROM's start with
+;; X-MEM/80's pages as they are, hung (trs80gp)
 macro SYS_RESET
-    rst 0
+    jp M_QUIT
 mend

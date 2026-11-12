@@ -72,14 +72,19 @@ The **library** comes in five more ROMs:
 
 | ROM | file | what |
 |---|---|---|
-| library 1 | LISPLIB.ROM | the screen, graphics (circles, flood fill, XOR, turtle graphics), sound, keys and joystick; strings and characters; the printers and readers with CL's streams; files through the disc ROM, and a RAM disc on a 6128; the line editor and a full-screen function editor |
-| library 2 | LISPLIB2.ROM | floats and the maths functions through the firmware, `format` with all its directives, `sort`, the sequence functions with all their keywords, hash tables, structures, `coerce`, speech, PlayCity and MIDI out on the LambdaSpeak card |
+| library 1 | LISPLIB.ROM | the screen, graphics (circles, flood fill, XOR, turtle graphics), sound, keys and joystick; strings and characters; the printers and readers with CL's streams; files through the disc ROM, and a RAM disc on a 6128 (in X-MEM/80 on a TRS-80); the line editor and a full-screen function editor |
+| library 2 | LISPLIB2.ROM | floats and the maths functions through the firmware, `format` with all its directives, `sort`, the sequence functions with all their keywords, hash tables, structures, `coerce`, speech, PlayCity and MIDI out on the LambdaSpeak card (Talker/80 and MIDI/80 on a TRS-80), `(basic)` and `\|BOOTLISP` |
 | library 3 | LISPLIB3.ROM | about eighty CL functions and macros written in Lisp (`reduce`, `map`, `defstruct`, `typep`, `handler-case`, `with-open-file`...), read from ROM the first time each is used |
 | demo | LISPDEMO.ROM | `loop` (the extended one too), string streams, and demo programs: `(demo)` lists them |
 | VM | LISPVM.ROM | the bytecode machine, and the compiler: `compile`, `compile-file`, `disassemble` |
 
 It runs on a real 464, with the 1.0 and the 1.1 firmware, and in MAME on
-the 464 and the 6128.
+the 464 and the 6128; and on a real TRS-80 Model I and Model III with
+X-MEM/80, and in trs80gp. On a TRS-80 the same functions are there but
+for the CPC's own -- colours and windows, user-defined characters, the
+joystick, `peek`/`poke`, the sound queues, PlayCity, `(basic)`: the
+[reference](docs/reference.md) marks them **CPC only**, and
+[*On a TRS-80*](#on-a-trs-80) below says what differs.
 
 ## Installing the ROMs
 

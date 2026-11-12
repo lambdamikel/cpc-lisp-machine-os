@@ -77,6 +77,15 @@ share and the file buffers' size became the machine's choice too
 background ROM, not even the disc, is initialised -- then lays out memory
 and looks for the rest.
 
+**BASIC and back.** On the LambdaSpeak card the core is a slot that
+answers as ROM 0, and asserts ROMDIS: BASIC's ROM is switched off.
+`(basic [slot])` sends the card `&D0 slot 255` -- its own `|ROMNUM`,
+the slot made silent -- and resets: the CPC comes up in BASIC.
+`|BOOTLISP[,slot]`, an RSX of library ROM 2 (a background ROM, still
+there in BASIC), sends `&D0 slot 0` and resets into Lisp. Both run their
+last bytes from code copied to &4000: once the slot changes, what was at
+&C000 is another ROM. (`mach/cpc/card.asm`; CPC only.)
+
 **Finding the library.** Each library ROM has a header at &C010:
 `CPCLISPLIB`, a build number, its symbol table, its boot forms, its
 dispatcher, and which *part* it is. The core searches ROMs 1-15 for the

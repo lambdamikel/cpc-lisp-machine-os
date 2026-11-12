@@ -29,10 +29,19 @@ Contents: [Starting](#starting) · [The REPL](#the-repl) ·
 [Input and output](#input-and-output) · [Files](#files) ·
 [The text screen](#the-text-screen) · [Graphics](#graphics) ·
 [Turtle graphics](#turtle-graphics) · [Sound and music](#sound-and-music) ·
-[Speech and PlayCity](#the-lambdaspeak-card-speech-and-playcity) · [MIDI](#midi) ·
+[Speech and PlayCity](#speech-the-lambdaspeak-card-or-talker80-and-playcity) · [MIDI](#midi) ·
 [Keys, time and the machine](#keys-time-and-the-machine) ·
 [The demos](#the-demos) · [Memory](#memory) ·
-[Differences from Common Lisp](#differences-from-common-lisp)
+[Differences from Common Lisp](#differences-from-common-lisp) ·
+[On a TRS-80](#on-a-trs-80)
+
+**What works where.** CPC Lisp runs on the Amstrad CPC (464, 664, 6128)
+and on the TRS-80 Model I and III with X-MEM/80. The language, the
+editors, files and streams, the compiler, graphics and the turtle,
+`flood-fill`, speech, MIDI, the RAM disc `M:` and the demos are the same
+on both. What a TRS-80 has not got is marked **CPC only**, what only it
+has **TRS-80 only**, and *TRS-80:* says what works differently there.
+[On a TRS-80](#on-a-trs-80), at the end, has it in one place.
 
 ## Starting
 
@@ -46,7 +55,9 @@ With the core ROM at ROM 0 (replacing BASIC), the CPC starts in Lisp:
 
 The numbers are the ROMs where the library parts were found (LISPLIB,
 LISPLIB2, LISPLIB3, LISPDEMO); the VM ROM is not listed. At any other ROM
-number, `|LISP` from BASIC starts it.
+number, `|LISP` from BASIC starts it. *TRS-80:* boot the LDOS disc and
+type `LISP` (`mach/trs80/README.md`); it says `A Lisp machine for the
+TRS-80` and about 2800 cells free.
 
 ## The REPL
 
@@ -556,13 +567,16 @@ Through the firmware's cassette vectors, so any disc ROM (AMSDOS,
 Parados) -- or the tape. Nothing in it is particular to one disc ROM:
 AMSDOS is what the tests use (in MAME, on the 464 and the 6128), and
 Parados what the real 464 has. A name without a `.` gets `.LSP`.
+*TRS-80:* through LDOS -- a name `B:FOO.LSP` is LDOS's `FOO/LSP:1`, and
+without a drive LDOS looks in each; text files written there (lines
+ending in CR alone) load as well.
 
 | Function | | |
 |---|---|---|
 | `(load "name")` | reads and evaluates every form in it | 1 |
 | `(save "name" [symbol...])` | the symbols' definitions, pretty-printed: functions, macros, variables (as `defparameter`); with none named, everything you defined | 1 |
-| `(dir)` | the catalogue | 1 |
-| `(delete-file "name")` | through the disc ROM's `|ERA` | 1 |
+| `(dir)` | the catalogue. *TRS-80:* every drive's files and their sizes | 1 |
+| `(delete-file "name")` | through the disc ROM's `\|ERA`. *TRS-80:* LDOS's KILL; on `M:`, the RAM disc's | 1 |
 | `(probe-file "name")` | the name if the file is there, else NIL (the disc ROM says so too) | 3 |
 
 **Streams.** `(open "name" [:direction :input or :output])` opens a file
@@ -594,17 +608,17 @@ is none. (On a TRS-80, `M:` is in X-MEM/80: see *On a TRS-80*.)
 
 | Function | | |
 |---|---|---|
-| `(mode n)` | 0 (20 columns, 16 colours), 1 (40, 4), 2 (80, 2); clears | 1 |
+| `(mode n)` | 0 (20 columns, 16 colours), 1 (40, 4), 2 (80, 2); clears. *TRS-80:* only clears -- the screen is 64 by 16, one colour | 1 |
 | `(cls)` | | 1 |
 | `(locate column row)` | from 1 | 1 |
-| `(pen n)` `(paper n)` | | 1 |
-| `(ink pen colour [colour2])` | colours 0-26; two flash | 1 |
-| `(border colour [colour2])` | | 1 |
-| `(flash-speed on off)` | in 1/50 s (SPEED INK) | 1 |
-| `(window left right top bottom)` | the text window, from 1 | 1 |
-| `(text-cursor)` | `(column row)` | 1 |
-| `(transparent on)` | T: text without its paper | 1 |
-| `(tag on)` | T: text at the graphics cursor | 1 |
+| `(pen n)` `(paper n)` | *TRS-80:* do nothing | 1 |
+| `(ink pen colour [colour2])` | colours 0-26; two flash. *TRS-80:* does nothing | 1 |
+| `(border colour [colour2])` | *TRS-80:* does nothing | 1 |
+| `(flash-speed on off)` | **CPC only.** in 1/50 s (SPEED INK) | 1 |
+| `(window left right top bottom)` | **CPC only.** the text window, from 1 | 1 |
+| `(text-cursor)` | **CPC only.** `(column row)` | 1 |
+| `(transparent on)` | **CPC only.** T: text without its paper | 1 |
+| `(tag on)` | **CPC only.** T: text at the graphics cursor | 1 |
 
 ## Graphics
 
@@ -613,7 +627,9 @@ firmware's own, as in BASIC. The screen has 200 rows of pixels, so a
 pixel is two units high (y 100 and 101 are the same row), and one unit
 wide in mode 2, two in mode 1, four in mode 0. So a picture comes out
 the same in every mode, and a circle round. A `pen` argument sets the
-graphics pen first; it stays set.
+graphics pen first; it stays set. *TRS-80:* the same coordinates, drawn
+in the screen's 2 x 3 blocks -- 128 by 48 -- in one colour: pen 0 puts
+blocks out, any other lights them; `graphics-paper` does nothing.
 
 | Function | | |
 |---|---|---|
@@ -630,8 +646,8 @@ graphics pen first; it stays set.
 | `(box x1 y1 x2 y2 [pen])` | the edges | 1 |
 | `(fill-box x1 y1 x2 y2 [pen])` | filled | 1 |
 | `(ink-mode n)` | 0 normal, 1 XOR, 2 AND, 3 OR. A disc or a box drawn twice with XOR is gone again | 1 |
-| `(flood-fill x y [pen])` | the area around (x, y) of its colour, up to any other colour, painted with pen -- a paint bucket, the same on every CPC (BASIC 1.1's FILL stops only at the pen's colour). A whole screen in mode 1 takes about half a minute | 1 |
-| `(symbol code row...)` | character code 240-255 drawn from up to eight rows, top first, each a byte (`#b00111100`): BASIC's SYMBOL, with SYMBOL AFTER 240 | 1 |
+| `(flood-fill x y [pen])` | the area around (x, y) of its colour, up to any other colour, painted with pen -- a paint bucket, the same on every CPC (BASIC 1.1's FILL stops only at the pen's colour). A whole screen in mode 1 takes about half a minute. *TRS-80:* in the blocks, a screen in about 8 s | 1 |
+| `(symbol code row...)` | **CPC only.** character code 240-255 drawn from up to eight rows, top first, each a byte (`#b00111100`): BASIC's SYMBOL, with SYMBOL AFTER 240 | 1 |
 
 ## Turtle graphics
 
@@ -655,29 +671,35 @@ Its position is kept to 1/256, so thousands of short steps do not drift:
 
 | Function | | |
 |---|---|---|
-| `(sound channels period [duration [volume [envelope [tone-envelope [noise]]]]])` | BASIC's SOUND: channels 1 A, 2 B, 4 C (added for more), period 0-4095, duration in 1/100 s (20), volume 0-15 (12); waits if the queue is full | 1 |
-| `(envelope n count step pause...)` | volume envelope 1-15, up to five sections (ENV) | 1 |
-| `(tone-envelope n count step pause...)` | tone envelope 1-15; a negative n repeats (ENT) | 1 |
-| `(release channels)` | | 1 |
-| `(sound-check channel)` | the queue's state (SQ) | 1 |
-| `(sound-hold)` `(sound-continue)` | | 1 |
+| `(sound channels period [duration [volume [envelope [tone-envelope [noise]]]]])` | BASIC's SOUND: channels 1 A, 2 B, 4 C (added for more), period 0-4095, duration in 1/100 s (20), volume 0-15 (12); waits if the queue is full. *TRS-80:* one voice on the cassette port, played there and then (no queue, so no chords); the same periods | 1 |
+| `(envelope n count step pause...)` | volume envelope 1-15, up to five sections (ENV). *TRS-80:* taken, not heard | 1 |
+| `(tone-envelope n count step pause...)` | tone envelope 1-15; a negative n repeats (ENT). *TRS-80:* taken, not heard | 1 |
+| `(release channels)` | **CPC only.**  | 1 |
+| `(sound-check channel)` | **CPC only.** the queue's state (SQ) | 1 |
+| `(sound-hold)` `(sound-continue)` | **CPC only.**  | 1 |
 | `(note 'c4)` | the period of a note: a letter, `#` (sharp) or `B` (flat), the octave. The AY runs at 1 MHz, period = 62500 / frequency: C4 (middle C) is 239, A4 (440 Hz) 142 | 3 |
 | `(play notes [duration [channels [volume [envelope]]]])` | `notes` like `'(c4 e4 g4 (c5 40) r c5)`: `R` a rest, a list a note with its own duration. The periods are worked out and a collection made first, so that none comes between the notes | 3 |
 
-## The LambdaSpeak card: speech and PlayCity
+## Speech: the LambdaSpeak card or Talker/80, and PlayCity
+
+On a CPC the LambdaSpeak card speaks, on a TRS-80 Talker/80 (on a Model
+I, with its U1 reprogrammed for X-MEM/80 -- `mach/trs80/README.md`); both
+are DECtalk, and the speech functions are the same. PlayCity and
+`(basic)` are the card's, and the CPC's only.
 
 | Function | | |
 |---|---|---|
-| `(say text)` | the card speaks it in DECtalk; Lisp goes on meanwhile, and a second line waits its turn. DECtalk's inline commands work: `[:phoneme arpabet speak on]` and `[ax<300,25>]` (300 ms at pitch 25, C4) sing | 2 |
+| `(say text)` | the card (or Talker/80) speaks it in DECtalk; Lisp goes on meanwhile, and a second line waits its turn. DECtalk's inline commands work: `[:phoneme arpabet speak on]` and `[ax<300,25>]` (300 ms at pitch 25, C4) sing | 2 |
 | `(speech-stop)` | | 2 |
 | `(speech-voice n)` | 1 Paul, 2 Harry, 3 Betty, 4 Ursula, 5 Dennis, 6 Kit, 7 Frank, 8 Rita, 9 Wendy; 0 the default | 2 |
 | `(speech-rate n)` `(speech-volume n)` | 0-15, 0 the default | 2 |
-| `(playcity on)` | T: the card's PlayCity on, at the CPC's pitch, silent; NIL off. A real PlayCity needs no switching on, and takes no harm | 2 |
-| `(pc-tone channel period [volume])` | channel 0-5 (0-2 the right chip, 3-5 the left) plays period (as `sound`'s: `(note 'a4)`) at volume 0-15 (12) until changed; volume 0 is silence | 2 |
-| `(pc-off)` | all six silent | 2 |
-| `(basic [slot])` | the CPC resets into BASIC: the card's slot that holds the core (4, as `tools/card.py` puts it) is made silent, as `\|ROMNUM,4,255`. RAM is lost. From BASIC, `\|BOOTLISP` (library ROM 2's RSX; `\|BOOTLISP,slot`) makes it ROM 0 again and resets into Lisp | 2 |
+| `(playcity on)` | **CPC only.** T: the card's PlayCity on, at the CPC's pitch, silent; NIL off. A real PlayCity needs no switching on, and takes no harm | 2 |
+| `(pc-tone channel period [volume])` | **CPC only.** channel 0-5 (0-2 the right chip, 3-5 the left) plays period (as `sound`'s: `(note 'a4)`) at volume 0-15 (12) until changed; volume 0 is silence | 2 |
+| `(pc-off)` | **CPC only.** all six silent | 2 |
+| `(basic [slot])` | **CPC only.** the CPC resets into BASIC: the card's slot that holds the core (4, as `tools/card.py` puts it) is made silent, as `\|ROMNUM,4,255`. RAM is lost. From BASIC, `\|BOOTLISP` (library ROM 2's RSX; `\|BOOTLISP,slot`) makes it ROM 0 again and resets into Lisp | 2 |
 
-Without the card these do nothing (the bytes go to a port nobody answers).
+Without the card (or Talker/80) these do nothing (the bytes go to a port
+nobody answers).
 
 ## MIDI
 
@@ -696,7 +718,7 @@ values 0-127, masked, so that none is taken for a status byte.
 | `(midi-control channel controller value)` | a Control Change: `(midi-control 1 7 64)` the channel's volume to half | 3 |
 | `(midi-panic)` | All Notes Off, on every channel | 3 |
 | `(midi-out byte...)` | the bytes as they are | 2 |
-| `(midi-off)` | the card out of MIDI mode, as `\|MIDIOFF` -- after a reset of the CPC it may still be in it, and speak MIDI | 2 |
+| `(midi-off)` | the card out of MIDI mode, as `\|MIDIOFF` -- after a reset of the CPC it may still be in it, and speak MIDI. *TRS-80:* does nothing (MIDI/80 has no mode) | 2 |
 
     (midi-program 1 7)                    ; a harpsichord
     (dolist (n '(60 64 67 72)) (midi-note 1 n 100 25))
@@ -713,16 +735,17 @@ a few each call. `(ed 'midi-tune)` does both.
 |---|---|---|
 | `(inkey)` | the next character typed, or NIL | 1 |
 | `(wait-key)` | the next character typed, waiting for it | 1 |
-| `(key-down-p key)` | T while a key is held; key numbers as BASIC's INKEY (cursor up 0, right 1, down 2, left 8, COPY 9, SPACE 47...) | 1 |
-| `(joystick [n])` | 1 up, 2 down, 4 left, 8 right, 16 fire 2, 32 fire 1, added | 1 |
-| `(frame)` | waits for the next frame, 1/50 s | 1 |
-| `(time)` | the firmware's clock, 1/300 s, modulo 16384 | 1 |
+| `(key-down-p key)` | T while a key is held; key numbers as BASIC's INKEY (cursor up 0, right 1, down 2, left 8, COPY 9, SPACE 47...). *TRS-80:* the keyboard matrix's, row * 8 + bit: ENTER 48, CLEAR 49, BREAK 50, up 51, down 52, left 53, right 54, SPACE 55 | 1 |
+| `(joystick [n])` | **CPC only.** 1 up, 2 down, 4 left, 8 right, 16 fire 2, 32 fire 1, added | 1 |
+| `(frame)` | waits for the next frame, 1/50 s. *TRS-80:* a pause of about 1/50 s | 1 |
+| `(time)` | the firmware's clock, 1/300 s, modulo 16384. *TRS-80:* from LDOS's ticks (25 ms on a Model I, 33 on a III), in the same 1/300 s | 1 |
 | `(sleep seconds)` | waits, a whole number of seconds or a float; ESC stops it | 3 |
-| `(peek address)` `(poke address byte)` | RAM, all 64 KB (`#xC000` is the screen); an address past 16383 is a float, which is fine | 1 |
+| `(peek address)` `(poke address byte)` | **CPC only.** RAM, all 64 KB (`#xC000` is the screen); an address past 16383 is a float, which is fine | 1 |
 | `(gc)` | collects; the cells free | core |
 | `*features*` | `(:cpc :cpc-lisp)` on a CPC, `(:trs-80 :cpc-lisp)` on a TRS-80 | 1 |
 | `(room)` | cells, symbols and string space free | 2 |
-| `(reset)` | the machine, as at power-up | 1 |
+| `(reset)` | the machine, as at power-up. *TRS-80:* back to LDOS, as `(quit)` | 1 |
+| `(quit)` | **TRS-80 only.** Back to LDOS (`LISP` there starts it afresh; the RAM disc keeps its files) | 1 |
 
 ## The demos
 
@@ -774,16 +797,29 @@ memory only while it does.
 
 ## On a TRS-80
 
-The same Lisp runs on a TRS-80 Model I or III with X-MEM/80, under LDOS
-([`mach/trs80/README.md`](../mach/trs80/README.md) has the whole of it).
-What is different there:
+The same Lisp runs on a TRS-80 Model I or III with X-MEM/80, under LDOS:
+the six images, built from the same sources, paged into X-MEM/80's
+window at &C000 ([`mach/trs80/README.md`](../mach/trs80/README.md) has
+the whole of it, the discs are with each release). What is different
+there:
 
-- **The screen** is 64 by 16; `mode`, `ink` and `border` do nothing but
-  clear (`mode`). **Graphics** are the screen's 2 x 3 blocks, 128 by 48,
-  from the same logical 640 by 400; a pen is lit or not. `ink-mode`
-  draws with XOR, AND, OR as on the CPC.
-- **Sound**: one voice, played there and then on the cassette port;
-  envelopes are taken and not heard. **MIDI** through MIDI/80 (port 8).
+- **Starting**: boot the LDOS disc, give it the date (and on a Model I
+  the time), type `LISP`. `(quit)` -- **TRS-80 only** -- and `(reset)` go
+  back to LDOS.
+- **The screen** is 64 by 16, one colour: `cls` and `locate` work, `mode`
+  only clears, `ink`, `border`, `pen` and `paper` do nothing.
+  **Graphics** are the screen's 2 x 3 blocks, 128 by 48, from the same
+  logical 640 by 400: a pen is lit (any but 0) or not. `ink-mode` (XOR,
+  AND, OR), the turtle, circles, discs, boxes and `flood-fill` work as on
+  the CPC.
+- **Sound**: one voice, played there and then on the cassette port, so
+  no chords; envelopes are taken and not heard. **MIDI** through MIDI/80
+  (port 8), as on the CPC through the card.
+- **Speech** through Talker/80 (port 11), DECtalk as the card's: `say`,
+  `(sing)`, the `speech-` functions. **On a Model I, Talker/80's U1 must
+  be reprogrammed** (`Talker80-decoder-xmem.jed`, in the Talker/80
+  repository): its address decoder answers X-MEM/80's ports 65 and 66
+  too. A Model III's needs nothing.
 - `(time)` counts LDOS's ticks: 25 ms on a Model I, 33 ms on a III.
 - **Floats**: + - * / and `sqrt` as on the CPC; `exp`, `log` and the
   trigonometry to about seven digits (the Level II ROM's single
@@ -791,14 +827,18 @@ What is different there:
 - **Files** through LDOS: a name `B:FOO.LSP` is `FOO/LSP:1`; `dir` lists
   every drive. **The RAM disc** `M:` is in X-MEM/80's spare pages: 31
   files, 367 KB; it survives `(quit)` and a reset, not a power-off.
-- **Keys**: BREAK is ESC; the arrows move, SHIFT <- deletes to the left,
-  CLEAR under the cursor, SHIFT -> is TAB. The keyboard has no `~ \ | ` `` ` `` ` [ ] { } ^ _`:
-  **SHIFT down-arrow, then** `-` gives `~`, `/` `\`, `1` `|`, `7`
-  `` ` ``, `8` `[`, `9` `]`, `,` `{`, `.` `}`, `@` `^`, `0` `_`.
-  `key-down-p` takes the TRS-80's key numbers. **SHIFT @** holds the
-  output, as in LDOS, until another key is pressed.
-- `(quit)` goes back to LDOS. `flood-fill` fills in the blocks. Not
-  there: `symbol` (the characters are the ROM's), `window`, `tag`, `transparent`, `flash-speed`, `text-cursor`,
-  `joystick`, `peek`, `poke`, `release`, the `sound-` functions,
-  PlayCity's. `say` and the `speech-` functions speak through Talker/80.
+- **Keys**: BREAK is ESC; the arrows only move, SHIFT <- deletes to the
+  left, CLEAR under the cursor, SHIFT -> is TAB, SHIFT up-arrow moves the
+  copy cursor. **SHIFT down-arrow, then a key**, makes what the keyboard
+  has not got: `-` `~`, `/` `\`, `1` `|`, `7` `` ` ``, `8` `[`, `9` `]`,
+  `,` `{`, `.` `}`, `@` `^`, `0` `_`, `C` COPY (from the copy cursor),
+  `S` CTRL-S; in the function editor SHIFT down-arrow C or S is "done",
+  BREAK leaves it unchanged. **SHIFT @** holds the output, as in LDOS,
+  until another key. `key-down-p` takes the matrix's numbers (ENTER 48,
+  CLEAR 49, BREAK 50, up 51, down 52, left 53, right 54, SPACE 55).
+- **CPC only**, not there: `symbol` (the characters are the ROM's),
+  `window`, `tag`, `transparent`, `flash-speed`, `text-cursor`,
+  `joystick`, `peek`, `poke`, `release`, `sound-check`, `sound-hold`,
+  `sound-continue`, PlayCity's `playcity`, `pc-tone`, `pc-off`, and
+  `(basic)`; the `(chords)` demo. `midi-off` does nothing.
 - About 2800 cells instead of 6600.

@@ -66,6 +66,8 @@ About 3150 cells are free at start, half a CPC's.
 | CLEAR | CLR: the character under the cursor |
 | SHIFT down, then a key | a character the keyboard has not got (below) |
 | SHIFT down twice | the copy cursor down |
+| SHIFT down, then C | COPY: copies from the copy cursor; in the function editor, done |
+| SHIFT down, then S | CTRL-S: in the function editor, done (BREAK leaves it unchanged) |
 | SHIFT @ | output waits (LDOS's way) until another key |
 
 A Model I or III has no `[ ] { } \ | ~ ^ _` or backquote keys -- its up
@@ -83,6 +85,8 @@ the key may be shifted or not:
 | `,` or `<`, `.` or `>` | `{` `}` | `format`'s `~{ ~}` |
 | `@` | `^` | `format`'s `~^` |
 | `0` | `_` | |
+| `S` | CTRL-S | the function editor: done |
+| `C` | COPY | the copy cursor's character; the function editor: done |
 
 (Keys are read through the ROM's keyboard routine, as LDOS has it
 without KI/DVR; with KI/DVR loaded this is untried.)
@@ -143,16 +147,24 @@ without KI/DVR; with KI/DVR loaded this is untried.)
 * **MIDI** through MIDI/80 (port 8, its MIDI OUT and its Waveblaster as
   its DIP switches say): `midi-note`, `midi-program`, `midi-control`,
   `midi-panic`, `midi-out`, and `(midi-tune)`, a minuet in two voices.
-  Not tried on a real MIDI/80 yet (trs80gp has none: with `-ee` the
-  bytes go to the transcript too, as `<90><3C><64>`).
+  Tried on Mike's Model I and Model III; in trs80gp, which has no
+  MIDI/80, `-ee` copies the bytes to the transcript, as `<90><3C><64>`.
 * `time` counts LDOS's ticks, in the CPC's 1/300 s. A Model I's are 25
   ms, a byte at &4040 running on through the seconds (theirs at &4041):
   the ticks between two calls are the byte's difference that is nearest
   40 times the seconds gone by, exact however long between them. A Model
   III's, 33 ms, count 30 down to 1 at &4216 within each second (&4217).
   A call takes 3.5 ms.
-* Not to be: `symbol` -- the characters are the character generator's, a
-  ROM.
+* **The text screen**, 64 by 16 in one colour: `cls`, `locate` and the
+  printers as on the CPC; `mode` only clears; `ink`, `border`, `pen`,
+  `paper` do nothing.
+* `(quit)` -- here only -- goes back to LDOS, and so does `(reset)`.
+* **Not here, CPC only**: `symbol` (the characters are the character
+  generator's, a ROM), `window`, `tag`, `transparent`, `flash-speed`,
+  `text-cursor`, `joystick`, `peek`, `poke`, `release`, `sound-check`,
+  `sound-hold`, `sound-continue`, PlayCity (`playcity`, `pc-tone`,
+  `pc-off`, the `(chords)` demo), and `(basic)` -- the LambdaSpeak
+  card's. `midi-off` is there and does nothing.
 
 ## In trs80gp
 
