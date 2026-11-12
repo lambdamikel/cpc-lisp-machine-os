@@ -5,8 +5,9 @@
 Everything in CPC Lisp that depends on the machine is in `mach/<machine>/`;
 everything in `src/` and `lib/` is portable Z80 code that reaches the
 machine only through the names listed here. `mach/cpc/` is the Amstrad
-CPC. A port to another Z80 machine is a new directory beside it with the
-same files, and a build with `MACH=<machine> tools/build.sh` (the default
+CPC, `mach/trs80/` the TRS-80 Model I and III with X-MEM/80 (its
+[README](trs80/README.md)). A port to another Z80 machine is a new
+directory beside it with the same files, and a build with `MACH=<machine> tools/build.sh` (the default
 is `cpc`).
 
 On the CPC the interface costs nothing: each name is the address of a

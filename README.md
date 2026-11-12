@@ -126,6 +126,19 @@ The build runs the compiler on itself first (`tools/bootstrap.py`, see
 **Typing a tilde** (`format`'s `~A`, `~%`...): the CPC has no `~` key --
 it is **CTRL + 2** (in MAME, Right Alt + 2).
 
+## On a TRS-80
+
+The same Lisp runs on a **TRS-80 Model I or III with
+[X-MEM/80](https://github.com/lambdamikel/x-mem-80)**, the 512 KB paged
+memory card, under LDOS: the six images are built from the same sources
+and run unchanged in the card's 16 KB window at &C000; what is the
+TRS-80's -- the screen, keys, graphics in the 2 x 3 blocks, sound on the
+cassette port, floats through the Level II ROM, files through LDOS -- is
+in `mach/trs80/`. `MACH=trs80 tools/build.sh` makes LDOS discs to boot,
+and `tools/trs80/play.sh` runs it in trs80gp.
+[`mach/trs80/README.md`](mach/trs80/README.md) has the rest -- among it
+the keys a TRS-80 has not got: **SHIFT down-arrow, then `-`** is `~`.
+
 ## Documents
 
 * [`roms/README.md`](roms/README.md): the ready-made ROM images -- what
@@ -144,6 +157,8 @@ it is **CTRL + 2** (in MAME, Right Alt + 2).
   ROM, and what is still open
 * [`mach/README.md`](mach/README.md): the machine layer -- the interface
   a port to another Z80 machine provides
+* [`mach/trs80/README.md`](mach/trs80/README.md): the TRS-80 Model I and
+  III with X-MEM/80 -- building, the discs, the keys, what works
 * [`docs/hardware-test.txt`](docs/hardware-test.txt): what to type on a
   real CPC, and what it should answer
 * `CLAUDE.md`: working notes -- what was learned about the CPC, MAME and

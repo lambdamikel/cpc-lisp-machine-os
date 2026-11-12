@@ -47,6 +47,20 @@ A port to another Z80 machine is another directory beside it, built with
 the interface, and what a machine must offer: six 16 KB banks of code at
 &C000, and some 40 KB of RAM below that is always there.
 
+**The first port is the TRS-80 Model I and III with X-MEM/80**
+(`mach/trs80/`, [its README](../mach/trs80/README.md)). X-MEM/80 maps
+any of 32 pages of 16 KB at &C000 with one `OUT`, so the six images run
+there unchanged, loaded from LDOS discs by a small `LISP/CMD`. The
+TRS-80 has no firmware with the CPC's contracts, so its routines --
+console, keys, graphics, sound, files, floats -- are a seventh page, the
+*machine page*; each interface name is an entry of a jumpblock in RAM
+that is always there, which maps the machine page in, calls the routine
+and maps the caller's page back. Floats go through the Level II ROM: the
+CPC's five-byte reals turned out to be Microsoft's binary form with a
+longer mantissa. With half the CPC's RAM for the heap, block space's
+share and the file buffers' size became the machine's choice too
+(`MACH_BLOCKS`, `FILE_BUFSIZE`).
+
 ## The ROMs
 
 | ROM | source | |

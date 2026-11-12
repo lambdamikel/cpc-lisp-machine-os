@@ -11,7 +11,7 @@ as it stands, and was checked on the machine. The
 
 Two keys first. **ESC** stops whatever is running and comes back to
 `LISP>`. The CPC has no tilde key, and `format` needs one: **CTRL + 2**
-types `~`.
+types `~`. (On a TRS-80: SHIFT down-arrow, then `-`.)
 
 ## 1. First steps
 

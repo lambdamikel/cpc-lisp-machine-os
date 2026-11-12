@@ -60,6 +60,7 @@ parentheses balance).
   with `let` get their global values back.
 - **ESC** stops whatever is running: `Error: break`. Even a tight `(loop)`.
 - The CPC has no `~` key: it is **CTRL + 2** (the firmware's key table).
+  On a TRS-80, **SHIFT down-arrow, then `-`** ([On a TRS-80](#on-a-trs-80)).
 
 ## The editors
 
@@ -119,7 +120,9 @@ like a float (`\|1.5\|`) is printed without bars.
 **Typing `~`**: the CPC keyboard has no tilde. **CTRL + 2** types it --
 the firmware's own key table, so it works in the line editor, in `ed` and
 in the firmware's EDIT alike (in MAME, CTRL is Right Alt: Right Alt + 2).
-`format`'s directives need it: `(format t "~A~%" x)`.
+`format`'s directives need it: `(format t "~A~%" x)`. A TRS-80 has no
+tilde either, nor `[ ] { } \ | ^ _` or backquote: there SHIFT down-arrow,
+then a key, makes them ([On a TRS-80](#on-a-trs-80)).
 
 ## Data types
 
@@ -738,3 +741,31 @@ memory only while it does.
 - A compiled function prints as `#<FUNCTION>`; `ed` cannot show it and
   `save` leaves it out (`compile-file` the source instead). A `.FAS`
   file holds bytecode: compile it again after a new VM ROM.
+
+## On a TRS-80
+
+The same Lisp runs on a TRS-80 Model I or III with X-MEM/80, under LDOS
+([`mach/trs80/README.md`](../mach/trs80/README.md) has the whole of it).
+What is different there:
+
+- **The screen** is 64 by 16; `mode`, `ink` and `border` do nothing but
+  clear (`mode`). **Graphics** are the screen's 2 x 3 blocks, 128 by 48,
+  from the same logical 640 by 400; a pen is lit or not. `ink-mode`
+  draws with XOR, AND, OR as on the CPC.
+- **Sound**: one voice, played there and then on the cassette port;
+  envelopes are taken and not heard.
+- **Floats**: + - * / and `sqrt` as on the CPC; `exp`, `log` and the
+  trigonometry to about seven digits (the Level II ROM's single
+  precision).
+- **Files** through LDOS: a name `B:FOO.LSP` is `FOO/LSP:1`; `dir` lists
+  every drive.
+- **Keys**: BREAK is ESC; <- deletes, SHIFT <- and -> move, SHIFT -> is
+  TAB, CLEAR is CLR. The keyboard has no `~ \ | ` `` ` `` ` [ ] { } ^ _`:
+  **SHIFT down-arrow, then** `-` gives `~`, `/` `\`, `1` `|`, `7`
+  `` ` ``, `8` `[`, `9` `]`, `,` `{`, `.` `}`, `@` `^`, `0` `_`.
+  `key-down-p` takes the TRS-80's key numbers.
+- `(quit)` goes back to LDOS. Not there: `symbol`, `flood-fill`,
+  `window`, `tag`, `transparent`, `flash-speed`, `text-cursor`,
+  `joystick`, `peek`, `poke`, `release`, the `sound-` functions, the
+  LambdaSpeak card's.
+- About 2800 cells instead of 6600.
