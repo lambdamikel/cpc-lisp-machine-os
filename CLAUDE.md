@@ -327,9 +327,13 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     Model III's at &4216 count 30 down to 1 within each second (&4217).
     Measured in trs80gp with probe programs. (time) is built on them.
   * Talker/80 (2026-11-12, a real Model III): a TRS-80 reset resets it to
-    its DIP switches' mode (Epson), while X-MEM/80 keeps RAM -- so `say`
-    sends &E9 &EE (no confirmations, DECtalk) every time, as the CPC
-    does; plain text speaks in any mode, DECtalk's brackets do not. Its
+    its DIP switches' mode, while X-MEM/80 keeps RAM -- so the "DECtalk
+    is on" flag (TK_MODE) is cleared at every Lisp start (m_init); plain
+    text speaks in any mode, DECtalk's brackets do not. Each control byte
+    makes its firmware wait 200 ms, set the chip up and EMPTY its text
+    buffer, and a second control byte meanwhile is lost: `tk_ctl` waits
+    until it says ready (bit 7) before anything else goes (sending &E9
+    &EE before every line silenced every line). Its
     Epson chip is DECtalk 5.01: arpabet is two characters a phoneme, the
     L is `ll` (a bare `l` ends the song there); LambdaSpeak 4's DECtalk
     Mini takes both.

@@ -24,6 +24,22 @@ tk_out:
     pop bc
     ret
 
+;; tk_ctl: A, a control byte, to Talker/80, and the wait until it is done
+;; with it: its firmware takes one at a time (a second, meanwhile, is
+;; lost), waits 200 ms, sets the chip up again and empties its text
+;; buffer -- text sent too soon is gone. It says busy (bit 7 low) from the
+;; byte until then; 5 ms first, past the moment its loop says ready.
+tk_ctl:
+    call tk_out
+    push bc
+    ld c,3
+.o:
+    ld b,0
+.i:
+    djnz .i
+    dec c
+    jr nz,.o
+    pop bc
 ;; tk_wait: while Talker/80 speaks; BREAK lets out
 tk_wait:
     in a,(TK_PORT)
@@ -45,11 +61,16 @@ lf_say:
     CORE subr_string
     CORE str_data               ; HL = the characters, BC = how many
     call tk_wait
-    ld a,#E9                    ; no spoken confirmations, DECtalk -- each
-    call tk_out                 ;   time, as on the CPC: a reset of the
-    ld a,#EE                    ;   TRS-80 resets Talker/80 to its DIP
-    call tk_out                 ;   switches' mode, and RAM remembers
-.l:                             ;   nothing then (a flag did, wrongly)
+    ld a,(TK_MODE)              ; DECtalk mode, once each time Lisp starts
+    cp 1                        ;   (a TRS-80 reset resets Talker/80 to its
+    jr z,.l                     ;   DIP switches' mode)
+    ld a,#E9                    ; no spoken confirmations,
+    call tk_ctl
+    ld a,#EE                    ;   DECtalk
+    call tk_ctl
+    ld a,1
+    ld (TK_MODE),a
+.l:
     ld a,b
     or c
     jr z,.cr
@@ -72,7 +93,7 @@ lf_say:
 ;@ SPEECH-STOP 0 0 lf_speech_stop
 lf_speech_stop:
     ld a,#FE
-    call tk_out
+    call tk_ctl
     jp lt
 
 ;; (speech-voice n), (speech-rate n), (speech-volume n): 0-15, 0 the
@@ -94,7 +115,7 @@ tk_setting:
     ld a,l
     and 15
     or c
-    call tk_out
+    call tk_ctl
     pop hl
     ret
 

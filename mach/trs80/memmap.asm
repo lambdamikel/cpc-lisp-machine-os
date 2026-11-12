@@ -35,5 +35,7 @@ VARS              equ #BD00         ; the variables
 LIBSCR            equ #BE00         ; 256: scratch for the library
 HISTBUF           equ #BF00         ; 128: the line editor's history
 TRAMP             equ #BF80         ; 58: the cross-bank trampoline
-RDISK             equ #BFC0         ; 64: unused here
+RDISK             equ #BFC0         ; 64: an entry of the RAM disc's (32),
+TK_MODE           equ RDISK+63      ;   and 1 once Talker/80 is in DECtalk
+                                    ;   mode this Lisp (m_init clears it)
 VARS_END          equ LIBSCR

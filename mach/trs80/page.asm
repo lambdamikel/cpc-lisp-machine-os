@@ -61,6 +61,8 @@ t32:        dw 0,0
 
 ;; m_init: from the loader, once
 m_init:
+    xor a
+    ld (TK_MODE),a              ; Talker/80's mode not set yet: a reset
     ld a,(#0125)                ; the Model III's ROM has an "I" there
     cp 'I'
     ld a,0
