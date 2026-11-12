@@ -364,8 +364,8 @@ fe_edit:
     call VID_INIT                ; draws straight into the screen from here
     ld a,(VID_COLS)
     ld (FE_W),a
-    ld a,24
-    ld (FE_H),a                 ; the 25th row is the status line
+    ld a,VID_ROWS-1
+    ld (FE_H),a                 ; the last row is the status line
     xor a
     ld (FE_CURVIS),a
     ld (FE_USED),a              ; the screen is clear

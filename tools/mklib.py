@@ -203,7 +203,7 @@ def vm_table(vm):
     import os
     fns, texts, boots, variables = [], [], [], []
     srcs = part_sources(vm)[0]
-    code = os.path.join('build', 'vmcode.asm')
+    code = os.path.join(os.environ.get('OUT', 'build'), 'vmcode.asm')
     for path in srcs + ([code] if os.path.exists(code) else []):
         for line in open(path):
             m = re.match(r';@vm\s+(\S+)\s+(\d+)\s+(\d+)\s+(\w+)\s*$', line)

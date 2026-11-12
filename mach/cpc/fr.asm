@@ -29,6 +29,7 @@ FR_FONT   equ LIBSCR+231        ; the font copy, characters 32-127 (2)
 FR_P      equ LIBSCR+233        ; paper for this character: VID_PAPER, or xor FR_X
 VID_COLS   equ LIBSCR+234        ; columns on the screen: 20, 40, 80
 VID_FONTSIZE equ 96*8
+VID_ROWS   equ 25                ; rows on the screen
 
 ;; VID_INIT: DE = VID_FONTSIZE bytes for the font. Reads the mode, the inks
 ;; and where the screen is.

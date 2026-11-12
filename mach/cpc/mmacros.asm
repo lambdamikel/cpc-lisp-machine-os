@@ -45,6 +45,11 @@ macro FM addr
     db {addr}-M_MOVE
 mend
 
+;; MACH_TITLE: the banner's second line
+macro MACH_TITLE
+    db "A Lisp machine for the Amstrad CPC",13,10,0
+mend
+
 ;; SYS_RESET: start the machine afresh
 macro SYS_RESET
     rst 0

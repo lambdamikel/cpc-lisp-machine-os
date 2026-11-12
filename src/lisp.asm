@@ -544,7 +544,7 @@ err_nostr:
     include "xrom.asm"
 
 banner:      db "CPC Lisp 0.9",13,10
-             db "A Lisp machine for the Amstrad CPC",13,10,0
+             MACH_TITLE                 ; "A Lisp machine for ...": mmacros.asm
 banner_lib:  db "library ROMs"
 banner_sp:   db " ",0
 banner2:     db " cells free",13,10,13,10,0

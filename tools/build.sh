@@ -25,7 +25,10 @@ RASM=${RASM:-$HOME/claude/midi80/toolchain/rasm/rasm}
 ROMS=${ROMS:-$HOME/claude/cpc/mame-roms}
 # the machine: mach/$MACH holds everything that depends on it
 export MACH=${MACH:-cpc}
-mkdir -p build
+# where the ROMs go: build/ for the CPC, build/<machine>/ for another
+if [ "$MACH" = cpc ]; then OUT=build; else OUT=build/$MACH; fi
+export OUT
+mkdir -p "$OUT"
 
 # All the ROMs get the same build number: the library calls the core by
 # address, so the core only uses a library from its own build.
@@ -35,7 +38,7 @@ BUILD_ID=${BUILD_ID:-$(( $(date +%s) % 32000 + 1 ))}
 asm() {  # asm source output symfile [rasm options]
     local src=$1 out=$2 sym=$3; shift 3
     local log
-    log=$("$RASM" "$src" -I src -I build -I "mach/$MACH" -ob "$out" -s -sa -os "$sym" -DBUILD_ID=$BUILD_ID "$@" 2>&1) || true
+    log=$("$RASM" "$src" -I src -I "$OUT" -I "mach/$MACH" -ob "$out" -s -sa -os "$sym" -DBUILD_ID=$BUILD_ID "$@" 2>&1) || true
     log=$(sed 's/\x1b\[[0-9;]*m//g' <<<"$log")
     if ! grep -q "Write binary file" <<<"$log"; then
         echo "$log" >&2
@@ -46,22 +49,21 @@ asm() {  # asm source output symfile [rasm options]
     [ "$(stat -c %s "$out")" = 16384 ] || { echo "build: $out is not 16 KB" >&2; exit 1; }
 }
 
-asm src/lisp.asm build/LISP.ROM build/lisp.sym
+asm src/lisp.asm $OUT/LISP.ROM $OUT/lisp.sym
 
 # the core's symbols, for the library: labels and constants, not locals
 awk '$3 == "B0" && ($4 == "L" || $4 == "A") && $1 !~ /\./ && $1 != "BUILD_ID" && $1 != "SYNCHRO" && $1 != "RASM_VERSION" \
-     { print $1 " equ " $2 }' build/lisp.sym > build/core.inc
-python3 tools/bootstrap.py lib/compiler.lsp lib/vm.asm build/vmcode.asm
-python3 tools/mklib.py build lib/lib.asm lib/lib2.asm lib/lib3.asm lib/demo.asm --vm lib/vm.asm lib/lib2.asm
-asm lib/lib.asm build/LISPLIB.ROM build/lisplib.sym -I lib
-asm lib/lib2.asm build/LISPLIB2.ROM build/lisplib2.sym -I lib
-asm lib/lib3.asm build/LISPLIB3.ROM build/lisplib3.sym -I lib
-asm lib/demo.asm build/LISPDEMO.ROM build/lispdemo.sym -I lib
-asm lib/vm.asm build/LISPVM.ROM build/lispvm.sym -I lib
+     { print $1 " equ " $2 }' $OUT/lisp.sym > $OUT/core.inc
+python3 tools/bootstrap.py lib/compiler.lsp lib/vm.asm $OUT/vmcode.asm
+python3 tools/mklib.py $OUT lib/lib.asm lib/lib2.asm lib/lib3.asm lib/demo.asm --vm lib/vm.asm lib/lib2.asm
+asm lib/lib.asm $OUT/LISPLIB.ROM $OUT/lisplib.sym -I lib
+asm lib/lib2.asm $OUT/LISPLIB2.ROM $OUT/lisplib2.sym -I lib
+asm lib/lib3.asm $OUT/LISPLIB3.ROM $OUT/lisplib3.sym -I lib
+asm lib/demo.asm $OUT/LISPDEMO.ROM $OUT/lispdemo.sym -I lib
+asm lib/vm.asm $OUT/LISPVM.ROM $OUT/lispvm.sym -I lib
 
-mkdir -p build/mame/cpc464 build/mame/cpc6128 build/mame/cpc_ddi1
-{ head -c 16384 "$ROMS/cpc464/cpc464.rom"; cat build/LISP.ROM; } > build/mame/cpc464/cpc464.rom
-{ head -c 16384 "$ROMS/cpc6128/cpc6128.rom"; cat build/LISP.ROM; } > build/mame/cpc6128/cpc6128.rom
-cp "$ROMS/cpc6128/cpcados.rom" build/mame/cpc6128/
-cp "$ROMS/cpc_ddi1/cpcados.rom" build/mame/cpc_ddi1/
+# what the machine makes of them: on the CPC, MAME romsets
+if [ -f "mach/$MACH/post-build.sh" ]; then
+    . "mach/$MACH/post-build.sh"
+fi
 echo "build: ok"

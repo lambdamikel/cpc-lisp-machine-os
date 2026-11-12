@@ -49,9 +49,9 @@ builds can be compared with `cmp`).
 | `firmware.asm` | `src/defs.asm` | the machine's own entry points, for its files' use (on the CPC: the firmware's, by name) |
 | `machine.asm` | `src/defs.asm` | the interface names below, bound to the machine |
 | `memmap.asm` | `src/defs.asm` | the memory map: `LOWMEM`, `MARKSTK`, `MARKSTK_END`, `OBARRAY`, `NBUCKETS`, `OBARRAY_END`, `LIBDEFS`, `LIBDEFS_END`, `FNBOUND`, `SYM_LO`, `NSYMS`, `SYM_HI`, `CELL_LO`, `LINEBUF`, `TOKBUF`, `VARS`, `LIBSCR`, `HISTBUF`, `TRAMP`, `RDISK`, `VARS_END` |
-| `mmacros.asm` | `src/macros.asm` | the macros: `MACH_START`, `MACH_INIT`, `FM`, `SYS_RESET` |
+| `mmacros.asm` | `src/macros.asm` | the macros: `MACH_START`, `MACH_INIT`, `FM`, `SYS_RESET`, `MACH_TITLE` |
 | `fp.asm` | `lib/float.asm` (part 1) | calling the maths routines: `fmcall` (for `FM`), `fp_callix` |
-| `fr.asm` | `lib/lib.asm` (part 0) | the function editor's screen: `VID_INIT`, `VID_CHAR`, `VID_NORMAL`, `VID_INVERSE`, `VID_PAPER`, `VID_COLS`, `VID_FONTSIZE`, `VID_VARS` |
+| `fr.asm` | `lib/lib.asm` (part 0) | the function editor's screen: `VID_INIT`, `VID_CHAR`, `VID_NORMAL`, `VID_INVERSE`, `VID_PAPER`, `VID_COLS`, `VID_FONTSIZE`, `VID_ROWS`, `VID_VARS` |
 | `ramdisc.asm` | `lib/disc.asm` (part 0) | a RAM disc, drive `M:`: `RDISC_IS`, `RDISC_IN`, `RDISC_OUT`, `RDISC_CAT` |
 | `natives.asm` | `lib/gfx.asm` (part 0) | Lisp functions of the machine's own |
 | `graphics.asm` | the end of `lib/gfx.asm` (part 0) | `SYMBOL` and `FLOOD-FILL`, or nothing |
@@ -130,6 +130,7 @@ firmware could (`fr.asm`):
 | `VID_PAPER` | a byte in RAM: the paper, as `VID_FILLBOX` takes it |
 | `VID_COLS` | a byte in RAM: the screen's columns |
 | `VID_FONTSIZE` | a constant |
+| `VID_ROWS` | a constant: the screen's rows (the last is the function editor's status line) |
 | `VID_VARS` | where the renderer's variables start in `LIBSCR`: the function editor keeps below it |
 
 ### Graphics
@@ -220,6 +221,7 @@ Each returns carry if all went well, as the firmware's do.
 | `MACH_INIT` | HL = that byte, the low area and the variables clear -> `V_MEMTOP` and `V_EDITV` set: `V_EDITV` is the line editor used when there is no library (on the CPC the firmware's EDIT, whose address differs between the 464 and the 664/6128). It may keep RAM for itself under the top: the CPC keeps 128 bytes for `SYMBOL` (`V_UDG`) |
 | `FM` | `FM name` calls the maths routine `name` (above) |
 | `SYS_RESET` | starts the machine afresh (`reset`) |
+| `MACH_TITLE` | the banner's second line: `db "A Lisp machine for ...",13,10,0` |
 
 ### A RAM disc (it may be left out)
 
