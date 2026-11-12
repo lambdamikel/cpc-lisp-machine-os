@@ -57,15 +57,32 @@ About 3150 cells are free at start, half a CPC's.
 | -> | cursor right |
 | SHIFT -> | TAB |
 | up, down | the history |
-| SHIFT up, SHIFT down | the copy cursor |
+| SHIFT up | the copy cursor up |
 | CLEAR | CLR: the character under the cursor |
+| SHIFT down, then a key | a character the keyboard has not got (below) |
+| SHIFT down twice | the copy cursor down |
+
+A Model I or III has no `[ ] { } \ | ~ ^ _` or backquote keys -- its up
+arrow *is* `[`, code &5B, and fetches the line before from the history
+here. **SHIFT down-arrow, pressed and let go, then a key** makes them;
+the key may be shifted or not:
+
+| SHIFT down, then | gives | for |
+|---|---|---|
+| `-` or `=` | `~` | `format`'s directives: `"~A"` |
+| `/` or `?` | `\` | characters: `#\a`; escapes in strings |
+| `1` or `!` | `\|` | `\|odd names\|`, `#\| comments \|#` |
+| `7` or `'` | `` ` `` | backquote |
+| `8` or `(`, `9` or `)` | `[` `]` | `format`'s `~[ ~]` |
+| `,` or `<`, `.` or `>` | `{` `}` | `format`'s `~{ ~}` |
+| `@` | `^` | `format`'s `~^` |
+| `0` | `_` | |
+
+(Keys are read through the ROM's keyboard routine, as LDOS has it
+without KI/DVR; with KI/DVR loaded this is untried.)
 
 `key-down-p` takes the matrix's numbers, row * 8 + bit: ENTER 48, CLEAR
 49, BREAK 50, up 51, down 52, left 53, right 54, SPACE 55.
-
-A Model I has no `[ ] { } \ |` keys: its up arrow *is* `[` (code &5B),
-and here it fetches the line before from the history. (trs80gp types a
-pasted `[` as the up arrow too.)
 
 ## What works, and what not yet
 

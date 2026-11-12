@@ -552,71 +552,128 @@ m_gfx_paper:
 ;; ---------------------------------------------------------------------------
 ;; KEYS: the ROM's scan, its codes made the CPC's
 ;;   BREAK ESC, CLEAR CLR, <- DEL, SHIFT <- left, -> right, SHIFT -> TAB,
-;;   up and down, SHIFT up and SHIFT down the copy cursor's
+;;   up and down, SHIFT up the copy cursor's up
+;; and SHIFT DOWN-ARROW, pressed and let go, makes the next key one the
+;; keyboard has not got (k_comp): twice is the copy cursor's down.
 
 k_codes:
     db #01,#FC, #1F,#10, #08,#7F, #18,#F2, #09,#F3, #19,#09
-    db #5B,#F0, #0A,#F1, #1B,#F4, #1A,#F5, 0
+    db #5B,#F0, #0A,#F1, #1B,#F4, 0
+
+;; after SHIFT DOWN-ARROW: a key, shifted or not, and what it makes
+k_comp:
+    db '-','~', '=','~'         ; ~ format's directives
+    db '/',#5C, '?',#5C         ; \ characters #\a, escapes
+    db '1','|', '!','|'         ; | odd names, #| comments |#
+    db '7','`', "'",'`'         ; ` backquote
+    db '8','[', '(','['         ; [ ] format's ~[ ~]
+    db '9',']', ')',']'
+    db ',','{', '<','{'         ; { } format's ~{ ~}
+    db '.','}', '>','}'
+    db '@','^'                  ; ^ format's ~^
+    db '0','_'
+    db #1A,#F5                  ; SHIFT DOWN-ARROW again: copy cursor down
+    db 0
 
 ;; KEY_READ: -> carry and A = a character; no carry if there is none
 m_key_read:
     call k_backed
     ret c
-    push bc
-    push de
-    push hl
-    push ix
-    push iy
-    call ROM_KBD                ; a key, or 0
-    jr k_got
+    call k_scan
+    or a
+    ret z                       ; NC: none
+    jr k_cook
 
 ;; KEY_WAIT: -> A = a character. It waits in the ROM's own loop (&0049),
 ;; where trs80gp's typed input (-i) arrives too.
 m_key_wait:
     call k_backed
     ret c
+    call k_wait
+    call k_cook
+    jr nc,m_key_wait            ; the prefix: wait for the key after it
+    cp 13
+    scf
+    ret nz
+    ld a,(c_echo)
+    or a
+    ld a,13
+    scf
+    ret z
+    call c_typed                ; ENTER: the transcript gets the line
+    ld a,13
+    scf
+    ret
+
+;; k_scan, k_wait: the ROM's key routines, every register but AF kept
+k_scan:
+    ld a,0
+    jr k_rom
+k_wait:
+    ld a,1
+k_rom:
     push bc
     push de
     push hl
     push ix
     push iy
-    call ROM_KEY
-    cp 13
-    jr nz,k_got
-    ld a,(c_echo)
     or a
-    ld a,13
-    jr z,k_got
-    call c_typed
-    ld a,13
-k_got:
+    jr nz,.w
+    call ROM_KBD                ; a key, or 0
+    jr .done
+.w:
+    call ROM_KEY
+.done:
     pop iy
     pop ix
+    pop hl
+    pop de
+    pop bc
+    ret
+
+;; k_cook: A = the ROM's code -> carry and A = the CPC's; no carry for
+;; SHIFT DOWN-ARROW, which is waiting for the next key. BC, DE, HL kept.
+k_cook:
+    push bc
+    push hl
+    ld hl,k_compose
+    bit 0,(hl)
+    jr z,.plain
+    ld (hl),0
+    ld hl,k_comp
+    call k_look                 ; composed: one from the table, or the key
+    jr .got
+.plain:
+    cp #1A
+    jr nz,.x
+    ld (hl),1                   ; SHIFT DOWN-ARROW: the next key composes
+    pop hl
+    pop bc
     or a
-    jr z,.none
-    ld hl,k_codes
+    ret
 .x:
+    ld hl,k_codes
+    call k_look
+.got:
+    pop hl
+    pop bc
+    scf
+    ret
+;; k_look: A = a code, HL = a table of pairs ending in 0 -> A = its pair's
+;; second, or as it was. C, HL lost.
+k_look:
     ld c,(hl)
     inc c
     dec c
-    jr z,.got
+    ret z
     inc hl
     cp c
     ld c,(hl)
     inc hl
-    jr nz,.x
+    jr nz,k_look
     ld a,c
-.got:
-    pop hl
-    pop de
-    pop bc
-    scf
     ret
-.none:
-    pop hl
-    pop de
-    pop bc
-    ret                         ; NC (or a)
+k_compose:  db 0
 
 ;; k_backed: -> carry and A = KEY_UNREAD's character, if there is one
 k_backed:
