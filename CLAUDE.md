@@ -279,6 +279,32 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   1, 3, 4, 6, 7 at &C000 are exactly six), the TRS-80 Model 4, MSX1, the
   TA alphatronic PC and the Sharp MZ-700. Mike has all of these; no PCW,
   MSX2 or Enterprise.
+* **The TRS-80 port** (`mach/trs80/`, branch `trs80`; its README has the
+  user's side). Lessons, each one cost a round:
+  * trs80gp delivers `-i`/`-if` typed input only to a program waiting in
+    the ROM's key routine at &0049, not to one polling &002B: KEY_WAIT
+    waits there. `-iw` waits for screen text; a killed trs80gp writes no
+    printer file, so tools/trs80/run.sh uses `-itime` and `-it -ix`.
+  * `-ee`: write 255 to port &47, *read it back*: 1 means extensions
+    (not the carry). 128 to &47 exits with BC.
+  * LDOS finds SYS0-SYS13 by directory position (the first two entries of
+    each directory sector), not by name: a file put there runs instead of
+    the overlay (DIR, LIB ran LISP/CMD). tools/trs80/ldoswrite.py skips
+    those entries.
+  * The Level II ROM's single divide needs its helper copied to &4080
+    (from &18F7, 14 bytes) as BASIC does at start: under LDOS it is not
+    there and LOG, SIN, SQR... hang. The ROM's function table at &1608
+    gives the entry points; the Model III's ROM has them at the same
+    places.
+  * The CPC's five-byte reals are Microsoft's binary form with a 32-bit
+    mantissa: to and from the ROM's single and double is copying bytes.
+  * float.asm counts on FP_MOVE and FP_CMP keeping BC and DE (a `djnz`
+    after FP_MOVE); keep that in any machine's maths.
+  * Block space and file buffers are machine choices (MACH_BLOCKS,
+    FILE_BUFSIZE): with half a CPC's heap the CPC's 11/64 left too little
+    string space for compiled code.
+  * To work while tests run on build/trs80: `MACH=trs80
+    OUT=build/trs80-dev tools/build.sh`, `TRS80_BUILD=... run.sh`.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the

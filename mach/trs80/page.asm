@@ -1033,6 +1033,10 @@ m_gfx_line:
     call g_pix
     ld (l_x1),de
     ld (l_y1),hl
+    ld de,(l_y0)                ; a row? the quick way
+    or a
+    sbc hl,de
+    jp z,g_hline
     ; dx = |x1 - x0|, sx = the sign
     ld hl,(l_x1)
     ld de,(l_x0)
@@ -1113,6 +1117,135 @@ g_neg:
     sbc a,a
     sub h
     ld h,a
+    ret
+
+;; g_hline: a line along one row of blocks, l_x0 to l_x1 at l_y0: clipped
+;; to the screen, then each block set the pen's way (g_set's, without its
+;; sums)
+g_hline:
+    ld hl,(l_y0)
+    ld a,h
+    or a
+    ret nz                      ; off the screen
+    ld a,l
+    cp 48
+    ret nc
+    ld de,(l_x0)
+    ld hl,(l_x1)
+    push hl
+    or a
+    sbc hl,de
+    pop hl
+    jp p,.ord
+    ex de,hl                    ; DE = the left end, HL = the right
+.ord:
+    bit 7,h
+    ret nz                      ; all to the left
+    ld a,h
+    or a
+    jr nz,.r127
+    ld a,l
+    cp 128
+    jr c,.rok
+.r127:
+    ld hl,127
+.rok:
+    bit 7,d
+    jr nz,.l0
+    ld a,d
+    or a
+    ret nz                      ; all to the right
+    ld a,e
+    cp 128
+    ret nc
+    jr .lok
+.l0:
+    ld de,0
+.lok:
+    ld a,l
+    sub e
+    ret c
+    inc a
+    ld (l_dx),a                 ; blocks to set
+    push de
+    ld de,0
+    ld hl,(l_y0)
+    call g_cell                 ; HL = the row's first cell, C = the bit
+    pop de                      ;   of an even column
+    ld a,c                      ; the masks: even column C, odd C * 2
+    ld (l_sx),a
+    add a,a
+    ld (l_sx+1),a
+    ld a,e
+    srl a
+    add a,l
+    ld l,a                      ; the left end's cell
+    ld b,0
+    bit 0,e
+    jr z,.even
+    inc b                       ; start on the odd half
+.even:
+    ld a,(l_dx)
+    ld c,a
+.blk:
+    ld a,b
+    or a
+    ld a,(l_sx)
+    jr z,.m
+    ld a,(l_sx+1)
+.m:
+    ld d,a                      ; this block's bit
+    ld a,(hl)
+    bit 7,a
+    jr nz,.g
+    ld a,#80
+.g:
+    ld e,a
+    ld a,(g_ink)
+    dec a
+    jr z,.xor
+    dec a
+    jr z,.and
+    dec a
+    jr z,.or
+    ld a,(g_pen)
+    or a
+    jr nz,.on
+.off:
+    ld a,d
+    cpl
+    and e
+    jr .put
+.xor:
+    ld a,(g_pen)
+    or a
+    jr z,.next
+    ld a,e
+    xor d
+    jr .put
+.and:
+    ld a,(g_pen)
+    or a
+    jr z,.off
+    jr .next
+.or:
+    ld a,(g_pen)
+    or a
+    jr z,.next
+.on:
+    ld a,e
+    or d
+.put:
+    ld (hl),a
+.next:
+    ld a,b
+    xor 1
+    ld b,a
+    jr nz,.same
+    inc hl                      ; past an odd column: the next cell
+.same:
+    dec c
+    jr nz,.blk
     ret
 
 ;; ---------------------------------------------------------------------------

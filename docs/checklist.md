@@ -360,4 +360,9 @@ compiled code (`docs/design.md` describes both)
     - [x] The machine layer: everything CPC-specific in `mach/cpc/`
           behind an interface (`mach/README.md`); the CPC's ROMs byte for
           byte what they were (2026-11-11)
-    - [ ] TRS-80 Model I/III with X-MEM/80
+    - [x] TRS-80 Model I with X-MEM/80, in trs80gp (branch `trs80`,
+          `mach/trs80/README.md`): the language, compiler, editors,
+          floats (through the ROM), files and `dir` through LDOS,
+          graphics in blocks, sound on the cassette port, the demos
+    - [ ] The TRS-80 on the real Model I and Model III; the images
+          compressed onto one Model I disc; Talker/80 and MIDI/80
