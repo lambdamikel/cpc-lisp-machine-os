@@ -516,8 +516,8 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   Parados (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0), 5 LISPLIB
   (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6) -- the README's
   installation section has the table. All six Lisp ROMs must come from
-  one build: re-flash them together. Flashed: build 26762 (2026-11-12,
-  branch `trs80`: v0.9 with the incf and 512-639 read fixes, the
+  one build: re-flash them together. Flashed: build 28908 (2026-11-12,
+  branch `trs80`: v0.9 with the incf and 512-639 read fixes, MIDI, the
   machine layer); `roms/` is still 25063 (2026-11-07 night: version 0.9, the banner's subtitle; build 22482
   before it, checked on the 464: the compiler -- the VM ROM in slot 1 as
   ROM 1, the .FAS junk fixed,
