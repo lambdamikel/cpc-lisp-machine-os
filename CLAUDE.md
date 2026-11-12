@@ -589,7 +589,8 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   = build 25063, the six ROMs and `cpc-lisp-0.9.zip` (the ROMs,
   `roms/README.md`, `LICENSE`); `v0.95` (2026-11-12) = build 1797, the
   same files, and the TRS-80 discs (`cpc-lisp-0.95-trs80-model1/3`,
-  `.dsk` and `.hfe`, TRS-80 build 1685). A new one: refresh `roms/` from one
+  `.dsk` and `.hfe`, TRS-80 build 1685, replaced the same day by build 9066:
+  the editor's SHIFT down-arrow S/C, `(reset)` to LDOS). A new one: refresh `roms/` from one
   tested build, bump the version (banner, ROM headers, document
   titles), tag, `gh release create` with the same files.
 * Commit with the attribution lines the session gives you.
