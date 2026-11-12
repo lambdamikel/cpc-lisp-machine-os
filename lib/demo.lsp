@@ -114,15 +114,19 @@
 ;; key numbers: cursor up 0, right 1, down 2, left 8, COPY 9, SPACE 47
 (defun sketch ()
   (%dark 1)
-  (let ((x 320) (y 200) (p 1))
-    (loop (when (key-down-p 47) (return))
-          (when (key-down-p 9)
+  ;; the keys' numbers: stop, next pen, up, down, right, left
+  (let ((x 320) (y 200) (p 1)
+        (k (if (member :trs-80 *features*)
+               '(55 49 51 52 54 53)     ; SPACE, CLEAR, the arrows
+               '(47 9 0 2 1 8))))       ; SPACE, COPY, the cursor keys
+    (loop (when (key-down-p (first k)) (return))
+          (when (key-down-p (second k))
             (setq p (1+ (mod p 3)))
-            (loop (unless (key-down-p 9) (return))))
-          (when (key-down-p 0) (setq y (min 399 (+ y 2))))
-          (when (key-down-p 2) (setq y (max 0 (- y 2))))
-          (when (key-down-p 1) (setq x (min 639 (+ x 2))))
-          (when (key-down-p 8) (setq x (max 0 (- x 2))))
+            (loop (unless (key-down-p (second k)) (return))))
+          (when (key-down-p (third k)) (setq y (min 399 (+ y 2))))
+          (when (key-down-p (fourth k)) (setq y (max 0 (- y 2))))
+          (when (key-down-p (nth 4 k)) (setq x (min 639 (+ x 2))))
+          (when (key-down-p (nth 5 k)) (setq x (max 0 (- x 2))))
           (plot x y p)))
   (%restore))
 

@@ -1,4 +1,4 @@
-;; made from jumps.asm's list: the machine page's table (page.asm)
+;; made by tools/trs80/mkjumps.py: the machine page's table (page.asm)
     assert $ == MTAB+2*J_CON_PUTC
     dw m_con_putc
     assert $ == MTAB+2*J_CON_WRCH
@@ -147,3 +147,5 @@
     dw m_m_edit
     assert $ == MTAB+2*J_M_QUIT
     dw m_m_quit
+    assert $ == MTAB+2*J_M_INKMODE
+    dw m_m_inkmode

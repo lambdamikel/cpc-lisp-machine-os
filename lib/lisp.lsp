@@ -5,7 +5,6 @@
 ;;; so the heap pays only for what a program uses. Any other top-level form
 ;;; is evaluated at boot. tools/mklib.py strips the comments.
 
-(defvar *features* '(:cpc :cpc-lisp))
 (defconstant pi (%pi))
 
 ;;; Lists

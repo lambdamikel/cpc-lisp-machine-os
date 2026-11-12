@@ -83,4 +83,5 @@ J_FP_ATN         equ 70
 J_SYS_TIME       equ 71
 J_M_EDIT         equ 72
 J_M_QUIT         equ 73
-NJ             equ 74
+J_M_INKMODE      equ 74
+NJ             equ 75

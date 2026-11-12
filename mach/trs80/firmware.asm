@@ -20,6 +20,7 @@ MACHPAGE    equ 8               ; the machine page (page.asm)
 
 ;; TRS-80 ROM
 ROM_KBD     equ #002B           ; -> A = a key, 0 if none (through LDOS's DCB)
+ROM_KEY     equ #0049           ; -> A = a key: waits for one
 ROM_DSP     equ #0033           ; A = a character to the screen (LDOS's driver)
 
 ;; LDOS 5.3 (Model I and III alike)

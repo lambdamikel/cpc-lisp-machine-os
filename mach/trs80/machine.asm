@@ -84,3 +84,4 @@ FP_ATN          equ JB+4*J_FP_ATN
 SYS_TIME        equ JB+4*J_SYS_TIME
 M_EDIT          equ JB+4*J_M_EDIT
 M_QUIT          equ JB+4*J_M_QUIT
+M_INKMODE       equ JB+4*J_M_INKMODE

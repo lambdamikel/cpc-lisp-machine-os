@@ -1,4 +1,4 @@
-;; made from jumps.asm's list: the jumpblock (resident.asm includes this)
+;; made by tools/trs80/mkjumps.py: the jumpblock (resident.asm)
     call mfar : db 2*J_CON_PUTC
     call mfar : db 2*J_CON_WRCH
     call mfar : db 2*J_CON_RDCH
@@ -73,3 +73,4 @@
     call mfar : db 2*J_SYS_TIME
     call mfar : db 2*J_M_EDIT
     call mfar : db 2*J_M_QUIT
+    call mfar : db 2*J_M_INKMODE

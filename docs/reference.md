@@ -687,7 +687,7 @@ Without the card these do nothing (the bytes go to a port nobody answers).
 | `(time)` | the firmware's clock, 1/300 s, modulo 16384 | 1 |
 | `(peek address)` `(poke address byte)` | RAM, all 64 KB (`#xC000` is the screen); an address past 16383 is a float, which is fine | 1 |
 | `(gc)` | collects; the cells free | core |
-| `*features*` | `(:cpc :cpc-lisp)` | 3 |
+| `*features*` | `(:cpc :cpc-lisp)` on a CPC, `(:trs-80 :cpc-lisp)` on a TRS-80 | 1 |
 | `(room)` | cells, symbols and string space free | 2 |
 | `(reset)` | the machine, as at power-up | 1 |
 

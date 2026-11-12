@@ -38,11 +38,15 @@ c_esc:      db 0                ; 31 (locate): bytes still to come
 c_parm:     db 0                ;   the column, when the row comes
 c_echo:     db 0                ; 1: the printer gets it all too
 k_back:     db 0                ; KEY_UNREAD's character, 0 if none
+p_col:      db 0                ; the printer has had the screen up to here
+p_row:      db 0
+p_roll:     db 0
 g_x:        dw 0                ; graphics: where the last one ended,
 g_y:        dw 0
 g_ox:       dw 0                ;   the origin,
 g_oy:       dw 0
-g_pen:      db 1                ;   1 draws, 0 erases
+g_pen:      db 1                ;   1 draws, 0 erases,
+g_ink:      db 0                ;   ink-mode: 0 plain, 1 XOR, 2 AND, 3 OR
 l_x0:       dw 0                ; a line: from,
 l_y0:       dw 0
 l_x1:       dw 0                ;   to (blocks),
@@ -71,6 +75,7 @@ m_init:
     ld (c_sys),a
     ld (c_esc),a
     ld (c_roll),a
+    ld (g_ink),a
     inc a
     ld (c_usr),a
     ld (g_pen),a
@@ -79,6 +84,7 @@ m_init:
     ld (g_y),hl
     ld (g_ox),hl
     ld (g_oy),hl
+    call f_init                 ; the ROM's divide helper in place
     jp c_clear
 
 ;; ---------------------------------------------------------------------------
@@ -322,12 +328,102 @@ m_con_putc:
     ld l,c
     call c_setcur
 .done:
+    call c_mark
     call c_show
     pop hl
     pop de
     pop bc
     pop af
     ret
+
+;; c_mark: the printer has had all up to the cursor
+c_mark:
+    ld a,(c_col)
+    ld (p_col),a
+    ld a,(c_row)
+    ld (p_row),a
+    ld a,(c_roll)
+    ld (p_roll),a
+    ret
+
+;; c_typed: the line typed since (the editor's echo is not printed): the
+;; screen from where the printer stopped to the end of the cursor's row,
+;; spaces at the end left out
+c_typed:
+    call c_hide
+    ld a,(c_roll)
+    ld b,a
+    ld a,(p_roll)
+    sub b                       ; scrolls since
+    ld b,a
+    ld a,(p_row)
+    sub b
+    jr nc,.r
+    xor a
+    ld (p_col),a                ; scrolled off: from the screen's top
+.r:
+    ld c,a                      ; the first row
+    ld a,(p_col)
+    ld e,a                      ; its column
+.row:
+    push bc
+    ld a,c
+    ld (t32),a
+    ; the end of the row's text
+    ld l,c
+    ld h,0
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    ld a,h
+    add a,VRAM >> 8
+    ld h,a                      ; HL = the row's start
+    ld d,VCOLS
+    ld a,(c_row)
+    cp c
+    jr nz,.got                  ; a row the line goes on from: all of it
+.end:
+    push hl
+    ld a,d
+    dec a
+    add a,l
+    ld l,a
+    ld a,(hl)
+    pop hl
+    cp ' '
+    jr nz,.got
+    dec d
+    ld a,d
+    cp e
+    jr z,.got
+    jr nc,.end
+.got:
+    ld a,l
+    add a,e
+    ld l,a                      ; from the column
+    ld a,d
+    sub e
+    jr z,.nl
+    jr c,.nl
+    ld b,a
+.ch:
+    ld c,(hl)
+    call c_print
+    inc hl
+    djnz .ch
+.nl:
+    pop bc
+    ld e,0
+    ld a,c
+    ld hl,c_row
+    cp (hl)
+    inc c
+    jr c,.row
+    call c_mark
+    jp c_show
 
 ;; CON_WRCH: A = a character, drawn as it is. Every register kept.
 m_con_wrch:
@@ -336,9 +432,6 @@ m_con_wrch:
     push de
     push hl
     ld c,a
-    ld a,(c_echo)
-    or a
-    call nz,c_print
     call c_hide
     ld a,c
     call c_put
@@ -447,22 +540,36 @@ k_codes:
 
 ;; KEY_READ: -> carry and A = a character; no carry if there is none
 m_key_read:
-    ld a,(k_back)
-    or a
-    jr z,.scan
-    push af
-    xor a
-    ld (k_back),a
-    pop af
-    scf
-    ret
-.scan:
+    call k_backed
+    ret c
     push bc
     push de
     push hl
     push ix
     push iy
-    call ROM_KBD
+    call ROM_KBD                ; a key, or 0
+    jr k_got
+
+;; KEY_WAIT: -> A = a character. It waits in the ROM's own loop (&0049),
+;; where trs80gp's typed input (-i) arrives too.
+m_key_wait:
+    call k_backed
+    ret c
+    push bc
+    push de
+    push hl
+    push ix
+    push iy
+    call ROM_KEY
+    cp 13
+    jr nz,k_got
+    ld a,(c_echo)
+    or a
+    ld a,13
+    jr z,k_got
+    call c_typed
+    ld a,13
+k_got:
     pop iy
     pop ix
     or a
@@ -491,10 +598,16 @@ m_key_read:
     pop bc
     ret                         ; NC (or a)
 
-;; KEY_WAIT: -> A = a character
-m_key_wait:
-    call m_key_read
-    jr nc,m_key_wait
+;; k_backed: -> carry and A = KEY_UNREAD's character, if there is one
+k_backed:
+    ld a,(k_back)
+    or a
+    ret z
+    push af
+    xor a
+    ld (k_back),a
+    pop af
+    scf
     ret
 
 ;; KEY_UNREAD: A = a character, read next
@@ -749,18 +862,42 @@ g_set:
     ld a,#80                    ; a character there: blank blocks now
 .g:
     ld b,a
-    ld a,(g_pen)
+    ld a,(g_ink)
+    dec a
+    jr z,.xor
+    dec a
+    jr z,.and
+    dec a
+    jr z,.or
+    ld a,(g_pen)                ; plain: the pen's
     or a
-    ld a,b
-    jr z,.off
-    or c
-    ld (hl),a
-    ret
+    jr nz,.on
 .off:
     ld a,c
     cpl
     and b
-    or #80
+    ld (hl),a
+    ret
+.xor:
+    ld a,(g_pen)
+    or a
+    ret z
+    ld a,b
+    xor c
+    ld (hl),a
+    ret
+.and:
+    ld a,(g_pen)
+    or a
+    jr z,.off
+    ret
+.or:
+    ld a,(g_pen)
+    or a
+    ret z
+.on:
+    ld a,b
+    or c
     ld (hl),a
     ret
 
@@ -836,6 +973,13 @@ m_gfx_pen:
     ld a,1
 .p:
     ld (g_pen),a
+    ret
+
+;; M_INKMODE: A = how lines are drawn: 0 plain, 1 XOR, 2 AND, 3 OR (the
+;; pen with what is there)
+m_m_inkmode:
+    and 3
+    ld (g_ink),a
     ret
 
 ;; GFX_CLEAR: the screen blank (text and graphics share it); the position
@@ -980,53 +1124,9 @@ m_file_cat:
     ret
 
 ;; ---------------------------------------------------------------------------
-;; FLOATS: five-byte reals, the CPC's -- Microsoft's binary form with a
-;; 32-bit mantissa. Not yet: all but the constants fail.
+;; FLOATS: fp80.asm
 
-m_fp_move:
-    push hl
-    ex de,hl
-    ld bc,5
-    ldir
-    pop hl
-    scf
-    ret
-m_fp_pi:
-    push hl
-    ex de,hl
-    ld hl,fp_pi
-    ld bc,5
-    ldir
-    pop hl
-    scf
-    ret
-fp_pi:
-    db #A2,#DA,#0F,#49,#82
-m_fp_int2r:
-m_fp_bin2r:
-m_fp_r2int:
-m_fp_r2bin:
-m_fp_fix:
-m_fp_int:
-m_fp_exp10:
-m_fp_add:
-m_fp_rsub:
-m_fp_mul:
-m_fp_div:
-m_fp_cmp:
-m_fp_neg:
-m_fp_sgn:
-m_fp_angle:
-m_fp_sqr:
-m_fp_pow:
-m_fp_log:
-m_fp_exp:
-m_fp_sin:
-m_fp_cos:
-m_fp_tan:
-m_fp_atn:
-    or a
-    ret
+    include "fp80.asm"
 
 ;; ---------------------------------------------------------------------------
 ;; SYSTEM

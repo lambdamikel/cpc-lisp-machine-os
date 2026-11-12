@@ -2,6 +2,9 @@
 ;; includes this): graphics and text modes, the joystick, PEEK and POKE,
 ;; the sound envelopes. Another machine provides its own, or none.
 
+;; *features* and anything else the machine has in Lisp
+;@lisp mach.lsp
+
 ;; ---------------------------------------------------------------------------
 ;; GRAPHICS AND TEXT MODES
 
