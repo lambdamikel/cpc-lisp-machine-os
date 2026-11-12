@@ -1116,10 +1116,145 @@ g_neg:
     ret
 
 ;; ---------------------------------------------------------------------------
-;; SOUND: none yet -- a sound is taken, and not heard
+;; SOUND: one voice, a square wave on the cassette port (&FF, bits 0 and 1;
+;; trs80gp plays it). The CPC's sound record: [3] the period, 125000 / the
+;; frequency, [6] the volume, [7] the duration in 1/100 s (0: 0.2 s). The
+;; note is played there and then; envelopes and the other channels are not
+;; heard. A half wave takes period / 250000 s: the note lasts while
+;; duration * 2500 of those units are not used up.
+
+s_t:        db 0,0,0            ; the units left
+s_x:        db 0,0,0            ; (for multiplying)
+s_lvl:      db 1
 
 m_snd_queue:
+    push hl
+    pop ix                      ; IX = the record
+    ld l,(ix+7)
+    ld h,(ix+8)
+    ld a,h
+    or l
+    jr nz,.d
+    ld hl,20
+.d:
+    push hl
+    call s_2500                 ; s_t = duration * 2500
+    pop hl
+    ld c,(ix+3)
+    ld b,(ix+4)                 ; BC = the period
+    ld a,b
+    or c
+    jr z,.rest
+    ld a,(ix+6)
+    or a
+    jr z,.rest
+    ; the delay for half a wave: period * 7.1 T-states at 1.774 MHz, or
+    ; period * 8.1 at 2.03 (a Model III), less what the clock's interrupts
+    ; take (about a tenth, measured), 26 a loop: period/4 - period/64, or
+    ; period/4 + period/32
+    ld h,b
+    ld l,c
+    srl h
+    rr l
+    srl h
+    rr l                        ; /4
+    push hl
+    srl h
+    rr l
+    srl h
+    rr l
+    srl h
+    rr l                        ; /32
+    ld a,(c_m3)
+    or a
+    jr nz,.m3
+    srl h
+    rr l                        ; /64
+    ex de,hl
+    pop hl
+    or a
+    sbc hl,de
+    jr .k
+.m3:
+    pop de
+    add hl,de
+.k:
+    ex de,hl                    ; DE = the delay's loops
+    inc de
+.wave:
+    ld a,(s_lvl)
+    xor 3
+    ld (s_lvl),a
+    out (#FF),a
+    push de
+.dl:
+    dec de
+    ld a,d
+    or e
+    jr nz,.dl
+    pop de
+    ld hl,(s_t)
+    or a
+    sbc hl,bc
+    ld (s_t),hl
+    ld a,(s_t+2)
+    sbc a,0
+    ld (s_t+2),a
+    jr nc,.wave
+    xor a
+    out (#FF),a
     scf
+    ret
+.rest:                          ; silence: duration * 10 ms
+    ld b,h
+    ld c,l
+.r:
+    ld de,640                   ; about 10 ms
+.rl:
+    dec de
+    ld a,d
+    or e
+    jr nz,.rl
+    dec bc
+    ld a,b
+    or c
+    jr nz,.r
+    scf
+    ret
+
+;; s_2500: HL = a number -> s_t = it times 2500 (24 bits)
+s_2500:
+    xor a
+    ld (s_t),a
+    ld (s_t+1),a
+    ld (s_t+2),a
+    ld (s_x),hl
+    ld (s_x+2),a
+    ld de,2500
+    ld b,12
+.bit:
+    srl d
+    rr e
+    jr nc,.no
+    ld hl,(s_t)                 ; s_t += s_x
+    ld a,(s_x)
+    add a,l
+    ld l,a
+    ld a,(s_x+1)
+    adc a,h
+    ld h,a
+    ld (s_t),hl
+    ld a,(s_x+2)
+    ld hl,s_t+2
+    adc a,(hl)
+    ld (hl),a
+.no:
+    ld hl,(s_x)                 ; s_x *= 2
+    add hl,hl
+    ld (s_x),hl
+    ld hl,s_x+2
+    rl (hl)
+    djnz .bit
     ret
 
 ;; ---------------------------------------------------------------------------

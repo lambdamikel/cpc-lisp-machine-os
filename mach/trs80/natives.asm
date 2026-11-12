@@ -17,3 +17,9 @@ lf_ink_mode:
     call M_INKMODE
     pop hl
     ret
+;; (envelope n ...), (tone-envelope n ...): taken and not heard: one plain
+;; voice here
+;@ ENVELOPE 4 16 lf_envelope
+;@ TONE-ENVELOPE 4 16 lf_envelope
+lf_envelope:
+    jp lnil

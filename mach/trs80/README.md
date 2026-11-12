@@ -7,8 +7,8 @@ and Mark Pruden's [X-MEM/80](https://github.com/lambdamikel/x-mem-80)
 
 ## Building and running
 
-    MACH=trs80 tools/build.sh     # build/trs80: the images, LISP/CMD,
-                                  #   lisp-a.dsk and lisp-b.dsk
+    MACH=trs80 tools/build.sh     # build/trs80: the images, LISP/CMD, the
+                                  #   discs lisp-a.dsk, lisp-b.dsk, lisp-m3.dsk
     tools/trs80/play.sh           # trs80gp in a window: LDOS boots, LISP runs
     tools/trs80/run.sh file.lsp   # type a file at it in trs80gp, print the
                                   #   transcript
@@ -63,6 +63,10 @@ About 3150 cells are free at start, half a CPC's.
 `key-down-p` takes the matrix's numbers, row * 8 + bit: ENTER 48, CLEAR
 49, BREAK 50, up 51, down 52, left 53, right 54, SPACE 55.
 
+A Model I has no `[ ] { } \ |` keys: its up arrow *is* `[` (code &5B),
+and here it fetches the line before from the history. (trs80gp types a
+pasted `[` as the up arrow too.)
+
 ## What works, and what not yet
 
 * The language, the compiler, the editors, `format`, the extended
@@ -81,7 +85,11 @@ About 3150 cells are free at start, half a CPC's.
 * The Model III: the same images and machine page (its ROM has the
   maths routines at the same places); not tried on one yet -- trs80gp
   has X-MEM/80 only for the Model I.
-* Not yet: sound (`sound` is silent), `symbol`, `flood-fill`,
+* **Sound**: one voice, a square wave on the cassette port (trs80gp
+  plays it): `sound`'s period, volume and duration, the note played
+  there and then, within a few percent of its pitch. `envelope` and
+  `tone-envelope` are taken and not heard. `(tune)` plays.
+* Not yet: `symbol`, `flood-fill`,
   speech and music (Talker/80 and MIDI/80 belong here), a
   RAM disc in X-MEM/80's spare pages, the images compressed onto one
   disc.
