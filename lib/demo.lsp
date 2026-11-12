@@ -14,14 +14,15 @@
                ("(koch 4)" "a Koch snowflake, turtle")
                ("(tree)" "a tree, by turtle")
                ("(tune)" "Ode to Joy")
-               ("(talk)" "speech: LambdaSpeak")
-               ("(sing)" "singing: LambdaSpeak")
-               ("(chords)" "PlayCity's six voices")
+               ("(talk)" "speech: LambdaSpeak" :cpc)
+               ("(sing)" "singing: LambdaSpeak" :cpc)
+               ("(chords)" "PlayCity's six voices" :cpc)
                ("(hanoi 4)" "the towers of Hanoi")
                ("(queens 6)" "n queens on a board")
                ("(primes 100)" "a sieve")
                ("(fact 20)" "20!, as a float")))
-    (format t "~13A~A~%" (car d) (cadr d)))
+    (when (or (null (cddr d)) (member (caddr d) *features*))
+      (format t "~13A~A~%" (car d) (cadr d))))
   (format t "~%A key ends a picture.~%(ed 'rose) shows how one is written.~%")
   t)
 
@@ -46,11 +47,14 @@
     (dolist (c '(1 2 3 6 9 11 15 18 20 24 25 26 17 13 4))
       (ink i c)
       (incf i)))
-  (dotimes (i 15) (disc 320 200 (* (- 15 i) 12) (1+ i)))
+  (dotimes (i 15) (disc 320 200 (* (- 15 i) 12) (%pen (1+ i))))
   (dotimes (i 8)
-    (fill-box (* i 80) 0 (+ (* i 80) 72) 40 (1+ i))
-    (fill-box (* i 80) 360 (+ (* i 80) 72) 399 (- 15 i)))
+    (fill-box (* i 80) 0 (+ (* i 80) 72) 40 (%pen (1+ i)))
+    (fill-box (* i 80) 360 (+ (* i 80) 72) 399 (%pen (- 15 i))))
   (%again))
+
+;; a pen: on a screen with one colour, every other one is the paper's
+(defun %pen (n) (if (member :trs-80 *features*) (logand n 1) n))
 
 ;; r = sin(k a), drawn with floats, a colour for each stretch
 (defun rose (&optional (k 5))

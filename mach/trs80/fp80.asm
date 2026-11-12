@@ -36,6 +36,9 @@ DIVSUB      equ #4080           ;   ROM copies to RAM when BASIC starts
 DIVSUB_LEN  equ 14              ;   (f_init does it here)
 
 fp_t:       defs 5,0            ; a real to work on
+fp_a:       defs 5,0            ;   and another
+fp_b:       defs 5,0            ;   and another
+f_n:        db 0                ; a whole power's magnitude
 fp_m:       defs 4,0            ; a whole part's magnitude, four bytes
 fp_rnd:     db 0                ; the first bit below it,
 fp_stk:     db 0                ;   and whether any other below was set
@@ -46,6 +49,7 @@ f_xp:       dw 0
 f_yp:       dw 0
 fp_pi:      db #A2,#DA,#0F,#49,#82
 fp_one:     db 0,0,0,0,#81
+fp_half:    db 0,0,0,0,#80
 fp_ten:     db 0,0,0,#20,#84
 
 ;; f_init: the ROM's divide helper into RAM (m_init calls this)
@@ -786,7 +790,10 @@ f_fn1:
     pop hl
     jp f_s2c
 
-;; FP_SQR, FP_LOG, FP_EXP, FP_SIN, FP_COS, FP_TAN, FP_ATN: (HL) = f((HL))
+;; FP_SQR, FP_LOG, FP_EXP, FP_SIN, FP_COS, FP_TAN, FP_ATN: (HL) = f((HL)).
+;; The root is the ROM's, then made good to 32 bits with two of Newton's
+;; steps in double precision, s = (s + a/s) / 2; the rest have the ROM's
+;; seven digits.
 m_fp_sqr:
     call f_exp
     or a
@@ -794,8 +801,37 @@ m_fp_sqr:
     ret z                       ; the root of 0
     call f_neg
     jp nz,f_no
+    ld (f_xp),hl
+    ld de,fp_a
+    ex de,hl
+    call m_fp_move              ; fp_a = a
+    ex de,hl
     ld bc,R_SQR
-    jr f_fn1
+    call f_fn1                  ; s, to seven digits
+    ld a,2
+.newton:
+    ld (f_cnt),a
+    ld hl,fp_t
+    ld de,fp_a
+    call m_fp_move              ; t = a
+    ld de,(f_xp)
+    call m_fp_div               ; t = a / s
+    jp nc,f_no
+    ld hl,(f_xp)
+    ld de,fp_t
+    call m_fp_add               ; s = s + a / s
+    jp nc,f_no
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    dec (hl)                    ; s = s / 2
+    ld hl,(f_xp)
+    ld a,(f_cnt)
+    dec a
+    jr nz,.newton
+    scf
+    ret
 m_fp_log:
     call f_exp
     or a
@@ -803,7 +839,7 @@ m_fp_log:
     call f_neg
     jp nz,f_no
     ld bc,R_LOG
-    jr f_fn1
+    jp f_fn1
 m_fp_exp:
     call f_exp                  ; 88 or more (exponent &87, top &30): out
     cp #87
@@ -824,19 +860,19 @@ m_fp_exp:
     jp f_no                     ; to a large positive one: too big
 .ok:
     ld bc,R_EXP
-    jr f_fn1
+    jp f_fn1
 m_fp_sin:
     ld bc,R_SIN
-    jr f_fn1
+    jp f_fn1
 m_fp_cos:
     ld bc,R_COS
-    jr f_fn1
+    jp f_fn1
 m_fp_tan:
     ld bc,R_TAN
-    jr f_fn1
+    jp f_fn1
 m_fp_atn:
     ld bc,R_ATN
-    jr f_fn1
+    jp f_fn1
 
 ;; FP_POW: (HL) = (HL) to the power (DE): e^(y ln |x|), a negative x only
 ;; to a whole power
@@ -861,6 +897,28 @@ m_fp_pow:
     scf
     ret
 .x:
+    ld hl,(f_yp)                ; a whole power up to 255: multiplied out
+    call f_split
+    jr nc,.real
+    ld a,(fp_rnd)
+    ld b,a
+    ld a,(fp_stk)
+    or b
+    jr nz,.real
+    ld hl,(fp_m+1)
+    ld a,h
+    or l
+    jr nz,.real
+    ld a,(fp_m)
+    ld (f_n),a
+    jp f_whole
+.real:
+    ld hl,(f_yp)                ; to the power 0.5: the root
+    ld de,fp_half
+    call m_fp_cmp
+    or a
+    ld hl,(f_xp)
+    jp z,m_fp_sqr
     xor a
     ld (f_sign),a
     call f_neg
@@ -903,3 +961,52 @@ m_fp_pow:
     scf
     ret z
     jp m_fp_neg
+
+;; f_whole: (f_xp) to the power (f_yp), whole, its magnitude in f_n:
+;; squaring and multiplying in double precision, a negative power the
+;; reciprocal of that
+f_whole:
+    ld hl,fp_b
+    ld de,(f_xp)
+    call m_fp_move              ; b = x
+    ld hl,fp_a
+    ld de,fp_one
+    call m_fp_move              ; r = 1
+.l:
+    ld a,(f_n)
+    or a
+    jr z,.done
+    srl a
+    ld (f_n),a
+    jr nc,.sq
+    ld hl,fp_a
+    ld de,fp_b
+    call m_fp_mul               ; r = r * b
+    jp nc,f_no
+.sq:
+    ld a,(f_n)
+    or a
+    jr z,.done
+    ld hl,fp_b
+    ld de,fp_b
+    call m_fp_mul               ; b = b * b
+    jp nc,f_no
+    jr .l
+.done:
+    ld hl,(f_yp)
+    call f_neg
+    jr z,.pos
+    ld hl,fp_b
+    ld de,fp_one
+    call m_fp_move
+    ld hl,fp_b
+    ld de,fp_a
+    call m_fp_div               ; 1 / r
+    jp nc,f_no
+    ld hl,fp_a
+    ld de,fp_b
+    call m_fp_move
+.pos:
+    ld hl,(f_xp)
+    ld de,fp_a
+    jp m_fp_move
