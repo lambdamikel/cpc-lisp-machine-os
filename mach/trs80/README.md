@@ -1,6 +1,6 @@
 # CPC Lisp on the TRS-80 Model I with X-MEM/80
 
-*A port in progress.* The same Lisp as on the CPC -- the six images are
+*Runs on a real Model I and Model III with X-MEM/80 (2026-11-12).* The same Lisp as on the CPC -- the six images are
 built from the same sources -- on a TRS-80 Model I with Michael Wessel's
 and Mark Pruden's [X-MEM/80](https://github.com/lambdamikel/x-mem-80)
 512 KB paged memory, in its X-MEM mode (16 KB pages), under LDOS 5.3.

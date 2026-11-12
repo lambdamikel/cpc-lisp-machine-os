@@ -80,7 +80,7 @@ X-MEM/80** (in its X-MEM mode), on LDOS discs ready to boot -- each as a
 
 | file | for |
 |---|---|
-| `cpc-lisp-0.95-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp |
+| `cpc-lisp-0.95-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp, and it runs on a real Model I with X-MEM/80 |
 | `cpc-lisp-0.95-trs80-model3.dsk` / `.hfe` | a Model III: LDOS 5.1.4, double density (JV3) -- tested on a real Model III with X-MEM/80, Talker/80 and MIDI/80 |
 
 Boot it, give LDOS the date (and on a Model I the time), type `LISP`.
