@@ -1461,18 +1461,24 @@ s_2500:
 ;; SYSTEM
 
 ;; SYS_TIME: -> DEHL = the time of day in 1/300 s, from LDOS's clock
+;; (seconds, minutes, hours at &4041 on a Model I, &4217 on a Model III)
 m_sys_time:
-    ld a,(L_TIME+2)
-    ld l,a
+    ld ix,L_TIME                ; seconds, minutes, hours: a Model I's
+    ld a,(c_m3)
+    or a
+    jr z,.m1
+    ld ix,L_TIME3               ;   or a Model III's
+.m1:
+    ld l,(ix+2)
     ld h,0
     ld de,0
     ld c,60
     call mul32
-    ld a,(L_TIME+1)
+    ld a,(ix+1)
     call add32a
     ld c,60
     call mul32
-    ld a,(L_TIME)
+    ld a,(ix+0)
     call add32a
     ld c,100
     call mul32

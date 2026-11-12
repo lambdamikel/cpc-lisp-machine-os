@@ -1,3 +1,91 @@
 ;; CPC Lisp -- the TRS-80's own Lisp functions in library part 1
-;; (lib/lib2.asm includes this): none yet. Talker/80 and MIDI/80 belong
-;; here.
+;; (lib/lib2.asm includes this): speech through Talker/80, Michael
+;; Wessel's voice synthesizer for the TRS-80, on port 11.
+;;
+;; Text goes to the port, a return makes it speak; bytes above 127 are
+;; commands (&FE stop, &EE DECtalk mode, &E9 no spoken confirmations,
+;; &Cn the voice, &An the rate, &Bn the volume); while it speaks, bits 6
+;; and 7 of the port read 0. Without a Talker/80 the port reads &FF and
+;; nothing is heard.
+
+TK_PORT     equ 11
+TK_SET      equ RDISK+63        ; 1 once Talker/80 is in DECtalk mode
+
+;; tk_wait: while Talker/80 speaks; BREAK lets out
+tk_wait:
+    in a,(TK_PORT)
+    and #C0
+    cp #C0
+    ret z
+    push hl
+    push bc
+    CORE poll_esc
+    pop bc
+    pop hl
+    jr tk_wait
+
+;; (say string): Talker/80 speaks it, DECtalk's way, as LambdaSpeak does
+;; on the CPC (so its [:phoneme ...] singing works). A line waits for the
+;; one before. -> T
+;@ SAY 1 1 lf_say
+lf_say:
+    CORE subr_string
+    CORE str_data               ; HL = the characters, BC = how many
+    call tk_wait
+    ld a,(TK_SET)
+    cp 1
+    jr z,.l
+    ld a,#E9                    ; no spoken confirmations,
+    out (TK_PORT),a
+    ld a,#EE                    ;   DECtalk
+    out (TK_PORT),a
+    ld a,1
+    ld (TK_SET),a
+.l:
+    ld a,b
+    or c
+    jr z,.cr
+    ld a,(hl)
+    and #7F
+    cp 13
+    jr nz,.ch
+    ld a," "                    ; a line break inside: a blank
+.ch:
+    out (TK_PORT),a
+    inc hl
+    dec bc
+    jr .l
+.cr:
+    ld a,13
+    out (TK_PORT),a
+    jp lt
+
+;; (speech-stop)
+;@ SPEECH-STOP 0 0 lf_speech_stop
+lf_speech_stop:
+    ld a,#FE
+    out (TK_PORT),a
+    jp lt
+
+;; (speech-voice n), (speech-rate n), (speech-volume n): 0-15, 0 the
+;; default
+;@ SPEECH-VOICE 1 1 lf_speech_voice
+lf_speech_voice:
+    ld c,#C0
+    jr tk_setting
+;@ SPEECH-RATE 1 1 lf_speech_rate
+lf_speech_rate:
+    ld c,#A0
+    jr tk_setting
+;@ SPEECH-VOLUME 1 1 lf_speech_volume
+lf_speech_volume:
+    ld c,#B0
+tk_setting:
+    push hl
+    call lint_hl
+    ld a,l
+    and 15
+    or c
+    out (TK_PORT),a
+    pop hl
+    ret

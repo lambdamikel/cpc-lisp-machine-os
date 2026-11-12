@@ -33,6 +33,7 @@ L_READ      equ #4436           ; DE = FCB: the next record into the buffer
 L_WRITE     equ #4439
 L_EXIT      equ #402D           ; back to LDOS Ready
 L_TIME      equ #4041           ; seconds, minutes, hours (Model I)
+L_TIME3     equ #4217           ;   the same on a Model III
 
 ;; trs80gp's emulator extensions (-ee): a function code out to port &47
 EE_PORT     equ #47

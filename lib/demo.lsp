@@ -4,18 +4,19 @@
 
 (defun demo ()
   (format t "~%CPC Lisp demos:~%~%")
-  (dolist (d '(("(shapes)" "discs, boxes, 16 colours")
+  (dolist (d '(("(shapes)" "discs and boxes in colours")
                ("(rose)" "a rose curve, in floats")
                ("(spiral)" "a square spiral")
                ("(moire)" "lines drawn with XOR")
                ("(bounce)" "a ball: a key stops it")
                ("(sierpinski)" "the chaos game")
-               ("(sketch)" "cursors draw, COPY, SPACE")
+               ("(sketch)" "cursors draw, COPY, SPACE" :cpc)
+               ("(sketch)" "arrows draw, CLEAR, SPACE" :trs-80)
                ("(koch 4)" "a Koch snowflake, turtle")
                ("(tree)" "a tree, by turtle")
                ("(tune)" "Ode to Joy")
-               ("(talk)" "speech: LambdaSpeak" :cpc)
-               ("(sing)" "singing: LambdaSpeak" :cpc)
+               ("(talk)" "speech: LambdaSpeak, Talker/80")
+               ("(sing)" "singing: LambdaSpeak, Talker/80")
                ("(chords)" "PlayCity's six voices" :cpc)
                ("(hanoi 4)" "the towers of Hanoi")
                ("(queens 6)" "n queens on a board")
@@ -187,7 +188,9 @@
 ;; The LambdaSpeak card (speech and PlayCity are in library 2). Without
 ;; the card these are silent.
 (defun talk ()
-  (say "Hello. I am a Lisp machine, for the Amstrad C P C.")
+  (say (if (member :trs-80 *features*)
+           "Hello. I am a Lisp machine, for the T R S 80."
+           "Hello. I am a Lisp machine, for the Amstrad C P C."))
   (say "My library has turtle graphics, sound, and hash tables.")
   t)
 

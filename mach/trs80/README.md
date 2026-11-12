@@ -106,8 +106,13 @@ without KI/DVR; with KI/DVR loaded this is untried.)
   plays it): `sound`'s period, volume and duration, the note played
   there and then, within a few percent of its pitch. `envelope` and
   `tone-envelope` are taken and not heard. `(tune)` plays.
-* Not yet: `symbol`, `flood-fill`,
-  speech and music (Talker/80 and MIDI/80 belong here), a
+* **Speech** through Talker/80 (port 11): `say` speaks DECtalk's way, as
+  LambdaSpeak does on the CPC (so `(sing)` sings); `speech-stop`,
+  `speech-voice`, `speech-rate`, `speech-volume`. Not tried on a real
+  Talker/80 yet (trs80gp has none).
+* `time` counts in seconds (LDOS's clock: &4041 on a Model I, &4217 on a
+  Model III), in the CPC's 1/300 s.
+* Not yet: `symbol`, `flood-fill`, music through MIDI/80, a
   RAM disc in X-MEM/80's spare pages, the images compressed onto one
   disc.
 

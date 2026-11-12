@@ -766,6 +766,6 @@ What is different there:
   `key-down-p` takes the TRS-80's key numbers.
 - `(quit)` goes back to LDOS. Not there: `symbol`, `flood-fill`,
   `window`, `tag`, `transparent`, `flash-speed`, `text-cursor`,
-  `joystick`, `peek`, `poke`, `release`, the `sound-` functions, the
-  LambdaSpeak card's.
+  `joystick`, `peek`, `poke`, `release`, the `sound-` functions,
+  PlayCity's. `say` and the `speech-` functions speak through Talker/80.
 - About 2800 cells instead of 6600.
