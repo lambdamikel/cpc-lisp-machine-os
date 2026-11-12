@@ -18,6 +18,16 @@ macro MACH_INIT
     ld (V_EDITV),hl
 mend
 
+;; MACH_BLOCKS: HL = the bytes for cells and blocks -> HL = block space's
+;; share: a quarter. The file buffers are small here, but compiled code and
+;; the compiler's constants want the room.
+macro MACH_BLOCKS
+    srl h
+    rr l
+    srl h
+    rr l
+mend
+
 ;; FM routine: a maths routine, through the jumpblock
 macro FM addr
     call {addr}

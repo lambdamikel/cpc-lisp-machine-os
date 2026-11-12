@@ -9,6 +9,7 @@ SYS_BANK        equ RESIDENT               ; C = a page -> C = the one before
 SYS_CURBANK     equ RESIDENT+3             ; -> A = the page at &C000
 NBANKS          equ 32                ; X-MEM/80's pages: the library is in 3-7
 KEY_ESC         equ 50                ; BREAK: row 6, bit 2 of the matrix
+FILE_BUFSIZE    equ 64+256              ; a file's buffer: its FCB, a sector
 
 CON_PUTC        equ JB+4*J_CON_PUTC
 CON_WRCH        equ JB+4*J_CON_WRCH

@@ -21,7 +21,17 @@ trap 'rm -rf "$tmp"' EXIT
 ( cd "$tmp" && timeout "${TIMEOUT:-900}" "$GP" -m1 -mem xmem80 -ee -batch -turbo \
     -d0 "$B/lisp-a.dsk" -d1 "$B/lisp-b.dsk" \
     -iw "Date ?" -i '11/11/86\r' -iw "Time ?" -i '12:00:00\r' -iw "Ready" -i 'LISP\r' \
-    -iw "LISP>" -if input.txt > /dev/null 2>&1 ) || echo "run.sh: trs80gp did not finish" >&2
+    -iw "LISP>" -itime "${ITIME:-30000}" -if input.txt -it -ix > /dev/null 2>&1 ) \
+    || echo "run.sh: trs80gp did not finish" >&2
+# stuck? the screen as it was when typing gave up
+if [ -f "$tmp/trs80-text-0.bin" ] && ! grep -q "(quit)" "$tmp/trs80-printer.txt" 2>/dev/null; then
+    echo "run.sh: it stopped taking input; the screen:" >&2
+    python3 -c '
+import sys
+d = open(sys.argv[1], "rb").read()
+for r in range(16):
+    print("|" + "".join(chr(c) if 32 <= c < 127 else "#" for c in d[r*64:r*64+64]) + "|")' "$tmp/trs80-text-0.bin" >&2
+fi
 # the printer has CR as a new line, then the LF: one new line each
 python3 -c '
 import sys

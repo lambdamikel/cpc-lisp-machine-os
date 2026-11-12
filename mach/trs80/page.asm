@@ -1103,25 +1103,9 @@ m_snd_queue:
     ret
 
 ;; ---------------------------------------------------------------------------
-;; FILES: not yet
+;; FILES: files80.asm
 
-m_file_iopen:
-m_file_oopen:
-    ld a,1
-    or a                        ; NC, NZ: an error
-    ret
-m_file_iclose:
-m_file_oclose:
-m_file_iabandon:
-m_file_oabandon:
-m_file_putc:
-    scf
-    ret
-m_file_getc:
-    xor a                       ; NC: the end
-    ret
-m_file_cat:
-    ret
+    include "files80.asm"
 
 ;; ---------------------------------------------------------------------------
 ;; FLOATS: fp80.asm

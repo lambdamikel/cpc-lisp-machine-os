@@ -12,7 +12,7 @@
 ;; A name without a "." gets ".LSP". A name on M: is on the RAM disc
 ;; (ramdisc.asm), in the 6128's second 64 KB.
 
-FL_BUF        equ 2048
+FL_BUF        equ FILE_BUFSIZE  ; what the machine's files need (machine.asm)
 
 fl_m_open:    db "cannot open",0
 fl_m_busy:    db "a file buffer is in use already",0

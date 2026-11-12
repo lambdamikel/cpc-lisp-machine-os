@@ -48,9 +48,8 @@ boot:
     pop hl
     MACH_INIT                   ; V_MEMTOP, V_EDITV...
 
-    ; THE LAYOUT, from the top down: the machine stack, block space (11/64
-    ; of what is left: room for both file buffers), the mark bitmap, the
-    ; cells.
+    ; THE LAYOUT, from the top down: the machine stack, block space (a
+    ; share of what is left, MACH_BLOCKS's), the mark bitmap, the cells.
     ld hl,(V_MEMTOP)
     inc hl
     res 0,l
@@ -68,22 +67,7 @@ boot:
     push hl
     ld de,-CELL_LO
     add hl,de
-    srl h
-    rr l
-    srl h
-    rr l
-    srl h
-    rr l                        ; an eighth,
-    ld d,h
-    ld e,l
-    srl d
-    rr e
-    srl d
-    rr e
-    add hl,de                   ;   a 32nd
-    srl d
-    rr e
-    add hl,de                   ;   and a 64th: for blocks
+    MACH_BLOCKS                 ; HL: for block space
     res 0,l
     ex de,hl
     pop hl

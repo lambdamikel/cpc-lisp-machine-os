@@ -37,6 +37,27 @@ macro MACH_INIT
     ld (V_EDITV),hl
 mend
 
+;; MACH_BLOCKS: HL = the bytes for cells and blocks -> HL = block space's
+;; share (DE lost). On the CPC 11/64: room for two 2 KB file buffers.
+macro MACH_BLOCKS
+    srl h
+    rr l
+    srl h
+    rr l
+    srl h
+    rr l                        ; an eighth,
+    ld d,h
+    ld e,l
+    srl d
+    rr e
+    srl d
+    rr e
+    add hl,de                   ;   a 32nd
+    srl d
+    rr e
+    add hl,de                   ;   and a 64th: for blocks
+mend
+
 ;; FM routine: call a maths routine, an FP_ name (machine.asm). A, BC, DE
 ;; and HL go in; IX is lost. On the CPC the byte after the call says which
 ;; (fmcall, fp.asm); fp_callix calls the one whose FP_ name is in IX.

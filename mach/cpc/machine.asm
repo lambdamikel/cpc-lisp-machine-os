@@ -69,6 +69,7 @@ FILE_OCLOSE     equ CAS_OUT_CLOSE
 FILE_OABANDON   equ CAS_OUT_ABANDON
 FILE_PUTC       equ CAS_OUT_CHAR        ; A = a character
 FILE_CAT        equ CAS_CATALOG         ; DE = 2 KB buffer: the directory shown
+FILE_BUFSIZE    equ 2048                ; the buffer each open file is lent
 
 ;; FLOATS: five-byte reals, the firmware's (fp.asm calls them: FM)
 FP_MOVE         equ M_MOVE
