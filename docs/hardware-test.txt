@@ -285,6 +285,7 @@ card: what it checked is the bytes written to &FBEE (test/card.lsp).
                                      of MIDI mode with &FF 20)
 [ ] (midi-program 1 20) (midi-note 1 48 100 100)
                                      a church organ, two seconds
+(Checked on the 464, 2026-11-12, build 28908: (midi-tune).)
 
 
 19. Getting BASIC back

@@ -374,4 +374,5 @@ compiled code (`docs/design.md` describes both)
         `midi-control`, `midi-panic`, `midi-out`, `midi-off`, `sleep`,
         and the `(midi-tune)` demo -- the LambdaSpeak card's MIDI mode
         on a CPC, MIDI/80 on a TRS-80; the bytes checked in MAME
-        (test/card.lsp) and trs80gp, not yet on a synthesizer
+        (test/card.lsp) and trs80gp; `(midi-tune)` heard on the real 464
+        through the card (2026-11-12); MIDI/80 not tried yet
