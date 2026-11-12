@@ -11,7 +11,9 @@
 ;; table has as autoloads are touched (a boot form's functions are not:
 ;; they could not come back), only closures (not macros, not compiled
 ;; code), and only symbols whose LIBDEFS bit says the library defined them
-;; (a user's own definition clears it, mark_def).
+;; (a user's own definition clears it, mark_def). A function that
+;; (load name :lazy t) read in (lib/lazy.lsp) is dropped the same way: its
+;; plist's %LAZY entry has the stub to put back.
 ;;
 ;; It allocates nothing until the second GC has run, and then one cell for
 ;; each closure that GC freed: so it never comes back into cons empty.
@@ -135,7 +137,7 @@ ls_one:
     push hl
     call ls_probe               ; DE = the text
     pop hl
-    jr nc,.gone                 ; (it was there in pass 0)
+    jr nc,.lazy
     push hl
     ld hl,HDR_AUTOLOAD
     CORE alloc_typed
@@ -146,8 +148,15 @@ ls_one:
     inc hl
     ld (hl),d
     ret
-.gone:
-    ld de,0                     ; no function
+.lazy:
+    push hl
+    ld de,-SY_FUNC
+    add hl,de
+    ex de,hl
+    call ls_lazy                ; DE = its stub
+    pop hl
+    jr c,.set
+    ld de,0                     ; (cannot be: it was there in pass 0)
     jr .set
 
 ;; pass 0: a closure, its name an autoload in a part's table -> hidden
@@ -174,15 +183,28 @@ ls_hide:
     ld a,(hl)
     cp HDR_CLOSURE >> 8
     jr nz,.no
+    inc hl                      ; HL = the function again
+    push hl
+    push de
     call ls_probe
-    jr nc,.no
+    pop de
+    jr c,.yes
+    call ls_lazy                ; DE = its stub, if it was loaded lazily
     pop hl
-    inc (hl)                    ; odd: the GC takes it for a fixnum
-    ld a,1
-    ret
+    jr nc,.no
+    or a
+    sbc hl,de
+    jr nz,.hide                 ; (not the stub itself)
 .no:
     pop hl
     xor a
+    ret
+.yes:
+    pop hl
+.hide:
+    pop hl
+    inc (hl)                    ; odd: the GC takes it for a fixnum
+    ld a,1
     ret
 
 ;; pass 1: hidden (odd, not 1) -> freed by the GC? 1, for a stub : as it was
@@ -344,6 +366,96 @@ ls_probe:
     pop bc
     or a
     ret
+
+;; ls_lazy: DE = a symbol -> C if its plist has %LAZY, a list (stub ...):
+;; DE = the stub. NC if not.
+ls_lazy:
+    ld hl,SY_PLIST
+    add hl,de
+    ld a,(hl)
+    and #FC                     ; (the flags)
+    ld e,a
+    inc hl
+    ld d,(hl)                   ; DE = the plist
+.pair:
+    ld a,d
+    or e
+    ret z                       ; (NC)
+    ex de,hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)                   ; DE = a key
+    inc hl
+    push hl
+    call ls_islazy
+    pop hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)                   ; DE = (its value . the rest)
+    jr z,.found                 ; (ls_islazy's Z)
+    ld a,d
+    or e
+    ret z                       ; (NC)
+    ex de,hl
+    inc hl
+    inc hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    jr .pair
+.found:
+    ld a,d
+    or e
+    ret z                       ; (NC)
+    ex de,hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)                   ; DE = the value
+    ld a,e
+    and 3
+    ret nz                      ; not a list (NC)
+    or d
+    ret z                       ; NIL (NC)
+    ex de,hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)                   ; the stub
+    scf
+    ret
+
+;; ls_islazy: DE = an object -> Z if it is the symbol %LAZY
+ls_islazy:
+    ld a,e
+    and 3
+    cp 2
+    ret nz
+    ld a,d
+    cp SYM_LO >> 8
+    jr c,.no
+    cp CELL_LO >> 8
+    jr nc,.no
+    ex de,hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)                   ; its name
+    ld a,d
+    cp #C0
+    jr nc,.no                   ; a builtin's
+    ld hl,ls_lazyname
+    ld b,7
+.cmp:
+    ld a,(de)
+    cp (hl)
+    ret nz
+    inc de
+    inc hl
+    djnz .cmp
+    ret
+.no:
+    or 1
+    ret
+ls_lazyname:
+    db 5,0,"%LAZY"
 
 ;; ls_peek: HL = an address in the part V_PEEKROM says -> A = its byte.
 ;; All else kept. ls_word: -> HL = the word there.

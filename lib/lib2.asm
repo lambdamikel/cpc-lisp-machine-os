@@ -31,12 +31,14 @@ lib_names:
     include "common.asm"
     include "float.asm"
     include "short.asm"
+    include "lazy.asm"
     include "format.asm"
     include "seq.asm"
     include "lists.asm"
     include "structs.asm"
     include "seqfn.asm"
     include "card.asm"
+;@lisp lazy.lsp
     include "lib2tab.asm"
 
 lib_end:

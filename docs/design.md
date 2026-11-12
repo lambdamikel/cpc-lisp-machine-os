@@ -115,7 +115,11 @@ each part, and a hit gives the symbol its function:
   (`cons` finds none free after a GC), `ln_short` (`lib/short.asm`,
   part 1) drops such functions again: it hides each from a second GC
   (the pointer made odd, a fixnum to the GC) and gives the ones that GC
-  freed their autoload stub back;
+  freed their autoload stub back. `(load name :lazy t)` (`lib/lazy.lsp`)
+  gives a program's defuns the same life: a stub per function, its
+  file and position (the reader counts characters in V_FPOS) in its
+  plist, the definition read on the first call and marked the
+  library's (`%libdef`), so the dropper takes it back to the stub;
 * a **VM function** (kind 3), the VM ROM's: a compiled function (below)
   holding its number.
 

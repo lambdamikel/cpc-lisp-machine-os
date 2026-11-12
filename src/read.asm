@@ -83,6 +83,11 @@ getc:
     jr z,.fesc                  ; ESC pressed
     jr .fend                    ; the end of the file
 .fchar:
+    push hl                     ; counted, for file-position (V_FPOS)
+    ld hl,(V_FPOS)
+    inc hl
+    ld (V_FPOS),hl
+    pop hl
     cp #1A                      ; CTRL-Z ends an ASCII file
     jr z,.fend
     or a

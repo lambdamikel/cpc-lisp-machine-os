@@ -580,7 +580,8 @@ ending in CR alone) load as well.
 
 | Function | | |
 |---|---|---|
-| `(load "name")` | reads and evaluates every form in it | 1 |
+| `(load "name")` | reads and evaluates every form in it | 1, 2 |
+| `(load "name" :lazy t)` | reads each `defun` only when its function is first called (below); every other form is evaluated | 1, 2 |
 | `(save "name" [symbol...])` | the symbols' definitions, pretty-printed: functions, macros, variables (as `defparameter`); with none named, everything you defined | 1 |
 | `(dir)` | the catalogue. *TRS-80:* every drive's files and their sizes | 1 |
 | `(delete-file "name")` | through the disc ROM's `\|ERA`. *TRS-80:* LDOS's KILL; on `M:`, the RAM disc's | 1 |
@@ -604,6 +605,29 @@ error. A file open for output is only complete once closed. Also
 `(streamp x)`, `(open-stream-p s)`, `(input-stream-p s)`,
 `(output-stream-p s)`. A stream prints as `#S(FILE-STREAM "notes"
 :OUTPUT T)` (the last: open). **3**, the printers and readers **1**.
+`(file-position stream)` is how many characters of an input file have
+been read; `(file-position stream n)` reads on to character n and gives
+T, or NIL if it is past n already or the file ends first (it cannot go
+back: open the file again). NIL for an output stream. **2**.
+
+**Programs bigger than memory.** `(load "big" :lazy t)` reads the file
+through once, but keeps no `defun`: each function gets a stub that knows
+where in the file its definition is, and its first call reads the
+definition from there (the rest of the file is evaluated as `load` would,
+once the reading is done). Only the functions a run uses take cells, and
+when the cells run out, a definition read this way is dropped again --
+unless a call of it is running, or a variable holds it -- and read once
+more at its next call, as the library's own functions are. So:
+
+* the file must stay where it was (in the drive, or on `M:`) while the
+  program runs, and unchanged: a definition no longer where it was is an
+  error;
+* a function's first call while a file is open for input is an error
+  (the firmware has one input file); call it once before opening one;
+* a definition read later may be read again, so redefining what it uses
+  (a macro, a variable's starting value) shows in it;
+* `save` leaves these functions out (they are in their file). Your own
+  `defun` of one of them makes it yours again, as with the library's.
 
 **The RAM disc** (a 6128, or a CPC with 64 KB more): names starting
 `M:` are kept in the second 64 KB -- `(save "m:work")`, `(load "m:work")`,
@@ -778,6 +802,8 @@ a collection finds no cell free, such a function is dropped again if
 nothing holds it (no call of it running, no variable keeping it) and read
 from ROM once more when next called; a function you defined yourself,
 with `defun` or `setf` of `symbol-function`, is never dropped. A
+program's own functions can be dropped the same way if it is loaded with
+`(load "name" :lazy t)` (*Files*). A
 compiled function takes far less than its interpreted definition (whose
 cells go back): its bytecode and constants are in string space. The
 compiler costs about forty symbols the first time it runs, its working

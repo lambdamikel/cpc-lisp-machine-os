@@ -76,9 +76,8 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   Lisp (`lib/lisp2.lsp`) and the demos (`lib/demo.lsp`): new library code
   goes here or in part 1. **A fifth part is not possible as it is**: an
   LSUBR's or AUTOLOAD's data word keeps the part in two bits (the VM ROM,
-  below, is no part). Space (2026-11-12, later): core 70 bytes free
-  (cpc512 62, cpc6128 86, TRS-80 114), parts 0-3 251, 2745, 519, 1410;
-  the VM ROM 574.
+  below, is no part). Space (2026-11-12, later): core 62 bytes free
+  (TRS-80 102), parts 0-3 242, 1012, 519, 1410; the VM ROM 574.
   `src/xrom.asm` explains the arrangement: the core finds
   them by signature and build number (all ROMs come from one
   `tools/build.sh` run, and call each other by address), each says which
@@ -423,6 +422,20 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   core; a part's error with a core message goes through `CORE error`, not
   `lib_error` (it reads the message from its own ROM: `(random 0)` reset
   the machine).
+* **Lazy loading** (2026-11-12, the same request): `(load name :lazy t)`
+  (`lib/lazy.lsp`, part 1's first Lisp text; `load` is Lisp now, the
+  native is `%LOAD`). The file is read through once: a defun becomes a
+  stub closure `(lambda (&rest args) (%lazy-call name args))`, kept in
+  the plist as `%LAZY` = (stub file . position); other forms are
+  evaluated after the reading. The first call reads the defun from its
+  position and marks the symbol the library's (`%libdef`), so `save`
+  leaves it out and the dropper takes it back to the stub (`ls_lazy`
+  finds %LAZY by name in the plist). The core's reader counts what it
+  takes from the input file in V_FPOS (fl_in_open zeroes it; a pushed-
+  back character, V_PEEK or SO_FPEEK, is not counted): `%file-pos`,
+  `%file-skip` (lib/lazy.asm) and CL's `file-position` (forward only).
+  A first call while an input file is open is an error (one input file).
+  test/disclazy.lsp.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the

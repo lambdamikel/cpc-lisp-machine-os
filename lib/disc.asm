@@ -124,8 +124,9 @@ fl_release:
     ret nz
     jp fe_release
 
-;; (load "name"): read and evaluate everything in the file -> T
-;@ LOAD 1 1 lf_load
+;; (%load "name"): read and evaluate everything in the file -> T. LOAD is
+;; Lisp (lib/lazy.lsp): (load name :lazy t) reads only what is not a defun
+;@ %LOAD 1 1 lf_load
 lf_load:
     push hl                     ; the name, for an error
     ld a,(V_FILES)
@@ -472,6 +473,10 @@ lf_dir:
 ;; fl_in_open, fl_out_open: as CAS IN OPEN and CAS OUT OPEN, or the RAM
 ;; disc's for a name on M:
 fl_in_open:
+    push hl
+    ld hl,0
+    ld (V_FPOS),hl              ; (file-position: none read yet)
+    pop hl
     call RDISC_IS
     jp nz,FILE_IOPEN
     jp RDISC_IN
