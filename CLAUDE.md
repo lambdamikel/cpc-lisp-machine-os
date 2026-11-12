@@ -380,7 +380,34 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     (2026-11-12): "No 512K expansion found" until its DIP switches
     went to configuration 4 (0100, DK'tronics mode, 512K): in shadow
     mode (8, 12) bank 3 shadows the base RAM, so only banks 0-2
-    answer. The loader now says how many answer. Then it booted.
+    answer. The loader now says how many answer. Then it booted, and
+    **everything passed** there: `HWTEST.LSP` on the disc --
+    `(load "hwtest")`, `(hwtest)`: cells, two files at once (A: to M:),
+    lazy loading through Parados, the RAM disc, far arrays into banks 6
+    and 7, a far array, the compiler; by hand (rose), (ed), ESC, (say);
+    after CTRL-SHIFT-ESC and RUN"LISP, `(hwtest2)`: the far array and
+    M:'s file kept. (Its order matters: the checks that need a 2 KB disc
+    buffer first, while there is string space.)
+  * The plain 6128's version passed on the same 464 too (bank 0 of
+    the Revaldinho card): hwtest's cells and lazy loading, (rose),
+    (ed), ESC, (say), and COMPILE undefined, as it should be.
+  * **String space is the tight resource** on the disc versions (5.3 KB
+    at boot on the 512K): every library function's first use costs its
+    symbols' names there, and a file open on a disc 2 KB of it. A file
+    on M: is lent 512 bytes now (`fl_lend_f`, for load, save and
+    %open; the RAM disc uses 320), not 2 KB. Making far arrays is slow
+    on the real machine (each byte through rd_putc and a bank switch:
+    test 5's 390 KB took minutes); a native 256-byte fill would help.
+  * **The RAM disc's errors give the file buffer back** (fl_release
+    before lib_error: an error caught by %catch-errors left it lent, and
+    the next open said "a file buffer is in use already"). fl_release
+    checks V_BLKSAVE first: fe_release sets V_BLKHI from it blindly, and
+    `(dir "m:")` lends nothing -- without the check, string space ended
+    at 0 after the first M: error on a 464 (the suite caught it).
+  * **`load` is Lisp since lazy loading**, so `%load` is called through
+    `eval`: called directly, the file's forms were evaluated in `load`'s
+    lexical environment, every loaded defun closing over NAME and LAZY
+    (the compiler refused them: "closes over variables").
   * MAME: `-ramsize 576K` on cpc464 (with the DDI-1) or cpc6128, the
     stock romsets; the harness types `RUN"LISP` at BASIC's EDIT
     (`LISP_EDIT2` in repl.lua), then lines at EDHOOK. `tools/cpc512/
@@ -653,8 +680,12 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   Parados (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0), 5 LISPLIB
   (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6) -- the README's
   installation section has the table. All six Lisp ROMs must come from
-  one build: re-flash them together. Flashed: build 28423 (2026-11-12, later:
-  dropping library functions, lazy loading, far arrays; build 1797
+  one build: re-flash them together. Flashed: build 31443 (2026-11-12, evening:
+  dropping library functions, lazy loading, far arrays, the fixes found
+  on the hardware -- load's environment, M:'s 512-byte buffer, the RAM
+  disc's errors giving the buffer back; checked on the 464 with the
+  Revaldinho card: flash disc 54's HWTEST.LSP, 8 yes and 2 after a
+  reset); build 28423 before it; build 1797
   before it, 0.95: the incf and 512-639 read fixes, MIDI, (basic), the
   machine layer); `roms/` is still 25063 (2026-11-07 night: version 0.9, the banner's subtitle; build 22482
   before it, checked on the 464: the compiler -- the VM ROM in slot 1 as
@@ -683,12 +714,15 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
 * **Discs**: `tools/mkcpcdisk.py` builds a DSK and an HFE; `tools/dskloader.py`
   puts a `.dsk` in a flash slot or the drive (`--list`, `--slot N`,
   `--load N`, `--get N`). Flash disc 8 is the 512K disc version, 14 the plain
-  6128's (2026-11-12; slots 50-54 hold Mike's discs now: no free slot is
-  left but 8 and 14). For testing them, the six Lisp ROM slots were
-  silenced (`tools/card.py number SLOT 255`: 4, 5, 0, 7, 3, 1) -- too
-  many background ROMs leave the disc version's resident part no room
-  ("Too many ROMs"). Back: `number 4 0`, `5 4`, `0 5`, `7 6`, `3 3`,
-  `1 1` (or `tools/card.py lisp`).
+  6128's, 54 the ROM version's test disc (HWTEST.LSP; 54 was a
+  slideshow, Mike's to give: ~/claude/cpc/card-backup/
+  slot54-slideshow-35.dsk). No slot is free. To test the disc versions
+  the six Lisp ROM slots are silenced (`tools/card.py number SLOT 255`:
+  4, 5, 0, 7, 3, 1) -- too many background ROMs leave the disc version's
+  resident part no room ("Too many ROMs") -- and `tools/card.py lisp`
+  puts them back (|BOOTLISP cannot: it is in a silenced ROM). The drive
+  saves itself back into its slot when another disc is loaded: what a
+  test wrote stays on that disc.
 * **The Gotek serves a cached image**: after copying a disc to its stick,
   Mike must re-select it. **AMSDOS caches the catalogue** too.
 

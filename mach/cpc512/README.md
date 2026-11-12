@@ -21,7 +21,8 @@ and no LambdaSpeak card needed.
   mode, all eight banks); on a 6128, configuration 0. Its shadow modes
   (8 and 12, for the 6128's C3 mode) give bank 3 to the base RAM, and
   the loader stops: "Banks of 64K that answer: 3". Checked on Mike's
-  464, 2026-11-12.
+  464, 2026-11-12: with configuration 4, everything `HWTEST.LSP` checks
+  passed (below).
 * A disc drive: AMSDOS (a 6128's, a 464's DDI-1) or Parados.
 
 ## Starting
@@ -34,6 +35,16 @@ Put the disc in drive A and type
 and starts Lisp. Without the expansion it says so and goes back to BASIC.
 `(basic)` -- or `(reset)` -- goes back to BASIC; `RUN"LISP` again starts a
 fresh Lisp, and the RAM disc keeps its files.
+
+## A test of the real machine
+
+The disc has `HWTEST.LSP`: `(load "hwtest")`, then `(hwtest)` says yes or
+NO to the cells, two files open at once, lazy loading from the drive,
+the RAM disc, far arrays (into banks 6 and 7: a minute or two) and the
+compiler, and lists four things to try by hand; after CTRL-SHIFT-ESC and
+`RUN"LISP`, `(load "hwtest")` and `(hwtest2)` check that the RAM disc's
+files and a far array survived. The plain 6128's disc has it too, for
+what that version has.
 
 ## The RAM disc
 

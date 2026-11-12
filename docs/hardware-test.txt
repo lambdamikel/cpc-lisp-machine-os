@@ -275,6 +275,11 @@ With a RAM expansion (or a 6128), under either firmware:
 Lazy loading, from the drive (Parados):
 [ ] (defun dbl (x) (* 2 x))  (save "lz" 'dbl)  (fmakunbound 'dbl)
     (load "lz" :lazy t)  (dbl 21)    T, then 42
+Or all of it at once: the test disc (build/cpclisp-hwtest.dsk, the
+card's flash disc 54): (load "hwtest"), (hwtest) -- 8 yes; after
+CTRL-SHIFT-ESC, (load "hwtest"), (hwtest2) -- 2 yes. (Checked on the 464
+with Revaldinho's 512K card, DIP configuration 4, 2026-11-12, build
+31443: all yes.)
 (Checked on the 464 with an unofficial 1.1 firmware ROM and a RAM
 expansion, 2026-11-07, build 22482: all as above; the RAM disc under the
 1.0 firmware too.)

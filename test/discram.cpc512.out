@@ -110,12 +110,12 @@ LISP> (dir)
 
 Drive A: user  0
 
+HWTEST  .LSP   5K   LISP2   .IMG  17K
 LISP    .BIN   3K   LISP3   .IMG  17K
 LISP0   .IMG  17K   LISP4   .IMG  17K
 LISP1   .IMG  17K   LISP5   .IMG  17K
-LISP2   .IMG  17K
 
- 73K free
+ 68K free
 
 NIL
 LISP> (with-open-file (s "m:st" :direction :output) (print '(on the ram disc) s) (format s "~R~%" 42))

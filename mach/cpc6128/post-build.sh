@@ -31,3 +31,6 @@ for rom in LISP.ROM LISPLIB.ROM LISPLIB2.ROM LISPLIB3.ROM LISPDEMO.ROM; do
     ( cd "$OUT" && "$IDSK" cpclisp6128.dsk -i "LISP$k.IMG" -t 1 -c 4000 >/dev/null 2>&1 )
     k=$((k + 1))
 done
+# the test for the real machine: (load "hwtest"), (hwtest)
+cp mach/cpc6128/hwtest.lsp "$OUT/HWTEST.LSP"
+( cd "$OUT" && "$IDSK" cpclisp6128.dsk -i HWTEST.LSP -t 0 >/dev/null 2>&1 )

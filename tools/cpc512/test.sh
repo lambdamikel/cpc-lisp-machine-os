@@ -5,11 +5,14 @@
 # test/NAME.cpc6128.out where there is one, without the tests named in
 # test/skip.cpc6128.
 #
-#     tools/cpc512/test.sh [-m 464|6128] [name...]
+#     tools/cpc512/test.sh [-m 464|6128] [-u] [name...]
+#
+# -u writes what came out as the expected output (NAME.$VARIANT.out if
+# there is one, else NAME.out): look at the diff before committing.
 cd "$(dirname "$0")/../.."
-MACH=6128
-while getopts "m:" o; do
-    case $o in m) MACH=$OPTARG ;; *) exit 2 ;; esac
+MACH=6128 UPDATE=
+while getopts "m:u" o; do
+    case $o in m) MACH=$OPTARG ;; u) UPDATE=1 ;; *) exit 2 ;; esac
 done
 shift $((OPTIND - 1))
 names=("$@")
@@ -43,7 +46,9 @@ for n in "${names[@]}"; do
     if grep -q TIMEOUT "$tmp/$n.err"; then echo "TIMEOUT $n"; fail=1; continue; fi
     exp=test/$n.out
     [ -f "test/$n.$VARIANT.out" ] && exp=test/$n.$VARIANT.out
-    if diff -u "$exp" "$tmp/$n.got" > "$tmp/$n.diff"; then
+    if [ -n "$UPDATE" ]; then
+        cp "$tmp/$n.got" "$exp"; echo "wrote $exp"
+    elif diff -u "$exp" "$tmp/$n.got" > "$tmp/$n.diff"; then
         echo "ok      $n"
     else
         echo "FAIL    $n"; cat "$tmp/$n.diff"; fail=1

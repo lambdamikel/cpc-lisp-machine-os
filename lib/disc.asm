@@ -71,8 +71,16 @@ fl_ext:
 
 ;; fl_lend -> DE = a 2 KB buffer lent from block space. One file may be
 ;; open already (one each way): the second buffer goes below the first,
-;; and both are given back when neither is open (fl_release).
+;; and both are given back when neither is open (fl_release). fl_lend_f:
+;; the same for opening the file named in TOKBUF (fl_name) -- 512 bytes
+;; if it is on M:. (M:'s delete-file moves files through a whole 2 KB.)
+fl_lend_f:
+    ld bc,512                   ; a file on M: needs only 320 bytes (the
+    call RDISC_IS               ;   RAM disc's state, 256 of its bytes):
+    jr z,fl_lend.sz             ;   two files, one on M:, fit in less
 fl_lend:
+    ld bc,FL_BUF
+.sz:
     ld hl,(V_BLKSAVE)
     ld a,h
     or l
@@ -86,7 +94,9 @@ fl_lend:
 .free:
     call .room
     jr nc,.ok
+    push bc
     CORE gc
+    pop bc
     call .room
     jr nc,.ok
     ld hl,m_nostr
@@ -100,20 +110,20 @@ fl_lend:
     jr nz,.lent                 ; V_BLKSAVE has the top already
     ld (V_BLKSAVE),hl
 .lent:
-    ld de,FL_BUF
     or a
-    sbc hl,de
+    sbc hl,bc
     ld (V_BLKHI),hl
     ex de,hl
     ret
-;; NC if 2 KB and a little more are free
+;; NC if BC bytes and a little more are free
 .room:
     ld hl,(V_BLKHI)
     ld de,(V_BLKTOP)
     or a
     sbc hl,de
-    ld de,FL_BUF+256
-    or a
+    sbc hl,bc
+    ret c
+    ld de,256
     sbc hl,de
     ret
 
@@ -122,7 +132,11 @@ fl_release:
     ld a,(V_FILES)
     or a
     ret nz
-    jp fe_release
+    ld hl,(V_BLKSAVE)
+    ld a,h
+    or l
+    ret z                       ; nothing lent (the RAM disc's errors call
+    jp fe_release               ;   this whether or not anything was)
 
 ;; (%load "name"): read and evaluate everything in the file -> T. LOAD is
 ;; Lisp (lib/lazy.lsp): (load name :lazy t) reads only what is not a defun
@@ -134,7 +148,7 @@ lf_load:
     jp c,fl_busy                ; a file is open for input already
     call fl_name
     push bc
-    call fl_lend                ; DE = the buffer
+    call fl_lend_f              ; DE = the buffer
     pop bc
     ld hl,TOKBUF
     call fl_in_open
@@ -227,7 +241,7 @@ lf_save:
     jp nz,fl_busy               ; a file is open for output already
     call fl_name
     push bc
-    call fl_lend
+    call fl_lend_f
     pop bc
     ld hl,TOKBUF
     call fl_out_open

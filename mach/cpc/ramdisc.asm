@@ -196,7 +196,8 @@ rd_ready:
     djnz .wdir
     ret
 .none:
-    ld hl,rd_m_noram
+    call fl_release             ; (the buffer lent for the file: an error
+    ld hl,rd_m_noram            ;   caught by %catch-errors left it lent)
     ld de,UNBOUND
     jp lib_error
 
@@ -232,6 +233,7 @@ rd_name:
     djnz .c
     ret
 .bad:
+    call fl_release
     ld hl,fl_m_name
     ld de,UNBOUND
     jp lib_error

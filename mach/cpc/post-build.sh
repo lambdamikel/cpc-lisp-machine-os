@@ -6,3 +6,10 @@ mkdir -p build/mame/cpc464 build/mame/cpc6128 build/mame/cpc_ddi1
 { head -c 16384 "$ROMS/cpc6128/cpc6128.rom"; cat build/LISP.ROM; } > build/mame/cpc6128/cpc6128.rom
 cp "$ROMS/cpc6128/cpcados.rom" build/mame/cpc6128/
 cp "$ROMS/cpc_ddi1/cpcados.rom" build/mame/cpc_ddi1/
+# a disc for the real machine: the test of the RAM expansion's use,
+# HWTEST.LSP -- (load "hwtest"), (hwtest)
+IDSK=${IDSK:-$HOME/claude/midi80/toolchain/idsk/iDSK}
+rm -f build/cpclisp-hwtest.dsk
+"$IDSK" build/cpclisp-hwtest.dsk -n >/dev/null
+cp mach/cpc/hwtest.lsp build/HWTEST.LSP
+( cd build && "$IDSK" cpclisp-hwtest.dsk -i HWTEST.LSP -t 0 >/dev/null 2>&1 )

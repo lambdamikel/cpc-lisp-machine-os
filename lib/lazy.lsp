@@ -8,8 +8,10 @@
 ;;; (lib/short.asm puts the stub back) and save leaves it out. The
 ;;; position is the characters before the form (%file-pos, lib/lazy.asm).
 
+;; (through eval: the file's forms are evaluated in the null lexical
+;; environment, not load's -- a defun there closed over NAME and LAZY)
 (defun load (name &key lazy)
-  (if lazy (%load-lazy name) (%load name)))
+  (if lazy (%load-lazy name) (eval (list '%load name))))
 
 (defun file-position (stream &optional position)
   (when (and (%struct-ref stream 3 'file-stream)

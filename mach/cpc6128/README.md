@@ -75,6 +75,11 @@ include beside the link, so they get this machine's `memmap.asm`,
 `novm` tells `tools/build.sh` to leave the VM ROM out, and its names
 out of part 1's table.
 
+On the real machine (2026-11-12): Mike's 464 with Revaldinho's 512K card
+(this version uses its bank 0) -- `HWTEST.LSP` on the disc, `(load
+"hwtest")`, `(hwtest)`: all it checks here passed, and the screen, the
+function editor, ESC and the card's speech.
+
 ## Building and testing
 
     MACH=cpc6128 tools/build.sh       # build/cpc6128: the images, LISP.BIN,

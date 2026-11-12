@@ -255,7 +255,8 @@ rd_ready:
     ld (rd_end+2),a
     ret
 .noram:
-    ld hl,rd_m_noram
+    call fl_release             ; (the buffer lent for the file: an error
+    ld hl,rd_m_noram            ;   caught by %catch-errors left it lent)
     ld de,UNBOUND
     jp lib_error
 .new:

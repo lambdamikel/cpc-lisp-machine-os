@@ -766,7 +766,7 @@ lf_open:
     push hl                     ; the name, for an error
     call fl_name                ; TOKBUF, B = its length
     push bc
-    call fl_lend                ; DE = a buffer
+    call fl_lend_f              ; DE = a buffer
     pop bc
     ld hl,TOKBUF
     ld a,(SO_DIR)
