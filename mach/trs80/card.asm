@@ -9,7 +9,6 @@
 ;; nothing is heard.
 
 TK_PORT     equ 11
-TK_SET      equ RDISK+63        ; 1 once Talker/80 is in DECtalk mode
 
 ;; tk_out: A to Talker/80, then about half a millisecond: its firmware
 ;; takes each byte in an interrupt from the data bus latch, and one
@@ -46,16 +45,11 @@ lf_say:
     CORE subr_string
     CORE str_data               ; HL = the characters, BC = how many
     call tk_wait
-    ld a,(TK_SET)
-    cp 1
-    jr z,.l
-    ld a,#E9                    ; no spoken confirmations,
-    call tk_out
-    ld a,#EE                    ;   DECtalk
-    call tk_out
-    ld a,1
-    ld (TK_SET),a
-.l:
+    ld a,#E9                    ; no spoken confirmations, DECtalk -- each
+    call tk_out                 ;   time, as on the CPC: a reset of the
+    ld a,#EE                    ;   TRS-80 resets Talker/80 to its DIP
+    call tk_out                 ;   switches' mode, and RAM remembers
+.l:                             ;   nothing then (a flag did, wrongly)
     ld a,b
     or c
     jr z,.cr

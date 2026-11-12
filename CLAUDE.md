@@ -326,6 +326,13 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     through the seconds (&4041 seconds, &4042 minutes, &4043 hours); a
     Model III's at &4216 count 30 down to 1 within each second (&4217).
     Measured in trs80gp with probe programs. (time) is built on them.
+  * Talker/80 (2026-11-12, a real Model III): a TRS-80 reset resets it to
+    its DIP switches' mode (Epson), while X-MEM/80 keeps RAM -- so `say`
+    sends &E9 &EE (no confirmations, DECtalk) every time, as the CPC
+    does; plain text speaks in any mode, DECtalk's brackets do not. Its
+    Epson chip is DECtalk 5.01: arpabet is two characters a phoneme, the
+    L is `ll` (a bare `l` ends the song there); LambdaSpeak 4's DECtalk
+    Mini takes both.
   * rasm evaluates `assert` and `repeat` where they stand: a symbol in
     them must be defined above (an equate after it is "not found").
   * The images are compressed (`tools/trs80/lz.py`, decoded by the
