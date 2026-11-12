@@ -43,7 +43,7 @@ SHIFT @; the function editor, its cursor and the arrows.)
 
 (Checked on Mike's Model I with X-MEM/80, from the HxC, 2026-11-12,
 release 0.95: it runs; (sleep 2) 675 the first time, the definition read
-too. MIDI/80, sound and Talker/80 not tried on it yet.)
+too, then 615, 608, 615: the clock right, a tick or two of sleep's own. MIDI/80, sound and Talker/80 not tried on it yet.)
 
 9. [ ] On a Model III: 1, 4 and 6 again (its clock and ROM are
        elsewhere), and  (let ((t0 (time))) (sleep 2) (- (time) t0))
