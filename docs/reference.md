@@ -675,6 +675,7 @@ Its position is kept to 1/256, so thousands of short steps do not drift:
 | `(playcity on)` | T: the card's PlayCity on, at the CPC's pitch, silent; NIL off. A real PlayCity needs no switching on, and takes no harm | 2 |
 | `(pc-tone channel period [volume])` | channel 0-5 (0-2 the right chip, 3-5 the left) plays period (as `sound`'s: `(note 'a4)`) at volume 0-15 (12) until changed; volume 0 is silence | 2 |
 | `(pc-off)` | all six silent | 2 |
+| `(basic [slot])` | the CPC resets into BASIC: the card's slot that holds the core (4, as `tools/card.py` puts it) is made silent, as `\|ROMNUM,4,255`. RAM is lost. From BASIC, `\|BOOTLISP` (library ROM 2's RSX; `\|BOOTLISP,slot`) makes it ROM 0 again and resets into Lisp | 2 |
 
 Without the card these do nothing (the bytes go to a port nobody answers).
 

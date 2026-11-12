@@ -111,10 +111,15 @@ Upload the images with the card's ROM loader, with the CPC **switched
 off**. From this repository, `python3 tools/card.py lisp` uploads the six
 in `build/` (it checks that the CPC is off first, and refuses slots 2
 and 6);
-`tools/card.py slots` lists the slots. To get BASIC back:
-`tools/card.py basic` silences slot 4 (the other ROMs do nothing from
-BASIC), and `tools/card.py number 4 0` brings Lisp back. `card.py` drives
-the uploader of the LambdaSpeak 4 tools (`~/git/lambdaspeak4/tools`).
+`tools/card.py slots` lists the slots. `card.py` drives the uploader of
+the LambdaSpeak 4 tools (`~/git/lambdaspeak4/tools`).
+
+**BASIC and back**, with no PC: `(basic)` at `LISP>` makes the core's
+slot silent and resets -- the CPC comes up in BASIC; there, `|BOOTLISP`
+makes it ROM 0 again and resets into Lisp. (Both take the slot if it is
+not 4: `(basic 3)`, `|BOOTLISP,3`. Everything in RAM goes: save first.)
+From the PC, with the CPC off, `tools/card.py basic` and
+`tools/card.py number 4 0` do the same.
 
 **On a ROM board or in EPROMs**: one 16 KB ROM (27128) each. The core at 0
 needs a board that can assert ROMDIS, or another number and `|LISP`. On a

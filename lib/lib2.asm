@@ -9,6 +9,7 @@
     db 0,9,5                    ; mark, version, modification: 0.95
     dw lib_names
     jp lib_init                 ; the ROM walk: nothing to do
+    jp rsx_bootlisp             ; |BOOTLISP, from BASIC (mach/cpc/card.asm)
 
     defs LIBHDR-$,0
     db "CPCLISPLIB"
@@ -23,6 +24,7 @@
 
 lib_names:
     db "LISP LIBRARY ","2"+#80
+    db "BOOTLIS","P"+#80
     db 0
 
     include "common.asm"

@@ -530,8 +530,14 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   instead for common lisp". Everything may be replaced **except
   Parados and the LS AI ROM**. `tools/card.py lisp` re-flashes the six
   Lisp ROMs (it checks the CPC is off and refuses slots 2 and 6);
-  `tools/card.py basic` silences the core. `docs/hardware-test.txt` is
-  the sheet of what to type on the real machine (and what was checked).
+  `tools/card.py basic` silences the core. From the CPC (2026-11-12,
+  Mike): `(basic [slot])` silences it and resets, `|BOOTLISP[,slot]`
+  (library ROM 2's RSX, entry 1 of its name table) makes it ROM 0 and
+  resets -- the card's `&D0 slot number` (|ROMNUM), sent from code
+  copied to &4000 (mach/cpc/card.asm). MAME checks the bytes; for BASIC,
+  run MAME by hand on the stock romset with LISP_EDIT=0xBD3A.
+  `docs/hardware-test.txt` is the sheet of what to type on the real
+  machine (and what was checked).
 * **Before flash writes or a firmware flash, the CPC should be off.** Check
   with `kitloader.cpc_is_off()` (`~/git/lambdaspeak4/tools/kitloader.py`):
   two `d` readings with `/IORQ /RD /WR` all zero. Counters standing still do

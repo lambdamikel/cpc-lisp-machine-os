@@ -290,7 +290,14 @@ card: what it checked is the bytes written to &FBEE (test/card.lsp).
 
 19. Getting BASIC back
 ----------------------
-Switch the CPC off, then on the PC:
+From Lisp (MAME checked the bytes sent and the reset; only the card can
+switch the slot):
+[ ] (basic)                          the CPC resets into BASIC 1.0, with
+                                     Parados's message as at power-up
+[ ] |BOOTLISP                        (in BASIC) it resets into Lisp:
+                                     CPC Lisp 0.95, LISP>
+
+Or switch the CPC off, then on the PC:
 
     python3 tools/card.py basic      (silences slot 4: the core)
 

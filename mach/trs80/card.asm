@@ -115,3 +115,7 @@ lf_midi_out:
 ;@ MIDI-OFF 0 0 lf_midi_off
 lf_midi_off:
     jp lnil
+
+;; |BOOTLISP is the CPC's, from BASIC (lib/lib2.asm's ROM header names it)
+rsx_bootlisp:
+    ret
