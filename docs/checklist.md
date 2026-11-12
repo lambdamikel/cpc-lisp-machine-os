@@ -373,7 +373,8 @@ compiled code (`docs/design.md` describes both)
     - [x] The Model I, real, with X-MEM/80 (2026-11-12, from the HxC: it
           runs; the clock, (sleep 2) 675 the first time -- the definition
           read too)
-    - [ ] On the Model I: MIDI/80, sound, Talker/80
+    - [x] On the Model I: MIDI/80 and sound
+    - [ ] On the Model I: Talker/80
 11. [x] **MIDI** (Mike, 2026-11-12): `midi-note`, `midi-program`,
         `midi-control`, `midi-panic`, `midi-out`, `midi-off`, `sleep`,
         and the `(midi-tune)` demo -- the LambdaSpeak card's MIDI mode
