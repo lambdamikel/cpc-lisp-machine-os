@@ -588,7 +588,7 @@ error. A file open for output is only complete once closed. Also
 `M:` are kept in the second 64 KB -- `(save "m:work")`, `(load "m:work")`,
 `(dir "m:")`, `(delete-file "m:work")`. 63 files, 63 KB; they survive a
 reset, not a power-off. On a 464 without a RAM expansion, `M:` says there
-is none.
+is none. (On a TRS-80, `M:` is in X-MEM/80: see *On a TRS-80*.)
 
 ## The text screen
 
@@ -758,14 +758,15 @@ What is different there:
   trigonometry to about seven digits (the Level II ROM's single
   precision).
 - **Files** through LDOS: a name `B:FOO.LSP` is `FOO/LSP:1`; `dir` lists
-  every drive.
+  every drive. **The RAM disc** `M:` is in X-MEM/80's spare pages: 31
+  files, 367 KB; it survives `(quit)` and a reset, not a power-off.
 - **Keys**: BREAK is ESC; <- deletes, SHIFT <- and -> move, SHIFT -> is
   TAB, CLEAR is CLR. The keyboard has no `~ \ | ` `` ` `` ` [ ] { } ^ _`:
   **SHIFT down-arrow, then** `-` gives `~`, `/` `\`, `1` `|`, `7`
   `` ` ``, `8` `[`, `9` `]`, `,` `{`, `.` `}`, `@` `^`, `0` `_`.
   `key-down-p` takes the TRS-80's key numbers.
-- `(quit)` goes back to LDOS. Not there: `symbol`, `flood-fill`,
-  `window`, `tag`, `transparent`, `flash-speed`, `text-cursor`,
+- `(quit)` goes back to LDOS. `flood-fill` fills in the blocks. Not
+  there: `symbol` (the characters are the ROM's), `window`, `tag`, `transparent`, `flash-speed`, `text-cursor`,
   `joystick`, `peek`, `poke`, `release`, the `sound-` functions,
   PlayCity's. `say` and the `speech-` functions speak through Talker/80.
 - About 2800 cells instead of 6600.

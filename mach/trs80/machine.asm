@@ -86,3 +86,8 @@ SYS_TIME        equ JB+4*J_SYS_TIME
 M_EDIT          equ JB+4*J_M_EDIT
 M_QUIT          equ JB+4*J_M_QUIT
 M_INKMODE       equ JB+4*J_M_INKMODE
+M_RDIN          equ JB+4*J_M_RDIN
+M_RDOUT         equ JB+4*J_M_RDOUT
+M_RDCAT         equ JB+4*J_M_RDCAT
+M_DELETE        equ JB+4*J_M_DELETE
+M_FILL          equ JB+4*J_M_FILL

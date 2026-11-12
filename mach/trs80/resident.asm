@@ -4,7 +4,10 @@
 ;;
 ;;   RESIDENT+0  SYS_BANK: C = a page -> C = the one before (AF, B lost)
 ;;   RESIDENT+3  SYS_CURBANK: -> A = the page at &C000
-;;   RESIDENT+6  the jumpblock: entry k is "call mfar : db 2k" (jumps.asm)
+;;   RESIDENT+6  RS_XFER: A = a page, mapped at &C000 for one LDIR (HL
+;;               to DE, BC bytes), then the page that was there (the
+;;               machine page: the RAM disc's way to its pages)
+;;   RESIDENT+9  the jumpblock: entry k is "call mfar : db 2k" (jumps.asm)
 ;;
 ;; A call to entry k lands on "call mfar": mfar takes the byte after it
 ;; (and drops that return), maps the machine page (MACHPAGE) at &C000,
@@ -20,6 +23,8 @@
     org RESIDENT
     jp rs_bank
     jp rs_curbank
+    assert $ == RS_XFER
+    jp rs_copy
     assert $ == JB
     include "jumptab.inc"
 
@@ -77,6 +82,12 @@ rs_bank:
     ret
 rs_curbank:
     ld a,(xm_cur)
+    ret
+rs_copy:
+    out (XM_HI),a
+    ldir
+    ld a,(xm_cur)
+    out (XM_HI),a
     ret
 
 xm_cur:     db COREPAGE         ; the page at &C000

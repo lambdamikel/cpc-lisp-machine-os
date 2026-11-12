@@ -5,7 +5,7 @@
 #     tools/trs80/run.sh file.lsp
 #
 # MACH=trs80 tools/build.sh first. LDOS boots from build/trs80/lisp-a.dsk
-# (lisp-b.dsk in drive 1), is given a date and time, runs LISP; the file's
+# (a lisp-b.dsk, if the build made one, in drive 1), is given a date and time, runs LISP; the file's
 # lines are typed as the Lisp asks for them ('!' lines, the CPC harness's
 # key actions, are left out) and (quit) ends it. With trs80gp's -ee the
 # machine page copies all the Lisp prints to the printer, and typed lines
@@ -14,12 +14,14 @@ set -e
 cd "$(dirname "$0")/../.."
 GP=${TRS80GP:-$HOME/claude/midi80/gp.sh}
 B=${TRS80_BUILD:-$PWD/build/trs80}
+D=(-d0 "$B/lisp-a.dsk")
+[ -f "$B/lisp-b.dsk" ] && D+=(-d1 "$B/lisp-b.dsk")
 src=$(realpath "$1")
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 { grep -v '^!' "$src" || true; echo "(quit)"; } > "$tmp/input.txt"
 ( cd "$tmp" && timeout "${TIMEOUT:-900}" "$GP" -m1 -mem xmem80 -ee -batch -turbo \
-    -d0 "$B/lisp-a.dsk" -d1 "$B/lisp-b.dsk" \
+    "${D[@]}" \
     -iw "Date ?" -i '11/11/86\r' -iw "Time ?" -i '12:00:00\r' -iw "Ready" -i 'LISP\r' \
     -iw "LISP>" -itime "${ITIME:-30000}" -if input.txt -it -ix > /dev/null 2>&1 ) \
     || echo "run.sh: trs80gp did not finish" >&2

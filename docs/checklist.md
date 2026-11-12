@@ -363,6 +363,9 @@ compiled code (`docs/design.md` describes both)
     - [x] TRS-80 Model I with X-MEM/80, in trs80gp (branch `trs80`,
           `mach/trs80/README.md`): the language, compiler, editors,
           floats (through the ROM), files and `dir` through LDOS,
-          graphics in blocks, sound on the cassette port, the demos
-    - [ ] The TRS-80 on the real Model I and Model III; the images
-          compressed onto one Model I disc; Talker/80 and MIDI/80
+          graphics in blocks, sound on the cassette port, the demos;
+          speech through Talker/80; the RAM disc `M:` in X-MEM/80's
+          spare pages, `delete-file`; `flood-fill`; the images
+          compressed onto one Model I disc (2026-11-12)
+    - [ ] The TRS-80 on the real Model I and Model III, and a real
+          Talker/80; MIDI/80

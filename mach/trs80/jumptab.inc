@@ -74,3 +74,8 @@
     call mfar : db 2*J_M_EDIT
     call mfar : db 2*J_M_QUIT
     call mfar : db 2*J_M_INKMODE
+    call mfar : db 2*J_M_RDIN
+    call mfar : db 2*J_M_RDOUT
+    call mfar : db 2*J_M_RDCAT
+    call mfar : db 2*J_M_DELETE
+    call mfar : db 2*J_M_FILL

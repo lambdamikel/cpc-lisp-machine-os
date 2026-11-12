@@ -12,7 +12,9 @@ ROM_GET     equ #0013           ; DE = an FCB -> A = a byte, Z if it went
 ROM_PUT     equ #001B           ; DE = an FCB, A = a byte -> Z if it went
 
 fi_fcb:     dw 0                ; the input file's FCB, 0 when none
+fi_rd:      db 0                ;   1 if it is on the RAM disc
 fo_fcb:     dw 0                ; the output file's
+fo_rd:      db 0
 fs_buf:     defs 24,0           ; a name as LDOS has it, ending in 13
 
 ;; f_spec: HL = a CPC name, B = its length -> fs_buf, LDOS's name
@@ -84,6 +86,8 @@ f_svc:
 ;; FILE_IOPEN: B = the name's length, HL = the name, DE = a 2 KB buffer ->
 ;; carry if the file is open
 m_file_iopen:
+    xor a
+    ld (fi_rd),a
     push de
     call f_spec
     pop de
@@ -134,6 +138,8 @@ f_rt:       dw 0
 
 ;; FILE_OOPEN: the same, for writing: a file of that name is replaced
 m_file_oopen:
+    xor a
+    ld (fo_rd),a
     push de
     call f_spec
     pop de
@@ -159,6 +165,18 @@ m_file_getc:
     push bc
     push de
     push hl
+    ld a,(fi_rd)
+    or a
+    jr z,.ldos
+    push ix
+    ld ix,(fi_fcb)
+    call rd_getc
+    pop ix
+    pop hl
+    pop de
+    pop bc
+    ret
+.ldos:
     ld de,(fi_fcb)
     ld a,d
     or e
@@ -182,8 +200,21 @@ m_file_putc:
     push bc
     push de
     push hl
-    ld de,(fo_fcb)
     ld c,a
+    ld a,(fo_rd)
+    or a
+    jr z,.ldos
+    ld a,c
+    push ix
+    ld ix,(fo_fcb)
+    call rd_putc
+    pop ix
+    pop hl
+    pop de
+    pop bc
+    ret
+.ldos:
+    ld de,(fo_fcb)
     ld a,d
     or e
     jr z,.no
@@ -205,11 +236,45 @@ m_file_putc:
 ;; FILE_ICLOSE, FILE_IABANDON: the input file closed, if one is open
 m_file_iclose:
 m_file_iabandon:
+    ld a,(fi_rd)
+    or a
+    jr z,.ldos
+    xor a
+    ld (fi_rd),a
+    ld hl,0
+    ld (fi_fcb),hl
+    scf
+    ret
+.ldos:
     ld hl,fi_fcb
     jr f_close
-;; FILE_OCLOSE, FILE_OABANDON: the output file closed -> carry if it went
+;; FILE_OCLOSE: the output file closed -> carry if it went; on the RAM
+;; disc, its entry made
 m_file_oclose:
+    ld a,(fo_rd)
+    or a
+    jr z,m_file_oabandon
+    xor a
+    ld (fo_rd),a
+    push ix
+    ld ix,(fo_fcb)
+    call rd_close
+    pop ix
+    ld hl,0
+    ld (fo_fcb),hl
+    ret
+;; FILE_OABANDON: the output file closed; on the RAM disc, forgotten
 m_file_oabandon:
+    ld a,(fo_rd)
+    or a
+    jr z,.ldos
+    xor a
+    ld (fo_rd),a
+    ld hl,0
+    ld (fo_fcb),hl
+    scf
+    ret
+.ldos:
     ld hl,fo_fcb
 f_close:
     ld e,(hl)

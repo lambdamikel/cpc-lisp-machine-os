@@ -149,3 +149,13 @@
     dw m_m_quit
     assert $ == MTAB+2*J_M_INKMODE
     dw m_m_inkmode
+    assert $ == MTAB+2*J_M_RDIN
+    dw m_m_rdin
+    assert $ == MTAB+2*J_M_RDOUT
+    dw m_m_rdout
+    assert $ == MTAB+2*J_M_RDCAT
+    dw m_m_rdcat
+    assert $ == MTAB+2*J_M_DELETE
+    dw m_m_delete
+    assert $ == MTAB+2*J_M_FILL
+    dw m_m_fill

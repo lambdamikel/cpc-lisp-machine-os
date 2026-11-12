@@ -2,16 +2,18 @@
 """The TRS-80 discs, with LISP/CMD and the images:
 
     mkdisk.py OUT  -- reads OUT/LISP.CMD and OUT/LISP*.ROM, writes
-      OUT/lisp-a.dsk, OUT/lisp-b.dsk: the Model I's, LDOS 5.3.1 single
-        density (tools/trs80/ldos-m1.dsk, a JV1 system disc with nothing
-        else on it); what does not fit on the first goes on the second,
-        and LDOS looks in every drive for a file
+      OUT/lisp-a.dsk: the Model I's, LDOS 5.3.1 single density
+        (tools/trs80/ldos-m1.dsk, a JV1 system disc with nothing else on
+        it), the images compressed (lz.py) to fit; were they to grow out
+        of it, the rest would go on OUT/lisp-b.dsk (LDOS looks in every
+        drive for a file)
       OUT/lisp-m3.dsk: the Model III's, LDOS 5.1.4 double density
         (tools/trs80/ldos-m3.dsk, JV3): all on one
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
 import ldoswrite as L
+import lz
 
 BASE = os.path.join(os.path.dirname(__file__), 'ldos-m1.dsk')
 BASE3 = os.path.join(os.path.dirname(__file__), 'ldos-m3.dsk')
@@ -27,7 +29,7 @@ def main():
     out = sys.argv[1]
     files = [('LISP', 'CMD', open(os.path.join(out, 'LISP.CMD'), 'rb').read())]
     for name, rom in IMAGES:
-        data = open(os.path.join(out, rom), 'rb').read().rstrip(b'\xff')
+        data = lz.compress(open(os.path.join(out, rom), 'rb').read().rstrip(b'\xff'))
         files.append((name, 'IMG', data))
     discs = [L.Img(BASE), L.Img(BASE)]
     k = 0
@@ -37,8 +39,12 @@ def main():
             if k == len(discs):
                 sys.exit('mkdisk: the files do not fit on two discs')
         L.add_file(discs[k], name, ext, data)
-    for img, tag in zip(discs, 'ab'):
-        img.save(os.path.join(out, f'lisp-{tag}.dsk'))
+    discs[0].save(os.path.join(out, 'lisp-a.dsk'))
+    b = os.path.join(out, 'lisp-b.dsk')
+    if k:
+        discs[1].save(b)
+    elif os.path.exists(b):
+        os.remove(b)
     m3 = L.Img(BASE3)
     for name, ext, data in files:
         L.add_file(m3, name, ext, data)

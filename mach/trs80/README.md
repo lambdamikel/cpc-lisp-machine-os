@@ -8,17 +8,21 @@ and Mark Pruden's [X-MEM/80](https://github.com/lambdamikel/x-mem-80)
 ## Building and running
 
     MACH=trs80 tools/build.sh     # build/trs80: the images, LISP/CMD, the
-                                  #   discs lisp-a.dsk, lisp-b.dsk, lisp-m3.dsk
+                                  #   discs lisp-a.dsk and lisp-m3.dsk
     tools/trs80/play.sh           # trs80gp in a window: LDOS boots, LISP runs
     tools/trs80/run.sh file.lsp   # type a file at it in trs80gp, print the
                                   #   transcript
 
-For the **Model I**, LDOS 5.3.1 single density: `lisp-a.dsk` boots and
-holds `LISP/CMD` and the first images, `lisp-b.dsk` the rest (LDOS looks
-for a file in every drive). For the **Model III**, `lisp-m3.dsk`, LDOS
-5.1.4 double density, holds it all. At `LDOS Ready`, `LISP` loads the
-seven pages and starts; without X-MEM/80 in its X-MEM mode it says so
-and goes back to LDOS. `(quit)` goes back to LDOS.
+For the **Model I**, `lisp-a.dsk`: LDOS 5.3.1, single density, with
+`LISP/CMD` and the seven images on it. For the **Model III**,
+`lisp-m3.dsk`: LDOS 5.1.4, double density, the same files. At `LDOS
+Ready`, `LISP` loads the seven pages and starts; without X-MEM/80 in its
+X-MEM mode it says so and goes back to LDOS. `(quit)` goes back to LDOS.
+
+The images are compressed to fit one single-density disc, 93 KB to 55
+(`tools/trs80/lz.py`: an LZ77, optimally parsed; the loader decodes
+them). Should they outgrow the disc, `mkdisk.py` puts the rest on a
+`lisp-b.dsk` for drive 1 -- LDOS looks for a file in every drive.
 
 `tools/trs80/ldos-m1.dsk` and `ldos-m3.dsk` are the starting discs:
 LDOS system discs with nothing of the user's on them (from the MIDI/80
@@ -34,7 +38,7 @@ at &0125).
 | &5200-&53FF | the resident part: SYS_BANK and the jumpblock (`resident.asm`) |
 | &5400-&BAFF | the Lisp's RAM: tables, symbols, cells, strings, the stack (`memmap.asm`); &8000-&BFFF is X-MEM page 1, never moved |
 | &BB00-&BFFF | the fixed variables and buffers |
-| &C000-&FFFF | one code page at a time: the core (page 2), library parts 0-3 (3-6), the VM (7), the machine page (8) |
+| &C000-&FFFF | one code page at a time: the core (page 2), library parts 0-3 (3-6), the VM (7), the machine page (8); pages 9-31 the RAM disc |
 
 The six images run unchanged in the &C000 window -- they are assembled
 for it on the CPC too. A switch is one `OUT (66)`. The machine's routines
@@ -43,7 +47,8 @@ for it on the CPC too. A switch is one `OUT (66)`. The machine's routines
 jumpblock, which maps that page in, calls the routine, and maps the
 caller's page back (`resident.asm`, `jumps.asm`; `tools/trs80/mkjumps.py`
 makes the jumpblock from one list). The loader (`loader.asm`, LISP/CMD)
-reads the seven pages through LDOS.
+reads the seven pages through LDOS, each into page 1 at &8000 first, and
+decodes it into its own.
 
 About 3150 cells are free at start, half a CPC's.
 
@@ -94,10 +99,19 @@ without KI/DVR; with KI/DVR loaded this is untried.)
   `atan`) through its single precision, about seven digits.
 * **Graphics** in the screen's 2 x 3 blocks, 128 by 48, from the CPC's
   logical 640 by 400; `ink-mode` (XOR, AND, OR); the turtle; circles,
-  discs, boxes. One colour: a pen is lit or not.
+  discs, boxes; `flood-fill` (a whole screen in about 8 s). One colour:
+  a pen is lit or not.
 * **Files** through LDOS: `load`, `save`, `open`, `with-open-file`,
-  `probe-file`, `compile-file`; `dir` lists each drive's files (LDOS's
-  DIR/SYS, read as a file). A name `B:FOO.LSP` is LDOS's `FOO/LSP:1`.
+  `probe-file`, `delete-file`, `compile-file`; `dir` lists each drive's
+  files (LDOS's DIR/SYS, read as a file). A name `B:FOO.LSP` is LDOS's
+  `FOO/LSP:1`.
+* **The RAM disc**, drive `M:`, as on a 6128: X-MEM/80's pages 9-31, 368
+  KB -- `(save "m:work")`, `(load "m:work")`, `(dir "m:")`,
+  `(delete-file "m:work")`, streams. 31 files, 367 KB for them. Its
+  first KB is the directory; the files lie one after the other, and one
+  deleted (or saved again) closes up the gap. The pages keep it through
+  `(quit)` and a reset; at power-on (no directory there) it starts
+  empty (`rdisc80.asm`).
 * `*features*` is `(:trs-80 :cpc-lisp)`; the demos look at it.
 * The Model III: the same images and machine page (its ROM has the
   maths routines at the same places); not tried on one yet -- trs80gp
@@ -112,9 +126,8 @@ without KI/DVR; with KI/DVR loaded this is untried.)
   Talker/80 yet (trs80gp has none).
 * `time` counts in seconds (LDOS's clock: &4041 on a Model I, &4217 on a
   Model III), in the CPC's 1/300 s.
-* Not yet: `symbol`, `flood-fill`, music through MIDI/80, a
-  RAM disc in X-MEM/80's spare pages, the images compressed onto one
-  disc.
+* Not yet: music through MIDI/80. Not to be: `symbol` -- the characters
+  are the character generator's, a ROM.
 
 ## In trs80gp
 

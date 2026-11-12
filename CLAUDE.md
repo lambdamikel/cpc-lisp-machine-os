@@ -48,6 +48,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   (-16384..16383). Symbols live in a fixed region (&0500-&14FF, 512 slots);
   cells (4 bytes) above; strings in a compacted block space; characters and
   markers are immediates below &0500. `src/defs.asm` has the layout.
+* **Fixnums 512-639 have the markers' high byte** (&0401-&04FF; UNBOUND,
+  EOFMARK... are &04xx with bit 0 clear): a test for a marker on H alone
+  must look at bit 0 of L too. `check_real` did not, and `read` from a
+  string or file said "syntax error" for 512-639 until 2026-11-12.
 * **GC**: mark and sweep; marking is iterative with a 256-word mark stack
   and a heap rescan on overflow (not pointer reversal -- simpler, any depth).
   The machine stack is scanned **conservatively**, so native code may keep
@@ -72,8 +76,8 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   Lisp (`lib/lisp2.lsp`) and the demos (`lib/demo.lsp`): new library code
   goes here or in part 1. **A fifth part is not possible as it is**: an
   LSUBR's or AUTOLOAD's data word keeps the part in two bits (the VM ROM,
-  below, is no part). Space (2026-11-07 night): core 10 bytes free,
-  parts 0-3 335, 3489, 596, 3555; the VM ROM 574.
+  below, is no part). Space (2026-11-12): core 22 bytes free,
+  parts 0-3 251, 3489, 636, 3103; the VM ROM 574.
   `src/xrom.asm` explains the arrangement: the core finds
   them by signature and build number (all ROMs come from one
   `tools/build.sh` run, and call each other by address), each says which
@@ -240,7 +244,7 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   The compiler's calls of its own functions become CALLR k n (no
   constant, no cell). How it works (variables, boxes, the restarts when
   a variable turns out to be captured) is at the top of compiler.lsp.
-  Space: VM ROM 574 bytes free, core 10; the pool 178 of 256 constants;
+  Space: VM ROM 574 bytes free, core 22; the pool 178 of 256 constants;
   the dispatch page is full (85 operations: a new one must replace one).
 * **What a compiled call costs**: a call of something not compiled goes
   out through ROMCALL (KL ROM SELECT twice) and apply_n -- some 2000
@@ -303,6 +307,14 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   * Block space and file buffers are machine choices (MACH_BLOCKS,
     FILE_BUFSIZE): with half a CPC's heap the CPC's 11/64 left too little
     string space for compiled code.
+  * The RAM disc (`rdisc80.asm`, pages 9-31) is seen in the &C000
+    window, where the machine page itself runs: `RS_XFER` (resident)
+    maps a page for one LDIR to or from RAM below &C000 (the file's
+    buffer). A machine call (`M_DELETE`...) is a line in mkjumps.py.
+  * rasm evaluates `assert` and `repeat` where they stand: a symbol in
+    them must be defined above (an equate after it is "not found").
+  * The images are compressed (`tools/trs80/lz.py`, decoded by the
+    loader) to fit one single-density disc: change the format in both.
   * To work while tests run on build/trs80: `MACH=trs80
     OUT=build/trs80-dev tools/build.sh`, `TRS80_BUILD=... run.sh`.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.

@@ -2,7 +2,7 @@ LISP> (demo)
 
 CPC Lisp demos:
 
-(shapes)     discs, boxes, 16 colours
+(shapes)     discs and boxes in colours
 (rose)       a rose curve, in floats
 (spiral)     a square spiral
 (moire)      lines drawn with XOR
@@ -12,8 +12,8 @@ CPC Lisp demos:
 (koch 4)     a Koch snowflake, turtle
 (tree)       a tree, by turtle
 (tune)       Ode to Joy
-(talk)       speech: LambdaSpeak
-(sing)       singing: LambdaSpeak
+(talk)       speech: LambdaSpeak, Talker/80
+(sing)       singing: LambdaSpeak, Talker/80
 (chords)     PlayCity's six voices
 (hanoi 4)    the towers of Hanoi
 (queens 6)   n queens on a board

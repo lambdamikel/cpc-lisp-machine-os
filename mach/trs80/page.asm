@@ -890,28 +890,26 @@ g_cell:
     ld a,l
     cp 48
     ret nc
-    ld b,0
-.d3:
-    cp 3
-    jr c,.r
-    sub 3
-    inc b
-    jr .d3
-.r:
-    add a,a                     ; 2 * (row mod 3)
+    ld hl,g_rows
+    add a,l
+    ld l,a
+    ld a,(hl)                   ; (row mod 3) * 32 + row / 3
+    ld b,a
+    rlca
+    rlca
+    rlca
+    rlca                        ; 2 * (row mod 3) ...
+    and 6
     bit 0,e
     jr z,.b
-    inc a
+    inc a                       ;   + 1 on the right
 .b:
-    ld c,1
-    or a
-    jr z,.m
-.sh:
-    sla c
-    dec a
-    jr nz,.sh
-.m:
-    ld l,b
+    add a,g_bits and #FF
+    ld l,a
+    ld c,(hl)                   ; the block's bit
+    ld a,b
+    and 31
+    ld l,a                      ; the character row
     ld h,0
     add hl,hl
     add hl,hl
@@ -928,6 +926,16 @@ g_cell:
     ld h,a
     scf
     ret
+
+;; g_rows: for each block row, (row mod 3) * 32 + row / 3; g_bits: a
+;; block's bit, from its number in the character (2 * row + column)
+g_rows:
+    db 0,32,64,1,33,65,2,34,66,3,35,67
+    db 4,36,68,5,37,69,6,38,70,7,39,71
+    db 8,40,72,9,41,73,10,42,74,11,43,75
+    db 12,44,76,13,45,77,14,46,78,15,47,79
+g_bits:     db 1,2,4,8,16,32
+    assert g_rows >> 8 == (g_bits + 5) >> 8   ; (one page: g_cell adds to L)
 
 ;; g_set: DE, HL = a block -> lit or put out, as the pen says
 g_set:
@@ -1058,6 +1066,150 @@ m_m_inkmode:
     and 3
     ld (g_ink),a
     ret
+
+;; M_FILL: DE = x, HL = y, logical -> the area around that block of its
+;; colour, to where the other starts, made the pen's; the position there.
+;; A row at a time: a run of blocks to its ends, the runs above and below
+;; it noted on a stack to do next (FILL_STK, past the page's code). Two
+;; colours: a block painted is no longer the area's, so nothing is done
+;; twice. IX corrupt.
+m_m_fill:
+    call m_gfx_move
+    call g_pix
+    ld a,d
+    or h
+    ret nz                      ; off the screen
+    ld a,e
+    cp 128
+    ret nc
+    ld a,l
+    cp 48
+    ret nc
+    call ff_get
+    ld (ff_t),a
+    ld b,a
+    ld a,(g_pen)
+    cp b
+    ret z                       ; the pen's already
+    ld a,(g_ink)
+    push af
+    xor a
+    ld (g_ink),a                ; the pen as it is, whatever ink-mode says
+    ld ix,FILL_STK
+    call ff_push
+.next:
+    push ix
+    pop hl
+    ld bc,FILL_STK
+    or a
+    sbc hl,bc
+    jr z,.done
+    dec ix
+    dec ix
+    ld e,(ix+0)                 ; E = a column,
+    ld l,(ix+1)                 ;   L = a row
+    ld d,0
+    ld h,d
+    call ff_is
+    jr nz,.next                 ; done already
+.left:
+    ld a,e                      ; to the run's left end
+    or a
+    jr z,.run
+    dec e
+    call ff_is
+    jr z,.left
+    inc e
+.run:
+    xor a
+    ld (ff_up),a
+    ld (ff_dn),a
+.r:
+    call ff_is
+    jr nz,.next                 ; its right end
+    call ff_set
+    ld a,l
+    or a
+    jr z,.below
+    dec l                       ; the row above
+    ld bc,ff_up
+    call ff_side
+    inc l
+.below:
+    ld a,l
+    cp 47
+    jr nc,.right
+    inc l                       ; the row below
+    ld bc,ff_dn
+    call ff_side
+    dec l
+.right:
+    inc e
+    ld a,e
+    cp 128
+    jr c,.r
+    jr .next
+.done:
+    pop af
+    ld (g_ink),a
+    ret
+;; ff_side: E, L = a block next to the run, BC = its side's flag -> a run
+;; starting there noted, if it is the area's and the block before it was
+;; not
+ff_side:
+    call ff_is
+    jr z,.is
+    xor a
+    ld (bc),a
+    ret
+.is:
+    ld a,(bc)
+    or a
+    ret nz                      ; noted already
+    inc a
+    ld (bc),a
+;; ff_push: E, L = a block -> on the stack (unless it is full)
+ff_push:
+    push hl
+    push ix
+    pop hl
+    ld a,h
+    cp FILL_END >> 8
+    pop hl
+    ret nc
+    ld (ix+0),e
+    ld (ix+1),l
+    inc ix
+    inc ix
+    ret
+;; ff_is: E, L = a block -> Z if it is the area's colour. BC, DE, HL kept.
+ff_is:
+    call ff_get
+    push hl
+    ld hl,ff_t
+    cp (hl)
+    pop hl
+    ret
+;; ff_get, ff_set: g_get, g_set on E, L (D = H = 0). BC, DE, HL kept.
+ff_get:
+    push bc
+    push de
+    push hl
+    call g_get
+    jr ff_pop
+ff_set:
+    push bc
+    push de
+    push hl
+    call g_set
+ff_pop:
+    pop hl
+    pop de
+    pop bc
+    ret
+ff_t:       db 0                ; the area's colour
+ff_up:      db 0                ; a run above noted, and not ended yet
+ff_dn:      db 0                ;   below
 
 ;; GFX_CLEAR: the screen blank (text and graphics share it); the position
 ;; at the origin
@@ -1451,6 +1603,7 @@ s_2500:
 ;; FILES: files80.asm
 
     include "files80.asm"
+    include "rdisc80.asm"
 
 ;; ---------------------------------------------------------------------------
 ;; FLOATS: fp80.asm
@@ -1575,7 +1728,9 @@ m_m_quit:
 .dos:
     jp L_EXIT
 
+FILL_STK    equ #E000           ; flood-fill's stack: 2048 blocks, in the page
+FILL_END    equ #F000           ;   past its code (not in the image)
 page_end:
     print "machine page: ",page_end-#C000," bytes"
-    assert page_end <= #10000
+    assert page_end <= FILL_STK
     defs #10000-$,#FF

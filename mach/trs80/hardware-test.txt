@@ -1,0 +1,31 @@
+CPC Lisp 0.9 on a real TRS-80 -- what only the hardware can tell
+================================================================
+
+Everything else was checked in trs80gp (the CPC's tests, the demos).
+Tick what you see; note anything that differs.
+
+The disc: build/trs80/lisp-a.dsk for a Model I (JV1, LDOS 5.3.1, single
+density), lisp-m3.dsk for a Model III (JV3, LDOS 5.1.4). X-MEM/80 in its
+X-MEM mode (not SuperMem).
+
+1. [ ] Boot it, answer LDOS's date (and time), type LISP. It says
+       "loading" and the seven names, then:
+
+           CPC Lisp 0.9
+           A Lisp machine for the TRS-80
+           library ROMs 3 4 5 6
+           2832 cells free
+
+           LISP>
+
+2. [ ] (loop)  then BREAK  : "Error: break", and LISP> again
+3. [ ] SHIFT down-arrow, let go, then -  : a ~ appears
+4. [ ] (sound 1 284 100)  : one second of A 440 from the cassette
+       port (an amplifier on it)
+5. [ ] (say "hello, I am a T R S 80")  : Talker/80 speaks it
+6. [ ] (defun f () 42)  (save "m:x")  (dir "m:")  : X.LSP listed;
+       press RESET, LISP again, (dir "m:")  : still there
+7. [ ] (shapes)  : discs and boxes in blocks; a key clears it.
+       (demo) lists the others
+8. [ ] On a Model III: 1, 4 and 6 again (its clock and ROM are
+       elsewhere; (time) should count up: type it twice)

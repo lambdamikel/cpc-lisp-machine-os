@@ -5,8 +5,9 @@
 ;; of its table (MTAB) and maps the caller's page back. machine.asm names
 ;; the entries; this list keeps the three in step.
 
-RESIDENT         equ #5200           ; the resident part: SYS_BANK, SYS_CURBANK,
-JB          equ RESIDENT+6           ;   then the jumpblock, four bytes an entry
+RESIDENT    equ #5200           ; the resident part: SYS_BANK, SYS_CURBANK,
+RS_XFER     equ RESIDENT+6      ;   RS_XFER (a copy to or from a page),
+JB          equ RESIDENT+9      ;   then the jumpblock, four bytes an entry
 MTAB        equ #C100           ; the machine page's table, a word an entry
 
 J_CON_PUTC       equ 0
@@ -84,4 +85,9 @@ J_SYS_TIME       equ 71
 J_M_EDIT         equ 72
 J_M_QUIT         equ 73
 J_M_INKMODE      equ 74
-NJ             equ 75
+J_M_RDIN         equ 75
+J_M_RDOUT        equ 76
+J_M_RDCAT        equ 77
+J_M_DELETE       equ 78
+J_M_FILL         equ 79
+NJ             equ 80
