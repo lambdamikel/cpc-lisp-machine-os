@@ -197,4 +197,8 @@ LISP> (truncate 1e9)
 Error: integer too large
 LISP> (float 1.0)
 1.0
+LISP> (let ((n 16000)) (incf n 1000) n)
+17000.0
+LISP> (let ((n 1.5)) (incf n) (decf n 0.25) n)
+2.25
 LISP> 

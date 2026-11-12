@@ -263,6 +263,8 @@ check_real:
     ld a,h
     cp 4
     ret nz
+    bit 0,l
+    ret nz                      ; a fixnum, 512-639 (&0401-&04FF)
     ld a,l
     cp EOFMARK and #FF
     jr z,.eof

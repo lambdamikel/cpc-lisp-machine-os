@@ -3072,7 +3072,6 @@ incf_common:
     jr z,.one
     call car
     call eval
-    call fixnum_hl
     ex de,hl
 .one:
     pop hl
@@ -3080,28 +3079,26 @@ incf_common:
     push de
     call car
     call eval                   ; the variable's value
-    call fixnum_hl
     pop de
     pop bc                      ; the form's arguments
-    ex (sp),hl                  ; HL = + or -, value on the stack
+    ex (sp),hl                  ; HL = + or -, the value on the stack
+    push de                     ;   and the delta: the subr's arguments
     push bc
     ld bc,S_PLUS
     or a
     sbc hl,bc
-    pop bc
-    pop hl
-    jr nz,.minus
-    dec hl
-    or a
-    adc hl,de
-    jp pe,err_overflow
+    ld hl,4
+    add hl,sp                   ; &arg 0 (Z kept)
+    ld b,2
+    jr nz,.minus                ; (+ and - as the subrs do them: an
+    call subr_plus              ;   overflow or a float goes to floats)
     jr .set
 .minus:
-    or a
-    sbc hl,de
-    jp pe,err_overflow
-    inc hl
+    call subr_minus
 .set:
+    pop bc
+    pop de
+    pop de
     ex de,hl
     ld l,c
     ld h,b

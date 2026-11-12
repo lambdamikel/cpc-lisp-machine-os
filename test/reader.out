@@ -62,4 +62,10 @@ LISP> (list 1 2
 LISP> )
 LISP> (1 . )
 Error: syntax error
+LISP> (read-from-string "512")
+512
+LISP> (read-from-string "(600 639 640)")
+(600 639 640)
+LISP> (read-from-string "-1")
+-1
 LISP> 

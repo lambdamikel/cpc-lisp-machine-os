@@ -93,3 +93,5 @@ pi
 (log 0)
 (truncate 1e9)
 (float 1.0)
+(let ((n 16000)) (incf n 1000) n)
+(let ((n 1.5)) (incf n) (decf n 0.25) n)

@@ -32,3 +32,6 @@ nil
   3 4)
 )
 (1 . )
+(read-from-string "512")
+(read-from-string "(600 639 640)")
+(read-from-string "-1")
