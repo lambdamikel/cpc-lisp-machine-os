@@ -1,0 +1,71 @@
+LISP> (defvar a (make-far-array "table" 1000))
+Error: no RAM disc (M: needs 128 KB)
+LISP> a
+Error: unbound variable A
+LISP> (far-length a)
+Error: unbound variable A
+LISP> (far-ref a 0)
+Error: unbound variable A
+LISP> (setf (far-ref a 0) 123)
+Error: unbound variable A
+LISP> (setf (far-ref a 999) #\x)
+Error: unbound variable A
+LISP> (setf (far-ref a 500) t)
+Error: unbound variable A
+LISP> (list (far-ref a 0) (far-ref a 999) (far-ref a 500) (far-ref a 1))
+Error: unbound variable A
+LISP> (far-ref a 1000)
+Error: unbound variable A
+LISP> (far-ref a -1)
+Error: unbound variable A
+LISP> (setf (far-ref a 2) "no")
+Error: unbound variable A
+LISP> (dotimes (i 1000) (setf (far-ref a i) (* i 3)))
+Error: unbound variable A
+LISP> (let ((s 0)) (dotimes (i 1000) (incf s (far-ref a i))) s)
+Error: unbound variable A
+LISP> (defvar b (make-far-array "m:bytes" 40000 :element-type '(unsigned-byte 8)))
+Error: no RAM disc (M: needs 128 KB)
+LISP> (far-length b)
+Error: unbound variable B
+LISP> (setf (far-ref b 39999) 255)
+Error: unbound variable B
+LISP> (list (far-ref b 39999) (far-ref b 39998))
+Error: unbound variable B
+LISP> (setf (far-ref b 1) 256)
+Error: unbound variable B
+LISP> (setf (far-ref b 20000) 65)
+Error: unbound variable B
+LISP> (with-open-file (s "m:bytes.far") (list (file-position s 20002) (read-char s)))
+Error: no RAM disc (M: needs 128 KB)
+LISP> (defvar c (make-far-array "chars" 10 :element-type 'character))
+Error: no RAM disc (M: needs 128 KB)
+LISP> (setf (far-ref c 3) #\A)
+Error: unbound variable C
+LISP> (list (far-ref c 3) (far-ref c 0) (far-length c))
+Error: unbound variable C
+LISP> (dir "m:")
+Error: no RAM disc (M: needs 128 KB)
+LISP> (save "m:other")
+Error: nothing to save
+LISP> (delete-file "m:table.far")
+Error: no RAM disc (M: needs 128 KB)
+LISP> (list (far-ref b 39999) (far-ref c 3))
+Error: unbound variable B
+LISP> (far-ref a 0)
+Error: unbound variable A
+LISP> (far-ref (far-array "bytes") 39999)
+Error: no far array M:BYTES.FAR
+LISP> (far-array "nothere")
+Error: no far array M:NOTHERE.FAR
+LISP> (make-far-array "b:x" 10)
+Error: far arrays are on M:
+LISP> (make-far-array "x" 10 :element-type 'float)
+Error: no far array of FLOAT
+LISP> (far-ref '(1 2) 0)
+Error: not the structure it should be: (1 2)
+LISP> (far-length (make-far-array "huge" 65000))
+Error: no RAM disc (M: needs 128 KB)
+LISP> (dir "m:")
+Error: no RAM disc (M: needs 128 KB)
+LISP> 

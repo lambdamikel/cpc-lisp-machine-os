@@ -454,6 +454,25 @@ strings (see [Sequences](#sequences)).
 | `(vectorp x)` | | core |
 | `(aref v i)` `(svref v i)` | `setf`-able; aref takes strings too | core |
 
+**Far arrays** live on the RAM disc (`M:`, below), outside the cells: as
+many elements as the disc has room for, up to 65535 an array -- on a 6128
+some 30000 numbers, from disc with a 512K expansion 200000 in all. Each
+is a file `NAME.FAR` on `M:`, so it survives a reset, `(dir "m:")` lists
+it and `(delete-file "m:name.far")` gives its room back.
+
+| Function | | |
+|---|---|---|
+| `(make-far-array "name" n [:element-type type])` | a new far array of n elements: type `t` (the default: fixnums, characters, `t` and `nil`, two bytes each; a new one holds NILs), `(unsigned-byte 8)` (0-255) or `character` (a byte each, starting as 0 and `#\Nul`). A file of that name is replaced; "no room on M:" if it does not fit | 2, 4 |
+| `(far-array "name")` | the far array in that file, made before (after a reset too) | 2, 4 |
+| `(far-ref a i)` | element i; `setf`-able | 2 |
+| `(far-length a)` | how many elements | 2 |
+
+A far array holds no lists, strings or floats -- the garbage collector
+cannot look into the disc. An access costs about three times an `aref`
+(the disc's directory is looked at each time: files move down when one
+before them is deleted). TRS-80 too (X-MEM/80's pages); not on a 464
+without a RAM expansion, nor from disc on a plain 6128 (no RAM disc).
+
 ## Structures
 
     (defstruct point x (y 0))          ; or (defstruct (point option...) slot...)
@@ -635,7 +654,7 @@ more at its next call, as the library's own functions are. So:
 reset, not a power-off. On a 464 without a RAM expansion, `M:` says there
 is none. (On a TRS-80, `M:` is in X-MEM/80: see *On a TRS-80*. From disc
 with a 512K expansion, it is in the expansion's free blocks: 31 files,
-415 KB.)
+415 KB.) Far arrays (*Vectors*) are files here too.
 
 ## The text screen
 

@@ -268,6 +268,13 @@ With a RAM expansion (or a 6128), under either firmware:
 [ ] (dir "m:")                       Drive M: (RAM)  SQ.LSP  ...  bytes free
 [ ] (fmakunbound 'sq)  (load "m:sq")  (sq 9)
                                      T, then 81
+[ ] (defvar a (make-far-array "t" 1000))  (setf (far-ref a 7) 42)
+    (far-ref a 7)                    A, 42, then 42
+[ ] (dir "m:")                       ... T.FAR  2002 ...
+[ ] (far-ref (far-array "t") 7)      42 (also after a reset: CTRL-SHIFT-ESC)
+Lazy loading, from the drive (Parados):
+[ ] (defun dbl (x) (* 2 x))  (save "lz" 'dbl)  (fmakunbound 'dbl)
+    (load "lz" :lazy t)  (dbl 21)    T, then 42
 (Checked on the 464 with an unofficial 1.1 firmware ROM and a RAM
 expansion, 2026-11-07, build 22482: all as above; the RAM disc under the
 1.0 firmware too.)

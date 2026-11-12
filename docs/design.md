@@ -321,6 +321,17 @@ so the core's reader and `putc` work unchanged. (A lesson from it: a far
 call in a jumpblock returns past its own address, into the next vector --
 the routine it calls must take care of that.)
 
+**Far arrays** (`lib/farray.asm`, `lib/farray.lsp`) are files on `M:`
+read and written in place: `make-far-array` writes the file through the
+RAM disc's own output -- a two-byte header, the element type, then the
+elements, zero -- and `far-ref` looks up the file's directory entry at
+every access, as deleting a file moves those after it down. Each
+machine's `far.asm` knows its directory's layout and how to copy bytes
+to and from the disc (the CPC's gate array, or the resident part's
+RS_XFER on the 512K CPC and the TRS-80). Only immediate objects --
+fixnums, characters, T and NIL -- or bytes go in: the GC cannot see
+there.
+
 **The LambdaSpeak card** (`mach/cpc/card.asm`) listens on port &FBEE: text for
 its DECtalk speech, and PlayCity's two sound chips. The byte that starts a
 sentence is sent from a few bytes of code copied into RAM, which wait

@@ -42,8 +42,7 @@
   (let ((e (get name '%lazy)))
     (when (eq (symbol-function name) (car e))
       (when (%file-pos)
-        (error "~S cannot be read from ~S while a file is open for input"
-               name (cadr e)))
+        (error "~S must be read from ~S, but a file is open" name (cadr e)))
       (let ((f (with-open-file (s (cadr e))
                  (and (file-position s (cddr e)) (read s nil nil)))))
         (unless (and (consp f) (eq (car f) 'defun) (consp (cdr f))

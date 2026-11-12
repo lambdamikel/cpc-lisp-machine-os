@@ -39,6 +39,12 @@ streams, an input and an output file at once. 31 files. It keeps its
 files through a reset and a new `RUN"LISP` (the loader writes only the
 blocks the code goes in), not through switching off.
 
+Far arrays are files here: `(make-far-array "table" 60000)` -- numbers,
+characters or bytes, outside the cells, up to 65535 an array, as many as
+fit -- and `(far-array "table")` finds one again after a reset. A big
+program can stay here too, `(load "m:big" :lazy t)`: each function is
+read in when first called and dropped when the cells run short.
+
 ## How it works
 
 Each image goes into block 3 of a 64K bank, banks 0-5: configuration C1

@@ -31,6 +31,7 @@ lib_names:
     include "loop.asm"          ; the LOOP expander, native, beside its macro
 ;@lisp loop.lsp
 ;@lisp lisp2.lsp
+;@lisp farray.lsp
 ;@lisp demo.lsp
     include "demotab.asm"
 

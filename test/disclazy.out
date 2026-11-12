@@ -37,7 +37,7 @@ LISP> (list (eq (symbol-function 'la) (car (get 'la '%lazy))) (eq (symbol-functi
 LISP> (lb 4)
 10
 LISP> (with-open-file (s "again") (ld 2))
-Error: LD cannot be read from "prog" while a file is open for input
+Error: LD must be read from "prog", but a file is open
 LISP> (ld 2)
 (2 1)
 LISP> (load "nothere" :lazy t)

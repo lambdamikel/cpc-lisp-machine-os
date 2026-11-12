@@ -77,7 +77,8 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   goes here or in part 1. **A fifth part is not possible as it is**: an
   LSUBR's or AUTOLOAD's data word keeps the part in two bits (the VM ROM,
   below, is no part). Space (2026-11-12, later): core 62 bytes free
-  (TRS-80 102), parts 0-3 242, 1012, 519, 1410; the VM ROM 574.
+  (TRS-80 102), parts 0-3 242, 127, 519, 444; the VM ROM 574 (512K:
+  part 0 30, part 1 ~150; the TRS-80's part 0 2991).
   `src/xrom.asm` explains the arrangement: the core finds
   them by signature and build number (all ROMs come from one
   `tools/build.sh` run, and call each other by address), each says which
@@ -436,6 +437,26 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   `%file-skip` (lib/lazy.asm) and CL's `file-position` (forward only).
   A first call while an input file is open is an error (one input file).
   test/disclazy.lsp.
+* **Far arrays** (2026-11-12, the same request; Mike's expansions):
+  `make-far-array`, `far-array`, `far-ref` (setf: the SETF property, a
+  boot form), `far-length`. A far array is a file NAME.FAR on M: --
+  "F", the element type (0 T: the object's word, fixnums, characters, T,
+  NIL; 1 (unsigned-byte 8); 2 character), the elements -- made through
+  the RAM disc's output file (`%far-fill`, which stops at the first byte
+  that cannot be written) and read and written in place. Natives in part
+  1 (`lib/farray.asm`), the Lisp in part 3 (`lib/farray.lsp`: part 1 was
+  full). `#S(FAR-ARRAY name entry type)`: the directory entry is read
+  again at every access (files move down when one before them is
+  deleted) and searched for by name if it changed. Each machine's
+  `mach/$MACH/far.asm` (included by part 1) has its directory's layout
+  and `fa_xfer` -- the CPC ROM's 64 KB format by the gate array (one LDIR
+  per bank: per byte it was 20% slower), the 512K's and the TRS-80's
+  copies of their `rd_xfer` through RS_XFER (keep them in step);
+  cpc6128 links the 512K's and refuses (RAMDISC 0). `make-far-array`
+  checks the result's length: a full M: drops the file (512K, TRS-80) or
+  truncates it (the ROM's). Part 1 code must not call the core for
+  trivia in a hot path: is_typed/vec_data/str_data inline in `fa_get`
+  took a far-ref from 3.7 to 2.9 ms (aref 1.2). test/discfar.lsp.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the

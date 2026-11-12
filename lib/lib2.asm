@@ -32,6 +32,7 @@ lib_names:
     include "float.asm"
     include "short.asm"
     include "lazy.asm"
+    include "farray.asm"
     include "format.asm"
     include "seq.asm"
     include "lists.asm"

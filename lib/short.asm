@@ -425,6 +425,10 @@ ls_lazy:
 
 ;; ls_islazy: DE = an object -> Z if it is the symbol %LAZY
 ls_islazy:
+    ld hl,ls_lazyname
+;; ls_named: DE = an object, HL = a name here ([length][0][characters]) ->
+;; Z if it is the symbol of that name (not a builtin's). BC lost.
+ls_named:
     ld a,e
     and 3
     cp 2
@@ -434,15 +438,18 @@ ls_islazy:
     jr c,.no
     cp CELL_LO >> 8
     jr nc,.no
+    push hl
     ex de,hl
     ld e,(hl)
     inc hl
     ld d,(hl)                   ; its name
+    pop hl
     ld a,d
     cp #C0
     jr nc,.no                   ; a builtin's
-    ld hl,ls_lazyname
-    ld b,7
+    ld a,(hl)
+    add a,2
+    ld b,a
 .cmp:
     ld a,(de)
     cp (hl)

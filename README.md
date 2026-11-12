@@ -77,9 +77,9 @@ The **library** comes in five more ROMs:
 | ROM | file | what |
 |---|---|---|
 | library 1 | LISPLIB.ROM | the screen, graphics (circles, flood fill, XOR, turtle graphics), sound, keys and joystick; strings and characters; the printers and readers with CL's streams; files through the disc ROM, and a RAM disc on a 6128 (in X-MEM/80 on a TRS-80); the line editor and a full-screen function editor |
-| library 2 | LISPLIB2.ROM | floats and the maths functions through the firmware, `format` with all its directives, `sort`, the sequence functions with all their keywords, hash tables, structures, `coerce`, speech, PlayCity and MIDI out on the LambdaSpeak card (Talker/80 and MIDI/80 on a TRS-80), `(basic)` and `\|BOOTLISP` |
+| library 2 | LISPLIB2.ROM | lazy loading (programs bigger than memory: functions read from the file when first called, dropped again when the cells run out), floats and the maths functions through the firmware, `format` with all its directives, `sort`, the sequence functions with all their keywords, hash tables, structures, `coerce`, speech, PlayCity and MIDI out on the LambdaSpeak card (Talker/80 and MIDI/80 on a TRS-80), `(basic)` and `\|BOOTLISP` |
 | library 3 | LISPLIB3.ROM | about eighty CL functions and macros written in Lisp (`reduce`, `map`, `defstruct`, `typep`, `handler-case`, `with-open-file`...), read from ROM the first time each is used |
-| demo | LISPDEMO.ROM | `loop` (the extended one too), string streams, and demo programs: `(demo)` lists them |
+| demo | LISPDEMO.ROM | `loop` (the extended one too), string streams, far arrays on the RAM disc, and demo programs: `(demo)` lists them |
 | VM | LISPVM.ROM | the bytecode machine, and the compiler: `compile`, `compile-file`, `disassemble` |
 
 It runs on a real 464, with the 1.0 and the 1.1 firmware, and in MAME on
@@ -183,7 +183,9 @@ AMSDOS or Parados -- `RUN"LISP` -- in two versions:
 **With a 512K RAM expansion** that banks the DK'tronics way --
 Revaldinho's universal RAM cards, the DK'tronics 512K, an X-MEM's RAM --
 the six images run in the expansion: all of CPC Lisp, the compiler too,
-and a RAM disc `M:` of 415 KB in its free blocks.
+and a RAM disc `M:` of 415 KB in its free blocks -- which also holds
+far arrays (`make-far-array`, `far-ref`) and programs loaded with
+`(load "m:big" :lazy t)`, each function read in when first called.
 
     CPC Lisp 0.95
     A Lisp machine for the Amstrad CPC, 512K

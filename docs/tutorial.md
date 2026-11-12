@@ -109,6 +109,18 @@ A 6128, or a CPC with a RAM expansion, also has a **RAM disc**, `M:`:
 a reset, but not switching off. *On a TRS-80* `M:` is in X-MEM/80's spare
 pages, 367 KB; from disc with a 512K expansion, in the expansion, 415 KB.
 
+Data too big for the cells can go on the RAM disc as a **far array**:
+
+    LISP> (defvar *t* (make-far-array "table" 16000))
+    LISP> (dotimes (i 16000) (setf (far-ref *t* i) (mod i 1000)))
+    LISP> (far-ref *t* 12345)
+    345
+
+Its elements are whole numbers that fit in a fixnum (or characters, or
+bytes), it is the file `TABLE.FAR` on `M:`, and `(far-array "table")`
+finds it again after a reset. (Filling it takes a minute or so: every
+access goes to the disc.)
+
 **BASIC and back** (**CPC only**, with the LambdaSpeak card): `(basic)`
 resets the CPC into BASIC -- the card switches off the slot the core is
 in -- and `|BOOTLISP` in BASIC resets it back into Lisp. RAM is lost
