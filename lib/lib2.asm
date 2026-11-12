@@ -4,7 +4,7 @@
     include "core.inc"
     include "macros.asm"
 
-    org #C000
+    org LIB_ORG
     db 1                        ; a background ROM
     db 0,9,5                    ; mark, version, modification: 0.95
     dw lib_names
@@ -38,6 +38,6 @@ lib_names:
     include "lib2tab.asm"
 
 lib_end:
-    print "LIBRARY 2 used: ",lib_end-#C000," bytes, free: ",#10000-lib_end
-    assert lib_end <= #10000
-    defs #10000-$,#FF
+    print "LIBRARY 2 used: ",lib_end-LIB_ORG," bytes, free: ",LIB_ORG+#4000-lib_end
+    assert lib_end <= LIB_ORG+#4000
+    defs LIB_ORG+#4000-$,#FF

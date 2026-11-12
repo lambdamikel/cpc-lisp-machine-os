@@ -102,13 +102,15 @@ file is `WORK/LSP`, and `(dir)` lists every drive.
 A 6128, or a CPC with a RAM expansion, also has a **RAM disc**, `M:`:
 `(save "m:work")`, `(load "m:work")`, `(dir "m:")`. It is fast and survives
 a reset, but not switching off. *On a TRS-80* `M:` is in X-MEM/80's spare
-pages, 367 KB.
+pages, 367 KB; from disc with a 512K expansion, in the expansion, 415 KB.
 
 **BASIC and back** (**CPC only**, with the LambdaSpeak card): `(basic)`
 resets the CPC into BASIC -- the card switches off the slot the core is
 in -- and `|BOOTLISP` in BASIC resets it back into Lisp. RAM is lost
 both ways: save first. (Both take the slot if it is not 4: `(basic 3)`,
-`|BOOTLISP,3`.)
+`|BOOTLISP,3`.) Loaded from disc (into a 512K expansion, or on a plain
+6128), `(basic)` is a reset, and `RUN"LISP` brings Lisp back -- with the
+512K, the RAM disc's files too.
 
 ## 4. The text screen
 
@@ -354,7 +356,7 @@ too: `(with-output-to-string (s) (format s "~D-~D" 1 2))` is `"1-2"`.
 ## 11. The compiler
 
 `compile` turns a function into bytecode for the VM ROM, three to nine
-times faster:
+times faster (not on a plain 6128 from disc: no room for the VM there):
 
     LISP> (defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))
     FIB

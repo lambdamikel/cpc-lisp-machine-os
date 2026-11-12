@@ -75,6 +75,9 @@ boot:
     sbc hl,de
     ld (V_BLKLO),hl
     ld (V_BLKTOP),hl
+    ifdef CELL_TOP              ; (the plain 6128: code between the cells
+    ld hl,CELL_TOP              ;   and block space, memmap.asm)
+    endif
     ld de,-CELL_LO
     add hl,de                   ; R: for the cells and their bitmap
     push hl

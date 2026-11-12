@@ -43,3 +43,10 @@ HISTBUF           equ #B000         ; 128: the line editor's history
 TRAMP             equ #B080         ; 58: the cross-ROM trampoline, copied at boot
 RDISK             equ #B0C0         ; 64: the RAM disc's state (ramdisc.asm)
 VARS_END          equ LIBSCR
+
+;; The images' banks: bank k (SYS_BANK) is configuration BANK_CFGS[k] --
+;; on the 512K CPC, block 3 of the expansion's bank k at &C000 (C1 + 8k).
+NBANKS            equ 8             ; banks 1 to NBANKS-1 may hold the library
+macro BANK_CFGS
+    db #C1,#C9,#D1,#D9,#E1,#E9,#F1,#F9
+mend

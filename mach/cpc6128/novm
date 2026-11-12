@@ -1,0 +1,2 @@
+# A marker for tools/build.sh: no VM ROM on this machine -- five images
+# fill the 6128's 128 KB -- so neither the compiler nor its names in part 1.

@@ -24,6 +24,10 @@ editors in four more ROMs, and a bytecode compiler in a fifth.
 
 * **The Amstrad CPC** -- 464, 664 and 6128 -- is its home: six ROMs, on
   an expansion ROM board or the LambdaSpeak 4 card (below).
+* **From disc, with no ROMs**: a CPC with a 512K RAM expansion --
+  Revaldinho's, the DK'tronics, any that banks the DK'tronics way -- runs
+  the same six images loaded into it; a plain 6128 runs five, without
+  the compiler ([*From disc*](#from-disc), below).
 * **The TRS-80 Model I and Model III with
   [X-MEM/80](https://github.com/lambdamikel/x-mem-80)** run it too, as a
   port: the same six images, under LDOS ([*On a
@@ -79,7 +83,8 @@ The **library** comes in five more ROMs:
 | VM | LISPVM.ROM | the bytecode machine, and the compiler: `compile`, `compile-file`, `disassemble` |
 
 It runs on a real 464, with the 1.0 and the 1.1 firmware, and in MAME on
-the 464 and the 6128; and on a real TRS-80 Model I and Model III with
+the 464 and the 6128; from disc on a 464 and a 6128 with 512K more and
+on a plain 6128, in MAME; and on a real TRS-80 Model I and Model III with
 X-MEM/80, and in trs80gp. On a TRS-80 the same functions are there but
 for the CPC's own -- colours and windows, user-defined characters, the
 joystick, `peek`/`poke`, the sound queues, PlayCity, `(basic)`: the
@@ -170,6 +175,39 @@ The build runs the compiler on itself first (`tools/bootstrap.py`, see
 **Typing a tilde** (`format`'s `~A`, `~%`...): the CPC has no `~` key --
 it is **CTRL + 2** (in MAME, Right Alt + 2).
 
+## From disc
+
+No ROM board? CPC Lisp loads from disc too, on a 464, 664 or 6128 with
+AMSDOS or Parados -- `RUN"LISP` -- in two versions:
+
+**With a 512K RAM expansion** that banks the DK'tronics way --
+Revaldinho's universal RAM cards, the DK'tronics 512K, an X-MEM's RAM --
+the six images run in the expansion: all of CPC Lisp, the compiler too,
+and a RAM disc `M:` of 415 KB in its free blocks.
+
+    CPC Lisp 0.95
+    A Lisp machine for the Amstrad CPC, 512K
+    library ROMs 1 2 3 4
+    6054 cells free
+
+**On a plain 6128** (or a CPC with 64 KB more), five images fill the 128
+KB: everything but the compiler, without a RAM disc, and with about 2400
+cells.
+
+    CPC Lisp 0.95
+    A Lisp machine for the Amstrad CPC, 128K
+    library ROMs 1 2 3 4
+    2430 cells free
+
+Both are built from the same sources: `MACH=cpc512 tools/build.sh` makes
+`build/cpc512/cpclisp512.dsk`, `MACH=cpc6128 tools/build.sh`
+`build/cpc6128/cpclisp6128.dsk`. `(basic)` goes back to BASIC, and
+`RUN"LISP` starts Lisp again (with the 512K, the RAM disc's files are
+still there). [`mach/cpc512/README.md`](mach/cpc512/README.md) and
+[`mach/cpc6128/README.md`](mach/cpc6128/README.md) have how they work.
+They were made and tested in MAME (a 464 and a 6128); real ones are
+next.
+
 ## On a TRS-80
 
 The same Lisp -- the same six images, built from the same sources --
@@ -252,6 +290,10 @@ and III are next.
   ROM, and what is still open
 * [`mach/README.md`](mach/README.md): the machine layer -- the interface
   a port to another Z80 machine provides
+* [`mach/cpc512/README.md`](mach/cpc512/README.md): CPC Lisp from disc,
+  on a CPC with a 512K expansion
+* [`mach/cpc6128/README.md`](mach/cpc6128/README.md): CPC Lisp from disc,
+  on a plain 6128
 * [`mach/trs80/README.md`](mach/trs80/README.md): the TRS-80 Model I and
   III with X-MEM/80 -- building, the discs, the keys, what works
 * [`docs/hardware-test.txt`](docs/hardware-test.txt): what to type on a

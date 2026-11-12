@@ -61,13 +61,13 @@ SND_QUEUE       equ SOUND_QUEUE         ; HL = a sound, 9 bytes -> NC: full
 
 ;; FILES: one input file and one output file at a time
 FILE_IOPEN      equ CAS_IN_OPEN         ; B = length, HL = name, DE = 2 KB buffer
-FILE_ICLOSE     equ CAS_IN_CLOSE
-FILE_IABANDON   equ CAS_IN_ABANDON
-FILE_GETC       equ CAS_IN_CHAR         ; -> C, A = a character; NC: the end
+FILE_ICLOSE     equ RS_FICLOSE          ; (the RAM disc's or the firmware's)
+FILE_IABANDON   equ RS_FIABANDON
+FILE_GETC       equ RS_FGETC            ; -> C, A = a character; NC: the end
 FILE_OOPEN      equ CAS_OUT_OPEN        ; B = length, HL = name, DE = 2 KB buffer
-FILE_OCLOSE     equ CAS_OUT_CLOSE
-FILE_OABANDON   equ CAS_OUT_ABANDON
-FILE_PUTC       equ CAS_OUT_CHAR        ; A = a character
+FILE_OCLOSE     equ RS_FOCLOSE
+FILE_OABANDON   equ RS_FOABANDON
+FILE_PUTC       equ RS_FPUTC           ; A = a character
 FILE_CAT        equ CAS_CATALOG         ; DE = 2 KB buffer: the directory shown
 FILE_BUFSIZE    equ 2048                ; the buffer each open file is lent
 
@@ -100,6 +100,5 @@ FP_ATN          equ M_ATN
 
 ;; SYSTEM
 SYS_BANK        equ RS_BANK             ; C = a bank -> C = the one before
-NBANKS          equ 8                   ; banks 1 to NBANKS-1 may hold the library
 SYS_CURBANK     equ RS_CURBANK          ; -> A = the bank in now
 SYS_TIME        equ KL_TIME_PLEASE      ; -> DEHL = 1/300 s since power-up

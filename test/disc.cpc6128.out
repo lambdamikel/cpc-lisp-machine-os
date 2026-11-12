@@ -1,0 +1,65 @@
+LISP> (save "empty")
+Error: nothing to save
+LISP> (defun sq (x) (* x x))
+SQ
+LISP> (defvar *items* '(1 "two" #\3))
+*ITEMS*
+LISP> (defmacro twice (x) `(progn ,x ,x))
+TWICE
+LISP> (defun test (x) (+ x x))
+TEST
+LISP> (remove 3 '(1 2 3))
+(1 2)
+LISP> *features*
+(:CPC :CPC6128 :CPC-LISP)
+LISP> (save "work")
+(SQ TEST TWICE *ITEMS*)
+LISP> (dir)
+
+Drive A: user  0
+
+LISP    .BIN   2K   LISP3   .IMG  17K
+LISP0   .IMG  17K   LISP4   .IMG  17K
+LISP1   .IMG  17K   WORK    .LSP   1K
+LISP2   .IMG  17K
+
+ 90K free
+
+NIL
+LISP> (fmakunbound 'sq)
+SQ
+LISP> (fmakunbound 'twice)
+TWICE
+LISP> (makunbound '*items*)
+*ITEMS*
+LISP> (fmakunbound 'test)
+TEST
+LISP> (load "work")
+T
+LISP> (sq 9)
+81
+LISP> (test 21)
+42
+LISP> *items*
+(1 "two" #\3)
+LISP> (macroexpand-1 '(twice (print 1)))
+(PROGN (PRINT 1) (PRINT 1))
+LISP> (save "two.lsp" 'sq)
+(SQ)
+LISP> (load "nothere")
+
+NOTHERE .LSP not found
+Error: cannot open "nothere"
+LISP> (dir)
+
+Drive A: user  0
+
+LISP    .BIN   2K   LISP3   .IMG  17K
+LISP0   .IMG  17K   LISP4   .IMG  17K
+LISP1   .IMG  17K   TWO     .LSP   1K
+LISP2   .IMG  17K   WORK    .LSP   1K
+
+ 89K free
+
+NIL
+LISP> 

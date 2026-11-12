@@ -30,8 +30,22 @@ start:
     ld hl,m_hello
     call puts
     ; the expansion: a mark in block 3 of each bank, then each read back
+    ; -- the byte there kept and put back, for banks 6 and 7 hold the RAM
+    ; disc's files. The banks that answer, from 0, are counted.
     ld a,#5A
     ld (#4000),a                ; (the main RAM's own, to see it untouched)
+    ld e,0
+.save:
+    call map_bank
+    ld a,(#4000)
+    ld hl,saved
+    ld d,0
+    add hl,de
+    ld (hl),a
+    inc e
+    ld a,e
+    cp 8
+    jr c,.save
     ld e,0
 .mark:
     call map_bank
@@ -40,7 +54,7 @@ start:
     ld (#4000),a
     inc e
     ld a,e
-    cp NIMAGES
+    cp 8
     jr c,.mark
     ld e,0
 .check:
@@ -49,15 +63,33 @@ start:
     or #A0
     ld hl,#4000
     cp (hl)
-    jr nz,.none
+    jr nz,.counted
     inc e
     ld a,e
-    cp NIMAGES
+    cp 8
     jr c,.check
+.counted:
+    ld a,e
+    ld (nbanks),a
+    ld e,0
+.restore:
+    call map_bank
+    ld hl,saved
+    ld d,0
+    add hl,de
+    ld a,(hl)
+    ld (#4000),a
+    inc e
+    ld a,e
+    cp 8
+    jr c,.restore
     call map_main
+    ld a,(nbanks)
+    cp NIMAGES
+    jp c,.none                  ; fewer than six banks
     ld a,(#4000)
     cp #5A
-    jr nz,.none                 ; the writes went to the main RAM
+    jp nz,.none                 ; the writes went to the main RAM
     ; the images, each into its bank
     ld e,0
 .load:
@@ -91,11 +123,19 @@ start:
     call TXT_OUTPUT
     ld a,10
     call TXT_OUTPUT
-    ; the resident part
+    ; the resident part, and the RAM disc's state cleared
     ld hl,res_bin
     ld de,RESIDENT
     ld bc,res_end-res_bin
     ldir
+    ld hl,RS_RD
+    ld b,RD_STATELEN
+.clr:
+    ld (hl),0
+    inc hl
+    djnz .clr
+    ld a,(nbanks)
+    ld (RD_NBANKS),a
     ; the ROMs off: the code at &C000 and the low tables are RAM
     call KL_U_ROM_DISABLE
     call KL_L_ROM_DISABLE
@@ -146,7 +186,9 @@ m_none:   db 13,10,"No 512K expansion found: CPC Lisp needs",13,10
           db "banks 0-5 of a DK'tronics-type expansion.",13,10,0
 m_nofile: db 13,10,"Cannot load it: is the CPC Lisp disc in?",13,10,0
 m_rom:    db "Too many ROMs: their workspace is where CPC Lisp's",13,10
-          db "resident part goes (&A000-&A6EF).",13,10,0
+          db "resident part goes, under &A6F0.",13,10,0
+saved:    defs 8,0               ; each bank's byte under the mark
+nbanks:   db 0
 n_img:    db "LISP0.IMG"
 n_end:    db 0
 

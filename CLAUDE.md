@@ -353,6 +353,60 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     loader) to fit one single-density disc: change the format in both.
   * To work while tests run on build/trs80: `MACH=trs80
     OUT=build/trs80-dev tools/build.sh`, `TRS80_BUILD=... run.sh`.
+* **The 512K CPC** (`mach/cpc512/`, branch `cpc512`, 2026-11-12; Mike
+  asked for it against Revaldinho's expansion, "the standard for the
+  464"): the six images loaded from disc (`RUN"LISP`, LISP.BIN =
+  `loader.asm`) into block 3 of banks 0-5, run at &C000 in configuration
+  C1 (&C1 + 8 x bank); SYS_BANK is one OUT. Its README has the design.
+  Lessons:
+  * The CPU sees the screen's RAM only in C0, so a **resident part** in
+    main RAM (`resident.asm`, &A160-&A6EF) holds a trampoline per
+    firmware routine (`call fwc : dw addr`; `tools/cpc512/mkfw.py` makes
+    `firmware.asm`/`fwtab.inc` from mach/cpc's -- the maths package and
+    the KL ROM routines are called directly), the fed's renderer, the
+    file routines' dispatch, RS_XFER. At &9800 it left too little string
+    space (discstream failed): &A160 now, just room for it.
+  * **BASIC's RUN of a binary restarts the firmware**: the cassette
+    vectors were back ("Press PLAY"). The loader calls KL ROM WALK itself.
+  * **Block space reaches below &8000**: the second file buffer (fl_lend)
+    was at &4000-&7FFF, where RS_XFER maps the RAM disc's block, and an
+    M: output with any input open wrote garbage. RS_XFER copies through a
+    128-byte buffer of its own, each side in its configuration.
+  * The file dispatchers (RS_FGETC...) keep everything but AF, as CAS IN
+    CHAR / OUT CHAR do (DE was lost at first).
+  * `(basic)` is a reset; |BOOTLISP is a stub (the images are no ROMs).
+  * MAME: `-ramsize 576K` on cpc464 (with the DDI-1) or cpc6128, the
+    stock romsets; the harness types `RUN"LISP` at BASIC's EDIT
+    (`LISP_EDIT2` in repl.lua), then lines at EDHOOK. `tools/cpc512/
+    run.sh`, `test.sh`; `test/NAME.cpc512.out` where the output differs.
+* **The plain 6128** (`mach/cpc6128/`, 2026-11-12; Mike: "a version that
+  would run on a plain CPC 6128 ... leave out the compiler"): five images
+  -- the core in block 7 at &C000 (C1), parts 0-2 in blocks 4-6 at &4000
+  (C4-C6), part 3 in the main RAM's &4000 (C0). Its README has the table.
+  * **The parts are assembled at LIB_ORG = &4000** (memmap.asm; the
+    default, src/defs.asm, is &C000): `lib_addr` and `lib_dispatch` put
+    back &4000's top bits. The core stays at &C000, so its `cp #C0`
+    tests (a SUBR is at &C000 and up) hold. The CPC's and the TRS-80's
+    images came out byte for byte the same (BUILD_ID=77, cmp).
+  * The main RAM's &4000-&7FFF is hidden while a part in 4-6 runs, so
+    the cells end at CELL_TOP (&4000; src/lisp.asm's layout) and block
+    space starts at BLK_LO (&8000, MACH_BLOCKS): 2430 cells, 5 KB of
+    strings. **Two files open at once need 4352 bytes free** (2 KB each,
+    fl_lend's 256 margin): discstream's copy was 16 bytes short until
+    the stack went to 3.25 KB (STACK_SIZE in memmap.asm; ~250 calls deep,
+    4 KB gives ~350) and the resident part, without the RAM disc's
+    routines (`variant.asm`: RESIDENT, RAMDISC), to &A2F0.
+  * The directory is **an overlay by symlinks** on mach/cpc512: rasm
+    looks for an include beside the including file first (before -I),
+    and beside the *link*, so the shared files get this machine's
+    memmap.asm and mmacros.asm. NBANKS and BANK_CFGS (the configuration
+    of each bank, r_bank's table) moved to memmap.asm for it.
+  * `mach/$MACH/novm`: tools/build.sh leaves out the VM ROM and its names
+    in part 1 (`compile` is then "undefined function COMPILE", not a
+    HDR_CODE cell with nothing to run it). `test/skip.cpc6128` lists the
+    tests the variant's runner skips (`tools/cpc6128/test.sh`).
+  * The RAM disc refuses (rd_ready: RD_NBANKS < 6) -- else `M:` would
+    write over the code in blocks 4-6.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the

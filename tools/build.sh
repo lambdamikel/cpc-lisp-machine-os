@@ -54,13 +54,17 @@ asm src/lisp.asm $OUT/LISP.ROM $OUT/lisp.sym
 # the core's symbols, for the library: labels and constants, not locals
 awk '$3 == "B0" && ($4 == "L" || $4 == "A") && $1 !~ /\./ && $1 != "BUILD_ID" && $1 != "SYNCHRO" && $1 != "RASM_VERSION" \
      { print $1 " equ " $2 }' $OUT/lisp.sym > $OUT/core.inc
-python3 tools/bootstrap.py lib/compiler.lsp lib/vm.asm $OUT/vmcode.asm
-python3 tools/mklib.py $OUT lib/lib.asm lib/lib2.asm lib/lib3.asm lib/demo.asm --vm lib/vm.asm lib/lib2.asm
+# the VM ROM, the compiler -- unless the machine has no room for it
+# (mach/$MACH/novm: the plain 6128), when part 1 does not name it either
+VM=--vm
+[ -f "mach/$MACH/novm" ] && VM=
+[ -z "$VM" ] || python3 tools/bootstrap.py lib/compiler.lsp lib/vm.asm $OUT/vmcode.asm
+python3 tools/mklib.py $OUT lib/lib.asm lib/lib2.asm lib/lib3.asm lib/demo.asm ${VM:+--vm lib/vm.asm lib/lib2.asm}
 asm lib/lib.asm $OUT/LISPLIB.ROM $OUT/lisplib.sym -I lib
 asm lib/lib2.asm $OUT/LISPLIB2.ROM $OUT/lisplib2.sym -I lib
 asm lib/lib3.asm $OUT/LISPLIB3.ROM $OUT/lisplib3.sym -I lib
 asm lib/demo.asm $OUT/LISPDEMO.ROM $OUT/lispdemo.sym -I lib
-asm lib/vm.asm $OUT/LISPVM.ROM $OUT/lispvm.sym -I lib
+[ -z "$VM" ] || asm lib/vm.asm $OUT/LISPVM.ROM $OUT/lispvm.sym -I lib
 
 # what the machine makes of them: on the CPC, MAME romsets
 if [ -f "mach/$MACH/post-build.sh" ]; then

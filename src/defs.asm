@@ -10,7 +10,18 @@
     include "machine.asm"
     include "memmap.asm"
 
+;; Where the library parts run: at &C000, as ROMs (or a RAM bank there),
+;; unless the machine's memmap.asm says otherwise (the plain 6128: &4000).
+;; Their addresses keep the part in the top two bits, so the window must
+;; be &4000 or &C000: lib_addr and lib_dispatch put back LIB_ORG's bits.
+    ifndef LIB_ORG
+LIB_ORG           equ #C000
+    endif
+    assert LIB_ORG == #C000 || LIB_ORG == #4000
+
+    ifndef STACK_SIZE           ; (a machine may want less: memmap.asm)
 STACK_SIZE        equ 4096
+    endif
 STACK_MARGIN      equ 256           ; eval refuses to go deeper than this
 NLIBS             equ 4             ; library ROMs: parts 0-3 (src/xrom.asm)
 

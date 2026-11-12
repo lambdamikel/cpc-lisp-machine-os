@@ -38,7 +38,7 @@
 ;;   ROM's function (address = its number as a fixnum: the symbol gets a
 ;;   HDR_CODE cell for it); other kinds are skipped
 
-LIBHDR            equ #C010
+LIBHDR            equ LIB_ORG+#10
 LH_PART           equ 22
 VM_ENTRY          equ LIBHDR+24     ; the VM ROM: a compiled function's call
 LE_KIND           equ 2
@@ -164,7 +164,11 @@ lib_addr:
     call lib_part
     ld a,(hl)
     pop hl
+    if LIB_ORG == #C000
     set 7,h
+    else
+    res 7,h
+    endif
     set 6,h
     ret
 

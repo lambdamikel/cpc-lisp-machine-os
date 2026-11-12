@@ -170,92 +170,18 @@ cd_speech:
     jp cd_send
 
 ;; ---------------------------------------------------------------------------
-;; BASIC AND BACK. The core is a card slot answering as ROM 0, which keeps
-;; BASIC out (ROMDIS). (basic) makes that slot silent and resets: the CPC
-;; boots BASIC. |BOOTLISP, from BASIC (this ROM stays on), makes it ROM 0
-;; again and resets: Lisp. Both are the card ROM's |ROMNUM (&D0, slot,
-;; number), sent from RAM -- once the slot changes, what was at &C000 is
-;; not -- after &FF 20 (out of MIDI mode, should the card be in it; else a
-;; reset of its speech). The slot is 4, as tools/card.py puts the core, or
-;; given. Without the card, a reset and nothing else.
-
-BS_RAM      equ #4000           ; where it runs: the reset throws it away
+;; BASIC AND BACK. Here the Lisp is in the expansion's RAM, not a card slot
+;; answering as ROM 0: (basic) resets the CPC, which boots BASIC, and
+;; RUN"LISP starts Lisp again (the RAM disc keeps its files). The slot
+;; argument is the ROM version's, and ignored. |BOOTLISP is a ROM's RSX,
+;; never registered here (the images are no ROMs): its entry only returns.
 
 ;; (basic [slot]): the CPC reset into BASIC
 ;@ BASIC 0 1 lf_basic
 lf_basic:
-    ld c,4
-    ld a,b
-    or a
-    jr z,.go
-    NEXTARG
-    call lint_de
-    ld c,e
-.go:
-    ld e,255
-    jr bs_go
-;; |BOOTLISP[,slot]: from BASIC, the CPC reset into Lisp
+    SYS_RESET
 rsx_bootlisp:
-    ld c,4
-    or a
-    jr z,.go
-    ld c,(ix+0)
-.go:
-    ld e,0
-bs_go:
-    di
-    push de
-    push bc
-    ld hl,bs_code               ; the routine into RAM,
-    ld de,BS_RAM
-    ld bc,bs_end-bs_code
-    ldir
-    pop bc
-    pop de
-    ld a,c
-    and 7
-    ld (BS_RAM+bs_slot-bs_code),a ;   the slot and the number into it
-    ld a,e
-    ld (BS_RAM+bs_num-bs_code),a
-    jp BS_RAM
-;; bs_code: run at BS_RAM, interrupts off. Each byte about a millisecond
-;; after the one before; two seconds for the card, then the reset.
-bs_code:
-    ld bc,#7FC0                 ; (the 512K CPC: the main RAM at &C000 again
-    out (c),c                   ;   before the reset; the code is in RAM)
-    ld bc,CARD_PORT
-    ld a,#FF
-    call bs_out-bs_code+BS_RAM
-    ld a,20
-    call bs_out-bs_code+BS_RAM
-    ld a,#D0
-    call bs_out-bs_code+BS_RAM
-bs_slot equ $+1
-    ld a,0
-    call bs_out-bs_code+BS_RAM
-bs_num equ $+1
-    ld a,0
-    call bs_out-bs_code+BS_RAM
-    ld e,4                      ; ~1.8 s
-.wait:
-    ld hl,0
-.w:
-    dec hl
-    ld a,h
-    or l
-    jr nz,.w
-    dec e
-    jr nz,.wait
-    rst 0
-bs_out:
-    out (c),a
-    ld d,0
-.d:
-    dec d
-    jr nz,.d
     ret
-bs_end:
-    assert bs_end-bs_code < 64
 
 ;; ---------------------------------------------------------------------------
 ;; PLAYCITY: two more AY chips, three channels each. On the card it must be

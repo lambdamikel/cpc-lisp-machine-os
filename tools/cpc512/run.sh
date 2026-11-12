@@ -7,6 +7,8 @@
 # 576K of RAM (a 512K expansion), build/cpc512/cpclisp512.dsk in drive A
 # (a DDI-1's on the 464); emu/repl.lua types RUN"LISP at BASIC's EDIT,
 # then the file's lines when Lisp asks for them, as tools/run.sh does.
+# VARIANT=cpc6128 (tools/cpc6128/run.sh): the plain 6128's version, with
+# 128K (MACH=cpc6128 tools/build.sh, build/cpc6128/cpclisp6128.dsk).
 set -e
 cd "$(dirname "$0")/../.."
 MACH=6128 FRAMES=30000 SHOT=
@@ -20,15 +22,22 @@ while getopts "m:f:s:" o; do
 done
 shift $((OPTIND - 1))
 IN=${1:-/dev/null}
-B=${CPC512_BUILD:-build/cpc512}
-[ -f "$B/cpclisp512.dsk" ] || { echo "run: $B/cpclisp512.dsk is missing -- MACH=cpc512 tools/build.sh" >&2; exit 1; }
+VARIANT=${VARIANT:-cpc512}
+case $VARIANT in
+    cpc512)  RAM=576K ;;
+    cpc6128) RAM=128K ;;
+    *) echo "run: VARIANT is cpc512 or cpc6128" >&2; exit 2 ;;
+esac
+B=${CPC512_BUILD:-build/$VARIANT}
+DSK=cpclisp${VARIANT#cpc}.dsk
+[ -f "$B/$DSK" ] || { echo "run: $B/$DSK is missing -- MACH=$VARIANT tools/build.sh" >&2; exit 1; }
 EDIT=0x$(awk '$1 == "EDHOOK" { sub("#", "", $2); print $2 }' "$B/lisp.sym")
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
-cp "$B/cpclisp512.dsk" "$tmp/disc.dsk"
+cp "$B/$DSK" "$tmp/disc.dsk"
 case $MACH in
-    464)  DEV="cpc464 -ramsize 576K -exp ddi1 -flop $tmp/disc.dsk"; EDIT2=0xBD3A ;;
-    6128) DEV="cpc6128 -ramsize 576K -flop1 $tmp/disc.dsk"; EDIT2=0xBD5E ;;
+    464)  DEV="cpc464 -ramsize $RAM -exp ddi1 -flop $tmp/disc.dsk"; EDIT2=0xBD3A ;;
+    6128) DEV="cpc6128 -ramsize $RAM -flop1 $tmp/disc.dsk"; EDIT2=0xBD5E ;;
     *) echo "run: -m 464 or 6128" >&2; exit 2 ;;
 esac
 { echo 'run"lisp'; cat "$IN"; } > "$tmp/in.lsp"      # BASIC's line first

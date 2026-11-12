@@ -41,7 +41,12 @@ editors, files and streams, the compiler, graphics and the turtle,
 `flood-fill`, speech, MIDI, the RAM disc `M:` and the demos are the same
 on both. What a TRS-80 has not got is marked **CPC only**, what only it
 has **TRS-80 only**, and *TRS-80:* says what works differently there.
-[On a TRS-80](#on-a-trs-80), at the end, has it in one place.
+[On a TRS-80](#on-a-trs-80), at the end, has it in one place. The CPC
+version loaded from disc into a 512K expansion
+([`mach/cpc512/README.md`](../mach/cpc512/README.md)) has all that the
+ROMs have; only `(basic)` and the RAM disc differ, as said there. The
+plain 6128's ([`mach/cpc6128/README.md`](../mach/cpc6128/README.md)) has
+no compiler and no RAM disc.
 
 ## Starting
 
@@ -270,6 +275,8 @@ the loop runs, and kept. It uses `%0`, `%1`... as its own variables.
 | `(assert form)` | an error if form is false | 3 |
 
 ## The compiler
+
+In the VM ROM: not in the plain 6128's version, loaded from disc.
 
 | Function | | |
 |---|---|---|
@@ -602,7 +609,9 @@ error. A file open for output is only complete once closed. Also
 `M:` are kept in the second 64 KB -- `(save "m:work")`, `(load "m:work")`,
 `(dir "m:")`, `(delete-file "m:work")`. 63 files, 63 KB; they survive a
 reset, not a power-off. On a 464 without a RAM expansion, `M:` says there
-is none. (On a TRS-80, `M:` is in X-MEM/80: see *On a TRS-80*.)
+is none. (On a TRS-80, `M:` is in X-MEM/80: see *On a TRS-80*. From disc
+with a 512K expansion, it is in the expansion's free blocks: 31 files,
+415 KB.)
 
 ## The text screen
 
@@ -696,7 +705,7 @@ are DECtalk, and the speech functions are the same. PlayCity and
 | `(playcity on)` | **CPC only.** T: the card's PlayCity on, at the CPC's pitch, silent; NIL off. A real PlayCity needs no switching on, and takes no harm | 2 |
 | `(pc-tone channel period [volume])` | **CPC only.** channel 0-5 (0-2 the right chip, 3-5 the left) plays period (as `sound`'s: `(note 'a4)`) at volume 0-15 (12) until changed; volume 0 is silence | 2 |
 | `(pc-off)` | **CPC only.** all six silent | 2 |
-| `(basic [slot])` | **CPC only.** the CPC resets into BASIC: the card's slot that holds the core (4, as `tools/card.py` puts it) is made silent, as `\|ROMNUM,4,255`. RAM is lost. From BASIC, `\|BOOTLISP` (library ROM 2's RSX; `\|BOOTLISP,slot`) makes it ROM 0 again and resets into Lisp | 2 |
+| `(basic [slot])` | **CPC only.** the CPC resets into BASIC: the card's slot that holds the core (4, as `tools/card.py` puts it) is made silent, as `\|ROMNUM,4,255`. RAM is lost. From BASIC, `\|BOOTLISP` (library ROM 2's RSX; `\|BOOTLISP,slot`) makes it ROM 0 again and resets into Lisp. From disc (512K, plain 6128): a reset, and `RUN"LISP` starts it again | 2 |
 
 Without the card (or Talker/80) these do nothing (the bytes go to a port
 nobody answers).

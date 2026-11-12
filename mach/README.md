@@ -26,6 +26,9 @@ builds can be compared with `cmp`).
   table) or library code, never a Lisp object in RAM. On the CPC the banks
   are ROMs; on another machine they may be RAM pages loaded at boot.
   Switching (`SYS_BANK`) may be slow: on the CPC it is some 2000 T-states.
+  (The library parts may run at &4000 instead -- `LIB_ORG` below -- as on
+  a plain 6128, `mach/cpc6128`; the core stays at &C000. The VM ROM may be
+  left out: `novm` below.)
 * **RAM below &C000 that is always there**, for what `memmap.asm` lays out:
   * the low system area, 1.2 KB: the GC's mark stack, the symbol hash
     table, LIBDEFS and FNBOUND (512 bytes, 256-aligned);
@@ -37,7 +40,9 @@ builds can be compared with `cmp`).
     `HISTBUF`, `TRAMP` (the cross-bank trampoline, 58 bytes, copied at
     boot) and `RDISK`.
 
-  On the CPC that is about 40 KB, from &0040 to &B0FF.
+  On the CPC that is about 40 KB, from &0040 to &B0FF. With the parts at
+  &4000, &4000-&7FFF is theirs: `CELL_TOP` ends the cells below it, and
+  `BLK_LO` starts block space above.
 * **The machine's routines reachable from the bank that calls them.** On
   the CPC the firmware's jumpblock is always there. A port puts its
   routines in RAM that is always visible -- its own firmware -- or in each
@@ -49,7 +54,7 @@ builds can be compared with `cmp`).
 |---|---|---|
 | `firmware.asm` | `src/defs.asm` | the machine's own entry points, for its files' use (on the CPC: the firmware's, by name) |
 | `machine.asm` | `src/defs.asm` | the interface names below, bound to the machine |
-| `memmap.asm` | `src/defs.asm` | the memory map: `LOWMEM`, `MARKSTK`, `MARKSTK_END`, `OBARRAY`, `NBUCKETS`, `OBARRAY_END`, `LIBDEFS`, `LIBDEFS_END`, `FNBOUND`, `SYM_LO`, `NSYMS`, `SYM_HI`, `CELL_LO`, `LINEBUF`, `TOKBUF`, `VARS`, `LIBSCR`, `HISTBUF`, `TRAMP`, `RDISK`, `VARS_END` |
+| `memmap.asm` | `src/defs.asm` | the memory map: `LOWMEM`, `MARKSTK`, `MARKSTK_END`, `OBARRAY`, `NBUCKETS`, `OBARRAY_END`, `LIBDEFS`, `LIBDEFS_END`, `FNBOUND`, `SYM_LO`, `NSYMS`, `SYM_HI`, `CELL_LO`, `LINEBUF`, `TOKBUF`, `VARS`, `LIBSCR`, `HISTBUF`, `TRAMP`, `RDISK`, `VARS_END`; if the parts run at &4000, `LIB_ORG` (&4000; &C000 if not defined), `CELL_TOP` (where the cells end; `src/lisp.asm`'s layout), and what `MACH_BLOCKS` needs |
 | `mmacros.asm` | `src/macros.asm` | the macros: `MACH_START`, `MACH_INIT`, `MACH_BLOCKS`, `FM`, `SYS_RESET`, `MACH_TITLE` |
 | `fp.asm` | `lib/float.asm` (part 1) | calling the maths routines: `fmcall` (for `FM`), `fp_callix` |
 | `fr.asm` | `lib/lib.asm` (part 0) | the function editor's screen: `VID_INIT`, `VID_CHAR`, `VID_NORMAL`, `VID_INVERSE`, `VID_PAPER`, `VID_COLS`, `VID_FONTSIZE`, `VID_ROWS`, `VID_VARS` |
@@ -59,7 +64,12 @@ builds can be compared with `cmp`).
 | `card.asm` | `lib/lib2.asm` (part 1) | more of the machine's own: on the CPC, speech and PlayCity on the LambdaSpeak card |
 
 The assembler finds them with `-I mach/$MACH`, and `tools/mklib.py` finds
-the Lisp functions in them (their `;@` lines) the same way.
+the Lisp functions in them (their `;@` lines) the same way. A file `novm`
+there makes `tools/build.sh` leave the VM ROM out, and its names out of
+part 1's table. A machine that is a variant of another can be a
+directory of links to the other's files, with its own beside them
+(`mach/cpc6128`): rasm reads an include from the directory of the link
+first.
 
 ## Who needs what
 

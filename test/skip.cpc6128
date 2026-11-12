@@ -1,0 +1,4 @@
+# tests the plain 6128 version skips (tools/cpc512/test.sh, VARIANT=cpc6128):
+# they need the compiler, which it has not got
+compile
+disccomp

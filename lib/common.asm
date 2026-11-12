@@ -34,7 +34,11 @@ lib_dispatch:
     push hl
     ld hl,(V_LIBFN)
     LDHLI                       ; its entry, the part in the top bits
+    if LIB_ORG == #C000
     set 7,h
+    else
+    res 7,h                     ; (a part at &4000)
+    endif
     set 6,h                     ; -> in this ROM
     push hl
     pop ix

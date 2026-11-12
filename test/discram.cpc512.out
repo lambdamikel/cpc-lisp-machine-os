@@ -1,0 +1,129 @@
+LISP> (dir "m:")
+
+Drive M: (RAM)
+415K free
+NIL
+LISP> (defun sq (x) (* x x))
+SQ
+LISP> (defvar *v* 42)
+*V*
+LISP> (save "m:one")
+(*V* SQ)
+LISP> (defun cube (x) (* x x x))
+CUBE
+LISP> (save "m:two" 'cube)
+(CUBE)
+LISP> (dir "m:")
+
+Drive M: (RAM)
+ONE.LSP       1K    TWO.LSP       1K
+414K free
+NIL
+LISP> (fmakunbound 'sq)
+SQ
+LISP> (fmakunbound 'cube)
+CUBE
+LISP> (load "m:one")
+T
+LISP> (sq 5)
+25
+LISP> *v*
+42
+LISP> (load "m:two")
+T
+LISP> (cube 3)
+27
+LISP> (save "m:one" 'cube)
+(CUBE)
+LISP> (dir "m:")
+
+Drive M: (RAM)
+ONE.LSP       1K    TWO.LSP       1K
+414K free
+NIL
+LISP> (fmakunbound 'cube)
+CUBE
+LISP> (load "m:two")
+T
+LISP> (cube 4)
+64
+LISP> (delete-file "m:two")
+T
+LISP> (load "m:two")
+Error: cannot open "m:two"
+LISP> (load "m:one")
+T
+LISP> (cube 2)
+8
+LISP> (delete-file "m:nosuch")
+Error: no such file: "m:nosuch"
+LISP> (dir "x:")
+Error: bad file name: "x:"
+LISP> (save "m:abcdefghijklm" 'sq)
+Error: bad file name: "m:abcdefghijklm"
+LISP> (save "m:bad" 'sq 'car)
+Error: nothing to save for CAR
+LISP> (save "m:bad" 'nosuch)
+Error: nothing to save for NOSUCH
+LISP> (defparameter *big* (make-list 3000 :initial-element 'abcdefghij))
+*BIG*
+LISP> (save "m:b1" '*big*)
+(*BIG*)
+LISP> (save "m:b2" '*big*)
+(*BIG*)
+LISP> (dir "m:")
+
+Drive M: (RAM)
+ONE.LSP       1K    B1.LSP        43K
+B2.LSP        43K   
+330K free
+NIL
+LISP> (delete-file "m:b1")
+T
+LISP> (save "m:b2" '*big*)
+(*BIG*)
+LISP> (setq *big* nil)
+NIL
+LISP> (load "m:b2")
+T
+LISP> (length *big*)
+3000
+LISP> (delete-file "m:b2")
+T
+LISP> (dir "m:")
+
+Drive M: (RAM)
+ONE.LSP       1K    
+414K free
+NIL
+LISP> (save "disc" 'sq)
+(SQ)
+LISP> (fmakunbound 'sq)
+SQ
+LISP> (load "disc")
+T
+LISP> (sq 6)
+36
+LISP> (delete-file "disc")
+T
+LISP> (dir)
+
+Drive A: user  0
+
+LISP    .BIN   3K   LISP3   .IMG  17K
+LISP0   .IMG  17K   LISP4   .IMG  17K
+LISP1   .IMG  17K   LISP5   .IMG  17K
+LISP2   .IMG  17K
+
+ 73K free
+
+NIL
+LISP> (with-open-file (s "m:st" :direction :output) (print '(on the ram disc) s) (format s "~R~%" 42))
+NIL
+LISP> (with-open-file (s "m:st") (list (read s) (read-line s) (read-line s nil :end)))
+((ON THE RAM DISC) " forty-two" :END)
+LISP> (with-open-file (in "m:st") (with-open-file (out "m:st2" :direction :output) (loop (let ((l (read-line in nil nil))) (if l (write-line l out) (return t))))))
+T
+LISP> (with-open-file (s "m:st2") (read s))
+(ON THE RAM DISC)
+LISP> 
