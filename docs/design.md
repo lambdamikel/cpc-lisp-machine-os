@@ -17,8 +17,8 @@ calls, the speed work, and the bootstrap step by step.
 * **Every CPC.** The 464, 664 and 6128 differ in their firmware: past
   &BD37 the jumpblocks are not the same, the maths package has other
   entries, EDIT moved. Everything goes through the firmware's vectors,
-  and the few that differ are looked up at boot (`src/lisp.asm`: a FIRM
-  JUMP at &BD3D means a 464).
+  and the few that differ are looked up at boot (`mach/cpc/mmacros.asm`:
+  a FIRM JUMP at &BD3D means a 464).
 * **One upper ROM at a time.** A ROM is seen at &C000-&FFFF, on top of the
   screen memory, and only one is selected. Code in one ROM cannot call
   code in another, nor read its bytes, without switching -- and the
@@ -30,6 +30,22 @@ calls, the speed work, and the bootstrap step by step.
 * **No BASIC.** The core replaces BASIC (ROM 0, ROMDIS), so nothing of
   BASIC's may be used; the floats come from the firmware's maths package,
   which is in the firmware ROM.
+
+## The machine layer
+
+Everything that depends on the CPC is in `mach/cpc/`: the firmware's
+entry points, the memory map, start-up, the maths call, the function
+editor's fast screen, the RAM disc, the LambdaSpeak card, and the Lisp
+functions only a CPC has (`ink`, `envelope`, `symbol`, `flood-fill`,
+`say`...). The rest, `src/` and `lib/`, reaches the machine only through
+about ninety interface names -- `CON_PUTC`, `KEY_READ`, `GFX_LINE`,
+`FILE_GETC`, `FP_ADD`, `SYS_BANK`... -- each bound on the CPC to the
+firmware routine with the same contract, so it costs nothing.
+
+A port to another Z80 machine is another directory beside it, built with
+`MACH=<machine> tools/build.sh`. [`mach/README.md`](../mach/README.md) is
+the interface, and what a machine must offer: six 16 KB banks of code at
+&C000, and some 40 KB of RAM below that is always there.
 
 ## The ROMs
 
@@ -267,14 +283,14 @@ and an output file are open together). `save` writes what the user
 defined: `defun`, `defmacro` and `defvar` mark each symbol in a bitmap
 as defined by library text or not.
 
-**The RAM disc** (`lib/ramdisc.asm`) keeps files in a 6128's second 64 KB
+**The RAM disc** (`mach/cpc/ramdisc.asm`) keeps files in a 6128's second 64 KB
 (or a RAM expansion's), one byte at a time through the gate array's
 banking. For a file on `M:` it swaps three cassette vectors for its own,
 so the core's reader and `putc` work unchanged. (A lesson from it: a far
 call in a jumpblock returns past its own address, into the next vector --
 the routine it calls must take care of that.)
 
-**The LambdaSpeak card** (`lib/card.asm`) listens on port &FBEE: text for
+**The LambdaSpeak card** (`mach/cpc/card.asm`) listens on port &FBEE: text for
 its DECtalk speech, and PlayCity's two sound chips. The byte that starts a
 sentence is sent from a few bytes of code copied into RAM, which wait
 there a moment: while the card is busy starting to speak, a fetch from a
@@ -441,7 +457,10 @@ the CPC, and what to mind when changing the compiler.
 bootstrap, builds the parts' symbol tables (`tools/mklib.py`), assembles
 the five other ROMs, and makes private MAME romsets in which the core
 replaces BASIC -- what ROMDIS does on a real CPC, since MAME's ROM box
-cannot answer ROM 0.
+cannot answer ROM 0. `MACH` picks the machine (`cpc`); `BUILD_ID` fixes
+the build number, so that two builds can be compared byte for byte --
+which is how the machine layer was split off without changing a byte of
+the CPC's ROMs.
 
 The tests run in MAME, headless and fast. `emu/repl.lua` types each line
 of a test file when the REPL asks for one (it watches a `RET` the REPL

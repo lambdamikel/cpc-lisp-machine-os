@@ -541,7 +541,7 @@ fmt_col:
     ld a,(V_OUTCOL)
     ret nz
     push hl
-    call TXT_GET_CURSOR
+    call CON_GETCUR
     ld a,h
     pop hl
     dec a

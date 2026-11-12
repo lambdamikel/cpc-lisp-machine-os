@@ -32,20 +32,12 @@ rsx_names:
     db "LIS","P"+#80
     db 0
 
-;; The firmware enters a foreground ROM with DE = first usable byte (&0040),
-;; HL = last usable byte (&ABFF) and BC = top of the foreground's own area
-;; (&B0FF), on the 464 and the 6128 alike. The background ROMs are not
-;; initialised yet: that is the foreground program's job -- BASIC's first
-;; instruction after LD SP,&C000 is this same CALL KL ROM WALK -- and without
-;; it there is no disc.
 boot:
-    ld sp,#C000
-    call KL_ROM_WALK            ; DE, HL in; HL out, lowered by each ROM
-    push hl
+    MACH_START                  ; the machine ready: mach/cpc/mmacros.asm
     ; clear our areas
-    ld hl,#0040
-    ld de,#0041
-    ld bc,SYM_LO-#0041
+    ld hl,LOWMEM
+    ld de,LOWMEM+1
+    ld bc,SYM_LO-LOWMEM-1
     ld (hl),0
     ldir
     ld hl,VARS
@@ -54,19 +46,7 @@ boot:
     ld (hl),0
     ldir
     pop hl
-    ld de,-127
-    add hl,de
-    ld (V_UDG),hl               ; 128 bytes for user-defined characters
-    dec hl
-    ld (V_MEMTOP),hl
-    ; which machine: &BD3D is a FIRM JUMP (&EF) only on a 464
-    ld hl,EDIT_6128
-    ld a,(FIRM_464_PROBE)
-    cp #EF
-    jr nz,.not464
-    ld hl,EDIT_464
-.not464:
-    ld (V_EDITV),hl
+    MACH_INIT                   ; V_MEMTOP, V_EDITV...
 
     ; THE LAYOUT, from the top down: the machine stack, block space (11/64
     ; of what is left: room for both file buffers), the mark bitmap, the
@@ -367,10 +347,10 @@ toplevel:
     call tl_state
     ld a,(V_FILES)              ; a file left open by an error
     rra
-    call c,CAS_IN_ABANDON
+    call c,FILE_IABANDON
     ld a,(V_FILES)
     and 2
-    call nz,CAS_OUT_ABANDON
+    call nz,FILE_OABANDON
     xor a
     ld (V_FILES),a
     ld hl,(V_BLKSAVE)

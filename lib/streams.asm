@@ -493,7 +493,7 @@ lf_fresh_line:
     or a
     jr nz,.col
     push hl
-    call TXT_GET_CURSOR         ; the screen: where the cursor is
+    call CON_GETCUR         ; the screen: where the cursor is
     ld a,h
     pop hl
     dec a
@@ -609,7 +609,7 @@ lf_read_char:
     call si_from
     call si_infile
     jr z,.file
-    call KM_WAIT_CHAR_L
+    call KEY_WAIT
     jr .ch
 .file:
     call si_getc
@@ -623,7 +623,7 @@ lf_read_char_no_hang:
     call si_from
     call si_infile
     jr z,lf_read_char.file
-    call KM_READ_CHAR_L
+    call KEY_READ
     jr c,lf_read_char.ch
     ld hl,NIL
     jp si_back
@@ -646,9 +646,9 @@ lf_peek_char:
     call si_from
     call si_infile
     jr z,.file
-    call KM_WAIT_CHAR_L
+    call KEY_WAIT
     push af
-    call KM_CHAR_RETURN
+    call KEY_UNREAD
     pop af
     jr .ch
 .file:
@@ -720,7 +720,7 @@ lf_unread_char:
     ld (hl),e
     jp lnil
 .key:
-    call KM_CHAR_RETURN
+    call KEY_UNREAD
     jp lnil
 
 ;; (listen [stream]) -> T if a key is waiting, or the file is not at its end
@@ -729,10 +729,10 @@ lf_listen:
     call si_from
     call si_infile
     jr z,.file
-    call KM_READ_CHAR_L
+    call KEY_READ
     ld hl,NIL
     jp nc,si_back
-    call KM_CHAR_RETURN
+    call KEY_UNREAD
     ld hl,S_T
     jp si_back
 .file:
@@ -810,7 +810,7 @@ lf_close:
     ld a,(V_FILES)
     and 2
     jp z,lt
-    call CAS_OUT_CLOSE
+    call FILE_OCLOSE
     push af
     ld hl,V_FILES
     res 1,(hl)
@@ -824,7 +824,7 @@ lf_close:
     ld a,(V_FILES)
     rra
     jp nc,lt
-    call CAS_IN_CLOSE
+    call FILE_ICLOSE
     ld hl,V_FILES
     res 0,(hl)
     res 2,(hl)

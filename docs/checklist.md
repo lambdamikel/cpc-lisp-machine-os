@@ -266,6 +266,8 @@ compiled code (`docs/design.md` describes both)
       timings, an instruction profile (`tools/profile.py`)
 - [x] `tools/mame.sh`: a MAME window to play in, with a disc
 - [x] `tools/card.py`: the ROMs onto the LambdaSpeak 4 card
+- [x] `BUILD_ID=n tools/build.sh`: a fixed build number, so two builds can
+      be compared byte for byte; `MACH=<machine>` picks `mach/<machine>/`
 
 ## Still to come, in this order
 
@@ -351,3 +353,11 @@ compiled code (`docs/design.md` describes both)
        build time (tools/bootstrap.py) and runs from that ROM too
    - [ ] `save` of compiled functions; `ed` of them
 9. [ ] Later, maybe: `*print-case*`
+10. [ ] **Other Z80 machines** (Mike, 2026-11-11), in this order: the
+        TRS-80 Model I and III with X-MEM/80, the ZX Spectrum
+        128/+2/+3, the TRS-80 Model 4, MSX1, the TA alphatronic PC and
+        the Sharp MZ-700 (these two need banked memory added)
+    - [x] The machine layer: everything CPC-specific in `mach/cpc/`
+          behind an interface (`mach/README.md`); the CPC's ROMs byte for
+          byte what they were (2026-11-11)
+    - [ ] TRS-80 Model I/III with X-MEM/80

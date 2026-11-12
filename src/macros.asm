@@ -49,3 +49,6 @@ macro ERR msg
     ld de,UNBOUND
     jp error
 mend
+
+;; the machine's own: mach/<machine>/mmacros.asm
+    include "mmacros.asm"

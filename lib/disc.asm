@@ -12,11 +12,6 @@
 ;; A name without a "." gets ".LSP". A name on M: is on the RAM disc
 ;; (ramdisc.asm), in the 6128's second 64 KB.
 
-CAS_IN_OPEN   equ #BC77
-CAS_IN_CLOSE  equ #BC7A
-CAS_OUT_OPEN  equ #BC8C
-CAS_OUT_CLOSE equ #BC8F
-CAS_CATALOG   equ #BC9B
 FL_BUF        equ 2048
 
 fl_m_open:    db "cannot open",0
@@ -178,7 +173,7 @@ lf_load:
     ld (V_INSRC),a
     ld a,e
     ld (V_PEEK),a
-    call CAS_IN_CLOSE
+    call FILE_ICLOSE
     ld hl,V_FILES
     res 0,(hl)
     res 2,(hl)
@@ -265,7 +260,7 @@ lf_save:
 .close:
     xor a
     ld (V_OUTMODE),a
-    call CAS_OUT_CLOSE
+    call FILE_OCLOSE
     jr c,.closed
     ld hl,m_write
     ld de,UNBOUND
@@ -463,26 +458,26 @@ lf_dir:
     cp "m"
     pop de
     jr nz,.bad
-    call rd_catalog
+    call RDISC_CAT
     jp lnil
 .bad:
     ld hl,fl_m_name
     jp lib_error
 .disc:
     call fl_lend
-    call CAS_CATALOG
+    call FILE_CAT
     call fl_release
     jp lnil
 
 ;; fl_in_open, fl_out_open: as CAS IN OPEN and CAS OUT OPEN, or the RAM
 ;; disc's for a name on M:
 fl_in_open:
-    call rd_is_m
-    jp nz,CAS_IN_OPEN
-    jp rd_open_in
+    call RDISC_IS
+    jp nz,FILE_IOPEN
+    jp RDISC_IN
 fl_out_open:
-    call rd_is_m
-    jp nz,CAS_OUT_OPEN
-    jp rd_open_out
+    call RDISC_IS
+    jp nz,FILE_OOPEN
+    jp RDISC_OUT
 
     include "ramdisc.asm"

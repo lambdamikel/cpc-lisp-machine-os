@@ -31,8 +31,6 @@ RD_ESIZE    equ 16
 RD_DIR      equ 16
 RD_DATA     equ 1024
 
-KL_FIND_COMMAND equ #BCD4
-KL_FAR_PCHL     equ #001B
 
 ;; the state, in RAM above the trampoline
 RD_FIN      equ RDISK           ; far addresses (3 bytes each): input close,
@@ -64,8 +62,8 @@ rd_m_head:  db 13,10,"Drive M: (RAM)",13,10,13,10,0
 rd_m_free:  db " bytes free",13,10,0
 rd_sig:     db "CPCLISPM"
 
-;; rd_is_m: TOKBUF holds a file name -> Z if it is on drive M:. A only.
-rd_is_m:
+;; RDISC_IS: TOKBUF holds a file name -> Z if it is on drive M:. A only.
+RDISC_IS:
     ld a,(TOKBUF+1)
     cp ":"
     ret nz
@@ -458,9 +456,9 @@ rd_unhook_out:
     ldir
     ret
 
-;; rd_open_in: TOKBUF holds "M:name", B its length -> carry if it is open
+;; RDISC_IN: TOKBUF holds "M:name", B its length -> carry if it is open
 ;; for reading, NC if there is no such file
-rd_open_in:
+RDISC_IN:
     call rd_name
     call rd_ready
     call rd_find
@@ -485,9 +483,9 @@ rd_open_in:
 rd_in_far:
     dw rd_in_close,rd_in_abandon,rd_in_char
 
-;; rd_open_out: TOKBUF holds "M:name", B its length -> carry if it is open
+;; RDISC_OUT: TOKBUF holds "M:name", B its length -> carry if it is open
 ;; for writing (a file of that name is deleted), NC if the directory is full
-rd_open_out:
+RDISC_OUT:
     call rd_name
     call rd_ready
     call rd_find
@@ -664,8 +662,8 @@ rd_out_close:
     scf
     ret
 
-;; rd_catalog: the RAM disc's files and their lengths, and what is free
-rd_catalog:
+;; RDISC_CAT: the RAM disc's files and their lengths, and what is free
+RDISC_CAT:
     call rd_ready
     ld hl,rd_m_head
     call lputs
@@ -762,7 +760,7 @@ rd_putnum:
 lf_delete_file:
     push hl
     call fl_name
-    call rd_is_m
+    call RDISC_IS
     jr nz,.disc
     call rd_name
     call rd_ready

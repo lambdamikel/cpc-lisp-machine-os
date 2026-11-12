@@ -22,7 +22,7 @@ PP_DATA   equ LIBSCR+12         ; non-zero inside a quote: every list is data
 
 ;; pp_setw: fit to the window's width
 pp_setw:
-    call TXT_GET_WINDOW
+    call CON_GETWIN
     ld a,d
     sub h
     inc a

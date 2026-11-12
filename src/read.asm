@@ -75,7 +75,7 @@ getc:
     push hl                     ;   disc ROM would go on past a CTRL-Z)
     push de
     push bc
-    call CAS_IN_CHAR
+    call FILE_GETC
     pop bc
     pop de
     pop hl

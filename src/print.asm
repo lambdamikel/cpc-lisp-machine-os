@@ -24,16 +24,16 @@ putc:
     jr nz,.mem
     pop af
     cp 10                       ; LF on the screen: a new line, so a CR
-    jp nz,TXT_OUTPUT            ; first unless in column 1 already
+    jp nz,CON_PUTC            ; first unless in column 1 already
     push hl
-    call TXT_GET_CURSOR
+    call CON_GETCUR
     ld a,h
     pop hl
     dec a
     ld a,13
-    call nz,TXT_OUTPUT
+    call nz,CON_PUTC
     ld a,10
-    jp TXT_OUTPUT
+    jp CON_PUTC
 .mem:
     cp 3
     jr z,.file
@@ -72,7 +72,7 @@ putc:
     push hl
     push de
     push bc
-    call CAS_OUT_CHAR
+    call FILE_PUTC
     pop bc
     pop de
     pop hl
@@ -105,7 +105,7 @@ newline:
 ;; fresh_line: a newline unless the cursor is already in column 1
 fresh_line:
     push hl
-    call TXT_GET_CURSOR         ; H = column, L = row
+    call CON_GETCUR         ; H = column, L = row
     ld a,h
     pop hl
     dec a

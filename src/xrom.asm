@@ -57,7 +57,7 @@ tramp_src:
 ROMCALL:
     ld (V_RCBC),bc
     ld c,a
-    call KL_ROM_SELECT          ; C = the ROM that was in
+    call SYS_BANK          ; C = the ROM that was in
     ld a,c
     ld bc,(V_RCBC)
     push af
@@ -66,7 +66,7 @@ ROMCALL:
     ex (sp),hl                  ; H = the ROM that was in
     push af
     ld c,h
-    call KL_ROM_SELECT
+    call SYS_BANK
     pop af
     pop hl
     ld bc,(V_RCBC)
@@ -93,10 +93,10 @@ LIBPEEK:
 ROMPEEK:
     push bc
     ld c,a
-    call KL_ROM_SELECT
+    call SYS_BANK
     ld a,(hl)
     push af
-    call KL_ROM_SELECT
+    call SYS_BANK
     pop af
     pop bc
     ret
@@ -181,7 +181,7 @@ lib_word:
 
 ;; find_library: called at boot, after the trampoline is in place
 find_library:
-    call KL_CURR_SELECTION
+    call SYS_CURBANK
     ld (V_COREROM),a
     ld c,1
 .try:
@@ -190,7 +190,7 @@ find_library:
     call nz,lib_try
     inc c
     ld a,c
-    cp 16
+    cp NBANKS
     jr c,.try
     ld b,0                      ; the boot forms, part by part
 .part:

@@ -124,7 +124,7 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   4). `*standard-output*` is a builtin special (S_STDOUT), NIL = screen.
   `so_kind` keeps IX: `so_from`/`si_from` hold their return in it, and a
   CORE call inside once sent it astray (the machine reset).
-* **The RAM disc** (`lib/ramdisc.asm`): drive `M:` in the 6128's second
+* **The RAM disc** (`mach/cpc/ramdisc.asm`): drive `M:` in the 6128's second
   64 KB, one linear space read and written a byte at a time through the
   gate array (configurations &C4-&C7 map a bank at &4000-&7FFF, &C0 maps
   it back at once -- the heap is there too; the code runs in the ROM at
@@ -255,6 +255,30 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   464 with a disc ROM), then writes `(setf (symbol-function 'f) (%code
   '("hex"...) (list constants...) 'f))` per defun -- `%code` (a VM
   native) makes the function again, so `load` needs no compiler.
+* **The machine layer** (2026-11-11, Mike: "start with the CPC abstract
+  interface version"): everything CPC-specific is in `mach/cpc/` --
+  `firmware.asm` (every firmware entry point, by name), `machine.asm`
+  (the interface: `CON_` `KEY_` `VID_` `GFX_` `SND_` `FILE_` `FP_` `SYS_`
+  names, each an equate to the firmware routine with that contract),
+  `memmap.asm`, `mmacros.asm` (`MACH_START`, `MACH_INIT`, `FM`,
+  `SYS_RESET`), `fp.asm` (fmcall), `fr.asm` (the fed's renderer:
+  `VID_INIT`, `VID_CHAR`...), `ramdisc.asm` (`RDISC_*`), `card.asm`,
+  `natives.asm` and `graphics.asm` (the CPC's own Lisp functions, which
+  `lib/gfx.asm` includes where they were). `src/` and `lib/` name no
+  firmware routine any more: use the interface names, and add one to
+  `machine.asm` (and `mach/README.md`, the contract) when a new firmware
+  call is needed. The build passes `-I mach/$MACH`; `tools/mklib.py`
+  finds included machine files there and lists natives in assembly
+  order. The split changed no byte of the ROMs: **check refactors with
+  `BUILD_ID=n tools/build.sh`** before and after and `cmp` the ROMs.
+* **Ports** (Mike, 2026-11-11), in this order: TRS-80 Model I/III with
+  X-MEM/80 (Mike's own 512 KB card, `~/git/x-mem-80`: in X-MEM/80 mode 32
+  pages of 16 KB, `out 65` maps one at &8000, `out 66` at &C000 -- the
+  six images would run unchanged at &C000; Talker/80 and MIDI/80, also
+  his, for speech and sound), then the ZX Spectrum 128/+2/+3 (banks 0,
+  1, 3, 4, 6, 7 at &C000 are exactly six), the TRS-80 Model 4, MSX1, the
+  TA alphatronic PC and the Sharp MZ-700. Mike has all of these; no PCW,
+  MSX2 or Enterprise.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
@@ -364,7 +388,7 @@ should see.
   into the next vector.** The routine it calls must take that return
   address off (AMSDOS does: one routine for all its CAS vectors, which
   tells it which one was called) or point it at a RET; `rd_fix` in
-  `lib/ramdisc.asm` does the latter. Missing this ran CAS OUT DIRECT after
+  `mach/cpc/ramdisc.asm` does the latter. Missing this ran CAS OUT DIRECT after
   every CAS OUT CHAR, and left AMSDOS writing broken files. The far call
   does hand the routine's flags back (it keeps them in AF').
 * **Library code: the CORE macro takes IX** (it passes the routine in it).
@@ -389,7 +413,7 @@ should see.
   A label in front of a macro that starts with `align` is not aligned.
 * **Reading screen memory from ROM code reads the ROM.** A ROM at &C000
   sees itself at &C000-&FFFF; only writes reach the screen RAM. The function
-  editor draws straight into the screen (`lib/fr.asm`, ten times the
+  editor draws straight into the screen (`mach/cpc/fr.asm`, ten times the
   firmware's speed) but never reads it back: its cursor is the character
   drawn again in inverse. (XORing the cell put the ROM's code on screen.)
 * **The firmware's text output manages ~5 characters a frame** (TXT WR

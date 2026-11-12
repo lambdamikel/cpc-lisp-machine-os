@@ -23,17 +23,19 @@ set -e
 cd "$(dirname "$0")/.."
 RASM=${RASM:-$HOME/claude/midi80/toolchain/rasm/rasm}
 ROMS=${ROMS:-$HOME/claude/cpc/mame-roms}
+# the machine: mach/$MACH holds everything that depends on it
+export MACH=${MACH:-cpc}
 mkdir -p build
 
 # All the ROMs get the same build number: the library calls the core by
 # address, so the core only uses a library from its own build.
-BUILD_ID=$(( $(date +%s) % 32000 + 1 ))
+BUILD_ID=${BUILD_ID:-$(( $(date +%s) % 32000 + 1 ))}
 
 # rasm reports a failed assembly on stdout and still exits 0.
 asm() {  # asm source output symfile [rasm options]
     local src=$1 out=$2 sym=$3; shift 3
     local log
-    log=$("$RASM" "$src" -I src -I build -ob "$out" -s -sa -os "$sym" -DBUILD_ID=$BUILD_ID "$@" 2>&1) || true
+    log=$("$RASM" "$src" -I src -I build -I "mach/$MACH" -ob "$out" -s -sa -os "$sym" -DBUILD_ID=$BUILD_ID "$@" 2>&1) || true
     log=$(sed 's/\x1b\[[0-9;]*m//g' <<<"$log")
     if ! grep -q "Write binary file" <<<"$log"; then
         echo "$log" >&2

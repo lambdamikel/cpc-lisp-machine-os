@@ -23,7 +23,7 @@ core already has is an error: the core's would always win; so is a name
 defined twice, in any of the parts, counting the variables boot forms
 define.
 """
-import re, sys
+import os, re, sys
 
 def hash_name(name):
     c = 0
@@ -125,6 +125,10 @@ def asm_bytes(label, data):
         lines.append('    db ' + ','.join(str(b) for b in data[k:k + 16]))
     return lines
 
+# the machine's own files (tools/build.sh: MACH), found when not beside
+# the file that includes them
+MACHDIR = os.path.join('mach', os.environ.get('MACH', 'cpc'))
+
 def part_sources(main):
     """The .asm files of a part (main and what it includes, in order) and
     its Lisp files."""
@@ -138,24 +142,46 @@ def part_sources(main):
         for line in open(path):
             m = re.match(r'\s+include\s+"([^"]+)"', line)
             if m:
-                inc = os.path.join(os.path.dirname(path), m.group(1))
-                if os.path.exists(inc):
-                    walk(inc)
+                for d in (os.path.dirname(path), MACHDIR):
+                    inc = os.path.join(d, m.group(1))
+                    if os.path.exists(inc):
+                        walk(inc)
+                        break
             m = re.match(r';@lisp\s+(\S+)\s*$', line)
             if m:
                 lisps.append(os.path.join(os.path.dirname(path), m.group(1)))
     walk(main)
     return asms, lisps
 
+def part_lines(main):
+    """The lines of a part as the assembler reads them: an included file's
+    in place of its include line."""
+    out, seen = [], set()
+    def walk(path):
+        if path in seen:
+            return
+        seen.add(path)
+        for line in open(path):
+            m = re.match(r'\s+include\s+"([^"]+)"', line)
+            if m:
+                for d in (os.path.dirname(path), MACHDIR):
+                    inc = os.path.join(d, m.group(1))
+                    if os.path.exists(inc):
+                        walk(inc)
+                        break
+            else:
+                out.append(line)
+    walk(main)
+    return out
+
 def part_table(main):
     """-> (natives, autoloads, boots, variables) of one part"""
     natives, autoloads, boots, variables = [], [], [], []
     asms, lisps = part_sources(main)
-    for path in asms:
-        for no, line in enumerate(open(path), 1):
-            m = re.match(r';@\s+(\S+)\s+(\d+)\s+(\d+)\s+(\w+)\s*$', line)
-            if m:
-                natives.append((m.group(1), int(m.group(2)), int(m.group(3)), m.group(4)))
+    for line in part_lines(main):
+        m = re.match(r';@\s+(\S+)\s+(\d+)\s+(\d+)\s+(\w+)\s*$', line)
+        if m:
+            natives.append((m.group(1), int(m.group(2)), int(m.group(3)), m.group(4)))
     for path in lisps:
         for form, p, line in lisp_forms(open(path, encoding='latin-1').read(), path):
             m = re.match(r'\((defun|defmacro)\s+([^\s()]+)', form, re.I)

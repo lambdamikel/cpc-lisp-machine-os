@@ -1,4 +1,4 @@
-;; CPC Lisp -- floats, through the firmware's maths package (library ROM).
+;; CPC Lisp -- floats, through the machine's maths routines (library ROM).
 ;;
 ;; A float is a typed cell (HDR_FLOAT) whose data points into block space
 ;; at a firmware real: four bytes of mantissa, least significant first, the
@@ -12,43 +12,9 @@
 ;; reader and printer call ln_read and ln_print. They come in through the
 ;; four jumps at lib_numbers (the header's +20).
 ;;
-;; The maths jumpblock is &BD3D on a 464 and &BD61 on a 664/6128, with the
-;; routines used here at the same offsets in both (the 464's REAL
-;; SUBTRACTION and the 6128's RND are where they differ): fmcall adds the
-;; difference.
-
-M_MOVE      equ #BD3D           ; (HL) = (DE)
-M_INT2R     equ #BD40           ; HL = magnitude, A bit 7 = sign -> (DE)
-M_BIN2R     equ #BD43           ; 4 bytes at HL, A bit 7 = sign -> real there
-M_R2INT     equ #BD46           ; (HL) -> HL rounded, S = sign, C if it fit
-M_R2BIN     equ #BD49           ; (HL) -> 4 bytes there, rounded; B bit 7 sign
-M_FIX       equ #BD4C           ;   the same, truncated
-M_INT       equ #BD4F           ;   the same, floored
-M_EXP10     equ #BD55           ; (HL) *= 10^A
-M_ADD       equ #BD58           ; (HL) += (DE)
-M_RSUB      equ #BD5E           ; (HL) = (DE) - (HL)
-M_MUL       equ #BD61           ; (HL) *= (DE)
-M_DIV       equ #BD64           ; (HL) /= (DE)
-M_CMP       equ #BD6A           ; A = 1, 0, &FF: (HL) >, =, < (DE)
-M_NEG       equ #BD6D           ; (HL) = -(HL)
-M_SGN       equ #BD70           ; A = 1, 0, &FF; Z if zero, C if negative
-M_ANGLE     equ #BD73           ; A = 0: radians
-M_PI        equ #BD76           ; (HL) = pi
-M_SQR       equ #BD79           ; (HL) = sqrt (HL), and so on:
-M_POW       equ #BD7C           ; (HL) = (HL) ^ (DE)
-M_LOG       equ #BD7F
-M_EXP       equ #BD85
-M_SIN       equ #BD88
-M_COS       equ #BD8B
-M_TAN       equ #BD8E
-M_ATN       equ #BD91
-
-;; FM: call a maths routine by its 464 address (the byte after the call
-;; says which)
-macro FM addr
-    call fmcall
-    db {addr}-M_MOVE
-mend
+;; The maths routines are the machine's: the FP_ names, called with FM or
+;; fp_callix (mach/README.md; on the CPC, the firmware's maths package,
+;; mach/cpc/fp.asm).
 
 fl_m_ovf:     db "float overflow",0
 fl_m_range:   db "argument out of range:",0
@@ -65,7 +31,7 @@ lib_numbers:
 ln_uint:
     xor a
     ld de,V_FA
-    FM M_INT2R
+    FM FP_INT2R
     call fl_result
     or a
     ret
@@ -80,30 +46,7 @@ ln_int:
     or a
     ret
 
-;; fmcall: the byte after the call = a maths routine's offset in the 464's
-;; jumpblock; A, BC, DE, HL go in. fmcall_ix: IX = its 464 address.
-fmcall:
-    ld (V_FMA),a
-    pop ix
-    ld a,(ix+0)
-    inc ix
-    push ix
-    add a,M_MOVE and #FF
-    ld ixl,a
-    ld ixh,M_MOVE >> 8
-    jr fm_go
-fmcall_ix:
-    ld (V_FMA),a
-fm_go:
-    ld a,(FIRM_464_PROBE)
-    cp #EF
-    jr z,.go
-    ld a,ixl
-    add a,#24
-    ld ixl,a
-.go:
-    ld a,(V_FMA)
-    jp (ix)
+    include "fp.asm"            ; the maths call: mach/cpc/fp.asm
 
 ;; f_get: DE = a number, HL = five bytes -> its value there. BC kept. An
 ;; error for anything else.
@@ -128,7 +71,7 @@ f_get:
     pop af
 .pos:
     pop de
-    FM M_INT2R
+    FM FP_INT2R
     pop bc
     ret
 .notfix:
@@ -201,20 +144,20 @@ f_chk:
 
 ;; FA op= FB, with errors
 f_add:
-    ld ix,M_ADD
+    ld ix,FP_ADD
     jr f_op
 f_mul:
-    ld ix,M_MUL
+    ld ix,FP_MUL
     jr f_op
 f_div:
     ld hl,V_FB
-    FM M_SGN
+    FM FP_SGN
     jr z,f_div0
-    ld ix,M_DIV
+    ld ix,FP_DIV
 f_op:
     ld hl,V_FA
     ld de,V_FB
-    call fmcall_ix
+    call fp_callix
     jr f_chk
 f_div0:
     ld hl,m_div0
@@ -223,11 +166,11 @@ f_div0:
 f_sub:                          ; FB = FA - FB, then into FA
     ld hl,V_FB
     ld de,V_FA
-    FM M_RSUB
+    FM FP_RSUB
     call f_chk
     ld hl,V_FA
     ld de,V_FB
-    FM M_MOVE
+    FM FP_MOVE
     ret
 
 ;; fl_fold: HL = &arg, B = how many, DE = an op (FA op= FB) -> FA op each
@@ -348,10 +291,10 @@ fl_abs:
     NEXTARG
     call fl_first
     ld hl,V_FA
-    FM M_SGN
+    FM FP_SGN
     jr nc,.pos
     ld hl,V_FA
-    FM M_NEG
+    FM FP_NEG
 .pos:
     jp fl_result
 
@@ -360,7 +303,7 @@ fl_sgn:
     NEXTARG
     call fl_first
     ld hl,V_FA
-    FM M_SGN
+    FM FP_SGN
     ret
 fl_zerop:
     call fl_sgn
@@ -391,7 +334,7 @@ fl_compare:
     call f_get
     ld hl,V_FA
     ld de,V_FB
-    FM M_CMP
+    FM FP_CMP
     pop bc
     ld e,4
     cp 1
@@ -408,7 +351,7 @@ fl_compare:
     push hl
     ld hl,V_FA
     ld de,V_FB
-    FM M_MOVE
+    FM FP_MOVE
     pop hl
     djnz .l
     jp lt
@@ -429,7 +372,7 @@ fl_maxmin:
     call f_get
     ld hl,V_FB
     ld de,V_FA
-    FM M_CMP                    ; 1: this one is greater
+    FM FP_CMP                    ; 1: this one is greater
     pop de
     pop bc
     bit 0,c
@@ -448,7 +391,7 @@ fl_maxmin:
     push hl
     ld hl,V_FA
     ld de,V_FB
-    FM M_MOVE
+    FM FP_MOVE
     pop hl
 .keep:
     djnz .l
@@ -489,25 +432,25 @@ fl_rounding:
     call fl_quot                ; FA = x / y
     ld hl,V_FD
     ld de,V_FA
-    FM M_MOVE                   ; FD = that, for round's halves
+    FM FP_MOVE                   ; FD = that, for round's halves
     pop bc
     push bc
     ld a,c
     cp 3
     jr nz,.sel
     ld hl,V_FA                  ; ceiling: -(floor -x)
-    FM M_NEG
+    FM FP_NEG
 .sel:
     pop bc
     push bc
-    ld ix,M_FIX
+    ld ix,FP_FIX
     ld a,c
     or a
     jr z,.go
-    ld ix,M_INT
+    ld ix,FP_INT
     cp 2
     jr nz,.go
-    ld ix,M_R2BIN
+    ld ix,FP_R2BIN
 .go:
     call fl_toint               ; HL = q
     pop bc
@@ -553,12 +496,12 @@ fl_rounding:
     call f_mul                  ; * y
     ld hl,V_FA
     ld de,V_FC
-    FM M_RSUB                   ; x - that
+    FM FP_RSUB                   ; x - that
     call f_chk
     pop af
     jr z,.float
     ld hl,V_FA
-    FM M_FIX
+    FM FP_FIX
     ld hl,V_FA
     call fl_bin2fix
     jr nc,.r
@@ -579,7 +522,7 @@ fl_tie:
     call f_get                  ; FB = q
     ld hl,V_FB
     ld de,V_FD
-    FM M_RSUB                   ; FB = f - q
+    FM FP_RSUB                   ; FB = f - q
     ld hl,V_FB                  ; +-0.5: a zero mantissa, exponent &80
     ld a,(hl)
     inc hl
@@ -611,13 +554,13 @@ fl_tie:
     ld (V_MV1),hl
     ret
 
-;; fl_toint: IX = M_FIX, M_INT or M_R2BIN -> FA made a whole number, as a
+;; fl_toint: IX = FP_FIX, FP_INT or FP_R2BIN -> FA made a whole number, as a
 ;; fixnum in HL. (Those routines say nothing about overflow: FA must be
 ;; well inside four bytes first.)
 fl_toint:
     call fl_small
     ld hl,V_FA
-    call fmcall_ix
+    call fp_callix
     ld hl,V_FA
     call fl_bin2fix
     ret nc
@@ -678,10 +621,10 @@ fl_bin2fix:
 
 ;; fl_mod, fl_rem: x - y * floor (or truncate) of x / y
 fl_mod:
-    ld ix,M_INT
+    ld ix,FP_INT
     jr fl_modrem
 fl_rem:
-    ld ix,M_FIX
+    ld ix,FP_FIX
 fl_modrem:
     push ix
     NEXTARG
@@ -694,19 +637,19 @@ fl_modrem:
     call f_get                  ; FB = y
     ld hl,V_FA
     ld de,V_FC
-    FM M_MOVE
+    FM FP_MOVE
     call f_div                  ; FA = x / y
     call fl_small
     pop ix
     ld hl,V_FA
-    call fmcall_ix              ; a whole number, four bytes
+    call fp_callix              ; a whole number, four bytes
     ld a,b
     ld hl,V_FA
-    FM M_BIN2R
+    FM FP_BIN2R
     call f_mul                  ; * y
     ld hl,V_FA
     ld de,V_FC
-    FM M_RSUB                   ; x - that
+    FM FP_RSUB                   ; x - that
     call f_chk
     jp fl_result
 
@@ -716,14 +659,14 @@ fl_random:
     push de
     call fl_first
     ld hl,V_FA
-    FM M_SGN
+    FM FP_SGN
     pop de
     dec a
     jp nz,fl_range
     CORE rand16
     xor a
     ld de,V_FB
-    FM M_INT2R                  ; 0..65535
+    FM FP_INT2R                  ; 0..65535
     ld hl,V_FB+4                ; / 65536
     ld a,(hl)
     or a
@@ -758,7 +701,7 @@ lf_floatp:
 ;; fl_fn1: IX = a maths routine, FA = its argument -> a new float
 fl_fn1:
     ld hl,V_FA
-    call fmcall_ix
+    call fp_callix
     call f_chk
     jp fl_result
 
@@ -766,7 +709,7 @@ fl_fn1:
 fl_pos:
     push hl
     call fl_arg
-    FM M_SGN
+    FM FP_SGN
     pop de
     ret
 
@@ -774,13 +717,13 @@ fl_pos:
 lf_sqrt:
     call fl_pos
     jp c,fl_range
-    ld ix,M_SQR
+    ld ix,FP_SQR
     jr fl_fn1
 
 ;@ EXP 1 1 lf_exp
 lf_exp:
     call fl_arg
-    ld ix,M_EXP
+    ld ix,FP_EXP
     jr fl_fn1
 
 ;; fl_trig: radians, then IX
@@ -788,21 +731,21 @@ fl_trig:
     push ix
     call fl_arg
     xor a
-    FM M_ANGLE
+    FM FP_ANGLE
     pop ix
     jr fl_fn1
 
 ;@ SIN 1 1 lf_sin
 lf_sin:
-    ld ix,M_SIN
+    ld ix,FP_SIN
     jr fl_trig
 ;@ COS 1 1 lf_cos
 lf_cos:
-    ld ix,M_COS
+    ld ix,FP_COS
     jr fl_trig
 ;@ TAN 1 1 lf_tan
 lf_tan:
-    ld ix,M_TAN
+    ld ix,FP_TAN
     jr fl_trig
 
 ;@ LOG 1 2 lf_log
@@ -815,7 +758,7 @@ lf_log:
     jp c,fl_range
     jp z,fl_range
     ld hl,V_FA
-    FM M_LOG
+    FM FP_LOG
     pop bc
     pop hl
     dec b
@@ -823,7 +766,7 @@ lf_log:
     push hl                     ; (log x base): ln x / ln base
     ld de,V_FA
     ld hl,V_FC
-    FM M_MOVE
+    FM FP_MOVE
     pop hl
     NEXTARG
     ex de,hl
@@ -831,13 +774,13 @@ lf_log:
     jp c,fl_range
     jp z,fl_range
     ld hl,V_FA
-    FM M_LOG
+    FM FP_LOG
     ld hl,V_FB
     ld de,V_FA
-    FM M_MOVE
+    FM FP_MOVE
     ld hl,V_FA
     ld de,V_FC
-    FM M_MOVE
+    FM FP_MOVE
     call f_div
     jp fl_result
 
@@ -845,29 +788,29 @@ lf_log:
 ;; (atan y [x]): with x, the angle of the point (x, y), -pi..pi
 lf_atan:
     xor a
-    FM M_ANGLE
+    FM FP_ANGLE
     NEXTARG
     call fl_first               ; FA = y
     dec b
-    ld ix,M_ATN
+    ld ix,FP_ATN
     jp z,fl_fn1
     NEXTARG
     ld hl,V_FB
     call f_get                  ; FB = x
     ld hl,V_FA
-    FM M_SGN
+    FM FP_SGN
     push af                     ; y's sign
     ld hl,V_FB
-    FM M_SGN
+    FM FP_SGN
     jr z,.xzero
     push af                     ; x's sign
     call f_div
     ld hl,V_FA
-    FM M_ATN
+    FM FP_ATN
     pop af
     jr nc,.done                 ; x > 0: that is it
     ld hl,V_FB                  ; x < 0: pi more if y >= 0, else pi less
-    FM M_PI
+    FM FP_PI
     pop af
     ld de,f_add
     jr nc,.adj
@@ -878,13 +821,13 @@ lf_atan:
     jp fl_result
 .xzero:                         ; x = 0: pi/2 times y's sign
     ld hl,V_FA
-    FM M_PI
+    FM FP_PI
     ld hl,V_FA+4
     dec (hl)
     pop af
     jp nc,.pz
     ld hl,V_FA
-    FM M_NEG
+    FM FP_NEG
     jp fl_result
 .pz:
     jp nz,fl_result
@@ -905,14 +848,14 @@ lf_pow:
     call f_get
     ld hl,V_FA
     ld de,V_FB
-    FM M_POW
+    FM FP_POW
     call f_chk
     jp fl_result
 
 ;@ %PI 0 0 lf_pi
 lf_pi:
     ld hl,V_FA
-    FM M_PI
+    FM FP_PI
     jp fl_result
 
 ;@ / 1 255 lf_divide
@@ -944,9 +887,9 @@ lf_divide:
     jp nc,fl_result
     ld hl,V_FC
     ld de,V_FA
-    FM M_MOVE
+    FM FP_MOVE
     ld hl,V_FC
-    FM M_FIX
+    FM FP_FIX
     ld hl,V_FC
     call fl_bin2fix
     jp c,fl_result
@@ -956,7 +899,7 @@ lf_divide:
     call f_get
     ld hl,V_FA
     ld de,V_FC
-    FM M_CMP
+    FM FP_CMP
     pop hl
     or a
     ret z
@@ -971,7 +914,7 @@ fl_plain:
     ld hl,V_FD
     call f_get
     ld hl,V_FD
-    FM M_R2INT
+    FM FP_R2INT
     jr nc,.big
     jp p,.pos
 .negative:
@@ -1012,7 +955,7 @@ fl_word:
     ld hl,V_FD
     call f_get
     ld hl,V_FD
-    FM M_R2INT
+    FM FP_R2INT
     jr nc,fl_plain.big
     jp m,fl_plain.negative
     jr fl_plain.done
@@ -1157,13 +1100,13 @@ ln_read:
     rrca                        ; the sign to bit 7
     push de
     ld hl,V_FA
-    FM M_BIN2R
+    FM FP_BIN2R
     pop de
     ld a,e
     or a
     jr z,.made
     ld hl,V_FA
-    FM M_EXP10
+    FM FP_EXP10
     call f_chk
 .made:
     call fl_result
@@ -1351,14 +1294,14 @@ fl_digits:
     jr z,.digits                ; (never, but no endless loop)
     ld hl,V_FB
     ld de,V_FA
-    FM M_MOVE
+    FM FP_MOVE
     ld a,(FL_K)
     neg
     add a,8
     ld hl,V_FB
-    FM M_EXP10
+    FM FP_EXP10
     ld hl,V_FB
-    FM M_R2BIN
+    FM FP_R2BIN
     ld de,fl_pow10-4            ; 10^9
     call fl_lt32
     jr c,.lt9

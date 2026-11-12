@@ -25,10 +25,6 @@
 ;; the row now. (Row + roll, the first version, held only until the screen
 ;; scrolled: a line that wrapped at the bottom then scrolled once a key.)
 
-TXT_GET_WINDOW      equ #BB69
-TXT_CUR_ENABLE      equ #BB7B
-TXT_RD_CHAR         equ #BB60
-TXT_INVERSE         equ #BB9C
 
 ED_COL0   equ LIBSCR+16         ; the column the line starts in
 ED_VROW0  equ LIBSCR+17         ; its row less the roll count
@@ -50,14 +46,14 @@ ED_MAX    equ 48
 ED_LIMIT  equ 250               ; longest line
 
 lib_editor:
-    call TXT_GET_CURSOR         ; H = column, L = row, A = roll count
+    call CON_GETCUR         ; H = column, L = row, A = roll count
     ld b,a
     ld a,l
     sub b
     ld (ED_VROW0),a
     ld a,h
     ld (ED_COL0),a
-    call TXT_GET_WINDOW         ; H left, D right, L top, E bottom
+    call CON_GETWIN         ; H left, D right, L top, E bottom
     ld a,d
     sub h
     inc a
@@ -100,10 +96,10 @@ lib_editor:
     call ed_draw
 .ready:
     call ed_place
-    call TXT_CUR_ENABLE
-    call TXT_CUR_ON
+    call CON_CURENA
+    call CON_CURON
 ed_key:
-    call KM_WAIT_CHAR_L
+    call KEY_WAIT
     cp #0D
     jp z,ed_enter
     cp #FC
@@ -212,7 +208,7 @@ ed_end:
     ld hl,LINEBUF
     add hl,de
     ld (hl),0
-    jp TXT_CUR_OFF
+    jp CON_CUROFF
 
 ;; up arrow: the last line again
 ed_up:
@@ -240,7 +236,7 @@ ed_up:
 .er:
     push bc
     ld a," "
-    call TXT_WR_CHAR
+    call CON_WRCH
     pop bc
     djnz .er
 .done:
@@ -272,7 +268,7 @@ ed_cmove:
     or a
     jr nz,.have
     call ed_place               ; it starts where the cursor is
-    call TXT_GET_CURSOR
+    call CON_GETCUR
     push af
     ld a,h
     ld (ED_CCOL),a
@@ -344,7 +340,7 @@ ed_copy:
 
 ;; keep the copy cursor on the screen
 ed_clamp_copy:
-    call TXT_GET_CURSOR         ; A = roll
+    call CON_GETCUR         ; A = roll
     ld b,a
     ld a,(ED_CVROW)
     add a,b                     ; its row now
@@ -366,35 +362,35 @@ ed_clamp_copy:
 
 ;; ed_copy_at: the text cursor to the copy cursor
 ed_copy_at:
-    call TXT_GET_CURSOR
+    call CON_GETCUR
     ld b,a
     ld a,(ED_CVROW)
     add a,b
     ld l,a
     ld a,(ED_CCOL)
     ld h,a
-    jp TXT_SET_CURSOR
+    jp CON_SETCUR
 
 ed_draw_copy:
-    call TXT_CUR_OFF
+    call CON_CUROFF
     call ed_copy_at
-    call TXT_RD_CHAR
+    call CON_RDCH
     jr c,.got
     ld a," "
 .got:
     ld (ED_CCHAR),a
-    call TXT_INVERSE
+    call CON_INVERSE
     ld a,(ED_CCHAR)
-    call TXT_WR_CHAR
-    call TXT_INVERSE
-    jp TXT_CUR_ON
+    call CON_WRCH
+    call CON_INVERSE
+    jp CON_CURON
 
 ed_undraw_copy:
-    call TXT_CUR_OFF
+    call CON_CUROFF
     call ed_copy_at
     ld a,(ED_CCHAR)
-    call TXT_WR_CHAR
-    jp TXT_CUR_ON
+    call CON_WRCH
+    jp CON_CURON
 
 ;; ed_uncopy: put away the copy cursor, if there is one
 ed_uncopy:
@@ -452,7 +448,7 @@ ed_insert:
     pop af
 ed_beep:
     ld a,7
-    jp TXT_OUTPUT
+    jp CON_PUTC
 
 ;; ed_delete: take out the character at the cursor
 ed_delete:
@@ -498,14 +494,14 @@ ed_draw:
     ld a,(hl)
     push hl
     push bc
-    call TXT_WR_CHAR
+    call CON_WRCH
     pop bc
     pop hl
     inc hl
 .n:
     djnz .l
     ld a," "
-    jp TXT_WR_CHAR
+    jp CON_WRCH
 
 ed_place:
     ld a,(ED_POS)
@@ -513,14 +509,14 @@ ed_place:
 ed_goto:
     call ed_where
     push hl
-    call TXT_GET_CURSOR
+    call CON_GETCUR
     ld b,a
     pop hl
     ld a,(ED_VROW0)
     add a,l
     add a,b
     ld l,a
-    jp TXT_SET_CURSOR
+    jp CON_SETCUR
 
 ;; ed_where: A = an index -> H = its column, L = rows below the line's first
 ed_where:
@@ -591,18 +587,18 @@ ed_blink:
     ret z
     jp ed_beep
 .show:
-    call TXT_SET_CURSOR
+    call CON_SETCUR
     ld b,15
 .w:
     push bc
-    call MC_WAIT_FLYBACK
-    call KM_READ_CHAR_L
+    call VID_FRAME
+    call KEY_READ
     jr c,.key
     pop bc
     djnz .w
     jr .back
 .key:
-    call KM_CHAR_RETURN
+    call KEY_UNREAD
     pop bc
 .back:
     jp ed_place
@@ -707,7 +703,7 @@ ed_match:
     ld a,(hl)
     call ed_where
     push hl
-    call TXT_GET_CURSOR
+    call CON_GETCUR
     ld b,a
     pop hl
     ld a,(ED_VROW0)
@@ -729,7 +725,7 @@ ed_match:
     inc hl
     ld e,(hl)                   ; row - roll
     push de
-    call TXT_GET_CURSOR
+    call CON_GETCUR
     ld b,a
     pop de
     ld a,e

@@ -116,6 +116,10 @@ Needs rasm, Python 3 and MAME with the CPC ROMs (paths in `tools/build.sh`).
     tools/run.sh file.lsp          # type a file at it in MAME, print the transcript
     tools/test.sh                  # the regression tests in test/ (-m 6128 for a 6128)
 
+What depends on the CPC is in `mach/cpc/`; the rest is portable Z80
+code. [`mach/README.md`](mach/README.md) is the interface between them,
+for a port to another Z80 machine (`MACH=<machine> tools/build.sh`).
+
 The build runs the compiler on itself first (`tools/bootstrap.py`, see
 [the design](docs/design.md#the-bootstrap)).
 
@@ -138,6 +142,8 @@ it is **CTRL + 2** (in MAME, Right Alt + 2).
   the compiler was bootstrapped
 * [`docs/checklist.md`](docs/checklist.md): everything implemented, by
   ROM, and what is still open
+* [`mach/README.md`](mach/README.md): the machine layer -- the interface
+  a port to another Z80 machine provides
 * [`docs/hardware-test.txt`](docs/hardware-test.txt): what to type on a
   real CPC, and what it should answer
 * `CLAUDE.md`: working notes -- what was learned about the CPC, MAME and

@@ -38,23 +38,6 @@
     include "macros.asm"
 
 ;; firmware used only here
-GRA_MOVE_ABSOLUTE   equ #BBC0
-GRA_MOVE_RELATIVE   equ #BBC3
-GRA_ASK_CURSOR      equ #BBC6
-GRA_SET_ORIGIN      equ #BBC9
-GRA_CLEAR_WINDOW    equ #BBDB
-GRA_SET_PEN         equ #BBDE
-GRA_SET_PAPER       equ #BBE4
-GRA_PLOT_ABSOLUTE   equ #BBEA
-GRA_PLOT_RELATIVE   equ #BBED
-GRA_TEST_ABSOLUTE   equ #BBF0
-GRA_TEST_RELATIVE   equ #BBF3
-GRA_LINE_ABSOLUTE   equ #BBF6
-GRA_LINE_RELATIVE   equ #BBF9
-KM_WAIT_CHAR_L      equ #BB06
-KM_READ_CHAR_L      equ #BB09
-SOUND_QUEUE         equ #BCAA
-KL_TIME_PLEASE      equ #BD0D
 
     org #C000
     db 1                        ; a background ROM
@@ -85,7 +68,7 @@ lib_names:
 
 ;@ CLS 0 0 lf_cls
 lf_cls:
-    call TXT_CLEAR_WINDOW
+    call CON_CLS
     jp lnil
 
 ;@ MODE 1 1 lf_mode
@@ -94,7 +77,7 @@ lf_mode:
     call lint_hl
     ld a,l
     and 3
-    call SCR_SET_MODE
+    call VID_MODE
     pop hl
     ret
 
@@ -105,7 +88,7 @@ lf_locate:
     call lint_de
     ld h,l
     ld l,e
-    call TXT_SET_CURSOR
+    call CON_SETCUR
     jp lnil
 
 ;@ PEN 1 1 lf_pen
@@ -113,7 +96,7 @@ lf_pen:
     push hl
     call lint_hl
     ld a,l
-    call TXT_SET_PEN
+    call CON_PEN
     pop hl
     ret
 
@@ -122,7 +105,7 @@ lf_paper:
     push hl
     call lint_hl
     ld a,l
-    call TXT_SET_PAPER
+    call CON_PAPER
     pop hl
     ret
 
@@ -148,7 +131,7 @@ lf_ink:
 .set:
     pop de
     ld a,e
-    call SCR_SET_INK
+    call VID_INK
     jp lnil
 
 ;; (border colour [colour2])
@@ -168,12 +151,12 @@ lf_border:
 .one:
     ld b,c
 .set:
-    call SCR_SET_BORDER
+    call VID_BORDER
     jp lnil
 
 ;@ RESET 0 0 lf_reset
 lf_reset:
-    rst 0
+    SYS_RESET
 
 ;; ---------------------------------------------------------------------------
 ;; GRAPHICS, through the firmware's GRA pack: x 0-639, y 0-399 whatever the
@@ -181,27 +164,27 @@ lf_reset:
 
 ;@ PLOT 2 3 lf_plot
 lf_plot:
-    ld ix,GRA_PLOT_ABSOLUTE
+    ld ix,GFX_PLOT
     jr gra_xy
 ;@ PLOTR 2 3 lf_plotr
 lf_plotr:
-    ld ix,GRA_PLOT_RELATIVE
+    ld ix,GFX_PLOTR
     jr gra_xy
 ;@ DRAW 2 3 lf_draw
 lf_draw:
-    ld ix,GRA_LINE_ABSOLUTE
+    ld ix,GFX_LINE
     jr gra_xy
 ;@ DRAWR 2 3 lf_drawr
 lf_drawr:
-    ld ix,GRA_LINE_RELATIVE
+    ld ix,GFX_LINER
     jr gra_xy
 ;@ MOVE 2 3 lf_move
 lf_move:
-    ld ix,GRA_MOVE_ABSOLUTE
+    ld ix,GFX_MOVE
     jr gra_xy
 ;@ MOVER 2 3 lf_mover
 lf_mover:
-    ld ix,GRA_MOVE_RELATIVE
+    ld ix,GFX_MOVER
 
 ;; gra_xy: (x y [pen]) for the GRA routine IX, which takes DE = x, HL = y
 gra_xy:
@@ -218,7 +201,7 @@ gra_xy:
     call lint_de
     ld a,e
     push ix
-    call GRA_SET_PEN
+    call GFX_PEN
     pop ix
 .nopen:
     pop hl
@@ -229,11 +212,11 @@ gra_xy:
 ;; (test x y) -> the pen of that pixel; testr likewise, relative
 ;@ TEST 2 2 lf_test
 lf_test:
-    ld ix,GRA_TEST_ABSOLUTE
+    ld ix,GFX_TEST
     jr gra_test
 ;@ TESTR 2 2 lf_testr
 lf_testr:
-    ld ix,GRA_TEST_RELATIVE
+    ld ix,GFX_TESTR
 gra_test:
     call lint_hl
     call lint_de
@@ -248,7 +231,7 @@ lf_origin:
     call lint_hl
     call lint_de
     ex de,hl
-    call GRA_SET_ORIGIN
+    call GFX_ORIGIN
     jp lnil
 
 ;; (clg [paper])
@@ -260,9 +243,9 @@ lf_clg:
     NEXTARG
     call lint_de
     ld a,e
-    call GRA_SET_PAPER
+    call GFX_PAPER
 .clear:
-    call GRA_CLEAR_WINDOW
+    call GFX_CLEAR
     jp lnil
 
 ;@ GRAPHICS-PEN 1 1 lf_gpen
@@ -270,7 +253,7 @@ lf_gpen:
     push hl
     call lint_hl
     ld a,l
-    call GRA_SET_PEN
+    call GFX_PEN
     pop hl
     ret
 
@@ -279,18 +262,18 @@ lf_gpaper:
     push hl
     call lint_hl
     ld a,l
-    call GRA_SET_PAPER
+    call GFX_PAPER
     pop hl
     ret
 
 ;@ XPOS 0 0 lf_xpos
 lf_xpos:
-    call GRA_ASK_CURSOR
+    call GFX_WHERE
     ex de,hl
     jp ltag
 ;@ YPOS 0 0 lf_ypos
 lf_ypos:
-    call GRA_ASK_CURSOR
+    call GFX_WHERE
     jp ltag
 
 ;; ---------------------------------------------------------------------------
@@ -362,10 +345,10 @@ lf_sound:
     ld (LIBSCR+5),a
 .go:
     ld hl,LIBSCR
-    call SOUND_QUEUE
+    call SND_QUEUE
     jp c,lnil
     CORE poll_esc               ; full: wait, but let ESC out
-    call MC_WAIT_FLYBACK
+    call VID_FRAME
     jr .go
 
 ;; ---------------------------------------------------------------------------
@@ -374,14 +357,14 @@ lf_sound:
 ;; (inkey) -> the next character typed, or NIL if there is none
 ;@ INKEY 0 0 lf_inkey
 lf_inkey:
-    call KM_READ_CHAR_L
+    call KEY_READ
     jp nc,lnil
     jp lchar
 
 ;; (wait-key) -> the next character typed, waiting for it
 ;@ WAIT-KEY 0 0 lf_wait_key
 lf_wait_key:
-    call KM_WAIT_CHAR_L
+    call KEY_WAIT
     jp lchar
 
 ;; read-char, read-line and the other readers and printers, with a
@@ -399,20 +382,20 @@ lf_write:
 lf_key_down_p:
     call lint_hl
     ld a,l
-    call KM_TEST_KEY
+    call KEY_TEST
     jp z,lnil
     jp lt
 
 ;; (frame): wait for the next frame flyback, 1/50 s
 ;@ FRAME 0 0 lf_frame
 lf_frame:
-    call MC_WAIT_FLYBACK
+    call VID_FRAME
     jp lnil
 
 ;; (time) -> the firmware's clock in 1/300 s, modulo 16384
 ;@ TIME 0 0 lf_time
 lf_time:
-    call KL_TIME_PLEASE
+    call SYS_TIME
     res 7,h
     res 6,h
     jp ltag

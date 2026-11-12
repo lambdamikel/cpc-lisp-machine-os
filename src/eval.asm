@@ -53,16 +53,16 @@ poll_esc:
     push bc
     push de
     push hl
-    call KM_READ_CHAR
+    call KEY_READ
     jr nc,.key
     cp #FC
     jr z,.esc
     cp #EF
     jr z,.esc
-    call KM_CHAR_RETURN
+    call KEY_UNREAD
 .key:
     ld a,KEY_ESC
-    call KM_TEST_KEY
+    call KEY_TEST
     jr .test
 .esc:
     or a                        ; NZ: A is &FC or &EF
@@ -78,13 +78,13 @@ do_break:
     ; wait for the key to come up, then empty the buffer of what it typed
 .up:
     ld a,KEY_ESC
-    call KM_TEST_KEY
+    call KEY_TEST
     jr nz,.up
     call drain_keys
     ERR m_break
 
 drain_keys:
-    call KM_READ_CHAR
+    call KEY_READ
     jr c,drain_keys
     ret
 

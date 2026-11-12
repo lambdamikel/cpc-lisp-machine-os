@@ -39,14 +39,11 @@ FE_TRIES  equ LIBSCR+59         ; fe_locate: rounds left
 FE_STK    equ LIBSCR+64         ; their column, indentation, tokens, -
 FE_MSTK   equ LIBSCR+64         ; matching: up to 32 "(" positions (shares the room)
 FE_MAX    equ 40                ; 160 bytes: below the renderer's variables (fr.asm)
-    assert FE_STK+4*FE_MAX <= FR_MODE
-FE_MAXBUF equ 2048+FR_FONTSIZE
+    assert FE_STK+4*FE_MAX <= VID_VARS
+FE_MAXBUF equ 2048+VID_FONTSIZE
 FE_CURVIS equ LIBSCR+60         ; the cursor is drawn
 FE_CFROM  equ LIBSCR+61         ; drawing: first column, on the first row
 FE_USED   equ LIBSCR+62         ; rows the text took when last drawn: below, blank
-SCR_FILL_BOX equ #BC44
-TXT_CUR_DISABLE equ #BB7E
-SCR_SW_ROLL  equ #BC50
 
 ;@ ED 0 1 lf_ed
 lf_ed:
@@ -129,7 +126,7 @@ lf_ed:
     push af
     xor a
     ld (V_OUTCOL),a
-    call TXT_CLEAR_WINDOW
+    call CON_CLS
     pop af
     jr c,.done
     call fe_release
@@ -217,7 +214,7 @@ fe_reserve:
     jr c,.size
     ex de,hl
 .size:
-    ld de,256+FR_FONTSIZE
+    ld de,256+VID_FONTSIZE
     push hl
     or a
     sbc hl,de
@@ -234,7 +231,7 @@ fe_reserve:
     or a
     sbc hl,de
     ld (V_BLKHI),hl
-    ld de,FR_FONTSIZE           ; the font copy first, then the text
+    ld de,VID_FONTSIZE           ; the font copy first, then the text
     add hl,de
     ld (FE_BUF),hl
     ld (FE_END),hl
@@ -356,16 +353,16 @@ fe_definition:
 
 ;; fe_edit -> C to keep the text, NC to drop it
 fe_edit:
-    call TXT_CUR_OFF
-    call TXT_CUR_DISABLE        ; the firmware's cursor stays out of it
-    call TXT_CLEAR_WINDOW
+    call CON_CUROFF
+    call CON_CURDIS        ; the firmware's cursor stays out of it
+    call CON_CLS
     ld hl,(FE_BUF)
-    ld de,FR_FONTSIZE
+    ld de,VID_FONTSIZE
     or a
     sbc hl,de
     ex de,hl
-    call fr_init                ; draws straight into the screen from here
-    ld a,(FR_COLS)
+    call VID_INIT                ; draws straight into the screen from here
+    ld a,(VID_COLS)
     ld (FE_W),a
     ld a,24
     ld (FE_H),a                 ; the 25th row is the status line
@@ -375,7 +372,7 @@ fe_edit:
     ld hl,(FE_BUF)
     ld (FE_CUR),hl
     ld (FE_TOP),hl
-    call fr_inverse
+    call VID_INVERSE
     ld hl,fe_m_status
     ld bc,24                    ; B = column 0, C = row 24
 .st:
@@ -387,20 +384,20 @@ fe_edit:
 .st1:
     inc hl
     push hl
-    call fr_char
+    call VID_CHAR
     pop hl
     inc b
     ld a,(FE_W)
     cp b
     jr nz,.st
-    call fr_normal
+    call VID_NORMAL
     call fe_render_all
 fe_loop:
     call fe_locate
-    call fr_inverse
+    call VID_INVERSE
     call fe_cursor
-    call fr_normal
-    call KM_WAIT_CHAR_L
+    call VID_NORMAL
+    call KEY_WAIT
     push af
     call fe_cursor
     pop af
@@ -457,16 +454,16 @@ fe_loop:
     call ed_beep
     jp fe_loop
 .done:
-    call TXT_CUR_ENABLE
+    call CON_CURENA
     scf
     ret
 .cancel:
-    call TXT_CUR_ENABLE
+    call CON_CURENA
     or a
     ret
 
 ;; fe_cursor: the character under the cursor drawn again -- inverse, after
-;; fr_inverse, is the cursor. (Never read back from the screen: from a ROM,
+;; VID_INVERSE, is the cursor. (Never read back from the screen: from a ROM,
 ;; &C000-&FFFF reads the ROM.)
 fe_cursor:
     ld hl,(FE_CUR)
@@ -487,7 +484,7 @@ fe_cursor:
     dec a
     ld c,a
     pop af
-    jp fr_char
+    jp VID_CHAR
 
 ;; fe_redraw: A = the character just put in or taken out, at the cursor's
 ;; row. A line still on one row is drawn again alone, else everything from
@@ -795,32 +792,32 @@ fe_blink:
     ld a,(FE_H)
     cp b
     ret c
-    ld a,b                      ; fr_char wants B = column, C = row, from 0
+    ld a,b                      ; VID_CHAR wants B = column, C = row, from 0
     ld b,c
     ld c,a
     dec b
     dec c
     push bc
-    call fr_inverse
+    call VID_INVERSE
     ld a,"("
-    call fr_char
-    call fr_normal
+    call VID_CHAR
+    call VID_NORMAL
     ld b,15
 .w:
     push bc
-    call MC_WAIT_FLYBACK
-    call KM_READ_CHAR_L
+    call VID_FRAME
+    call KEY_READ
     jr c,.key
     pop bc
     djnz .w
     jr .off
 .key:
-    call KM_CHAR_RETURN
+    call KEY_UNREAD
     pop bc
 .off:
     pop bc
     ld a,"("
-    jp fr_char
+    jp VID_CHAR
 
 ;; ---------------------------------------------------------------------------
 ;; the text
@@ -1102,8 +1099,8 @@ fe_render:
     ld a,(FE_W)
     dec a
     ld d,a
-    ld a,(FR_PAPER)
-    jp SCR_FILL_BOX
+    ld a,(VID_PAPER)
+    jp VID_FILLBOX
 ;; past the last row asked for, with text still to come
 .past:
     ld a,(FE_RTO)
@@ -1121,7 +1118,7 @@ fe_render:
     ld c,h
     dec b
     dec c
-    call fr_char
+    call VID_CHAR
     pop bc
     pop hl
     ret
@@ -1163,8 +1160,8 @@ fe_render:
     dec a
     ld l,a                      ; top row = bottom row
     ld e,a
-    ld a,(FR_PAPER)
-    call SCR_FILL_BOX
+    ld a,(VID_PAPER)
+    call VID_FILLBOX
     pop de
     pop bc
     pop hl

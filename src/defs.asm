@@ -1,87 +1,17 @@
-;; CPC Lisp -- constants: firmware vectors, the memory map, the object tags.
+;; CPC Lisp -- constants: the machine, the memory map, the object tags.
 ;;
-;; FIRMWARE: only through the jumpblock, which is the same on the 464, 664 and
-;; 6128 from &BB00 to &BD37. Past that the machines differ: the 664/6128 add
-;; twelve entries at &BD3A, which moves EDIT (the BASIC line editor, in the
-;; firmware ROM) from &BD3A to &BD5E and the maths package from &BD3D to
-;; &BD61 -- with a different set of entries, 49 on the 464 against 32. Code
-;; that calls past &BD37 looks the address up at boot (V_EDITV).
+;; THE MACHINE: everything that depends on it is in mach/<machine>/ (cpc:
+;; tools/build.sh passes -I mach/cpc): its firmware's entry points
+;; (firmware.asm), the interface that the portable code calls instead
+;; (machine.asm; mach/README.md has the contracts), and the memory map
+;; (memmap.asm).
 
-KM_WAIT_CHAR      equ #BB06
-KM_READ_CHAR      equ #BB09
-KM_CHAR_RETURN    equ #BB0C
-KM_TEST_KEY       equ #BB1E
-TXT_OUTPUT        equ #BB5A
-TXT_WR_CHAR       equ #BB5D
-TXT_CLEAR_WINDOW  equ #BB6C
-TXT_SET_CURSOR    equ #BB75
-TXT_GET_CURSOR    equ #BB78
-TXT_SET_PEN       equ #BB90
-TXT_SET_PAPER     equ #BB96
-SCR_SET_INK       equ #BC32
-SCR_SET_BORDER    equ #BC38
-TXT_CUR_ON        equ #BB81
-TXT_CUR_OFF       equ #BB84
-SCR_SET_MODE      equ #BC0E
-KL_ROM_WALK       equ #BCCB
-CAS_IN_ABANDON    equ #BC7D         ; the file vectors: a disc ROM takes them
-CAS_IN_CHAR       equ #BC80         ; over, so they work with AMSDOS, Parados
-CAS_OUT_ABANDON   equ #BC92         ; or a tape
-CAS_OUT_CHAR      equ #BC95
-KL_ROM_SELECT     equ #B90F         ; C = ROM -> C = the one before. AF, B corrupt
-KL_CURR_SELECTION equ #B912         ; -> A = the ROM selected now
-MC_WAIT_FLYBACK   equ #BD19
-EDIT_464          equ #BD3A
-EDIT_6128         equ #BD5E
-FIRM_464_PROBE    equ #BD3D         ; &EF (FIRM JUMP) on a 464, &CF on a 664/6128
-
-KEY_ESC           equ 66            ; KM TEST KEY number
-
-;; ---------------------------------------------------------------------------
-;; MEMORY MAP
-;;
-;;   &0040-&04FF  low system area: mark stack, symbol hash table, LIBDEFS,
-;;                FNBOUND.
-;;                The firmware sees its ROM here, so nothing the firmware reads goes here.
-;;                Words below &0500 are also the immediates (characters,
-;;                markers, headers), which is why no object lives here.
-;;   &0500-&14FF  symbols: 512 slots of 8 bytes
-;;   &1500-       cells: 4 bytes each, conses and typed cells
-;;   then         the mark bitmap, block space (strings), the machine stack,
-;;                sized at boot from what the ROM walk left (V_MEMTOP)
-;;   &AC00-&B0FF  fixed variables and buffers. The firmware enters ROM 0 with
-;;                HL=&ABFF and BC=&B0FF on every model: this is the area BASIC
-;;                keeps for itself, and it is ours now.
-
-MARKSTK           equ #0040         ; 256 words
-MARKSTK_END       equ #0240
-OBARRAY           equ #0240         ; NBUCKETS words, each a list of symbols
-NBUCKETS          equ 64
-OBARRAY_END       equ OBARRAY+2*NBUCKETS
-LIBDEFS           equ OBARRAY_END   ; NSYMS bits: the symbol's definition came
-LIBDEFS_END       equ LIBDEFS+NSYMS/8 ;   from library text (SAVE leaves it out)
-
-FNBOUND           equ #0300         ; NSYMS bytes: non-zero if flet or labels
-                                    ;   ever bound the symbol (ev_cons)
-SYM_LO            equ #0500
-NSYMS             equ 512
-SYM_HI            equ SYM_LO+8*NSYMS   ; #1500
-                  assert LIBDEFS_END <= FNBOUND
-                  assert FNBOUND+NSYMS <= SYM_LO
-                  assert (FNBOUND and #FF) == 0
-CELL_LO           equ SYM_HI
+    include "firmware.asm"
+    include "machine.asm"
+    include "memmap.asm"
 
 STACK_SIZE        equ 4096
 STACK_MARGIN      equ 256           ; eval refuses to go deeper than this
-
-LINEBUF           equ #AC00         ; 256: the EDIT buffer
-TOKBUF            equ #AD00         ; 256: the reader's token
-VARS              equ #AE00         ; the variables, below
-LIBSCR            equ #AF00         ; 256: scratch for the library ROM
-HISTBUF           equ #B000         ; 128: the line editor's history
-TRAMP             equ #B080         ; 58: the cross-ROM trampoline, copied at boot
-RDISK             equ #B0C0         ; 64: the RAM disc's state (lib/ramdisc.asm)
-VARS_END          equ LIBSCR
 NLIBS             equ 4             ; library ROMs: parts 0-3 (src/xrom.asm)
 
 ;; Variables. The first block holds Lisp values and is a GC root, scanned

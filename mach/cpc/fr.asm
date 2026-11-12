@@ -17,29 +17,22 @@
 ;; off + 80 r + c * width (wrapping at &800), its eight pixel lines &800
 ;; apart; width is 4, 2 or 1 bytes in mode 0, 1, 2.
 
-SCR_GET_LOCATION    equ #BC0B
-SCR_GET_MODE        equ #BC11
-SCR_INK_ENCODE      equ #BC2C
-TXT_GET_PEN         equ #BB93
-TXT_GET_PAPER       equ #BB99
-TXT_GET_MATRIX      equ #BBA5
-KL_L_ROM_ENABLE     equ #B906
-KL_ROM_RESTORE      equ #B90C
 
+VID_VARS  equ LIBSCR+224        ; the renderer's variables start here
 FR_MODE   equ LIBSCR+224        ; screen mode
 FR_CW     equ LIBSCR+225        ; bytes a character row is wide: 4, 2, 1
-FR_PAPER  equ LIBSCR+226        ; paper, encoded
+VID_PAPER  equ LIBSCR+226        ; paper, encoded
 FR_X      equ LIBSCR+227        ; pen xor paper, encoded
 FR_BASE   equ LIBSCR+228        ; the screen's base, high byte
 FR_OFF    equ LIBSCR+229        ; the hardware scroll offset (2)
 FR_FONT   equ LIBSCR+231        ; the font copy, characters 32-127 (2)
-FR_P      equ LIBSCR+233        ; paper for this character: FR_PAPER, or xor FR_X
-FR_COLS   equ LIBSCR+234        ; columns on the screen: 20, 40, 80
-FR_FONTSIZE equ 96*8
+FR_P      equ LIBSCR+233        ; paper for this character: VID_PAPER, or xor FR_X
+VID_COLS   equ LIBSCR+234        ; columns on the screen: 20, 40, 80
+VID_FONTSIZE equ 96*8
 
-;; fr_init: DE = FR_FONTSIZE bytes for the font. Reads the mode, the inks
+;; VID_INIT: DE = VID_FONTSIZE bytes for the font. Reads the mode, the inks
 ;; and where the screen is.
-fr_init:
+VID_INIT:
     ld (FR_FONT),de
     call SCR_GET_MODE
     and 3
@@ -59,10 +52,10 @@ fr_init:
     ld a,b
     ld (FR_CW),a
     ld a,c
-    ld (FR_COLS),a
+    ld (VID_COLS),a
     call TXT_GET_PAPER
     call SCR_INK_ENCODE
-    ld (FR_PAPER),a
+    ld (VID_PAPER),a
     ld c,a
     push bc
     call TXT_GET_PEN
@@ -143,9 +136,9 @@ fr_next:
     ld h,a
     ret
 
-;; fr_char: A = a character, B = column, C = row. Inverse if FR_P says so.
+;; VID_CHAR: A = a character, B = column, C = row. Inverse if FR_P says so.
 ;; BC kept.
-fr_char:
+VID_CHAR:
     push bc
     sub 32
     jr c,.blank
@@ -299,13 +292,13 @@ fr_char:
     ld (hl),a
     ret
 
-;; fr_normal, fr_inverse: what fr_char draws in
-fr_normal:
-    ld a,(FR_PAPER)
+;; VID_NORMAL, VID_INVERSE: what VID_CHAR draws in
+VID_NORMAL:
+    ld a,(VID_PAPER)
     ld (FR_P),a
     ret
-fr_inverse:
-    ld a,(FR_PAPER)
+VID_INVERSE:
+    ld a,(VID_PAPER)
     ld hl,FR_X
     xor (hl)
     ld (FR_P),a
