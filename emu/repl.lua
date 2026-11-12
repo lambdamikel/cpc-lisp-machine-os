@@ -83,16 +83,26 @@ end)
 
 WAITING = false      -- the ROM wants a line and nothing is typed yet
 EDITS = 0
-TAPE = MEM:install_read_tap(EDITV, EDITV, "edit", function(offset, data, mask)
-  local pc = CPU.state["PC"].value
-  if pc == EDITV or pc == EDITV + 1 then
-    WAITING = true
-    EDITS = EDITS + 1
-    ANSWERED = true
-    if T0 then TIMES[#TIMES + 1] = (F - T0) .. "\t" .. LINES[NEXT - 1]; T0 = nil end
+-- a line is asked for when the CPU fetches at EDITV -- or at LISP_EDIT2,
+-- a second address (the 512K CPC: BASIC's EDIT, for RUN"LISP, then
+-- Lisp's EDHOOK)
+local function edit_tap(addr)
+  return function(offset, data, mask)
+    local pc = CPU.state["PC"].value
+    if pc == addr or pc == addr + 1 then
+      WAITING = true
+      EDITS = EDITS + 1
+      ANSWERED = true
+      if T0 then TIMES[#TIMES + 1] = (F - T0) .. "\t" .. LINES[NEXT - 1]; T0 = nil end
+    end
+    return data
   end
-  return data
-end)
+end
+TAPE = MEM:install_read_tap(EDITV, EDITV, "edit", edit_tap(EDITV))
+EDITV2 = tonumber(getenv("LISP_EDIT2", "0"))
+if EDITV2 ~= 0 then
+  TAPE2 = MEM:install_read_tap(EDITV2, EDITV2, "edit2", edit_tap(EDITV2))
+end
 
 PROFF = getenv("LISP_PROF", nil)
 PROF = {}
