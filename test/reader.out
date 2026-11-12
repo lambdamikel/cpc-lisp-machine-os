@@ -68,4 +68,6 @@ LISP> (read-from-string "(600 639 640)")
 (600 639 640)
 LISP> (read-from-string "-1")
 -1
+LISP> (read-from-string (concatenate (quote string) "; a comment" (string (code-char 13)) "42"))
+42
 LISP> 

@@ -199,7 +199,9 @@ skipws:
     call getc
     or a
     ret z
-    cp 10
+    cp 13                       ; a line ends at CR (LDOS's text files)
+    jr z,skipws
+    cp 10                       ;   or LF
     jr nz,.comment
     jr skipws
 

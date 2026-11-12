@@ -85,9 +85,11 @@ lf_say:
     dec bc
     jr .l
 .cr:
-    ld a,13
-    call tk_out
-    jp lt
+    ld a,10                     ; a new line, for DECtalk to speak the clause:
+    call tk_out                 ;   the firmware keeps the CR to itself, and
+    ld a,13                     ;   without an end -- a full stop, a line --
+    call tk_out                 ;   DECtalk waits (phonemes in [] stayed
+    jp lt                       ;   silent; its own Daisy ends in "]\n")
 
 ;; (speech-stop)
 ;@ SPEECH-STOP 0 0 lf_speech_stop

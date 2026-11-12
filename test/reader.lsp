@@ -35,3 +35,4 @@ nil
 (read-from-string "512")
 (read-from-string "(600 639 640)")
 (read-from-string "-1")
+(read-from-string (concatenate (quote string) "; a comment" (string (code-char 13)) "42"))
