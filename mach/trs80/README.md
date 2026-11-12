@@ -115,16 +115,20 @@ without KI/DVR; with KI/DVR loaded this is untried.)
   empty (`rdisc80.asm`).
 * `*features*` is `(:trs-80 :cpc-lisp)`; the demos look at it.
 * The Model III: the same images and machine page (its ROM has the
-  maths routines at the same places); not tried on one yet -- trs80gp
-  has X-MEM/80 only for the Model I.
+  maths routines at the same places); it runs on Mike's, with X-MEM/80,
+  Talker/80 and MIDI/80 (2026-11-12) -- trs80gp has X-MEM/80 only for
+  the Model I.
 * **Sound**: one voice, a square wave on the cassette port (trs80gp
   plays it): `sound`'s period, volume and duration, the note played
   there and then, within a few percent of its pitch. `envelope` and
   `tone-envelope` are taken and not heard. `(tune)` plays.
 * **Speech** through Talker/80 (port 11): `say` speaks DECtalk's way, as
   LambdaSpeak does on the CPC (so `(sing)` sings); `speech-stop`,
-  `speech-voice`, `speech-rate`, `speech-volume`. Not tried on a real
-  Talker/80 yet (trs80gp has none).
+  `speech-voice`, `speech-rate`, `speech-volume`. On a real Talker/80
+  (a Model III's): each line ends with LF and CR -- the firmware keeps
+  the CR, and DECtalk speaks a clause only once it ends; a control byte
+  makes it wait until Talker/80 is done with it (it empties its text
+  buffer then); DECtalk mode is set once each time Lisp starts.
 * **MIDI** through MIDI/80 (port 8, its MIDI OUT and its Waveblaster as
   its DIP switches say): `midi-note`, `midi-program`, `midi-control`,
   `midi-panic`, `midi-out`, and `(midi-tune)`, a minuet in two voices.

@@ -333,7 +333,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     makes its firmware wait 200 ms, set the chip up and EMPTY its text
     buffer, and a second control byte meanwhile is lost: `tk_ctl` waits
     until it says ready (bit 7) before anything else goes (sending &E9
-    &EE before every line silenced every line). Its
+    &EE before every line silenced every line). The firmware keeps the
+    CR that starts speaking to itself, and DECtalk speaks a clause only
+    once it ends (a full stop, a new line): `say` sends LF, then CR --
+    without it, phonemes in [] stayed silent (its Daisy ends "]\n"). Its
     Epson chip is DECtalk 5.01: arpabet is two characters a phoneme, the
     L is `ll` (a bare `l` ends the song there); LambdaSpeak 4's DECtalk
     Mini takes both.

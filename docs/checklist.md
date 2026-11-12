@@ -368,8 +368,9 @@ compiled code (`docs/design.md` describes both)
           spare pages, `delete-file`; `flood-fill`; the images
           compressed onto one Model I disc; `(time)` from LDOS's ticks;
           MIDI through MIDI/80 (2026-11-12)
-    - [ ] The TRS-80 on the real Model I and Model III, with a real
-          Talker/80 and MIDI/80
+    - [x] The Model III, real, with X-MEM/80, Talker/80 (speech and
+          singing) and MIDI/80 (2026-11-12)
+    - [ ] The Model I, real, with X-MEM/80
 11. [x] **MIDI** (Mike, 2026-11-12): `midi-note`, `midi-program`,
         `midi-control`, `midi-panic`, `midi-out`, `midi-off`, `sleep`,
         and the `(midi-tune)` demo -- the LambdaSpeak card's MIDI mode
