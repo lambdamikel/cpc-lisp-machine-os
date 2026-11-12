@@ -795,7 +795,8 @@ What is different there:
   TAB, CLEAR is CLR. The keyboard has no `~ \ | ` `` ` `` ` [ ] { } ^ _`:
   **SHIFT down-arrow, then** `-` gives `~`, `/` `\`, `1` `|`, `7`
   `` ` ``, `8` `[`, `9` `]`, `,` `{`, `.` `}`, `@` `^`, `0` `_`.
-  `key-down-p` takes the TRS-80's key numbers.
+  `key-down-p` takes the TRS-80's key numbers. **SHIFT @** holds the
+  output, as in LDOS, until another key is pressed.
 - `(quit)` goes back to LDOS. `flood-fill` fills in the blocks. Not
   there: `symbol` (the characters are the ROM's), `window`, `tag`, `transparent`, `flash-speed`, `text-cursor`,
   `joystick`, `peek`, `poke`, `release`, the `sound-` functions,

@@ -11,6 +11,20 @@
 TK_PORT     equ 11
 TK_SET      equ RDISK+63        ; 1 once Talker/80 is in DECtalk mode
 
+;; tk_out: A to Talker/80, then about half a millisecond: its firmware
+;; takes each byte in an interrupt from the data bus latch, and one
+;; written before it has will overwrite the last -- a lost "[" or "<" in
+;; DECtalk's phoneme notation silences the rest of a song (the CPC paces
+;; the LambdaSpeak card the same way). All kept but the flags.
+tk_out:
+    out (TK_PORT),a
+    push bc
+    ld b,70                     ; 70 * 13 T: 0.5 ms on a Model I, 0.45 on a III
+.d:
+    djnz .d
+    pop bc
+    ret
+
 ;; tk_wait: while Talker/80 speaks; BREAK lets out
 tk_wait:
     in a,(TK_PORT)
@@ -36,9 +50,9 @@ lf_say:
     cp 1
     jr z,.l
     ld a,#E9                    ; no spoken confirmations,
-    out (TK_PORT),a
+    call tk_out
     ld a,#EE                    ;   DECtalk
-    out (TK_PORT),a
+    call tk_out
     ld a,1
     ld (TK_SET),a
 .l:
@@ -51,20 +65,20 @@ lf_say:
     jr nz,.ch
     ld a," "                    ; a line break inside: a blank
 .ch:
-    out (TK_PORT),a
+    call tk_out
     inc hl
     dec bc
     jr .l
 .cr:
     ld a,13
-    out (TK_PORT),a
+    call tk_out
     jp lt
 
 ;; (speech-stop)
 ;@ SPEECH-STOP 0 0 lf_speech_stop
 lf_speech_stop:
     ld a,#FE
-    out (TK_PORT),a
+    call tk_out
     jp lt
 
 ;; (speech-voice n), (speech-rate n), (speech-volume n): 0-15, 0 the
@@ -86,7 +100,7 @@ tk_setting:
     ld a,l
     and 15
     or c
-    out (TK_PORT),a
+    call tk_out
     pop hl
     ret
 

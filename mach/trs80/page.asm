@@ -200,6 +200,7 @@ c_lf:
     ld (c_row),a
     ret
 c_scroll:
+    call c_pause
     push bc
     push de
     ld hl,VRAM+VCOLS
@@ -216,6 +217,31 @@ c_scroll:
     dec (hl)
     pop de
     pop bc
+    ret
+
+;; c_pause: SHIFT @ held as the screen is to scroll -> the output waits,
+;; LDOS's way, until they are let go and another key is pressed (and let
+;; go). The keyboard is memory: &3801 row 0 (@ is bit 0), &3880 row 7
+;; (the SHIFTs), &38FF every row at once. All kept but AF.
+c_pause:
+    ld a,(KBD+#80)
+    and 3
+    ret z
+    ld a,(KBD+1)
+    rra
+    ret nc
+.up:
+    ld a,(KBD+#FF)              ; SHIFT @ let go,
+    or a
+    jr nz,.up
+.down:
+    ld a,(KBD+#FF)              ;   a key,
+    or a
+    jr z,.down
+.up2:
+    ld a,(KBD+#FF)              ;   and that let go
+    or a
+    jr nz,.up2
     ret
 
 ;; c_clear: the screen blank, the cursor home

@@ -66,6 +66,7 @@ About 3150 cells are free at start, half a CPC's.
 | CLEAR | CLR: the character under the cursor |
 | SHIFT down, then a key | a character the keyboard has not got (below) |
 | SHIFT down twice | the copy cursor down |
+| SHIFT @ | output waits (LDOS's way) until another key |
 
 A Model I or III has no `[ ] { } \ | ~ ^ _` or backquote keys -- its up
 arrow *is* `[`, code &5B, and fetches the line before from the history

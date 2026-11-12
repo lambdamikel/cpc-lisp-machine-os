@@ -22,11 +22,16 @@ X-MEM mode (not SuperMem).
 3. [ ] SHIFT down-arrow, let go, then -  : a ~ appears
 4. [ ] (sound 1 284 100)  : one second of A 440 from the cassette
        port (an amplifier on it)
-5. [ ] (say "hello, I am a T R S 80")  : Talker/80 speaks it
+5. [ ] (say "hello, I am a T R S 80")  : Talker/80 speaks it;
+       (sing)  : the whole line sung, "I am a Lisp machine"
+       (bytes now go 0.5 ms apart: the song stopped after "I am a")
 6. [ ] (defun f () 42)  (save "m:x")  (dir "m:")  : X.LSP listed;
        press RESET, LISP again, (dir "m:")  : still there
 7. [ ] (shapes)  : discs and boxes in blocks; a key clears it.
-       (demo) lists the others
+       (demo) lists the others, with a pause half way.
+       (dir) on a full disc, SHIFT @ held: it stops; a key goes on.
+       (defun f (x) (* x x)) (ed 'f)  : the cursor a bar at the
+       bottom of the character, as at LISP>
 8. [ ] With MIDI/80 (its DIP switches to the Waveblaster or MIDI OUT):
        (midi-tune)  : a minuet, harpsichord and cello, about 25 s
 9. [ ] On a Model III: 1, 4 and 6 again (its clock and ROM are
