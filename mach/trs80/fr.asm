@@ -2,8 +2,9 @@
 ;; includes this): characters straight into the screen memory, 64 by 16 at
 ;; &3C00 -- which, unlike the CPC's, every page can always see. There is no
 ;; inverse video on a Model I: a character drawn "inverse", the editor's
-;; cursor, is the Level II cursor, as the REPL's -- the bottom row of a
-;; character's graphics blocks (a full block stood taller than the letters).
+;; cursor, is the top two rows of a character's graphics blocks: about a
+;; letter's height (a full block stood taller, the bottom row -- the Level
+;; II cursor -- below the baseline).
 
 VID_VARS    equ LIBSCR+224      ; the renderer's variables start here
 VID_PAPER   equ LIBSCR+226      ; the paper, as VID_FILLBOX takes it (unused)
@@ -30,7 +31,7 @@ VID_CHAR:
     ld a,(FR_P)
     or a
     jr z,.put
-    ld d,#B0                    ; inverse: the Level II cursor
+    ld d,#8F                    ; inverse: the upper two thirds lit
 .put:
     ld l,c
     ld h,0

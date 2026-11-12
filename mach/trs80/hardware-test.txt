@@ -30,8 +30,9 @@ X-MEM mode (not SuperMem).
 7. [ ] (shapes)  : discs and boxes in blocks; a key clears it.
        (demo) lists the others, with a pause half way.
        (dir) on a full disc, SHIFT @ held: it stops; a key goes on.
-       (defun f (x) (* x x)) (ed 'f)  : the cursor a bar at the
-       bottom of the character, as at LISP>
+       (defun f (x) (* x x)) (ed 'f)  : the cursor a block about a
+       letter's height; the arrows only move it, SHIFT <- deletes to
+       the left, CLEAR under it (at LISP> too)
 8. [ ] With MIDI/80 (its DIP switches to the Waveblaster or MIDI OUT):
        (midi-tune)  : a minuet, harpsichord and cello, about 25 s
 9. [ ] On a Model III: 1, 4 and 6 again (its clock and ROM are

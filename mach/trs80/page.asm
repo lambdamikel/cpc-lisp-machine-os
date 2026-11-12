@@ -577,13 +577,14 @@ m_gfx_paper:
 
 ;; ---------------------------------------------------------------------------
 ;; KEYS: the ROM's scan, its codes made the CPC's
-;;   BREAK ESC, CLEAR CLR, <- DEL, SHIFT <- left, -> right, SHIFT -> TAB,
-;;   up and down, SHIFT up the copy cursor's up
+;;   BREAK ESC, CLEAR CLR, <- left, SHIFT <- DEL, -> right, SHIFT -> TAB,
+;;   up and down, SHIFT up the copy cursor's up: the arrows only move
+;;   (Mike, 2026-11-12), the TRS-80's <- backspace is SHIFT <-
 ;; and SHIFT DOWN-ARROW, pressed and let go, makes the next key one the
 ;; keyboard has not got (k_comp): twice is the copy cursor's down.
 
 k_codes:
-    db #01,#FC, #1F,#10, #08,#7F, #18,#F2, #09,#F3, #19,#09
+    db #01,#FC, #1F,#10, #08,#F2, #18,#7F, #09,#F3, #19,#09
     db #5B,#F0, #0A,#F1, #1B,#F4, 0
 
 ;; after SHIFT DOWN-ARROW: a key, shifted or not, and what it makes

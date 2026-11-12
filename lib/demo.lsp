@@ -182,11 +182,9 @@
 ;; Beethoven, with a volume envelope that dies away
 (defun tune ()
   (envelope 1 15 -1 3)
-  (dolist (n '(e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 (e4 30) (d4 10) (d4 40)
-               e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 (d4 30) (c4 10) (c4 40)))
-    (let ((d 20))
-      (when (consp n) (setq d (cadr n) n (car n)))
-      (sound 1 (note n) d 15 1)))
+  (play '(e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 (e4 30) (d4 10) (d4 40)
+          e4 e4 f4 g4 g4 f4 e4 d4 c4 c4 d4 e4 (d4 30) (c4 10) (c4 40))
+        20 1 15 1)
   t)
 
 ;; Bach's -- or Petzold's -- Minuet in G, out of MIDI OUT (LambdaSpeak's,
@@ -227,8 +225,11 @@
 
 ;; DECtalk sings in its phoneme notation: [ax<300,25>] is 300 ms at pitch
 ;; 25, one semitone a step; 20 is G3, 25 C4, 29 E4, 32 G4
+;; Arpabet is two characters a phoneme: the L is ll (a bare l stops the
+;; Epson chip's DECtalk -- Talker/80's -- where it stands; LambdaSpeak 4's
+;; takes both)
 (defun sing ()
-  (say "[:phoneme arpabet speak on][ay<350,20>ae<220,25>m<100,25>ax<260,29>l<90,32>ih<260,32>s<130,32>p<70,32>m<90,29>ax<220,29>sh<110,25>iy<420,25>n<300,25>]")
+  (say "[:phoneme arpabet speak on][ay<350,20>ae<220,25>m<100,25>ax<260,29>ll<90,32>ih<260,32>s<130,32>p<70,32>m<90,29>ax<220,29>sh<110,25>iy<420,25>n<300,25>]")
   t)
 
 ;; six voices: a chord on each PlayCity chip, I IV V I

@@ -662,7 +662,7 @@ Its position is kept to 1/256, so thousands of short steps do not drift:
 | `(sound-check channel)` | the queue's state (SQ) | 1 |
 | `(sound-hold)` `(sound-continue)` | | 1 |
 | `(note 'c4)` | the period of a note: a letter, `#` (sharp) or `B` (flat), the octave. The AY runs at 1 MHz, period = 62500 / frequency: C4 (middle C) is 239, A4 (440 Hz) 142 | 3 |
-| `(play notes [duration [channels [volume]]])` | `notes` like `'(c4 e4 g4 (c5 40) r c5)`: `R` a rest, a list a note with its own duration | 3 |
+| `(play notes [duration [channels [volume [envelope]]]])` | `notes` like `'(c4 e4 g4 (c5 40) r c5)`: `R` a rest, a list a note with its own duration. The periods are worked out and a collection made first, so that none comes between the notes | 3 |
 
 ## The LambdaSpeak card: speech and PlayCity
 
@@ -791,8 +791,8 @@ What is different there:
 - **Files** through LDOS: a name `B:FOO.LSP` is `FOO/LSP:1`; `dir` lists
   every drive. **The RAM disc** `M:` is in X-MEM/80's spare pages: 31
   files, 367 KB; it survives `(quit)` and a reset, not a power-off.
-- **Keys**: BREAK is ESC; <- deletes, SHIFT <- and -> move, SHIFT -> is
-  TAB, CLEAR is CLR. The keyboard has no `~ \ | ` `` ` `` ` [ ] { } ^ _`:
+- **Keys**: BREAK is ESC; the arrows move, SHIFT <- deletes to the left,
+  CLEAR under the cursor, SHIFT -> is TAB. The keyboard has no `~ \ | ` `` ` `` ` [ ] { } ^ _`:
   **SHIFT down-arrow, then** `-` gives `~`, `/` `\`, `1` `|`, `7`
   `` ` ``, `8` `[`, `9` `]`, `,` `{`, `.` `}`, `@` `^`, `0` `_`.
   `key-down-p` takes the TRS-80's key numbers. **SHIFT @** holds the

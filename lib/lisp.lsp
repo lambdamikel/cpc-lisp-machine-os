@@ -262,14 +262,21 @@
          (- o))))
 
 ;; (play '(c4 e4 g4 (c5 40) r c5)): each note for duration 1/100 s, or as
-;; long as its list says; R is a rest
-(defun play (notes &optional (duration 20) (channels 1) (volume 12))
-  (dolist (n notes)
-    (let ((d duration))
-      (when (consp n) (setq d (cadr n) n (car n)))
-      (if (eq n 'r)
-          (sound channels 0 d 0)
-          (sound channels (note n) d volume)))))
+;; long as its list says; R is a rest. The periods are worked out first,
+;; and a collection made: then none comes between the notes (a TRS-80
+;; plays each one there and then)
+(defun play (notes &optional (duration 20) (channels 1) (volume 12)
+                   (envelope 0))
+  (let ((l (mapcar #'(lambda (n)
+                       (let ((d duration))
+                         (when (consp n) (setq d (cadr n) n (car n)))
+                         (cons (if (eq n 'r) 0 (note n)) d)))
+                   notes)))
+    (gc)
+    (dolist (p l)
+      (if (eql (car p) 0)
+          (sound channels 0 (cdr p) 0)
+          (sound channels (car p) (cdr p) volume envelope)))))
 
 ;;; Multiple values (values and multiple-value-list are built in)
 

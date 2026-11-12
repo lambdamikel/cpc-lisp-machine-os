@@ -57,8 +57,8 @@ About 3150 cells are free at start, half a CPC's.
 | TRS-80 | CPC Lisp |
 |---|---|
 | BREAK | ESC: interrupts |
-| <- | DEL: the character to the left |
-| SHIFT <- | cursor left |
+| <- | cursor left |
+| SHIFT <- | DEL: the character to the left |
 | -> | cursor right |
 | SHIFT -> | TAB |
 | up, down | the history |
