@@ -412,4 +412,29 @@ compiled code (`docs/design.md` describes both)
           through the RAM disc's putc: 390 KB took minutes); the 512K
           card's shadow modes (skip the missing bank 3); far arrays
           beyond 65535 elements; more string space on the disc versions
+14. [ ] **The TRS-80 Model 4, native** (Mike, 2026-11-12: next, before the
+        Spectrum; "not now, but for planning"). Mike's machine: a Model 4
+        (not 4P/4D), 128 KB, LS-DOS 6.3.1, a FreHD, Ian Mavric's
+        "Improved Grafyx" board (Grafyx Solution compatible: the Radio
+        Shack 26-1126's ports and mapping, 640 x 240). The sketch:
+    - [ ] The banking checked in the Model 4 Technical Reference (port
+          &84: 32 KB banks): six 16 KB images, two to a 32 KB bank at
+          &8000 and &C000; the core at &C000; parts at &8000 assembled
+          there (LIB_ORG, as the 6128's &4000) -- a per-part origin
+    - [ ] The Lisp's RAM in the lower 32 KB beside LS-DOS: some 2000-2400
+          cells; no compiler (six images: core, parts 0-3, the machine
+          page), no RAM disc
+    - [ ] The machine page: 80 x 24 text written into video RAM by a
+          resident part (all-RAM mode while running, the video mapped
+          in for each write), the keys, LS-DOS 6 SVCs for files, the
+          graphics driver, and floats of its own (no Level II ROM in
+          Model 4 mode: 3-4 KB)
+    - [ ] trs80gp's Model 4 (its hi-res board and FreHD, if it has them)
+          for the tests; the FreHD (IMPORT2) to get builds onto the
+          machine; a hwtest.lsp
+15. [ ] **The ZX Spectrum +2 with DivMMC** (Mike's: a +2, not a +3): the
+        128's banks 0, 1, 3, 4, 6, 7 at &C000 for the six images; files
+        through esxDOS; the DivMMC's own RAM for M: and far arrays,
+        maybe. To find out: grey +2 or +2A/B, the DivMMC's RAM, the
+        esxDOS version, an emulator with DivMMC that can be scripted.
 
