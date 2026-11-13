@@ -208,7 +208,7 @@ find_library:
     call SYS_CURBANK
     ld (V_COREROM),a
     if LIB_MIXED
-    ld c,0                      ; (slot 0 is part of the core's bank)
+    ld c,2                      ; (slots 2-7: slot 2 is the core's bank's)
     else
     ld c,1
     endif

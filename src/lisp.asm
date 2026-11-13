@@ -53,6 +53,10 @@ boot:
     ld hl,(V_MEMTOP)
     inc hl
     res 0,l
+    ifdef STACK_TOP             ; (the Model 4: the stack has a place of
+    ld (V_BLKHI),hl             ;   its own, memmap.asm, and the heap goes
+    ld hl,STACK_TOP             ;   up to V_MEMTOP)
+    endif
     ld (V_STKTOP),hl
     ld sp,hl
     ld (V_TOPSP),sp
@@ -63,6 +67,9 @@ boot:
     add hl,de
     ld (V_STKLIM),hl
     pop hl
+    ifdef STACK_TOP
+    ld hl,(V_BLKHI)
+    endif
     ld (V_BLKHI),hl
     push hl
     ld de,-CELL_LO

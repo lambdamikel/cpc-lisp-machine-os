@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""The TRS-80's machine routines, numbered: makes mach/trs80/jumps.asm,
+"""The TRS-80's machine routines, numbered: makes mach/trs80/jumps.asm (or
+another machine directory's, given: the Model 4's),
 jumptab.inc (the jumpblock), mtab.inc (the machine page's table) and the
 names in machine.asm from the list below. Add a routine here, run this,
 and write m_<name, lower case> in page.asm. The interface names
@@ -18,7 +19,10 @@ FP_MOVE FP_INT2R FP_BIN2R FP_R2INT FP_R2BIN FP_FIX FP_INT FP_EXP10 FP_ADD FP_RSU
 FP_NEG FP_SGN FP_ANGLE FP_PI FP_SQR FP_POW FP_LOG FP_EXP FP_SIN FP_COS FP_TAN FP_ATN
 SYS_TIME M_EDIT M_QUIT M_INKMODE M_RDIN M_RDOUT M_RDCAT M_DELETE M_FILL M_MIDI""".split()
 
-D = os.path.join(os.path.dirname(__file__), '..', '..', 'mach', 'trs80')
+import sys
+# the machine directory: mach/trs80, or another (mkjumps.py mach/trs80m4)
+D = (sys.argv[1] if len(sys.argv) > 1
+     else os.path.join(os.path.dirname(__file__), '..', '..', 'mach', 'trs80'))
 
 def main():
     assert len(NAMES) == len(set(NAMES)) and 2 * len(NAMES) < 256

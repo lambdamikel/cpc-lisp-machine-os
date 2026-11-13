@@ -16,7 +16,8 @@
 ;; be &4000, &8000 or &C000: lib_addr and lib_dispatch put back LIB_ORG's
 ;; bits. LIB_MIXED (the Model 4): each part has its own, &8000 or &C000
 ;; (tools/build.sh passes it), and the core tells them apart by their
-;; "ROM": a slot, the odd ones at &C000, the even at &8000.
+;; "ROM": a slot, the odd ones at &C000, the even at &8000 (from 2: a ROM
+;; number of 0 is none).
     ifndef LIB_ORG
 LIB_ORG           equ #C000
     endif
