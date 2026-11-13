@@ -1,6 +1,6 @@
-# CPC Lisp 0.95 — working notes for Claude
+# CPC Lisp 0.96 — working notes for Claude
 
-*A Lisp machine for the Amstrad CPC.* Version 0.95 since 2026-11-12, 0.9 from 2026-11-07 (the
+*A Lisp machine for the Amstrad CPC.* Version 0.96 since 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
 banner, the ROM headers' version bytes and the documents' titles say so).
 
 A Lisp machine for the Amstrad CPC: **six ROMs** -- an auto-boot core and
@@ -697,7 +697,8 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   Parados (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0), 5 LISPLIB
   (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6) -- the README's
   installation section has the table. All six Lisp ROMs must come from
-  one build: re-flash them together. Flashed: build 31443 (2026-11-12, evening:
+  one build: re-flash them together. Flashed: build 1944 (0.96, the release; build 31443 before it,
+  the same but for the version -- 2026-11-12, evening:
   dropping library functions, lazy loading, far arrays, the fixes found
   on the hardware -- load's environment, M:'s 512-byte buffer, the RAM
   disc's errors giving the buffer back; checked on the 464 with the
@@ -768,7 +769,12 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   `roms/README.md`, `LICENSE`); `v0.95` (2026-11-12) = build 1797, the
   same files, and the TRS-80 discs (`cpc-lisp-0.95-trs80-model1/3`,
   `.dsk` and `.hfe`, TRS-80 build 1685, replaced the same day by build 9066:
-  the editor's SHIFT down-arrow S/C, `(reset)` to LDOS). A new one: refresh `roms/` from one
+  the editor's SHIFT down-arrow S/C, `(reset)` to LDOS); `v0.96`
+  (2026-11-12, evening) = ROMs build 1944, the disc versions
+  `cpclisp512.dsk` (1975) and `cpclisp6128.dsk` (2538), the ROMs' test
+  disc `cpclisp-hwtest.dsk`, `cpc-lisp-0.96.zip`, and the TRS-80 discs
+  (`cpc-lisp-0.96-trs80-model1/3`, `.dsk` and `.hfe`, build 3059) --
+  the same files as `roms/` and `discs/`. A new one: refresh `roms/` from one
   tested build, bump the version (banner, ROM headers, document
   titles), tag, `gh release create` with the same files.
 * Commit with the attribution lines the session gives you.

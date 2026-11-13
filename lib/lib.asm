@@ -41,7 +41,7 @@
 
     org LIB_ORG
     db 1                        ; a background ROM
-    db 0,9,5                    ; mark, version, modification: 0.95
+    db 0,9,6                    ; mark, version, modification: 0.96
     dw lib_names
     jp lib_init                 ; the ROM walk: nothing to do
 

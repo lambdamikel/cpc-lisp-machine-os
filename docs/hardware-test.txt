@@ -1,4 +1,4 @@
-CPC Lisp 0.95 -- trying it on a real CPC
+CPC Lisp 0.96 -- trying it on a real CPC
 =======================================
 A Lisp machine for the Amstrad CPC
 
@@ -28,7 +28,7 @@ was checked since is noted at the end of each section.
 -----------
 [ ] Expect, possibly after Parados's own message:
 
-    CPC Lisp 0.95
+    CPC Lisp 0.96
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     NNNN cells free
@@ -308,7 +308,7 @@ switch the slot):
 [ ] (basic)                          the CPC resets into BASIC 1.0, with
                                      Parados's message as at power-up
 [ ] |BOOTLISP                        (in BASIC) it resets into Lisp:
-                                     CPC Lisp 0.95, LISP>
+                                     CPC Lisp 0.96, LISP>
 (Checked on the 464, 2026-11-12, build 30351: both.)
 
 Or switch the CPC off, then on the PC:

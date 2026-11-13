@@ -1,4 +1,4 @@
-# CPC Lisp 0.95
+# CPC Lisp 0.96
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -6,7 +6,7 @@ ROMs that start a Lisp instead of BASIC. Common Lisp syntax, lexical closures, m
 -- in 16 KB of Z80 assembly -- with graphics, sound, files, floats and
 editors in four more ROMs, and a bytecode compiler in a fifth.
 
-    CPC Lisp 0.95
+    CPC Lisp 0.96
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -187,7 +187,7 @@ and a RAM disc `M:` of 415 KB in its free blocks -- which also holds
 far arrays (`make-far-array`, `far-ref`) and programs loaded with
 `(load "m:big" :lazy t)`, each function read in when first called.
 
-    CPC Lisp 0.95
+    CPC Lisp 0.96
     A Lisp machine for the Amstrad CPC, 512K
     library ROMs 1 2 3 4
     6054 cells free
@@ -196,7 +196,7 @@ far arrays (`make-far-array`, `far-ref`) and programs loaded with
 KB: everything but the compiler, without a RAM disc, and with about 2400
 cells.
 
-    CPC Lisp 0.95
+    CPC Lisp 0.96
     A Lisp machine for the Amstrad CPC, 128K
     library ROMs 1 2 3 4
     2430 cells free
@@ -224,7 +224,7 @@ the cassette port, floats through the Level II ROM, files through LDOS,
 a RAM disc in X-MEM/80's spare pages, speech through Talker/80, MIDI
 through MIDI/80 -- is in `mach/trs80/`.
 
-    CPC Lisp 0.95
+    CPC Lisp 0.96
     A Lisp machine for the TRS-80
     library ROMs 3 4 5 6
     2832 cells free
@@ -244,8 +244,10 @@ The Model III Talker/80 needs nothing.
 
 **The disc**: ready to boot with each
 [release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases) --
-`cpc-lisp-0.95-trs80-model1` and `-model3`, as `.dsk` for emulators and
-`.hfe` for a Gotek. Or build it: `MACH=trs80 tools/build.sh` (rasm and Python 3, as for the
+`cpc-lisp-0.96-trs80-model1` and `-model3`, as `.dsk` for emulators and
+`.hfe` for a Gotek (the `.dsk` files are in [`discs/`](discs/) too).
+X-MEM/80 must be in its 16 KB mode (X-MEM/80, not SuperMem) for all of
+the RAM disc. Or build it: `MACH=trs80 tools/build.sh` (rasm and Python 3, as for the
 CPC, above) makes `build/trs80/lisp-a.dsk` for a Model I -- LDOS 5.3.1,
 single density, JV1, with `LISP/CMD` and the seven images on it,
 compressed -- and `build/trs80/lisp-m3.dsk` for a Model III -- LDOS

@@ -1,4 +1,4 @@
-# CPC Lisp 0.95 -- the discs
+# CPC Lisp 0.96 -- the discs
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -12,15 +12,16 @@ the test discs for the real machine. Each disc's test is `HWTEST.LSP`:
 
 | disc | what | build |
 |---|---|---|
-| `cpclisp512.dsk` | **CPC Lisp from disc, for a 512K RAM expansion** (`mach/cpc512`): `RUN"LISP` -- all of it, the compiler too, and a RAM disc `M:` of 415 KB; and its test: the cells, two files open at once, lazy loading, the RAM disc, far arrays (into the expansion's banks 6 and 7), the compiler | 375 |
-| `cpclisp6128.dsk` | **CPC Lisp from disc, for a plain 6128** (or a CPC with 64 KB more; `mach/cpc6128`): `RUN"LISP` -- everything but the compiler, no RAM disc; and its test, of what it has | 478 |
-| `cpclisp-hwtest.dsk` | **the test of the ROMs' use of a RAM expansion** (or a 6128's second 64 KB): two files at once, lazy loading from the drive and from `M:`, the RAM disc, far arrays over its banks, the compiler. Needs the ROMs of build 31443 or later -- built from this repository (`tools/build.sh`); `roms/` is still an older build | -- |
+| `cpclisp512.dsk` | **CPC Lisp from disc, for a 512K RAM expansion** (`mach/cpc512`): `RUN"LISP` -- all of it, the compiler too, and a RAM disc `M:` of 415 KB; and its test: the cells, two files open at once, lazy loading, the RAM disc, far arrays (into the expansion's banks 6 and 7), the compiler | 1975 |
+| `cpclisp6128.dsk` | **CPC Lisp from disc, for a plain 6128** (or a CPC with 64 KB more; `mach/cpc6128`): `RUN"LISP` -- everything but the compiler, no RAM disc; and its test, of what it has | 2538 |
+| `cpclisp-hwtest.dsk` | **the test of the ROMs' use of a RAM expansion** (or a 6128's second 64 KB): two files at once, lazy loading from the drive and from `M:`, the RAM disc, far arrays over its banks, the compiler. Needs the 0.96 ROMs (`roms/`, build 1944) or later | -- |
 
-| `cpclisp-trs80-model1.dsk` | **CPC Lisp on a TRS-80 Model I** with X-MEM/80 (LDOS 5.3.1, single density): `LISP` at LDOS Ready, and its test, `HWTEST/LSP` -- also `(hwtest-big)`, the RAM disc past 256 KB | 977 |
-| `cpclisp-trs80-model3.dsk` | **the same for a Model III** (LDOS 5.1.4, double density, JV3) | 977 |
+| `cpclisp-trs80-model1.dsk` | **CPC Lisp on a TRS-80 Model I** with X-MEM/80 (LDOS 5.3.1, single density): `LISP` at LDOS Ready, and its test, `HWTEST/LSP` -- also `(hwtest-big)`, the RAM disc past 256 KB | 3059 |
+| `cpclisp-trs80-model3.dsk` | **the same for a Model III** (LDOS 5.1.4, double density, JV3) | 3059 |
 
 Checked on a real CPC 464 with Revaldinho's universal 512K RAM card, on
-2026-11-12: all three, every check yes. **That card wants DIP
+2026-11-12: all three, every check yes (with the builds before 0.96's,
+the same but for the version). **That card wants DIP
 configuration 4 on a 464** (switches 1234 = 0100: DK'tronics mode, all
 eight banks; 0 on a 6128): its shadow modes give bank 3 to the base RAM,
 and the 512K version's loader then stops with "Banks of 64K that answer:
@@ -29,9 +30,10 @@ and the 512K version's loader then stops with "Banks of 64K that answer:
 The TRS-80's test passed on Mike's Model III with X-MEM/80, Talker/80
 and MIDI/80 (2026-11-12) -- **with X-MEM/80 switched to 16 KB pages**:
 in its 32 KB (SuperMem) mode it answers 16 page numbers, and the RAM
-disc keeps to 112 KB (`(dir "m:")` says so). This disc (build 977) passed
-there too: `(hwtest)` 8 yes, and after `(quit)` and `LISP` `(hwtest2)` 2
-yes, with all 367 KB of the RAM disc. For an HxC or a Gotek:
+disc keeps to 112 KB (`(dir "m:")` says so). The build before this one
+(977, the same but for the version) passed there too: `(hwtest)` 8 yes,
+and after `(quit)` and `LISP` `(hwtest2)` 2 yes, with all 367 KB of the
+RAM disc. For an HxC or a Gotek:
 `hxcfe -finput:cpclisp-trs80-model3.dsk -conv:HXC_HFE -foutput:x.hfe`.
 
 (HWTEST writes small files to drive A -- LZ.LSP, NOTES.LSP -- and to

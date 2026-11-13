@@ -1,4 +1,4 @@
-# CPC Lisp 0.95 -- a tour
+# CPC Lisp 0.96 -- a tour
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -24,7 +24,7 @@ needs one: **CTRL + 2** types `~`. (On a TRS-80: SHIFT down-arrow, then
 
 When the CPC is switched on it says
 
-    CPC Lisp 0.95
+    CPC Lisp 0.96
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free

@@ -50,7 +50,7 @@
 
     org LIB_ORG
     db 1                        ; a background ROM
-    db 0,9,5                    ; mark, version, modification: 0.95
+    db 0,9,6                    ; mark, version, modification: 0.96
     dw vm_names
     jp vm_init                  ; the ROM walk: nothing to do
 

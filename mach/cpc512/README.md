@@ -4,7 +4,7 @@ The same Lisp as the ROM version -- the same six images, built from the
 same sources -- but loaded from disc into a RAM expansion: no ROM board
 and no LambdaSpeak card needed.
 
-    CPC Lisp 0.95
+    CPC Lisp 0.96
     A Lisp machine for the Amstrad CPC, 512K
     library ROMs 1 2 3 4
     6054 cells free

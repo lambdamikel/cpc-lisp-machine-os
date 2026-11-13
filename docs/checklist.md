@@ -1,8 +1,8 @@
-# CPC Lisp 0.95 -- what is done, what is to come
+# CPC Lisp 0.96 -- what is done, what is to come
 
 *A Lisp machine for the Amstrad CPC*
 
-Version 0.95, 2026-11-12. Ticked items are built and covered by the regression
+Version 0.96, 2026-11-12. Ticked items are built and covered by the regression
 tests in MAME on a 464 and a 6128 (`tools/test.sh`) unless they say
 otherwise. `docs/hardware-test.txt` is the sheet for trying it on a real
 CPC; the README says how to install the ROMs.

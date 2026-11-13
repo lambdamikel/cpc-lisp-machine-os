@@ -1,18 +1,28 @@
-# CPC Lisp 0.95 -- the ROM images
+# CPC Lisp 0.96 -- the ROM images
 
 *A Lisp machine for the Amstrad CPC*
 
 Ready to use: six 16 KB ROM images, built from this repository (build
-1797, version 0.95). You do not need to build anything to use them. (The
-TRS-80's discs are with the release: see the end.)
+1944, version 0.96). You do not need to build anything to use them.
+(No ROM board? CPC Lisp loads from disc too, with a 512K expansion or on
+a 6128: [`discs/`](../discs/). The TRS-80's discs are there and with the
+release: see the end.)
+
+**New in 0.96**: programs bigger than memory -- `(load "big" :lazy t)`
+reads each function from the file when it is first called -- and library
+functions dropped again when the cells run out, read back when needed;
+**far arrays** on the RAM disc (`make-far-array`, `far-ref`), outside
+the cells; CL's `file-position`. Checked on a real 464 with Revaldinho's
+512K card.
+
 
 | image | what | needed? |
 |---|---|---|
 | `LISP.ROM` | **the core**: the Lisp itself -- the evaluator, the garbage collector, the reader and printer, the special forms, the basic functions | yes |
 | `LISPLIB.ROM` | **library 1**: the screen, graphics, turtle graphics, sound, keys and joystick; strings and characters; printing and reading with streams; files and the RAM disc; the line editor and the function editor | recommended |
-| `LISPLIB2.ROM` | **library 2**: floats and the maths functions, `format`, `sort`, the sequence functions, hash tables, structures, speech, PlayCity and MIDI on the LambdaSpeak card, `(basic)` and `\|BOOTLISP` | recommended |
+| `LISPLIB2.ROM` | **library 2**: floats and the maths functions, `format`, `sort`, the sequence functions, hash tables, structures, `load` (lazy too) and `file-position`, dropping library functions when the cells run out, speech, PlayCity and MIDI on the LambdaSpeak card, `(basic)` and `\|BOOTLISP` | recommended |
 | `LISPLIB3.ROM` | **library 3**: about eighty Common Lisp functions and macros written in Lisp (`reduce`, `map`, `defstruct`, `typep`, `handler-case`, `with-open-file`...) | recommended |
-| `LISPDEMO.ROM` | **the demo ROM**: `loop`, string streams, `midi-note` and the MIDI functions, `sleep`, and the demo programs (`(demo)` lists them) | optional |
+| `LISPDEMO.ROM` | **the demo ROM**: `loop`, string streams, far arrays (`make-far-array`, `far-array`), `midi-note` and the MIDI functions, `sleep`, and the demo programs (`(demo)` lists them) | optional |
 | `LISPVM.ROM` | **the VM ROM**: the compiler (`compile`, `compile-file`, `disassemble`) and the bytecode machine that runs compiled code | optional |
 
 **All six must be from the same build** -- these are: the core recognises
@@ -37,7 +47,7 @@ LambdaSpeak card, below. The rules:
 
 When it starts, it says
 
-    CPC Lisp 0.95
+    CPC Lisp 0.96
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -75,13 +85,18 @@ and `tools/card.py number 4 0`.
 ## On a TRS-80
 
 The release has the same Lisp for a **TRS-80 Model I or III with
-X-MEM/80** (in its X-MEM mode), on LDOS discs ready to boot -- each as a
-`.dsk` for emulators and an `.hfe` for a Gotek or HxC:
+X-MEM/80** -- **in its X-MEM/80 mode, 16 KB pages** (in its 32 KB
+SuperMem mode the RAM disc keeps to 112 KB) -- on LDOS discs ready to
+boot, each as a `.dsk` for emulators and an `.hfe` for a Gotek or HxC
+(the `.dsk` files are in [`discs/`](../discs/) too):
 
 | file | for |
 |---|---|
-| `cpc-lisp-0.95-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp, and on a real Model I with X-MEM/80 and MIDI/80 |
-| `cpc-lisp-0.95-trs80-model3.dsk` / `.hfe` | a Model III: LDOS 5.1.4, double density (JV3) -- tested on a real Model III with X-MEM/80, Talker/80 and MIDI/80 |
+| `cpc-lisp-0.96-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp (0.95 also on a real Model I with X-MEM/80 and MIDI/80) |
+| `cpc-lisp-0.96-trs80-model3.dsk` / `.hfe` | a Model III: LDOS 5.1.4, double density (JV3) -- tested on a real Model III with X-MEM/80, Talker/80 and MIDI/80 |
+
+Each has `HWTEST/LSP`, a test of the machine: `(load "hwtest")`,
+`(hwtest)`.
 
 Boot it, give LDOS the date (and on a Model I the time), type `LISP`.
 [`mach/trs80/README.md`](../mach/trs80/README.md) has the rest.

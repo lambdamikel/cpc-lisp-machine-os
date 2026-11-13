@@ -1,4 +1,4 @@
-# CPC Lisp 0.95 -- reference
+# CPC Lisp 0.96 -- reference
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -52,7 +52,7 @@ no compiler and no RAM disc.
 
 With the core ROM at ROM 0 (replacing BASIC), the CPC starts in Lisp:
 
-    CPC Lisp 0.95
+    CPC Lisp 0.96
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
