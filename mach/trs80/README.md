@@ -126,9 +126,13 @@ without KI/DVR; with KI/DVR loaded this is untried.)
   arrays over its pages, the compiler; `(hwtest-big)`, far arrays past
   the RAM disc's first 256 KB; and after `(quit)` and `LISP`,
   `(load "hwtest")`, `(hwtest2)`, that the RAM disc kept its files. It
-  writes only to `M:` (the Model I's disc is nearly full). trs80gp runs
-  all but `(hwtest-big)`: its X-MEM/80 seems to have 16 pages, and
-  writing past them reset it into LDOS.
+  writes only to `M:` (the Model I's disc is nearly full).
+* **X-MEM/80 must be in its 16 KB mode** (pages of 16 KB, the X-MEM/80
+  setting of its jumper or switch) for all of the RAM disc: with 16 page
+  numbers -- 32 KB (SuperMem) mode, as trs80gp has it -- pages 16-31
+  are pages 0-15 again, so the RAM disc keeps to pages 9-15, 112 KB
+  (`rd_pages` looks at the first use of `M:`; before it did, writing
+  past them reset the machine into LDOS).
 * `*features*` is `(:trs-80 :cpc-lisp)`; the demos look at it.
 * The Model III: the same images and machine page (its ROM has the
   maths routines at the same places); it runs on Mike's, with X-MEM/80,

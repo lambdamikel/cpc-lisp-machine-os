@@ -501,11 +501,14 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   truncates it (the ROM's). Part 1 code must not call the core for
   trivia in a hot path: is_typed/vec_data/str_data inline in `fa_get`
   took a far-ref from 3.7 to 2.9 ms (aref 1.2). test/discfar.lsp.
-  **trs80gp crashes when M: is written past ~256 KB** (X-MEM pages 17
-  and up -- a file reaching there by a few hundred bytes survives, tens
-  of KB reset the machine into LDOS): its X-MEM/80 seems to have 16
-  pages, page 17 aliasing the Lisp's own page 1. The real card has 32;
-  mach/trs80/hardware-test.txt item 10 checks it. TRS-80 far-refs are
+  **M: past X-MEM page 16 reset the TRS-80 into LDOS** -- in trs80gp
+  and on the real Model III alike (2026-11-12): with 16 page numbers
+  (the card's 32 KB/SuperMem mode, Mike thinks his switch is there; or
+  256 KB of SRAM; trs80gp's emulation) pages 16-31 are 0-15 again and
+  page 17 is the Lisp's own RAM. `rd_pages` (rdisc80.asm) probes once
+  -- page 25 against page 9 -- and keeps the RAM disc to pages 9-15
+  (112 KB) then; in 16 KB mode it should have all 368 KB (to be seen:
+  hardware sheet items 10-12). TRS-80 far-refs are
   slow too (100 setf in 3.7 s, not looked into). Don't probe trs80gp's
   options by running it by hand: it pops up windows on Mike's screen.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.

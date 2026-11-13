@@ -53,7 +53,10 @@ repository): (talk) and (sing) work, and VOICDEMO still runs.)
        : about 600
 
 10. [ ] The disc's own test: (load "hwtest")  (hwtest)  : 8 yes, 0 NO
-11. [ ] The RAM disc past 256 KB (trs80gp crashes there: its X-MEM/80
-       seems to have 16 pages, and page 17 lands on the Lisp's own):
+11. [ ] The RAM disc past 256 KB -- X-MEM/80's switch at 16 KB pages:
        (hwtest-big)  : 9 far arrays past 256 KB: yes  (a minute or two)
+       ((dir "m:") says about 367K free in 16 KB mode, 111K with 16
+       pages: the first try, on the Model III, reset it into LDOS --
+       the switch probably at 32 KB pages; the RAM disc sizes itself
+       since)
 12. [ ] (quit), LISP, (load "hwtest"), (hwtest2)  : 2 yes, 0 NO
