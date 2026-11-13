@@ -1,0 +1,11 @@
+# tests the Model 4 version skips (tools/trs80m4/test.sh): the compiler
+# (no VM ROM), the RAM disc and far arrays on M: (none yet), the
+# LambdaSpeak card, and those whose key actions (!press with the CPC's
+# COPY and cursor keys) the Model 4's runner cannot play
+compile
+disccomp
+discram
+discfar
+card
+copywrap
+fed

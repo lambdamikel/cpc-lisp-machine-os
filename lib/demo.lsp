@@ -25,8 +25,9 @@
                ("(fact 20)" "20!, as a float")))
     (when (or (null (cddr d)) (member (caddr d) *features*))
       (format t "~13A~A~%" (car d) (cadr d))
-      ;; a TRS-80's screen has 16 rows: a pause half way
-      (when (and (equal (car d) "(tree)") (member :trs-80 *features*))
+      ;; a Model I/III's screen has 16 rows: a pause half way
+      (when (and (equal (car d) "(tree)") (member :trs-80 *features*)
+                 (not (member :model-4 *features*)))
         (format t "-- a key for more --") (wait-key) (format t "~%"))))
   (format t "~%A key ends a picture.~%(ed 'rose) shows how one is written.~%")
   t)

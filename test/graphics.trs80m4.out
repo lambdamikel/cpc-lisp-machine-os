@@ -1,0 +1,105 @@
+LISP> (mode 1)
+1
+LISP> (progn (cls) (disc 150 300 60 2) (list (test 150 300) (test 150 355) (test 150 370) (test 95 300) (test 85 300)))
+(1 1 0 1 0)
+LISP> (progn (cls) (circle 320 200 100 1) (list (test 420 200) (test 320 300) (test 320 200) (test 391 271)))
+(1 1 0 1)
+LISP> (progn (cls) (box 450 250 600 380 3) (list (test 450 300) (test 600 380) (test 500 300)))
+(1 1 0)
+LISP> (progn (cls) (fill-box 470 270 580 360 2) (list (test 470 270) (test 580 360) (test 525 315) (test 466 315) (test 525 364)))
+(1 1 1 0 0)
+LISP> (progn (cls) (ink-mode 1) (fill-box 0 0 10 10 3) (let ((a (test 5 5))) (fill-box 0 0 10 10 3) (ink-mode 0) (list a (test 5 5))))
+(1 0)
+LISP> (progn (cls) (circle 100 100 40.6 1) (test 140 100))
+0
+LISP> (tag t)
+Error: undefined function TAG
+LISP> (tag nil)
+Error: undefined function TAG
+LISP> (window 1 40 1 25)
+Error: undefined function WINDOW
+LISP> (cls)
+NIL
+LISP> (text-cursor)
+Error: undefined function TEXT-CURSOR
+LISP> (transparent t)
+Error: undefined function TRANSPARENT
+LISP> (transparent nil)
+Error: undefined function TRANSPARENT
+LISP> (flash-speed 10 10)
+Error: undefined function FLASH-SPEED
+LISP> (ink-mode 0)
+0
+LISP> (poke #x9C40 42)
+Error: undefined function POKE
+LISP> (peek 40000)
+Error: undefined function PEEK
+LISP> (peek #x9C40)
+Error: undefined function PEEK
+LISP> #xC000
+49152.0
+LISP> #x3FFF
+16383
+LISP> #x10000
+Error: integer too large
+LISP> (envelope 1 10 1 5)
+NIL
+LISP> (tone-envelope -2 5 2 2)
+NIL
+LISP> (envelope 1 2 3)
+Error: wrong number of arguments for #<SUBR ENVELOPE>
+LISP> (sound-check 1)
+Error: undefined function SOUND-CHECK
+LISP> (list (note 'c4) (note 'a4) (note 'c#4) (note 'eb4) (note 'b) (note 'c0) (note 'c7))
+(239 142 226 201 127 3822 30)
+LISP> (play '(c4 (e4 5) r) 5)
+NIL
+LISP> (note 'x4)
+Error: not a note: X4
+LISP> (joystick)
+Error: undefined function JOYSTICK
+LISP> (mode 2)
+2
+LISP> (mode 1)
+1
+LISP> (home)
+NIL
+LISP> (list (turtle-position) (heading))
+((320 200) 0)
+LISP> (progn (forward 100) (right 90) (forward 50) (left 45) (forward 100) (list (turtle-position) (heading)))
+((441 371) 45)
+LISP> (progn (back 100) (turtle-position))
+(370 300)
+LISP> (progn (home) (dotimes (i 360) (forward 2) (right 1)) (turtle-position))
+(320 200)
+LISP> (progn (set-heading 450) (left 720) (right -30) (heading))
+60
+LISP> (progn (cls) (pen-up) (set-position 100 100) (pen-down) (set-heading 90) (forward 50) (list (test 125 100) (test 125 110)))
+(1 0)
+LISP> (progn (cls) (pen-up) (set-position 100 120) (forward 50) (test 100 145))
+0
+LISP> (pen-down)
+NIL
+LISP> (playcity nil)
+Error: undefined function PLAYCITY
+LISP> (pc-tone 9 100)
+Error: undefined function PC-TONE
+LISP> (symbol 240 #b00111100 #b01000010 #b10100101 #b10000001 #b10100101 #b10011001 #b01000010 #b00111100)
+Error: undefined function SYMBOL
+LISP> (symbol 241)
+Error: undefined function SYMBOL
+LISP> (symbol 100 1)
+Error: undefined function SYMBOL
+LISP> (progn (mode 1) (cls) (circle 320 200 60 1) (box 100 50 200 150 2) (flood-fill 320 200 3) (flood-fill 150 100 1) (list (test 320 200) (test 320 255) (test 320 270) (test 150 100) (test 90 100)))
+(1 1 0 1 0)
+LISP> (progn (cls) (disc 300 200 40 2) (flood-fill 10 10 1) (list (test 10 10) (test 300 200) (test 600 380)))
+(1 1 1)
+LISP> (progn (mode 0) (cls) (disc 320 200 80 5) (flood-fill 10 10 7) (list (test 10 10) (test 320 200) (test 636 396)))
+(1 1 1)
+LISP> (progn (mode 2) (cls) (box 100 100 300 300 1) (flood-fill 200 200 1) (list (test 200 200) (test 99 200) (test 301 200)))
+(1 0 0)
+LISP> (progn (mode 1) (cls) (origin 100 100) (box 0 0 100 100 1) (flood-fill 50 50 2) (list (test 50 50) (test -50 50)))
+(1 0)
+LISP> (mode 1)
+1
+LISP> 

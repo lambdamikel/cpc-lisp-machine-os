@@ -1,0 +1,71 @@
+LISP> (defvar v (make-array 5))
+V
+LISP> v
+#(NIL NIL NIL NIL NIL)
+LISP> (setf (aref v 0) 'a)
+A
+LISP> (setf (svref v 4) "e")
+"e"
+LISP> v
+#(A NIL NIL NIL "e")
+LISP> (aref v 4)
+"e"
+LISP> (length v)
+5
+LISP> (vector 1 2.5 "three" #\4 '(5))
+#(1 2.5 "three" #\4 (5))
+LISP> (vector)
+#()
+LISP> #(1 2 3)
+#(1 2 3)
+LISP> (aref #(a b c) 1)
+B
+LISP> (make-array 3 :initial-element 7)
+#(7 7 7)
+LISP> (make-array 2 :element-type t :initial-element 'x)
+#(X X)
+LISP> (vectorp v)
+T
+LISP> (vectorp '(1))
+NIL
+LISP> (vectorp "s")
+T
+LISP> (elt '(a b c) 2)
+C
+LISP> (elt #(a b c) 0)
+A
+LISP> (elt "abc" 1)
+#\b
+LISP> (aref "xyz" 2)
+#\z
+LISP> (let ((s (string-upcase "abc"))) (setf (aref s 0) #\z) s)
+"zBC"
+LISP> (aref v 5)
+Error: index out of range 5
+LISP> (aref '(1) 0)
+Error: not a vector: (1)
+LISP> (defvar big (make-array 300 :initial-element 0))
+BIG
+LISP> (dotimes (i 300) (setf (aref big i) (list i (* i 1.5))))
+Error: out of string space
+LISP> (defun churn (n) (dotimes (i n) (cons i i) (make-array 4)))
+CHURN
+LISP> (churn 2000)
+Error: out of string space
+LISP> (aref big 299)
+0
+LISP> (aref big 0)
+(0 0.0)
+LISP> (length big)
+300
+LISP> (incf (aref v 1 ) 0)
+Error: not a number: NIL
+LISP> (let ((w (vector 1 2 3))) (incf (aref w 1) 10) w)
+Error: out of string space
+LISP> (equal #(1) #(1))
+Error: out of string space
+LISP> (format nil "~a" #(1 "a"))
+Error: out of string space
+LISP> (format nil "~s" #(1 "a"))
+Error: out of string space
+LISP> 

@@ -1,0 +1,171 @@
+LISP> (format nil "Hello, ~a!" "World")
+"Hello, World!"
+LISP> (format nil "~s and ~a" "str" "str")
+"\"str\" and str"
+LISP> (format nil "~d + ~d = ~d" 2 3 (+ 2 3))
+"2 + 3 = 5"
+LISP> (format nil "~a~%~a" 1 2)
+"1
+2"
+LISP> (format nil "100~~ ~c" #\x)
+"100~ x"
+LISP> (format nil "[~5d]" 42)
+"[   42]"
+LISP> (format nil "[~8a]" 'abc)
+"[ABC     ]"
+LISP> (format nil "[~2a]" "toolong")
+"[toolong]"
+LISP> (format nil "~&start")
+"start"
+LISP> (format nil "x~&y")
+"x
+y"
+LISP> (format t "~a squared is ~a~%" 7 49)
+7 squared is 49
+NIL
+LISP> (format t "pi is about ~a" pi)
+pi is about 3.14159265
+NIL
+LISP> (format nil "~a" '(1 "two" #\3 4.5))
+"(1 two 3 4.5)"
+LISP> (format nil "~s" '(1 "two" #\3 4.5))
+"(1 \"two\" #\\3 4.5)"
+LISP> (format nil "~a ~a" 1)
+Error: too few arguments
+LISP> (format nil "~q" 1)
+Error: bad format directive
+LISP> (format nil "abc~")
+Error: bad format directive
+LISP> (format nil 42)
+Error: not a string: 42
+LISP> (dotimes (i 3) (format t "~3d~6d~%" i (* i i i)))
+  0     0
+  1     1
+  2     8
+NIL
+LISP> (princ "line1
+  line2")
+line1
+line2
+"line1
+line2"
+LISP> (format nil "~A|~S|~5A|~5@A|~:A" "ab" "ab" 'x 'y nil)
+"ab|\"ab\"|X    |    Y|()"
+LISP> (format nil "~D ~5D ~5,'0D ~@D ~:D ~B ~O ~X ~16R" 42 42 42 42 12345 10 64 255 255)
+"42    42 00042 +42 12,345 1010 100 FF FF"
+LISP> (format nil "~D ~D ~:D ~D" 40000.0 -2.5 1234567.0 0.0)
+"40000 -2.5 1,234,567 0"
+LISP> (format nil "~R|~:R|~@R|~:@R" 1984 1984 1984 4)
+"one thousand nine hundred eighty-four|one thousand nine hundred eighty-fourth|MCMLXXXIV|IIII"
+LISP> (format nil "~R ~R ~R ~:R ~:R ~:R ~:R" 0 13 -105 1 12 20 1000)
+"zero thirteen negative one hundred five first twelfth twentieth one thousandth"
+LISP> (format nil "~R" 16383)
+"sixteen thousand three hundred eighty-three"
+LISP> (format nil "~,2F|~8,3F|~F|~F|~,0F|~@F" 3.14159 2.5 7 1.5 2.5 1)
+"3.14|   2.500|7.0|1.5|3.|+1.0"
+LISP> (format nil "~,2F ~,2F ~,1F ~,3F ~$ ~$" 9.996 -0.001 0.05 1234.5678 3.14159 100)
+"10.00 -0.00 0.1 1234.568 3.14 100.00"
+LISP> (format nil "~D item~:P, ~D item~:P, ~D pon~:@P ~D pon~:@P" 1 2 1 3)
+"1 item, 2 items, 1 pony 3 ponies"
+LISP> (format nil "~{~A~^, ~}" '(a b c))
+"A, B, C"
+LISP> (format nil "~{~A=~A~^ ~}" '(x 1 y 2))
+"X=1 Y=2"
+LISP> (format nil "~:{(~A ~A)~}" '((a 1) (b 2)))
+"(A 1)(B 2)"
+LISP> (format nil "~@{~A~^-~}" 1 2 3)
+"1-2-3"
+LISP> (format nil "~2{~A~}" '(1 2 3 4))
+"12"
+LISP> (format nil "~[zero~;one~;two~]|~[zero~;one~:;many~]|~:[no~;yes~]|~@[x=~A~]|~@[y~]" 1 7 t 5 nil)
+"one|many|yes|x=5|"
+LISP> (format nil "~3[a~;b~]end" )
+"end"
+LISP> (format nil "a~5Tb~10Tc|~3@Td")
+"a    b    c|   d"
+LISP> (format nil "~A ~* ~A ~:* ~A ~0@*~A" 1 2 3 4)
+"1  3  3 1"
+LISP> (format nil "~?|~@?" "<~A ~A>" '(1 2) "[~A]" 9)
+"<1 2>|[9]"
+LISP> (format nil "~(HeLLo WoRLD~)|~:(hello big world~)|~@(hello big world~)|~:@(hello~)")
+"hello world|Hello Big World|Hello big world|HELLO"
+LISP> (format nil "~(~A~)" 'foo-bar)
+"foo-bar"
+LISP> (format nil "~~ ~3~")
+"~ ~~~"
+LISP> (format nil "one ~
+              two")
+"one two"
+LISP> (format nil "~V,'*D|~#D" 6 42 7 1 2)
+"****42|  7"
+LISP> (format nil "~C ~@C" #\a #\b)
+"a #\\b"
+LISP> (format t "~&Hello ~A~%" 'world)
+Hello WORLD
+NIL
+LISP> (format nil "~{~}" '(1))
+""
+LISP> (format nil "~Z" 1)
+Error: bad format directive
+LISP> (format nil "~A")
+Error: too few arguments
+LISP> (format nil "~{~A~}" 5)
+Error: not a list: 5
+LISP> (format nil "x~%y~2%z~&w")
+"x
+y
+
+z
+w"
+LISP> (format t "~(~A~)~8Tx~:[~;!~]~%" 'ABC t)
+abc     x!
+NIL
+LISP> (format t "~{~&~5A~5D~}~%" '(a 1 bb 22 ccc 333))
+A        1
+BB      22
+CCC    333
+NIL
+LISP> (dolist (n '(1 2 3)) (format t "~R bottle~:P~%" n))
+one bottle
+two bottles
+three bottles
+NIL
+LISP> (format nil "~{[~{~A~^,~}]~}" '((1 2) (3) ()))
+"[1,2][3][]"
+LISP> (format nil "[~10<foo~>]")
+"[       foo]"
+LISP> (format nil "[~10@<foo~>]")
+"[foo       ]"
+LISP> (format nil "[~10:@<foo~>]")
+"[    foo   ]"
+LISP> (format nil "[~10<foo~;bar~>]")
+"[foo    bar]"
+LISP> (format nil "[~10:<foo~;bar~>]")
+"[  foo  bar]"
+LISP> (format nil "[~15<a~;b~;c~>]")
+"[a      b      c]"
+LISP> (format nil "[~5<toolongtext~>]")
+"[toolongtext]"
+LISP> (format nil "[~10,,,'*<~A~;~A~>]" 'x 'y)
+"[X********Y]"
+LISP> (format nil "[~12,4<abc~>]")
+"[         abc]"
+LISP> (format nil "[~10,,2<ab~;cd~;ef~>]")
+"[ab  cd  ef]"
+LISP> (format nil "[~20<~A~;~D~>]" 'total 42)
+"[TOTAL             42]"
+LISP> (format nil "[~10<~{~A~^,~}~>]" '(1 2 3))
+"[     1,2,3]"
+LISP> (format nil "[~<~>]")
+"[]"
+LISP> (format nil "[~8<~(HI~)~>]")
+"[      hi]"
+LISP> (format t "~10<right~>|~%")
+     right|
+NIL
+LISP> (format nil "~{~10<~A~;~3D~>~%~}" '(apple 1 banana 22 kiwi 333))
+"APPLE    1
+BANANA  22
+KIWI   333
+"
+LISP> 

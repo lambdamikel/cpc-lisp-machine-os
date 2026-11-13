@@ -1,0 +1,49 @@
+LISP> (defun la (x) (+ x 1))
+LA
+LISP> (defun lb (x) (* 2 (la x)))
+LB
+LISP> (defvar *lc* 5)
+*LC*
+LISP> (defun ld (n) (if (< n 1) nil (cons n (ld (- n 1)))))
+LD
+LISP> (save "prog")
+(*LC* LD LB LA)
+LISP> (progn (fmakunbound 'la) (fmakunbound 'lb) (fmakunbound 'ld) (makunbound '*lc*))
+*LC*
+LISP> (load "prog" :lazy t)
+T
+LISP> *lc*
+5
+LISP> (list (numberp (cddr (get 'lb '%lazy))) (cadr (get 'lb '%lazy)))
+(T "prog")
+LISP> (list (eq (symbol-function 'la) (car (get 'la '%lazy))) (eq (symbol-function 'ld) (car (get 'ld '%lazy))))
+(T T)
+LISP> (lb 3)
+8
+LISP> (ld 3)
+(3 2 1)
+LISP> (list (eq (symbol-function 'la) (car (get 'la '%lazy))) (eq (symbol-function 'ld) (car (get 'ld '%lazy))))
+(NIL NIL)
+LISP> (save "again")
+(*LC*)
+LISP> (with-open-file (s "prog") (list (file-position s) (read s) (file-position s) (file-position s 3) (read-char s)))
+(0 (DEFPARAMETER *LC* '5) 22 NIL #\Newline)
+LISP> (with-open-file (s "prog") (list (file-position s 23) (read-char s) (file-position s) (file-position s 30000) (read s nil 'end)))
+(T #\Newline 24 NIL END)
+LISP> (let ((l nil)) (loop (push 0 l)))
+Error: out of memory
+LISP> (list (eq (symbol-function 'la) (car (get 'la '%lazy))) (eq (symbol-function 'ld) (car (get 'ld '%lazy))))
+(T T)
+LISP> (lb 4)
+10
+LISP> (with-open-file (s "again") (ld 2))
+Error: LD must be read from "prog", but a file is open
+LISP> (ld 2)
+(2 1)
+LISP> (load "nothere" :lazy t)
+Error: cannot open "nothere"
+LISP> (load "prog")
+T
+LISP> (list (lb 1) (eq (symbol-function 'lb) (car (get 'lb '%lazy))))
+(4 NIL)
+LISP> 

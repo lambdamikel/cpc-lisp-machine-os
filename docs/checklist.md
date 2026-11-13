@@ -413,25 +413,30 @@ compiled code (`docs/design.md` describes both)
           card's shadow modes (skip the missing bank 3); far arrays
           beyond 65535 elements; more string space on the disc versions
 14. [ ] **The TRS-80 Model 4, native** (Mike, 2026-11-12: next, before the
-        Spectrum; "not now, but for planning"). Mike's machine: a Model 4
-        (not 4P/4D), 128 KB, LS-DOS 6.3.1, a FreHD, Ian Mavric's
-        "Improved Grafyx" board (Grafyx Solution compatible: the Radio
-        Shack 26-1126's ports and mapping, 640 x 240). The sketch:
-    - [ ] The banking checked in the Model 4 Technical Reference (port
-          &84: 32 KB banks): six 16 KB images, two to a 32 KB bank at
-          &8000 and &C000; the core at &C000; parts at &8000 assembled
-          there (LIB_ORG, as the 6128's &4000) -- a per-part origin
-    - [ ] The Lisp's RAM in the lower 32 KB beside LS-DOS: some 2000-2400
-          cells; no compiler (six images: core, parts 0-3, the machine
-          page), no RAM disc
-    - [ ] The machine page: 80 x 24 text written into video RAM by a
-          resident part (all-RAM mode while running, the video mapped
-          in for each write), the keys, LS-DOS 6 SVCs for files, the
-          graphics driver, and floats of its own (no Level II ROM in
-          Model 4 mode: 3-4 KB)
-    - [ ] trs80gp's Model 4 (its hi-res board and FreHD, if it has them)
-          for the tests; the FreHD (IMPORT2) to get builds onto the
-          machine; a hwtest.lsp
+        Spectrum). Mike's machine: a Model 4 (not 4P/4D), 128 KB, LS-DOS
+        6.3.1, a FreHD, Ian Mavric's "Improved Grafyx" board.
+    - [x] In trs80gp (branch `trs80m4`, 2026-11-13,
+          `mach/trs80m4/README.md`): six images in slots of the three
+          32 KB banks (parts at &8000 or &C000: LIB_MIXED, liborgs), a
+          resident part at &2600 (banks, the LS-DOS gate, the jumpblock,
+          a clock task), the Lisp's RAM in the lower 32 KB beside
+          LS-DOS -- about 1900 cells, 2.7 KB of strings; 80 x 24 text in
+          map-2 windows; floats through the Model III ROM in map-0
+          windows (a 4P without it says so); files through LS-DOS 6's
+          SVCs; graphics on the hi-res board, 640 x 240 (`hires.asm`);
+          the speaker; BREAK. The suite passes in trs80gp
+          (`tools/trs80m4/test.sh`, `test/*.trs80m4.out`,
+          `test/skip.trs80m4`); `mach/trs80m4/hwtest.lsp` 8 yes
+    - [ ] On the real Model 4: hwtest, the Improved Grafyx (the text
+          over the graphics is an undocumented Tandy port), the sound's
+          pitch (calibrated to trs80gp's -m4, 2 wait states an
+          instruction), the FreHD (IMPORT2) to get builds onto it
+    - [ ] More room: the heap in the upper 32 KB and the code in the
+          lower (OPREG's bit 6 puts banks 1 and 2 there) would about
+          double it -- the core's "a SUBR is at &C000 and up" tests,
+          interrupts with LS-DOS's low memory out, the ROM's RAM at
+          &4000
+    - [ ] No compiler (no seventh slot), no RAM disc yet
 15. [ ] **The ZX Spectrum +2 with DivMMC** (Mike's: a +2, not a +3): the
         128's banks 0, 1, 3, 4, 6, 7 at &C000 for the six images; files
         through esxDOS; the DivMMC's own RAM for M: and far arrays,

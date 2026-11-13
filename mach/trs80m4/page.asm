@@ -17,7 +17,8 @@
 ;; goes to the printer too: the test transcript.
 ;;
 ;; KEYS come from LS-DOS (@KEY, @KBD): its type-ahead, and what trs80gp
-;; types. GRAPHICS and SOUND are not here yet.
+;; types. GRAPHICS are the high-resolution board's (hires.asm), if there
+;; is one; SOUND is the speaker's.
 
     include "firmware.asm"
     include "jumps.asm"
@@ -91,9 +92,24 @@ m_init:
     ld (g_y),hl
     ld (g_ox),hl
     ld (g_oy),hl
+    ld c,15                     ; LS-DOS's cursor off: while @KEY waits, its
+    ld a,SV_DSP                 ;   video driver blinks it where LS-DOS
+    call k_svc                  ;   left it, over the Lisp's screen
+    call hr_init                ; the graphics board, if there is one
     call vw_on
     call c_clear
-    jp vw_off
+    call vw_off
+    call fp_probe               ; the Model III ROM, for floats
+    ret nz
+    ld hl,m_norom
+.say:
+    ld a,(hl)
+    or a
+    ret z
+    call m_con_putc
+    inc hl
+    jr .say
+m_norom:    db "No Model III ROM here: no floats",13,10,0
 
 ;; vw_on: the keyboard and the screen in (memory map 2), the interrupts
 ;; off; vw_off: map 3 as it was, the interrupts on. All but AF kept.
@@ -604,6 +620,7 @@ m_con_cls:
     push bc
     push de
     push hl
+    call hr_clear               ; the graphics too, as on the CPC (one screen)
     call vw_on
     call c_clear
     call c_show
@@ -844,55 +861,157 @@ m_vid_fillbox:
     jp vw_off
 
 ;; ---------------------------------------------------------------------------
-;; GRAPHICS: not yet (the hi-res board comes next) -- the position is kept
+;; GRAPHICS: the high-resolution board, hires.asm
 
-m_gfx_plot:
-m_gfx_plotr:
-m_gfx_line:
-m_gfx_liner:
-m_gfx_clear:
-m_m_inkmode:
-m_m_fill:
-    ret
-m_gfx_move:
-    ld (g_x),de
-    ld (g_y),hl
-    ret
-m_gfx_mover:
-    push hl
-    ld hl,(g_x)
-    add hl,de
-    ld (g_x),hl
-    pop de
-    ld hl,(g_y)
-    add hl,de
-    ld (g_y),hl
-    ret
-m_gfx_test:
-m_gfx_testr:
-    xor a
-    ret
-m_gfx_where:
-    ld de,(g_x)
-    ld hl,(g_y)
-    ret
-m_gfx_origin:
-    ld (g_ox),de
-    ld (g_oy),hl
-    ld hl,0
-    ld (g_x),hl
-    ld (g_y),hl
-    ret
-m_gfx_pen:
-    ld (g_pen),a
-    ret
+    include "hires.asm"
 
 ;; ---------------------------------------------------------------------------
-;; SOUND: not yet -- a note is taken (carry), not heard
+;; SOUND: one voice, a square wave on the speaker (port &90, bit 0). The
+;; CPC's sound record: [3] the period, 125000 / the frequency, [6] the
+;; volume, [7] the duration in 1/100 s (0: 0.2 s). The note is played there
+;; and then; envelopes and the other channels are not heard. A half wave
+;; takes period / 250000 s: the note lasts while duration * 2500 of those
+;; units are not used up. (As the Model I/III's, mach/trs80/page.asm.)
+
+s_t:        db 0,0,0            ; the units left
+s_x:        db 0,0,0            ; (for multiplying)
+s_lvl:      db 1
 
 m_snd_queue:
+    push hl
+    pop ix                      ; IX = the record
+    ld l,(ix+7)
+    ld h,(ix+8)
+    ld a,h
+    or l
+    jr nz,.d
+    ld hl,20
+.d:
+    push hl
+    call s_2500                 ; s_t = duration * 2500
+    pop hl
+    ld c,(ix+3)
+    ld b,(ix+4)                 ; BC = the period
+    ld a,b
+    or c
+    jr z,.rest
+    ld a,(ix+6)
+    or a
+    jr z,.rest
+    ; the delay for half a wave, period * 4 us: at the 4 MHz Model 4's
+    ; pace with its wait states and LS-DOS's interrupts -- some 2.77
+    ; million T-states a second, measured in trs80gp -- period * 11.08,
+    ; 26 a loop and some 170 around it: period * 0.453 - 7 loops, that is
+    ; period/2 - period/16 + period/64 - 7 (at least 1; a second's note
+    ; measured 1.0 s, a rest's too)
+    ld h,b
+    ld l,c
+    srl h
+    rr l                        ; /2
+    push hl
+    srl h
+    rr l
+    srl h
+    rr l
+    srl h
+    rr l                        ; /16
+    ld d,h
+    ld e,l
+    srl h
+    rr l
+    srl h
+    rr l                        ; /64
+    ex de,hl
+    or a
+    sbc hl,de                   ; /16 - /64
+    ex de,hl
+    pop hl
+    or a
+    sbc hl,de
+    ld de,7
+    or a
+    sbc hl,de
+    jr nc,.k
+    ld hl,0
+.k:
+    ex de,hl                    ; DE = the delay's loops
+    inc de
+.wave:
+    ld a,(s_lvl)
+    xor 1
+    ld (s_lvl),a
+    out (#90),a
+    push de
+.dl:
+    dec de
+    ld a,d
+    or e
+    jr nz,.dl
+    pop de
+    ld hl,(s_t)
+    or a
+    sbc hl,bc
+    ld (s_t),hl
+    ld a,(s_t+2)
+    sbc a,0
+    ld (s_t+2),a
+    jr nc,.wave
+    xor a
+    out (#90),a
     scf
     ret
+.rest:                          ; silence: duration * 10 ms
+    ld b,h
+    ld c,l
+.r:
+    ld de,1065                  ; about 10 ms (as the delay above)
+.rl:
+    dec de
+    ld a,d
+    or e
+    jr nz,.rl
+    dec bc
+    ld a,b
+    or c
+    jr nz,.r
+    scf
+    ret
+
+;; s_2500: HL = a number -> s_t = it times 2500 (24 bits)
+s_2500:
+    xor a
+    ld (s_t),a
+    ld (s_t+1),a
+    ld (s_t+2),a
+    ld (s_x),hl
+    ld (s_x+2),a
+    ld de,2500
+    ld b,12
+.bit:
+    srl d
+    rr e
+    jr nc,.no
+    ld hl,(s_t)                 ; s_t += s_x
+    ld a,(s_x)
+    add a,l
+    ld l,a
+    ld a,(s_x+1)
+    adc a,h
+    ld h,a
+    ld (s_t),hl
+    ld a,(s_x+2)
+    ld hl,s_t+2
+    adc a,(hl)
+    ld (hl),a
+.no:
+    ld hl,(s_x)                 ; s_x *= 2
+    add hl,hl
+    ld (s_x),hl
+    ld hl,s_x+2
+    rl (hl)
+    djnz .bit
+    ret
+
 
 ;; ---------------------------------------------------------------------------
 ;; FILES: files4.asm (no RAM disc on the Model 4: M: is no drive)
@@ -1007,6 +1126,16 @@ m_m_quit:
     ld a,128
     out (EE_PORT),a
 .dos:
+    call hr_off
+    ld c,28                     ; for LS-DOS: the cursor home, the screen
+    ld a,SV_DSP                 ;   cleared, its cursor on again
+    call RS_SVC
+    ld c,31
+    ld a,SV_DSP
+    call RS_SVC
+    ld c,14
+    ld a,SV_DSP
+    call RS_SVC
     ld a,(RS_TSLOT)
     cp 255
     jr z,.banks
@@ -1072,5 +1201,7 @@ m_m_midi:
 
 page_end:
     print "machine page: ",page_end-#C000," bytes"
-    assert page_end <= #F400
+FILL_STK    equ #E000           ; flood-fill's stack: 1280 pixels, in the page
+FILL_END    equ #F400           ;   past its code (not in the image), below
+    assert page_end <= FILL_STK ;   where map 2 puts the keyboard
     defs #10000-$,#FF

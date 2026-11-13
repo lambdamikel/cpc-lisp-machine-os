@@ -36,7 +36,8 @@ Contents: [Starting](#starting) · [The REPL](#the-repl) ·
 [On a TRS-80](#on-a-trs-80)
 
 **What works where.** CPC Lisp runs on the Amstrad CPC (464, 664, 6128)
-and on the TRS-80 Model I and III with X-MEM/80. The language, the
+and on the TRS-80 Model I and III with X-MEM/80 (and the Model 4: see
+[its own part](#on-a-trs-80-model-4) of *On a TRS-80*). The language, the
 editors, files and streams, the compiler, graphics and the turtle,
 `flood-fill`, speech, MIDI, the RAM disc `M:` and the demos are the same
 on both. What a TRS-80 has not got is marked **CPC only**, what only it
@@ -902,3 +903,25 @@ there:
   `sound-continue`, PlayCity's `playcity`, `pc-tone`, `pc-off`, and
   `(basic)`; the `(chords)` demo. `midi-off` does nothing.
 - About 2800 cells instead of 6600.
+
+### On a TRS-80 Model 4
+
+The Model 4 version runs natively, in the Model 4's own mode, with 128
+KB under LS-DOS 6.3.1 ([`mach/trs80m4/README.md`](../mach/trs80m4/README.md);
+`*features*` is `(:trs-80 :model-4 :cpc-lisp)`). It is a TRS-80 as
+above, but for:
+
+- **Starting**: boot the Lisp's LS-DOS disc, give the date and time,
+  type `LISP`; `(quit)` goes back to LS-DOS.
+- **The screen** is 80 by 24. **Graphics** are the high-resolution
+  board's (Radio Shack's 26-1126 and those that answer as it does), 640
+  by 240 pixels from the logical 640 by 400, the text over them; `cls`
+  clears both, `clg` the graphics. Without a board nothing is drawn and
+  `test` says 0.
+- **Sound** on the speaker (port &90), one voice, as above.
+- **Floats** through the Model III ROM, as on a Model I or III -- a
+  Model 4 without it (a 4P) says so at the start and has none.
+- **Keys**: as above, and F1 is COPY, CTRL-S is CTRL-S.
+- **Not there**: the compiler (`compile` is undefined), the RAM disc
+  `M:` and far arrays.
+- About 1900 cells and 2.7 KB of strings.

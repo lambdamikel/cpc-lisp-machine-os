@@ -452,6 +452,43 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     tests the variant's runner skips (`tools/cpc6128/test.sh`).
   * The RAM disc refuses (rd_ready: RD_NBANKS < 6) -- else `M:` would
     write over the code in blocks 4-6.
+* **The TRS-80 Model 4** (`mach/trs80m4/`, branch `trs80m4`,
+  2026-11-13; Mike: "native. yes 128 kb.", LS-DOS 6.3.1, a FreHD, Ian
+  Mavric's Improved Grafyx): six images in "slots" 2-7, half a 32 KB
+  bank each (OPREG &84 bits 4-6: &20 bank 1, &30 bank 2 at &8000; slot
+  s is bank s/2-1, odd slots at &C000; a ROM number of 0 is none, so
+  find_library starts at 2). Its README has the map. Lessons:
+  * **Write OFLAG$ before OPREG** (FLAGS$+'O'-'A', from @FLAGS$): LS-DOS's
+    drivers map the keyboard and screen in from it in an interrupt and
+    put it back -- so the interrupts stay on. LS-DOS is called through
+    the resident gate (RS_SVC) with its bank 0 in.
+  * **Anything LS-DOS reads through a pointer must be below &8000**: the
+    file name buffer was in the machine page (bank 2) and @FSPEC read
+    bank 0 there -- "cannot open" (FNAMEBUF, memmap.asm).
+  * **In map 0 the ROM covers &0000-&37FF**, the resident part too:
+    `ld a,(RS_P84)` to switch back read the ROM (fp_p84 in the page).
+    trs80gp's -m4 has the Model III ROM there (an "I" at &0125); a 4P
+    has not: fp_probe says so at the start, floats fail with no carry.
+  * **LS-DOS's cursor blinks while @KEY waits**, at its own position,
+    and puts back what it saved -- a character of the Lisp's lost at
+    the bottom-left, a "_" now and then. *DO's code 15 turns it off
+    (m_init), 14 on again at (quit).
+  * The heap is the lower 32 KB beside LS-DOS (every image must see
+    it): ~1900 cells, 2.7 KB of strings. Doubling it would mean the
+    code in the lower half (OPREG bit 6) and the heap in the upper.
+  * The hi-res board (`hires.asm`, trs80gp's default): ports &80 X byte,
+    &81 Y, &82 data (bit 7 left), &83 options (bit 0 on, 1 waits, 2-3
+    count down, 4-7 *don't* count after read/write), &8E=1 text over
+    graphics. g_cell must keep DE: the fill reuses it (columns past 255
+    came back /8 -- the fill ran along row 119 for ever).
+  * trs80gp's `-m4` is "2 wait states per instruction": some 2.77 M
+    T-states a second, measured; the speaker's delays are tuned to it.
+  * trs80gp input: `-id N` waits N frames, `-ik 6 4` holds BREAK (row 6
+    bit 2), `-ik 6 0` lets go: run.sh plays the tests' `!esc`/`!type`.
+    `-ig` dumps the hi-res memory (128 bytes a row).
+  * The suite: `tools/trs80m4/test.sh` (3 at a time, a disc copy each);
+    build elsewhere meanwhile (`OUT=build/trs80m4-dev`,
+    `TRS80M4_BUILD=...`): each test copies the disc as it starts.
 * **Dropping library functions** (2026-11-12, Mike asked how programs
   could use more memory): when `cons` finds no cell after a GC it calls
   `lnum` +15, `ln_short` (`lib/short.asm`, part 1). Pass 0 hides every
@@ -555,7 +592,7 @@ should see.
 |---|---|
 | rasm 3.2.7 | `~/claude/midi80/toolchain/rasm/rasm` |
 | iDSK | `~/claude/midi80/toolchain/idsk/iDSK` |
-| hxcfe (HFE images) | `~/claude/midi80/toolchain/hxc/build/hxcfe` |
+| hxcfe (HFE images) | `~/claude/midi80/toolchain/hxc/build/hxcfe` (with `LD_LIBRARY_PATH` that directory: `libhxcfe.so`) |
 | MAME | `/usr/games/mame`; CPC ROMs in `~/claude/cpc/mame-roms` (`-rompath`) |
 | 464 OS/BASIC 1.0 ROM image | `~/claude/cpc/mame-roms/cpc464/cpc464.rom`; firmware jumpblock table at &08AC, two bytes an entry |
 

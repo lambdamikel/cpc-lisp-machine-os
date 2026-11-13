@@ -1,0 +1,55 @@
+LISP> *features*
+(:TRS-80 :MODEL-4 :CPC-LISP)
+LISP> (identity 5)
+5
+LISP> (remove 3 '(1 2 3 4 3))
+(1 2 4)
+LISP> (sort '(5 3 8 1 9 2) #'<)
+(1 2 3 5 8 9)
+LISP> (reduce #'+ '(1 2 3 4 5))
+15
+LISP> (mapcan #'(lambda (x) (list x x)) '(1 2))
+(1 1 2 2)
+LISP> (do ((i 0 (1+ i)) (acc nil (cons i acc))) ((= i 5) acc))
+(4 3 2 1 0)
+LISP> (string-upcase "hello")
+"HELLO"
+LISP> (string-downcase "MiXeD 123")
+"mixed 123"
+LISP> (concatenate 'string "foo" "bar" "baz")
+"foobarbaz"
+LISP> (subseq "hello world" 6)
+"world"
+LISP> (subseq "hello world" 0 5)
+"hello"
+LISP> (parse-integer "123")
+123
+LISP> (parse-integer "x")
+NIL
+LISP> #'plot
+#<SUBR PLOT>
+LISP> (funcall #'identity 7)
+7
+LISP> (mapcar #'1+ '(1 2 3))
+(2 3 4)
+LISP> (char-upcase #\a)
+#\A
+LISP> (gcd 48 36)
+12
+LISP> (expt 2 10)
+1024
+LISP> (let ((l (list 1 2 3))) (pushnew 2 l) (pushnew 4 l) l)
+(4 1 2 3)
+LISP> (union '(1 2) '(2 3))
+(1 2 3)
+LISP> (progn (cls) (plot 320 200) (draw 600 380 1) (list (test 600 380) (test 600 300) (xpos) (ypos)))
+(1 0 600 300)
+LISP> (sound 1 200 10)
+NIL
+LISP> (plot)
+Error: wrong number of arguments for #<SUBR PLOT>
+LISP> (numberp (time))
+T
+LISP> (cls)
+NIL
+LISP> 

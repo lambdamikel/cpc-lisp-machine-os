@@ -1,0 +1,58 @@
+LISP> (save "empty")
+Error: nothing to save
+LISP> (defun sq (x) (* x x))
+SQ
+LISP> (defvar *items* '(1 "two" #\3))
+*ITEMS*
+LISP> (defmacro twice (x) `(progn ,x ,x))
+TWICE
+LISP> (defun test (x) (+ x x))
+TEST
+LISP> (remove 3 '(1 2 3))
+(1 2)
+LISP> *features*
+(:TRS-80 :MODEL-4 :CPC-LISP)
+LISP> (save "work")
+(SQ TEST TWICE *ITEMS*)
+LISP> (dir)
+Drive 0:
+LOG/CMD       1K     LISP/CMD      2K     LISP0/IMG     11K
+LISP1/IMG     9K     LISP2/IMG     11K    LISP3/IMG     6K
+LISP4/IMG     8K     LISPM/IMG     4K     HWTEST/LSP    3K
+PATCH/CMD     3K     MEMDISK/DCT   3K     FORMS/FLT     1K
+WORK/LSP      1K     KSM/FLT       1K     CLICK/FLT     1K
+FLOPPY/DCT    1K     DISKCOPY/CMD  2K     REPAIR/CMD    1K
+NIL
+LISP> (fmakunbound 'sq)
+SQ
+LISP> (fmakunbound 'twice)
+TWICE
+LISP> (makunbound '*items*)
+*ITEMS*
+LISP> (fmakunbound 'test)
+TEST
+LISP> (load "work")
+T
+LISP> (sq 9)
+81
+LISP> (test 21)
+42
+LISP> *items*
+(1 "two" #\3)
+LISP> (macroexpand-1 '(twice (print 1)))
+(PROGN (PRINT 1) (PRINT 1))
+LISP> (save "two.lsp" 'sq)
+(SQ)
+LISP> (load "nothere")
+Error: cannot open "nothere"
+LISP> (dir)
+Drive 0:
+LOG/CMD       1K     LISP/CMD      2K     LISP0/IMG     11K
+LISP1/IMG     9K     LISP2/IMG     11K    LISP3/IMG     6K
+LISP4/IMG     8K     LISPM/IMG     4K     HWTEST/LSP    3K
+PATCH/CMD     3K     MEMDISK/DCT   3K     FORMS/FLT     1K
+WORK/LSP      1K     TWO/LSP       1K     KSM/FLT       1K
+CLICK/FLT     1K     FLOPPY/DCT    1K     DISKCOPY/CMD  2K
+REPAIR/CMD    1K     
+NIL
+LISP> 

@@ -93,6 +93,31 @@ f_rst:
     ret                         ; RST &38: the interrupts are off
 f_rst_end:
 fp_ready:   db 0
+fp_rom:     db 1                ; 0: no Model III ROM in map 0 (fp_probe)
+
+;; fp_probe: from m_init -- is the Model III ROM there in map 0? (A Model
+;; 4P, perhaps a gate-array Model 4, has only a boot ROM.) Its "I" at
+;; &0125, as the Model I/III's machine page tells a Model III. -> NZ if so.
+fp_probe:
+    di
+    ld a,(RS_P84)
+    ld (fp_p84),a
+    and #FF-OP_MAP
+    out (OPREG),a
+    ld a,(#0125)
+    ld b,a
+    ld a,(fp_p84)
+    out (OPREG),a
+    ei
+    ld a,b
+    cp 'I'
+    ld a,1
+    jr z,.yes
+    xor a
+.yes:
+    ld (fp_rom),a
+    or a
+    ret
 fp_sp:      dw 0
 fp_p84:     db 0            ; OPREG for map 3, while map 0 is in
 
@@ -123,8 +148,12 @@ f_no:
     or a
     ret
 ;; f_jphl: call the ROM's routine at HL, in map 0 on the stack below
-;; (it takes nothing in registers: WRA1 and WRA2 are its operands)
+;; (it takes nothing in registers: WRA1 and WRA2 are its operands) ->
+;; carry; no carry if there is no ROM
 f_jphl:
+    ld a,(fp_rom)
+    or a
+    ret z
     ld a,(fp_ready)
     or a
     push hl
@@ -142,6 +171,7 @@ f_jphl:
     out (OPREG),a
     ld sp,(fp_sp)
     ei
+    scf
     ret
 .go:
     jp (hl)
@@ -316,6 +346,7 @@ f_rom:
     ld l,c
     call f_jphl
     pop hl
+    ret nc                      ; no ROM
     jp f_d2c
 
 ;; f_huge: no carry if the real at HL or at DE is 2^126 or more
@@ -814,6 +845,7 @@ m_fp_exp10:
     jr nc,.no
     ld hl,R_DMUL
     call f_jphl
+    jr nc,.no
     ld hl,f_cnt
     dec (hl)
     jr .l
@@ -823,6 +855,7 @@ m_fp_exp10:
     jr c,.tiny
     ld hl,R_DDIV
     call f_jphl
+    jr nc,.no
     ld hl,f_cnt
     inc (hl)
     jr .l
@@ -846,6 +879,7 @@ f_fn1:
     pop hl
     call f_jphl
     pop hl
+    ret nc                      ; no ROM
     jp f_s2c
 
 ;; FP_SQR, FP_LOG, FP_EXP, FP_SIN, FP_COS, FP_TAN, FP_ATN: (HL) = f((HL)).

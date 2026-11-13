@@ -1,0 +1,21 @@
+LISP> (defun fact (n)
+        (if (= n 0)
+            1
+            (* n (fact (- n 1)))))
+FACT
+LISP> (fact 5)
+120
+LISP> (let ((x 1)
+            (y 2))
+        (list x
+              y))
+(1 2)
+LISP> (mapcar #'(lambda (x)
+                  (* x x))
+                '(1 2 3))
+(1 4 9)
+LISP> "a string (with a paren"
+"a string (with a paren"
+LISP> (list #\( 1)
+(#\( 1)
+LISP> 
