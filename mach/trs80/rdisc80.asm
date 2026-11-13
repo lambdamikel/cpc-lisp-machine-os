@@ -500,8 +500,10 @@ rd_close:
     ret nz
     ld a,(ix+7)
     or a
-    call nz,rd_flush
+    jr z,.flushed               ; (nothing waiting: a length of 256 * k --
+    call rd_flush               ;   carry clear here said "cannot write")
     ret nc
+.flushed:
     ld hl,RD_E
     ld (hl),1
     inc hl

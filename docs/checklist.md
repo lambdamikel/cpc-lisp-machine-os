@@ -383,3 +383,32 @@ compiled code (`docs/design.md` describes both)
         on a CPC, MIDI/80 on a TRS-80; the bytes checked in MAME
         (test/card.lsp) and trs80gp; `(midi-tune)` heard on the real 464
         through the card (2026-11-12); MIDI/80 not tried yet
+12. [x] **CPC Lisp from disc** (Mike, 2026-11-12): with a **512K
+        expansion** (`mach/cpc512`: the six images in the expansion's
+        banks, the compiler, a RAM disc of 415 KB) and on a **plain
+        6128** (`mach/cpc6128`: no compiler, no RAM disc); both checked
+        on the real 464 with Revaldinho's 512K card in DIP configuration
+        4 (`HWTEST.LSP` on their discs, all yes)
+13. [x] **More memory for programs** (Mike, 2026-11-12: "can some of the
+        extra memory ... be used for lisp programs?"):
+    - [x] Library functions dropped when the cells run out, read in again
+          when next called (every version)
+    - [x] `(load "big" :lazy t)`: a program's functions read from the file
+          when first called, dropped like the library's; CL's
+          `file-position`
+    - [x] Far arrays on the RAM disc: `make-far-array`, `far-array`,
+          `far-ref`, `far-length` (ROMs, 512K, TRS-80)
+    - [x] Checked on the real 464: the 512K disc version and the ROMs
+          with Revaldinho's card (the test discs in `discs/`)
+    - [ ] TRS-80, real: far arrays past 256 KB of the RAM disc (trs80gp
+          crashes there: its X-MEM/80 seems to have 16 pages); far
+          arrays and lazy loading there at all
+    - [ ] A write error inside `%catch-errors` (`ignore-errors`,
+          `handler-case`) -- a full disc -- leaves the output file marked
+          open until toplevel, so every later `open` in the same form
+          fails; save's and putc's error paths could abandon it first
+    - [ ] Maybe: a faster fill for `make-far-array` (each byte goes
+          through the RAM disc's putc: 390 KB took minutes); the 512K
+          card's shadow modes (skip the missing bank 3); far arrays
+          beyond 65535 elements; more string space on the disc versions
+

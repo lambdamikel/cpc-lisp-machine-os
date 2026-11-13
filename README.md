@@ -201,14 +201,17 @@ cells.
     library ROMs 1 2 3 4
     2430 cells free
 
-Both are built from the same sources: `MACH=cpc512 tools/build.sh` makes
+**The discs are ready in [`discs/`](discs/)** -- `cpclisp512.dsk` and
+`cpclisp6128.dsk`, and a test disc for the ROMs' use of a RAM expansion;
+each has `HWTEST.LSP`, a test of the real machine (`(load "hwtest")`,
+`(hwtest)`). Or build them: `MACH=cpc512 tools/build.sh` makes
 `build/cpc512/cpclisp512.dsk`, `MACH=cpc6128 tools/build.sh`
 `build/cpc6128/cpclisp6128.dsk`. `(basic)` goes back to BASIC, and
 `RUN"LISP` starts Lisp again (with the 512K, the RAM disc's files are
 still there). [`mach/cpc512/README.md`](mach/cpc512/README.md) and
 [`mach/cpc6128/README.md`](mach/cpc6128/README.md) have how they work.
-They were made and tested in MAME (a 464 and a 6128); real ones are
-next.
+Both run on a real 464 with Revaldinho's 512K card -- in its DIP
+configuration 4 (2026-11-12): [`discs/README.md`](discs/README.md).
 
 ## On a TRS-80
 
@@ -278,6 +281,8 @@ and III are next.
 
 * [`roms/README.md`](roms/README.md): the ready-made ROM images -- what
   each is, and how to install them
+* [`discs/README.md`](discs/README.md): CPC Lisp from disc (512K, plain
+  6128) and the test discs for the real machine
 * [`docs/tutorial.md`](docs/tutorial.md): a tour at the keyboard -- the
   language, then the screen, graphics, the turtle, keys, sound, speech,
   files and the compiler

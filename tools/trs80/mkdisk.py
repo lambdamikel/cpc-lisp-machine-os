@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """The TRS-80 discs, with LISP/CMD and the images:
 
-    mkdisk.py OUT  -- reads OUT/LISP.CMD and OUT/LISP*.ROM, writes
+    mkdisk.py OUT  -- reads OUT/LISP.CMD and OUT/LISP*.ROM (and
+      mach/trs80/hwtest.lsp, as HWTEST/LSP), writes
       OUT/lisp-a.dsk: the Model I's, LDOS 5.3.1 single density
         (tools/trs80/ldos-m1.dsk, a JV1 system disc with nothing else on
         it), the images compressed (lz.py) to fit; were they to grow out
@@ -31,6 +32,12 @@ def main():
     for name, rom in IMAGES:
         data = lz.compress(open(os.path.join(out, rom), 'rb').read().rstrip(b'\xff'))
         files.append((name, 'IMG', data))
+    test = os.path.join(os.path.dirname(__file__), '../../mach/trs80/hwtest.lsp')
+    if os.path.exists(test):            # the test of the real machine, its
+        lines = open(test).read().split('\n')  # comments and indentation out:
+        text = '\n'.join(l.strip() for l in lines  # it fits on the Model I's
+                         if l.strip() and not l.strip().startswith(';'))
+        files.append(('HWTEST', 'LSP', (text + '\n').encode()))  # disc then
     discs = [L.Img(BASE), L.Img(BASE)]
     k = 0
     for name, ext, data in files:

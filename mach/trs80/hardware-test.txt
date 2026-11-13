@@ -52,10 +52,8 @@ repository): (talk) and (sing) work, and VOICDEMO still runs.)
        elsewhere), and  (let ((t0 (time))) (sleep 2) (- (time) t0))
        : about 600
 
-10. [ ] The RAM disc past 256 KB (trs80gp crashes there: its X-MEM/80
+10. [ ] The disc's own test: (load "hwtest")  (hwtest)  : 8 yes, 0 NO
+11. [ ] The RAM disc past 256 KB (trs80gp crashes there: its X-MEM/80
        seems to have 16 pages, and page 17 lands on the Lisp's own):
-       (far-length (make-far-array "a" 65000))   : 65000.0
-       (far-length (make-far-array "b" 30000))   : 30000
-       (setf (far-ref b 29999) 7)  (far-ref b 29999)   : 7, 7
-       (dir "m:")   : A.FAR 127K, B.FAR 59K, about 180K free
-       (Each make-far-array takes some seconds.)
+       (hwtest-big)  : 9 far arrays past 256 KB: yes  (a minute or two)
+12. [ ] (quit), LISP, (load "hwtest"), (hwtest2)  : 2 yes, 0 NO

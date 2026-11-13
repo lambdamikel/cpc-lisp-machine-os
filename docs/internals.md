@@ -69,9 +69,10 @@ The `%` names in 0.9:
 |---|---|---|
 | the core: special forms | `%LOOP` `%EXPANDED` `%CATCH-ERRORS` | a `loop` without keywords becomes `%LOOP`; a macro call is rewritten to `(%EXPANDED ...)` the first time it runs (below); `ignore-errors` and `handler-case` are built on `%CATCH-ERRORS` |
 | the core: a function | `%SIGNAL` | signals an error with a message; `error` is built on it |
-| library natives | `%MAKE-STRUCT` `%STRUCT-REF` `%STRUCT-SET` `%STRUCT-TYPE` `%STRUCT-IS` `%PUTHASH` `%EQHASH` `%OPEN` `%CLOSE` `%SUBSEQ` `%CONCATENATE` `%POW` `%PI` `%LOOP-EXPAND` | the machinery under `defstruct`, the hash tables, `open`, the sequence functions, `expt`, `pi`, the extended `loop` |
+| library natives | `%MAKE-STRUCT` `%STRUCT-REF` `%STRUCT-SET` `%STRUCT-TYPE` `%STRUCT-IS` `%PUTHASH` `%EQHASH` `%OPEN` `%CLOSE` `%SUBSEQ` `%CONCATENATE` `%POW` `%PI` `%LOOP-EXPAND` `%LOAD` `%FILE-POS` `%FILE-SKIP` `%LIBDEF` `%FAR-OPEN` `%FAR-FILL` `%FAR-SET` | the machinery under `defstruct`, the hash tables, `open`, the sequence functions, `expt`, `pi`, the extended `loop`, `load` and `file-position`, lazy loading, the far arrays |
 | the VM ROM's natives | `%MAKE-CODE` `%CODE` `%CODE-BYTES` `%CODE-CONSTS` `%FN-INFO` `%FN-DATA` `%SYMBOL-FLAGS` `%OP-NAME` `%OP-KIND` `%VM-RELEASE` | what the compiler and `disassemble` use; every `.FAS` file calls `%CODE` |
-| library Lisp | `%SEQ` `%LIKE` `%CONDITION` `%SYM` `%TYPEP-LIST` `%IN-RANGE` (`lisp.lsp`); `%CATCH` `%THROW` `%UNWIND-PROTECT` `%CATCH-ERRORS-FN` `%SET-AREF` `%SET-CHAR` `%SET-NTH` `%SET-GET` `%SET-FN` `%SET-PLIST` (`lisp2.lsp`); `%HASH-PAIRS` (`loop.lsp`) | helpers; the `lisp2.lsp` ones are what compiled code calls for `catch`, `throw`, `unwind-protect` and some `setf` places |
+| library Lisp | `%SEQ` `%LIKE` `%CONDITION` `%SYM` `%TYPEP-LIST` `%IN-RANGE` (`lisp.lsp`); `%CATCH` `%THROW` `%UNWIND-PROTECT` `%CATCH-ERRORS-FN` `%SET-AREF` `%SET-CHAR` `%SET-NTH` `%SET-GET` `%SET-FN` `%SET-PLIST` (`lisp2.lsp`); `%HASH-PAIRS` (`loop.lsp`); `%LOAD-LAZY` `%LAZY-STUB` `%LAZY-FN` `%LAZY-CALL` (`lazy.lsp`); `%FAR-NAME` (`farray.lsp`) | helpers; the `lisp2.lsp` ones are what compiled code calls for `catch`, `throw`, `unwind-protect` and some `setf` places |
+| a property | `%LAZY` | a function loaded with `:lazy t`: (stub file . position) |
 | the demos | `%RESTORE` `%AGAIN` `%DARK` `%KOCH-SIDE` `%BRANCH` | the demos' helpers |
 | `loop` | `%0` `%1`... | the extended `loop`'s own variables |
 
@@ -645,6 +646,25 @@ The 6128's second 64 KB does not help the heap. It can be seen only 16
 KB at a time, banked in at &4000, and a heap there would need a bank
 switch on every pointer followed. So it is a RAM disc, `M:`, and the
 Lisp lives in the first 64 KB on every model.
+
+Three things make the heap go further all the same (2026-11-12):
+
+* **Dropping what can come back.** When a collection frees no cell,
+  `cons` asks the library (`ln_short`, `lib/short.asm`) before it gives
+  up. A function the library's text defined can be read from ROM again,
+  so each such closure is hidden from a second collection -- its pointer
+  made odd, which the collector takes for a fixnum -- and the ones that
+  collection frees get their autoload stub back. Anything still holding
+  one (a call running, a variable) keeps it alive, and the pointer is
+  put back.
+* **Programs read on demand.** `(load "big" :lazy t)` gives a program's
+  functions the library's life: a stub each, knowing the file and the
+  position (the reader counts what it takes from a file), the
+  definition read on the first call and marked as the library's, so the
+  same dropping takes it back to its stub.
+* **Data outside the heap.** A far array is a file on `M:`, read and
+  written in place an element at a time. Only what the collector need
+  not look at goes there -- fixnums, characters, T and NIL, or bytes.
 
 ### 16 KB at a time
 

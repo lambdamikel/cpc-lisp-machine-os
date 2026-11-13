@@ -62,6 +62,8 @@ builds can be compared with `cmp`).
 | `natives.asm` | `lib/gfx.asm` (part 0) | Lisp functions of the machine's own |
 | `graphics.asm` | the end of `lib/gfx.asm` (part 0) | `SYMBOL` and `FLOOD-FILL`, or nothing |
 | `card.asm` | `lib/lib2.asm` (part 1) | more of the machine's own: on the CPC, speech and PlayCity on the LambdaSpeak card |
+| `far.asm` | `lib/farray.asm` (part 1) | far arrays' way into the RAM disc: its directory's layout and `fa_xfer` (below) |
+| `hwtest.lsp` | the machine's disc (`post-build.sh`) | a test for the real machine: `(load "hwtest")`, `(hwtest)` |
 
 The assembler finds them with `-I mach/$MACH`, and `tools/mklib.py` finds
 the Lisp functions in them (their `;@` lines) the same way. A file `novm`
@@ -77,7 +79,7 @@ first.
 |---|---|
 | core | `CON_PUTC` `CON_GETCUR` `KEY_READ` `KEY_UNREAD` `KEY_TEST` `KEY_ESC` `FILE_GETC` `FILE_PUTC` `FILE_IABANDON` `FILE_OABANDON` `SYS_BANK` `SYS_CURBANK` `NBANKS` `MACH_START` `MACH_INIT` |
 | part 0 | the rest of `CON_`, `KEY_`, `VID_`, `GFX_`, `FILE_`; `SND_QUEUE` `SYS_TIME` `SYS_RESET`; `RDISC_` |
-| part 1 | `CON_GETCUR`, `FM` and the `FP_` routines, `fp_callix` |
+| part 1 | `CON_GETCUR`, `FM` and the `FP_` routines, `fp_callix`; `FILE_GETC` `FILE_PUTC` (lazy loading's skipping, far arrays' filling); `far.asm` |
 | parts 2, 3, the VM ROM | nothing |
 
 ## The interface
@@ -244,6 +246,26 @@ Each returns carry if all went well, as the firmware's do.
 | `RDISC_IN` `RDISC_OUT` | `TOKBUF` = "M:name", B = its length -> carry if the file is open for reading, for writing; while it is, `FILE_GETC` and the rest reach it (on the CPC the RAM disc takes over the cassette vectors) |
 | `RDISC_CAT` | its files listed (`dir "m:"`) |
 
+A file on `M:` is lent 512 bytes of block space (`fl_lend_f`), not the
+2 KB a disc file gets: a RAM disc must keep its state for an open file
+in that (the CPC 512K's and the TRS-80's use 64 bytes and a 256-byte
+buffer after them). Its errors after the lend (no RAM disc, a bad name)
+call `fl_release` before `lib_error`, or the buffer stays lent when the
+error is caught.
+
+### Far arrays (with the RAM disc; `far.asm`)
+
+A far array (`lib/farray.asm`) is a file on `M:` read and written in
+place. `far.asm` says how the machine's RAM disc keeps its directory --
+`FA_DIR0` (where entry 0 is), `FA_ESIZE`, `FA_NENT`, `FA_USED` (the
+in-use byte's offset, or -1: in use if the name is not empty),
+`FA_NAME`, `FA_PAD` (what pads a name), `FA_START`, `FA_LEN`, `FA_W`
+(2 or 3 bytes a start and a length) -- and has `fa_xfer`: A = 0, BC
+bytes from the disc at `FA_OFF` (three bytes) to RAM at HL; 1, the other
+way. The RAM is `TOKBUF`'s; `FA_X` (16 bytes) is `fa_xfer`'s own. A
+machine without a RAM disc can link the 6128's (`mach/cpc6128`): it
+refuses, as `M:` does.
+
 ### The machine's own Lisp functions
 
 What only makes sense on one machine is a Lisp function of its own, in
@@ -257,8 +279,9 @@ What only makes sense on one machine is a Lisp function of its own, in
 * `card.asm`: `say`, `speech-stop`, `speech-voice`, `speech-rate`,
   `speech-volume`, `playcity`, `pc-tone`, `pc-off`.
 
-Library part 0 has about 300 bytes free and part 1 about 3.4 KB: a port's
-own functions go where there is room.
+Library part 0 has about 240 bytes free (18 on the CPC 512K), part 1
+about 130, part 3 about 450 (2026-11-12): a port's own functions go where
+there is room, Lisp text in any part.
 
 ## A port, step by step
 
@@ -272,7 +295,9 @@ own functions go where there is room.
    reset.
 5. Loading the six banks at start-up, and switching them (`SYS_BANK`).
 6. The machine's own Lisp functions.
-7. Testing: the MAME harness (`emu/repl.lua`) is the CPC's. It catches
+7. A `hwtest.lsp` for the real machine (the CPC's are the pattern) on its
+   disc.
+8. Testing: the MAME harness (`emu/repl.lua`) is the CPC's. It catches
    output at TXT OUTPUT (&BB5A) and types a line whenever the core calls
    `EDHOOK`, so another machine needs a harness that does the same at its
    own `CON_PUTC`.

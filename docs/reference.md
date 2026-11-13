@@ -646,7 +646,9 @@ more at its next call, as the library's own functions are. So:
 * a definition read later may be read again, so redefining what it uses
   (a macro, a variable's starting value) shows in it;
 * `save` leaves these functions out (they are in their file). Your own
-  `defun` of one of them makes it yours again, as with the library's.
+  `defun` of one of them makes it yours again, as with the library's;
+* `compile` one only after its first call: before, the function is its
+  stub.
 
 **The RAM disc** (a 6128, or a CPC with 64 KB more): names starting
 `M:` are kept in the second 64 KB -- `(save "m:work")`, `(load "m:work")`,

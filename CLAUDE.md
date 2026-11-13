@@ -404,6 +404,18 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     checks V_BLKSAVE first: fe_release sets V_BLKHI from it blindly, and
     `(dir "m:")` lends nothing -- without the check, string space ended
     at 0 after the first M: error on a 464 (the suite caught it).
+  * **rd_close (the 512K's and the TRS-80's RAM disc) failed a file
+    whose length was a multiple of 256** -- an empty one too: nothing
+    left to flush, `call nz,rd_flush` fell through with carry clear,
+    "cannot write the file", the file dropped. The TRS-80's hwtest
+    found it (its M: probe writes an empty file).
+  * **The TRS-80's hwtest** (`mach/trs80/hwtest.lsp`, put on lisp-a and
+    lisp-m3 by mkdisk.py with comments and indentation squeezed out --
+    the Model I's disc had 4 granules left) writes only to M:: it
+    copies and lazily loads HWTEST/LSP itself. A write error inside
+    %catch-errors (a full disc) leaves the output file marked open until
+    toplevel: every later open says "a file is open that way already".
+    `(hwtest-big)` is past 256 KB, for the real card only.
   * **`load` is Lisp since lazy loading**, so `%load` is called through
     `eval`: called directly, the file's forms were evaluated in `load`'s
     lexical environment, every loaded defun closing over NAME and LAZY
@@ -739,7 +751,10 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   `roms/README.md`. Never commit Amstrad's ROMs (the MAME romsets in
   `build/mame`) or disc images -- except the two LDOS system discs the
   TRS-80 build starts from (`tools/trs80/ldos-m1.dsk`, `ldos-m3.dsk`:
-  Mike, 2026-11-12, "publish them"); `build/` is ignored. **GPL-3.0** since 2026-11-07 (`LICENSE`, Mike's
+  Mike, 2026-11-12, "publish them"), and our own discs in `discs/` (the
+  disc versions and the hardware test discs: Mike, 2026-11-12, "add the
+  hw test disks to the repo"; copy them from one tested build, and say
+  the build in `discs/README.md`); `build/` is ignored. **GPL-3.0** since 2026-11-07 (`LICENSE`, Mike's
   choice, as LambdaSpeak 4), with a section 7 permission: programs
   written in CPC Lisp, and what `save`/`compile-file` make, are their
   authors' own (README, *Licence*). **Releases**: GitHub release `v0.9`

@@ -116,7 +116,19 @@ without KI/DVR; with KI/DVR loaded this is untried.)
   first KB is the directory; the files lie one after the other, and one
   deleted (or saved again) closes up the gap. The pages keep it through
   `(quit)` and a reset; at power-on (no directory there) it starts
-  empty (`rdisc80.asm`).
+  empty (`rdisc80.asm`). **Far arrays** are files there too
+  (`make-far-array`, `far-ref`: `mach/trs80/far.asm` reaches the pages
+  through RS_XFER), and `(load "name" :lazy t)` works from any drive or
+  `M:`.
+* **A test of the real machine** is on the disc: `(load "hwtest")`,
+  `(hwtest)` -- eight checks, yes or NO: the cells, two files open at
+  once, lazy loading from the drive and from `M:`, the RAM disc, far
+  arrays over its pages, the compiler; `(hwtest-big)`, far arrays past
+  the RAM disc's first 256 KB; and after `(quit)` and `LISP`,
+  `(load "hwtest")`, `(hwtest2)`, that the RAM disc kept its files. It
+  writes only to `M:` (the Model I's disc is nearly full). trs80gp runs
+  all but `(hwtest-big)`: its X-MEM/80 seems to have 16 pages, and
+  writing past them reset it into LDOS.
 * `*features*` is `(:trs-80 :cpc-lisp)`; the demos look at it.
 * The Model III: the same images and machine page (its ROM has the
   maths routines at the same places); it runs on Mike's, with X-MEM/80,
