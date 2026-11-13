@@ -29,7 +29,9 @@ and the 512K version's loader then stops with "Banks of 64K that answer:
 The TRS-80's test passed on Mike's Model III with X-MEM/80, Talker/80
 and MIDI/80 (2026-11-12) -- **with X-MEM/80 switched to 16 KB pages**:
 in its 32 KB (SuperMem) mode it answers 16 page numbers, and the RAM
-disc keeps to 112 KB (`(dir "m:")` says so). For an HxC or a Gotek:
+disc keeps to 112 KB (`(dir "m:")` says so). This disc (build 977) passed
+there too: `(hwtest)` 8 yes, and after `(quit)` and `LISP` `(hwtest2)` 2
+yes, with all 367 KB of the RAM disc. For an HxC or a Gotek:
 `hxcfe -finput:cpclisp-trs80-model3.dsk -conv:HXC_HFE -foutput:x.hfe`.
 
 (HWTEST writes small files to drive A -- LZ.LSP, NOTES.LSP -- and to

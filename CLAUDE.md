@@ -509,7 +509,8 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   -- page 25 against page 9 -- and keeps the RAM disc to pages 9-15
   (112 KB) then. **Passed on the real Model III in 16 KB mode**
   (2026-11-12: hwtest's 8 and hwtest-big; Mike's switch had been at 32
-  KB pages). The TRS-80 discs are in `discs/` too. TRS-80 far-refs are
+  KB pages); build 977, with rd_pages, again: hwtest 8, hwtest2 2,
+  367K free. The TRS-80 discs are in `discs/` too. TRS-80 far-refs are
   slow too (100 setf in 3.7 s, not looked into). Don't probe trs80gp's
   options by running it by hand: it pops up windows on Mike's screen.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
