@@ -47,14 +47,15 @@
 
     include "core.inc"
     include "macros.asm"
+    include "part.asm"
 
-    org LIB_ORG
+    org PART_ORG
     db 1                        ; a background ROM
     db 0,9,6                    ; mark, version, modification: 0.96
     dw vm_names
     jp vm_init                  ; the ROM walk: nothing to do
 
-    defs LIBHDR-$,0
+    defs PART_HDR-$,0
     db "CPCLISPLIB"
     dw BUILD_ID
     dw 0                        ; no names
@@ -62,7 +63,7 @@
     dw 0                        ; no dispatcher
     dw 0                        ; no line editor
     dw 0                        ; no number routines
-    assert $ == LIBHDR+LH_PART
+    assert $ == PART_HDR+LH_PART
     db 4                        ; "part 4": the VM ROM
     db 0
     assert $ == VM_ENTRY
@@ -2759,6 +2760,6 @@ vf_code_consts:
     include "vmcode.asm"
 
 vm_end:
-    print "VM used: ",vm_end-LIB_ORG," bytes, free: ",LIB_ORG+#4000-vm_end
-    assert vm_end <= LIB_ORG+#4000
-    defs LIB_ORG+#4000-$,#FF
+    print "VM used: ",vm_end-PART_ORG," bytes, free: ",PART_ORG+#4000-vm_end
+    assert vm_end <= PART_ORG+#4000
+    defs PART_ORG+#4000-$,#FF

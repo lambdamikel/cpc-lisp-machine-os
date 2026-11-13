@@ -60,10 +60,19 @@ VM=--vm
 [ -f "mach/$MACH/novm" ] && VM=
 [ -z "$VM" ] || python3 tools/bootstrap.py lib/compiler.lsp lib/vm.asm $OUT/vmcode.asm
 python3 tools/mklib.py $OUT lib/lib.asm lib/lib2.asm lib/lib3.asm lib/demo.asm ${VM:+--vm lib/vm.asm lib/lib2.asm}
-asm lib/lib.asm $OUT/LISPLIB.ROM $OUT/lisplib.sym -I lib
-asm lib/lib2.asm $OUT/LISPLIB2.ROM $OUT/lisplib2.sym -I lib
-asm lib/lib3.asm $OUT/LISPLIB3.ROM $OUT/lisplib3.sym -I lib
-asm lib/demo.asm $OUT/LISPDEMO.ROM $OUT/lispdemo.sym -I lib
+# a machine whose parts run at addresses of their own (the Model 4: a part
+# at &8000 or &C000 in its bank) says so in mach/$MACH/liborgs, a line
+# "part hex" each (lib/part.asm)
+org_of() {
+    [ -f "mach/$MACH/liborgs" ] || return 0
+    local a
+    a=$(awk -v p="$1" '$1 == p { print $2 }' "mach/$MACH/liborgs")
+    [ -n "$a" ] && echo "-DPART_ORG=$((16#$a))"
+}
+asm lib/lib.asm $OUT/LISPLIB.ROM $OUT/lisplib.sym -I lib $(org_of lib)
+asm lib/lib2.asm $OUT/LISPLIB2.ROM $OUT/lisplib2.sym -I lib $(org_of lib2)
+asm lib/lib3.asm $OUT/LISPLIB3.ROM $OUT/lisplib3.sym -I lib $(org_of lib3)
+asm lib/demo.asm $OUT/LISPDEMO.ROM $OUT/lispdemo.sym -I lib $(org_of demo)
 [ -z "$VM" ] || asm lib/vm.asm $OUT/LISPVM.ROM $OUT/lispvm.sym -I lib
 
 # what the machine makes of them: on the CPC, MAME romsets

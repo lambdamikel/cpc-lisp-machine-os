@@ -164,6 +164,14 @@ lib_addr:
     call lib_part
     ld a,(hl)
     pop hl
+    if LIB_MIXED
+    set 7,h                     ; &8000 or &C000: an odd slot is &C000's
+    set 6,h
+    bit 0,a
+    ret nz
+    res 6,h
+    ret
+    else
     if LIB_ORG == #C000
     set 7,h
     else
@@ -171,6 +179,18 @@ lib_addr:
     endif
     set 6,h
     ret
+    endif
+
+    if LIB_MIXED
+;; lib_hdr: C = a slot -> HL = its library header: &C010 in an odd slot,
+;; &8010 in an even one. A, BC, DE kept.
+lib_hdr:
+    ld hl,#8000+(LIBHDR and #FF)
+    bit 0,c
+    ret z
+    ld h,#C0
+    ret
+    endif
 
 ;; lib_word: HL = an address in the library ROM V_PEEKROM -> DE = the word
 ;; there, HL + 2. BC kept.
@@ -187,7 +207,11 @@ lib_word:
 find_library:
     call SYS_CURBANK
     ld (V_COREROM),a
+    if LIB_MIXED
+    ld c,0                      ; (slot 0 is part of the core's bank)
+    else
     ld c,1
+    endif
 .try:
     ld a,(V_COREROM)
     cp c
@@ -205,7 +229,12 @@ find_library:
     jr z,.next
     ld c,a                      ; C = its ROM
     ld (V_PEEKROM),a
+    if LIB_MIXED
+    call lib_hdr
+    ld l,14+(LIBHDR and #FF)
+    else
     ld hl,LIBHDR+14
+    endif
     call lib_word
     ex de,hl                    ; HL = its list of boot forms
 .form:
@@ -233,7 +262,11 @@ find_library:
 ;; lib_try: C = a ROM -> taken as its part if it is a library from this
 ;; build. C kept.
 lib_try:
+    if LIB_MIXED
+    call lib_hdr
+    else
     ld hl,LIBHDR
+    endif
     ld de,lib_sig
     ld b,12
 .cmp:
@@ -248,7 +281,12 @@ lib_try:
     djnz .cmp
     ld a,c
     ld (V_PEEKROM),a
+    if LIB_MIXED
+    call lib_hdr
+    ld l,LH_PART+(LIBHDR and #FF)
+    else
     ld hl,LIBHDR+LH_PART
+    endif
     call LIBPEEK
     cp NLIBS
     jr z,.vm
@@ -263,7 +301,12 @@ lib_try:
     ld (hl),c
     inc hl
     ex de,hl                    ; DE = where its hash table goes
+    if LIB_MIXED
+    call lib_hdr
+    ld l,12+(LIBHDR and #FF)
+    else
     ld hl,LIBHDR+12
+    endif
     call .copy                  ; the hash table
     inc hl
     inc hl

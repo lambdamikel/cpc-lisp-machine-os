@@ -36,16 +36,17 @@
 
     include "core.inc"
     include "macros.asm"
+    include "part.asm"
 
 ;; firmware used only here
 
-    org LIB_ORG
+    org PART_ORG
     db 1                        ; a background ROM
     db 0,9,6                    ; mark, version, modification: 0.96
     dw lib_names
     jp lib_init                 ; the ROM walk: nothing to do
 
-    defs LIBHDR-$,0
+    defs PART_HDR-$,0
     db "CPCLISPLIB"
     dw BUILD_ID
     dw lib_buckets
@@ -53,7 +54,7 @@
     dw lib_dispatch
     dw lib_editor               ; the line editor
     dw 0                        ; no number routines
-    assert $ == LIBHDR+LH_PART
+    assert $ == PART_HDR+LH_PART
     db 0                        ; part 0
 
 ;; The name has a space so that BASIC cannot call it as a command.
@@ -612,6 +613,6 @@ lf_nreconc:
     include "libtab.asm"
 
 lib_end:
-    print "LIBRARY 1 used: ",lib_end-LIB_ORG," bytes, free: ",LIB_ORG+#4000-lib_end
-    assert lib_end <= LIB_ORG+#4000
-    defs LIB_ORG+#4000-$,#FF
+    print "LIBRARY 1 used: ",lib_end-PART_ORG," bytes, free: ",PART_ORG+#4000-lib_end
+    assert lib_end <= PART_ORG+#4000
+    defs PART_ORG+#4000-$,#FF

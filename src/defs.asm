@@ -13,11 +13,17 @@
 ;; Where the library parts run: at &C000, as ROMs (or a RAM bank there),
 ;; unless the machine's memmap.asm says otherwise (the plain 6128: &4000).
 ;; Their addresses keep the part in the top two bits, so the window must
-;; be &4000 or &C000: lib_addr and lib_dispatch put back LIB_ORG's bits.
+;; be &4000, &8000 or &C000: lib_addr and lib_dispatch put back LIB_ORG's
+;; bits. LIB_MIXED (the Model 4): each part has its own, &8000 or &C000
+;; (tools/build.sh passes it), and the core tells them apart by their
+;; "ROM": a slot, the odd ones at &C000, the even at &8000.
     ifndef LIB_ORG
 LIB_ORG           equ #C000
     endif
-    assert LIB_ORG == #C000 || LIB_ORG == #4000
+    assert LIB_ORG == #C000 || LIB_ORG == #4000 || LIB_ORG == #8000
+    ifndef LIB_MIXED
+LIB_MIXED         equ 0
+    endif
 
     ifndef STACK_SIZE           ; (a machine may want less: memmap.asm)
 STACK_SIZE        equ 4096
