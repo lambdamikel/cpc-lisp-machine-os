@@ -126,4 +126,7 @@
                   (ignore-errors (delete-file "m:c.far"))))
             '(67 67))
   (format t "~%~D yes, ~D NO~%" *hw-yes* *hw-no*)
+  (when (> *hw-no* 0)
+    (format t "No room? M: is 112 KB when X-MEM/80 answers 16 pages:~%")
+    (format t "its switch at 32 KB pages (SuperMem). Set 16 KB pages.~%"))
   t)

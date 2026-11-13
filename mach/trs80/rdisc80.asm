@@ -42,6 +42,9 @@ rd_s:       db 0,0,0
 rd_len:     db 0,0,0
 rd_s0:      db 0,0,0            ; where the deleted file ended
 rd_magic:   db "CPCLISP RAMDISC1"
+rd_topcap:    db RD_CAPH          ; the capacity, &xxyy00 (rd_pages)
+rd_midcap:    db RD_CAPM
+rd_sized:   db 0                ; 1 once rd_pages has looked
 
 ;; rd_xfer: A = 0, from the disc at rd_off to RAM at HL; 1, from RAM at
 ;; HL to the disc. BC bytes, split where a page ends; rd_off moves on.
@@ -143,9 +146,56 @@ rd_32:
     ld bc,32
     jp rd_xfer
 
+;; rd_pages: X-MEM/80 answering only 16 page numbers -- its 32 KB
+;; (SuperMem) mode, or 256 KB of SRAM -- shows page 25 as page 9, and
+;; pages 16 and up are the Lisp's own: then the RAM disc is pages 9-15,
+;; 112 KB. Seen at the first use of M:; the two bytes put back.
+rd_pages:
+    ld a,1
+    ld (rd_sized),a
+    ld a,RD_PAGE0
+    ld de,RD_E
+    call .get                   ; page 9's first byte
+    ld a,RD_PAGE0+16
+    ld de,RD_E+1
+    call .get                   ; page 25's
+    ld a,(RD_E)
+    cpl
+    ld (RD_E+2),a               ; not page 9's, into page 25
+    ld hl,RD_E+2
+    ld de,#C000
+    ld bc,1
+    ld a,RD_PAGE0+16
+    call RS_XFER
+    ld a,RD_PAGE0
+    ld de,RD_E+3
+    call .get                   ; page 9's again
+    ld a,(RD_E+3)
+    ld hl,RD_E+2
+    cp (hl)
+    ld hl,RD_E+1                ; (page 25's, put back)
+    jr nz,.put
+    ld a,#01                    ; the same page: 7 pages, &01C000
+    ld (rd_topcap),a
+    ld a,#C0
+    ld (rd_midcap),a
+    ld hl,RD_E                  ; (page 9's, put back)
+.put:
+    ld de,#C000
+    ld bc,1
+    ld a,RD_PAGE0+16
+    jp RS_XFER
+.get:                           ; A = a page, DE = where -> its first byte
+    ld hl,#C000
+    ld bc,1
+    jp RS_XFER
+
 ;; rd_ready: the header read -> rd_end; the disc made empty if it has
 ;; none
 rd_ready:
+    ld a,(rd_sized)
+    or a
+    call z,rd_pages
     ld hl,0
     call rd_at
     xor a
@@ -459,11 +509,17 @@ rd_flush:
     add hl,bc
     ld a,(rd_off+2)
     adc a,0
-    cp RD_CAPH
+    ld e,a
+    ld a,(rd_topcap)
+    ld d,a
+    ld a,e
+    cp d
     jr c,.ok
     jr nz,.full
+    ld a,(rd_midcap)
+    ld d,a
     ld a,h
-    cp RD_CAPM
+    cp d
     jr c,.ok
     jr nz,.full
     ld a,l
@@ -747,10 +803,10 @@ m_m_rdcat:
     ld e,a
     ld a,0
     sub l
-    ld a,RD_CAPM
+    ld a,(rd_midcap)
     sbc a,h
     ld l,a
-    ld a,RD_CAPH
+    ld a,(rd_topcap)
     sbc a,e
     ld h,a                      ; HL = (capacity - end) >> 8
     srl h
