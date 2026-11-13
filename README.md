@@ -274,8 +274,10 @@ cells instead of 6400. The keys a TRS-80 has not got: **SHIFT
 down-arrow, then `-`** is `~`, then `/` is `\`, `8` `9` are `[` `]`...
 [`mach/trs80/README.md`](mach/trs80/README.md) has it all, and
 [`mach/trs80/hardware-test.txt`](mach/trs80/hardware-test.txt) what to
-try on a real one. It was made and tested in trs80gp; the real Model I
-and III are next.
+try on a real one. It was made in trs80gp, and runs on a real Model I
+and Model III with X-MEM/80 -- in its 16 KB mode -- Talker/80 and
+MIDI/80 (2026-11-12); the discs, with a test of the machine, are in
+[`discs/`](discs/).
 
 ## Documents
 
