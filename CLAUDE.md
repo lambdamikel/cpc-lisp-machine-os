@@ -507,8 +507,9 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   256 KB of SRAM; trs80gp's emulation) pages 16-31 are 0-15 again and
   page 17 is the Lisp's own RAM. `rd_pages` (rdisc80.asm) probes once
   -- page 25 against page 9 -- and keeps the RAM disc to pages 9-15
-  (112 KB) then; in 16 KB mode it should have all 368 KB (to be seen:
-  hardware sheet items 10-12). TRS-80 far-refs are
+  (112 KB) then. **Passed on the real Model III in 16 KB mode**
+  (2026-11-12: hwtest's 8 and hwtest-big; Mike's switch had been at 32
+  KB pages). The TRS-80 discs are in `discs/` too. TRS-80 far-refs are
   slow too (100 setf in 3.7 s, not looked into). Don't probe trs80gp's
   options by running it by hand: it pops up windows on Mike's screen.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.

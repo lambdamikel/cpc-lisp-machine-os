@@ -400,9 +400,10 @@ compiled code (`docs/design.md` describes both)
           `far-ref`, `far-length` (ROMs, 512K, TRS-80)
     - [x] Checked on the real 464: the 512K disc version and the ROMs
           with Revaldinho's card (the test discs in `discs/`)
-    - [ ] TRS-80, real: far arrays past 256 KB of the RAM disc (trs80gp
-          crashes there: its X-MEM/80 seems to have 16 pages); far
-          arrays and lazy loading there at all
+    - [x] TRS-80, real (the Model III with X-MEM/80, 2026-11-12): far
+          arrays, lazy loading, the RAM disc past 256 KB -- with X-MEM/80
+          in its 16 KB mode (in 32 KB mode it has 16 page numbers, and
+          the RAM disc keeps to 112 KB since)
     - [ ] A write error inside `%catch-errors` (`ignore-errors`,
           `handler-case`) -- a full disc -- leaves the output file marked
           open until toplevel, so every later `open` in the same form

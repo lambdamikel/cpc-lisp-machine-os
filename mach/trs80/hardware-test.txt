@@ -52,11 +52,11 @@ repository): (talk) and (sing) work, and VOICDEMO still runs.)
        elsewhere), and  (let ((t0 (time))) (sleep 2) (- (time) t0))
        : about 600
 
-10. [ ] The disc's own test: (load "hwtest")  (hwtest)  : 8 yes, 0 NO
-11. [ ] The RAM disc past 256 KB -- X-MEM/80's switch at 16 KB pages:
+10. [x] The disc's own test: (load "hwtest")  (hwtest)  : 8 yes, 0 NO
+11. [x] The RAM disc past 256 KB -- X-MEM/80's switch at 16 KB pages:
        (hwtest-big)  : 9 far arrays past 256 KB: yes  (a minute or two)
        ((dir "m:") says about 367K free in 16 KB mode, 111K with 16
        pages: the first try, on the Model III, reset it into LDOS --
-       the switch probably at 32 KB pages; the RAM disc sizes itself
-       since)
+       the switch at 32 KB pages; the RAM disc sizes itself since.
+       Passed on the Model III in 16 KB mode, 2026-11-12)
 12. [ ] (quit), LISP, (load "hwtest"), (hwtest2)  : 2 yes, 0 NO
