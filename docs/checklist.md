@@ -450,8 +450,11 @@ compiled code (`docs/design.md` describes both)
     - [x] On the real Model 4 (2026-11-13, Mike): `(tune)` on the
           speaker, `(say)` through Talker/80, the graphics -- "the
           graphics are nice"
-    - [ ] On the real Model 4: from the HxC (`cpclisp4_JV3.hfe`); MIDI
-          through MIDI/80 (untried); `(apfel)` there
+    - [x] On the real Model 4 from the HxC (2026-11-13, Mike: "all
+          worked! from the hxc"): `cpclisp4_JV3.hfe` as drive :4 under
+          his own LS-DOS from the FreHD, `LISP` -- after the HxC's
+          settings were back at their defaults (all "Auto")
+    - [ ] On the real Model 4: MIDI through MIDI/80 (untried)
     - [ ] More room: the heap in the upper 32 KB and the code in the
           lower (OPREG's bit 6 puts banks 1 and 2 there) would about
           double it -- the core's "a SUBR is at &C000 and up" tests,

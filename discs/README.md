@@ -51,7 +51,12 @@ The Model 4's test passed on Mike's Model 4 (2026-11-13: from the FreHD,
 build 25495, with the Improved Grafyx: `(hwtest)` 8 yes; F1 confirms the
 function editor), and in trs80gp from the floppy and from the FreHD
 image (trs80gp's FreHD, its boot menu); the build here only adds F2 and
-F3 (delete, backspace). **LS-DOS 6.3.1** is MISOSYS's; Roy Soltoff made it free to use
+F3 (delete, backspace) and APFEL. From an HxC it worked on his Model 4
+too: the FreHD's machine boots from the FreHD, so boot an LS-DOS there,
+choose `cpclisp-trs80-model4.hfe` on the HxC -- drive :4 -- and type
+`LISP` (LS-DOS finds it and its images on any drive). The HxC's settings
+must be its defaults, all "Auto": they take the bitrate and the
+interface mode from the image. **LS-DOS 6.3.1** is MISOSYS's; Roy Soltoff made it free to use
 and pass on, which is why it is here. The FreHD image's LS-DOS is the one
 from Mike's FreHD card with only LS-DOS's own files kept (at its Level 1K
 patches, its Radio Shack hard disc driver RSHARD6 and the CONFIG/SYS that

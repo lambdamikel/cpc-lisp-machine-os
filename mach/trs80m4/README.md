@@ -28,6 +28,13 @@ from LS-DOS 6.3.1's own disc (`discs/ld4-631.dsk`, from the LS-DOS 6.3.1
 distribution, which Roy Soltoff made free to use and pass on; or
 `$LSDOS631`).
 
+On a Model 4 that boots from its FreHD, the floppy (on an HxC or a
+Gotek) is a drive beside it: boot an LS-DOS from the FreHD, put the disc
+in -- drive :4 under a usual FreHD setup (`DEVICE` says) -- and type
+`LISP`: LS-DOS finds LISP/CMD and the images on any drive. Worked so on
+Mike's Model 4 with his HxC (2026-11-13), its settings at their defaults
+("Auto": the bitrate and interface mode from the image).
+
 `lisp-m4.hdv` is the same on a hard disc for the **FreHD**: a bootable
 LS-DOS 6.3.1 (`tools/trs80m4/ls631-frehd.hdv.gz`, `mkhdv.py`'s header
 says what it is) with the Lisp's files added. On the FreHD's SD card

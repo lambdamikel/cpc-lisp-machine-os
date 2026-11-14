@@ -475,7 +475,12 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     (m_init), 14 on again at (quit).
   * **Passed on Mike's real Model 4** (2026-11-13): from the FreHD,
     build 25495, Improved Grafyx: hwtest 8 yes, the editor, F1, the
-    tunes on the speaker, `say` through Talker/80 (MIDI untried). His
+    tunes on the speaker, `say` through Talker/80 (MIDI untried); and
+    from his HxC (Lotharek's: settings live in the device, its menu is
+    "SD card out, both buttons", a reset to its defaults "right button
+    at power-on, 5 s" -- his changed bitrate gave "Data record not
+    found"). His Model 4 boots the FreHD: the HxC is drive :4 under his
+    `lsdos`, `LISP` there. His
     cards: the FreHD's at /media/mike/FREHD (`cpclisp4`), the HxC's at
     /media/mike/7C24-AC2B (`cpclisp4_JV3.hfe`, `cpclisp4.JV3`) -- look
     at an image's directory before replacing it: he may have saved there.
