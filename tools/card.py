@@ -12,15 +12,17 @@ This is not an uploader of its own: it drives the GUI's Card class
 the ones that are known to keep the card's console in step -- and refuses
 to write flash unless kitloader.cpc_is_off() says the CPC is off.
 
-`lisp` stores build/LISP.ROM in slot 4 as ROM 0 (the CPC then boots into
+`lisp` stores build/LISP.ROM in slot 2 as ROM 0 (the CPC then boots into
 Lisp), LISPLIB.ROM in slot 5 as ROM 4, LISPLIB2.ROM in slot 0 as ROM 5 and
 LISPLIB3.ROM in slot 7 as ROM 6, LISPDEMO.ROM in slot 3 as ROM 3 and
 LISPVM.ROM (the bytecode machine) in slot 1 as ROM 1.
-Mike's card, 2026-11-07: slot 2 is Parados (ROM 7) and slot 6 the card's
-LS AI ROM (ROM 2) -- never write those; 4 and 5 held old silent images, 0 a
-silent AMSDOS 0.5 (the DDI-1's, in the MAME romset), 7 an old silent
-image, 3 a ROM 3 (Mike: may go); 1 the vector head (ROM 1) -- Mike, 2026-11-07:
-it may go, for the VM ROM. `basic` silences slot 4 again.
+Mike's card since 2026-11-13: slot 4 is Parados (ROM 7: another session's
+Vortex work moved it there from slot 2) and slot 6 the card's LS AI ROM
+(ROM 2) -- never write those. The core went to slot 2, over a silenced
+VDOS (Mike, 2026-11-13: "core in slot 2"); before, slot 2 was Parados
+and the core in slot 4. Another Claude session works on the card too:
+agree with it before using the port (two on the console interleave).
+`basic` silences the core's slot again.
 """
 import os, sys, time
 
@@ -28,11 +30,11 @@ LS4 = os.path.expanduser('~/git/lambdaspeak4/tools')
 sys.path.insert(0, LS4)
 import romloader, kitloader            # noqa: E402
 
-LISP_SET = [(4, 0, 'build/LISP.ROM'), (5, 4, 'build/LISPLIB.ROM'),
+LISP_SET = [(2, 0, 'build/LISP.ROM'), (5, 4, 'build/LISPLIB.ROM'),
             (0, 5, 'build/LISPLIB2.ROM'), (7, 6, 'build/LISPLIB3.ROM'),
             (3, 3, 'build/LISPDEMO.ROM'), (1, 1, 'build/LISPVM.ROM')]
-CORE_SLOT = 4
-PROTECTED = {2: 'Parados', 6: 'the LS AI ROM'}
+CORE_SLOT = 2
+PROTECTED = {4: 'Parados', 6: 'the LS AI ROM'}
 
 
 def drain(card, until, timeout=60):

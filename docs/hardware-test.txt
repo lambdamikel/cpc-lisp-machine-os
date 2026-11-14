@@ -1,11 +1,11 @@
-CPC Lisp 0.96 -- trying it on a real CPC
+CPC Lisp 0.97 -- trying it on a real CPC
 =======================================
 A Lisp machine for the Amstrad CPC
 
 The six ROMs on the LambdaSpeak 4 card (python3 tools/card.py lisp, with
 the CPC off; the README's "Installing the ROMs" has the details):
 
-    slot 4  ROM 0  LISP.ROM      the core: the CPC boots into it
+    slot 2  ROM 0  LISP.ROM      the core: the CPC boots into it
     slot 5  ROM 4  LISPLIB.ROM   library 1: screen, graphics, sound, keys,
                                  strings, streams, editors, files
     slot 0  ROM 5  LISPLIB2.ROM  library 2: floats, format, sequences,
@@ -13,7 +13,7 @@ the CPC off; the README's "Installing the ROMs" has the details):
     slot 7  ROM 6  LISPLIB3.ROM  library 3: the functions written in Lisp
     slot 3  ROM 3  LISPDEMO.ROM  loop, string streams, the demos
     slot 1  ROM 1  LISPVM.ROM    the compiler and its bytecode machine
-    slot 2  ROM 7  Parados       -- not touched
+    slot 4  ROM 7  Parados       -- not touched
     slot 6  ROM 2  LS AI ROM     -- not touched
 
 Every expected answer below was checked in MAME with the ROMs at these
@@ -28,7 +28,7 @@ was checked since is noted at the end of each section.
 -----------
 [ ] Expect, possibly after Parados's own message:
 
-    CPC Lisp 0.96
+    CPC Lisp 0.97
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     NNNN cells free
@@ -308,13 +308,13 @@ switch the slot):
 [ ] (basic)                          the CPC resets into BASIC 1.0, with
                                      Parados's message as at power-up
 [ ] |BOOTLISP                        (in BASIC) it resets into Lisp:
-                                     CPC Lisp 0.96, LISP>
+                                     CPC Lisp 0.97, LISP>
 (Checked on the 464, 2026-11-12, build 30351: both.)
 
 Or switch the CPC off, then on the PC:
 
-    python3 tools/card.py basic      (silences slot 4: the core)
+    python3 tools/card.py basic      (silences slot 2: the core)
 
-or type N, then slot 4, then 255 on the card's console. The other Lisp
+or type N, then slot 2, then 255 on the card's console. The other Lisp
 ROMs can stay: from BASIC they do nothing. To boot into Lisp again:
-python3 tools/card.py number 4 0 (CPC off).
+python3 tools/card.py number 2 0 (CPC off).

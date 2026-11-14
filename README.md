@@ -1,4 +1,4 @@
-# CPC Lisp 0.96
+# CPC Lisp 0.97
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -6,7 +6,7 @@ ROMs that start a Lisp instead of BASIC. Common Lisp syntax, lexical closures, m
 -- in 16 KB of Z80 assembly -- with graphics, sound, files, floats and
 editors in four more ROMs, and a bytecode compiler in a fifth.
 
-    CPC Lisp 0.96
+    CPC Lisp 0.97
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -127,18 +127,21 @@ developed on it; its own Parados and LS AI ROMs keep their slots:
 
 | slot | ROM number | image |
 |---|---|---|
-| 4 | 0 | LISP.ROM -- the CPC boots into it |
+| 2 | 0 | LISP.ROM -- the CPC boots into it |
 | 5 | 4 | LISPLIB.ROM |
 | 0 | 5 | LISPLIB2.ROM |
 | 7 | 6 | LISPLIB3.ROM |
 | 3 | 3 | LISPDEMO.ROM |
 | 1 | 1 | LISPVM.ROM |
-| 2 | 7 | Parados (the card's) -- not touched |
+| 4 | 7 | Parados (the card's) -- not touched |
 | 6 | 2 | LS AI (the card's) -- not touched |
+
+(Until 0.96 the core was in slot 4 and Parados in 2: 0.97's `(basic)`
+and `|BOOTLISP` take slot 2 unless told another.)
 
 Upload the images with the card's ROM loader, with the CPC **switched
 off**. From this repository, `python3 tools/card.py lisp` uploads the six
-in `build/` (it checks that the CPC is off first, and refuses slots 2
+in `build/` (it checks that the CPC is off first, and refuses slots 4
 and 6);
 `tools/card.py slots` lists the slots. `card.py` drives the uploader of
 the LambdaSpeak 4 tools (`~/git/lambdaspeak4/tools`).
@@ -146,9 +149,9 @@ the LambdaSpeak 4 tools (`~/git/lambdaspeak4/tools`).
 **BASIC and back**, with no PC: `(basic)` at `LISP>` makes the core's
 slot silent and resets -- the CPC comes up in BASIC; there, `|BOOTLISP`
 makes it ROM 0 again and resets into Lisp. (Both take the slot if it is
-not 4: `(basic 3)`, `|BOOTLISP,3`. Everything in RAM goes: save first.)
+not 2: `(basic 3)`, `|BOOTLISP,3`. Everything in RAM goes: save first.)
 From the PC, with the CPC off, `tools/card.py basic` and
-`tools/card.py number 4 0` do the same.
+`tools/card.py number 2 0` do the same.
 
 **On a ROM board or in EPROMs**: one 16 KB ROM (27128) each. The core at 0
 needs a board that can assert ROMDIS, or another number and `|LISP`. On a
@@ -187,7 +190,7 @@ and a RAM disc `M:` of 415 KB in its free blocks -- which also holds
 far arrays (`make-far-array`, `far-ref`) and programs loaded with
 `(load "m:big" :lazy t)`, each function read in when first called.
 
-    CPC Lisp 0.96
+    CPC Lisp 0.97
     A Lisp machine for the Amstrad CPC, 512K
     library ROMs 1 2 3 4
     6054 cells free
@@ -196,7 +199,7 @@ far arrays (`make-far-array`, `far-ref`) and programs loaded with
 KB: everything but the compiler, without a RAM disc, and with about 2400
 cells.
 
-    CPC Lisp 0.96
+    CPC Lisp 0.97
     A Lisp machine for the Amstrad CPC, 128K
     library ROMs 1 2 3 4
     2430 cells free
@@ -224,7 +227,7 @@ the cassette port, floats through the Level II ROM, files through LDOS,
 a RAM disc in X-MEM/80's spare pages, speech through Talker/80, MIDI
 through MIDI/80 -- is in `mach/trs80/`.
 
-    CPC Lisp 0.96
+    CPC Lisp 0.97
     A Lisp machine for the TRS-80
     library ROMs 3 4 5 6
     2832 cells free
@@ -244,7 +247,7 @@ The Model III Talker/80 needs nothing.
 
 **The disc**: ready to boot with each
 [release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases) --
-`cpc-lisp-0.96-trs80-model1` and `-model3`, as `.dsk` for emulators and
+`cpc-lisp-0.97-trs80-model1` and `-model3`, as `.dsk` for emulators and
 `.hfe` for a Gotek (the `.dsk` files are in [`discs/`](discs/) too).
 X-MEM/80 must be in its 16 KB mode (X-MEM/80, not SuperMem) for all of
 the RAM disc. Or build it: `MACH=trs80 tools/build.sh` (rasm and Python 3, as for the

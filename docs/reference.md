@@ -1,4 +1,4 @@
-# CPC Lisp 0.96 -- reference
+# CPC Lisp 0.97 -- reference
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -53,7 +53,7 @@ no compiler and no RAM disc.
 
 With the core ROM at ROM 0 (replacing BASIC), the CPC starts in Lisp:
 
-    CPC Lisp 0.96
+    CPC Lisp 0.97
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -751,7 +751,7 @@ are DECtalk, and the speech functions are the same. PlayCity and
 | `(playcity on)` | **CPC only.** T: the card's PlayCity on, at the CPC's pitch, silent; NIL off. A real PlayCity needs no switching on, and takes no harm | 2 |
 | `(pc-tone channel period [volume])` | **CPC only.** channel 0-5 (0-2 the right chip, 3-5 the left) plays period (as `sound`'s: `(note 'a4)`) at volume 0-15 (12) until changed; volume 0 is silence | 2 |
 | `(pc-off)` | **CPC only.** all six silent | 2 |
-| `(basic [slot])` | **CPC only.** the CPC resets into BASIC: the card's slot that holds the core (4, as `tools/card.py` puts it) is made silent, as `\|ROMNUM,4,255`. RAM is lost. From BASIC, `\|BOOTLISP` (library ROM 2's RSX; `\|BOOTLISP,slot`) makes it ROM 0 again and resets into Lisp. From disc (512K, plain 6128): a reset, and `RUN"LISP` starts it again | 2 |
+| `(basic [slot])` | **CPC only.** the CPC resets into BASIC: the card's slot that holds the core (2, as `tools/card.py` puts it since 0.97; 4 before) is made silent, as `\|ROMNUM,2,255`. RAM is lost. From BASIC, `\|BOOTLISP` (library ROM 2's RSX; `\|BOOTLISP,slot`) makes it ROM 0 again and resets into Lisp. From disc (512K, plain 6128): a reset, and `RUN"LISP` starts it again | 2 |
 
 Without the card (or Talker/80) these do nothing (the bytes go to a port
 nobody answers).

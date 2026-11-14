@@ -16,3 +16,7 @@ cp mach/cpc/hwtest.lsp build/HWTEST.LSP
 # and the Apfelmaennchen: (load "apfel"), (apfel)
 cp examples/apfel.lsp build/APFEL.LSP
 ( cd build && "$IDSK" cpclisp-hwtest.dsk -i APFEL.LSP -t 0 >/dev/null 2>&1 )
+# the demo disc: the programs of examples/ -- the Apfelmaennchen
+rm -f build/cpclisp-demo.dsk
+"$IDSK" build/cpclisp-demo.dsk -n >/dev/null
+( cd build && "$IDSK" cpclisp-demo.dsk -i APFEL.LSP -t 0 >/dev/null 2>&1 )

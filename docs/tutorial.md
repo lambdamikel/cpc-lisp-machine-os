@@ -1,4 +1,4 @@
-# CPC Lisp 0.96 -- a tour
+# CPC Lisp 0.97 -- a tour
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -24,7 +24,7 @@ down-arrow, let go, then `-`; then `8` and `9` are `[` `]`.)
 
 When the CPC is switched on it says
 
-    CPC Lisp 0.96
+    CPC Lisp 0.97
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -124,7 +124,7 @@ access goes to the disc.)
 **BASIC and back** (**CPC only**, with the LambdaSpeak card): `(basic)`
 resets the CPC into BASIC -- the card switches off the slot the core is
 in -- and `|BOOTLISP` in BASIC resets it back into Lisp. RAM is lost
-both ways: save first. (Both take the slot if it is not 4: `(basic 3)`,
+both ways: save first. (Both take the slot if it is not 2: `(basic 3)`,
 `|BOOTLISP,3`.) Loaded from disc (into a 512K expansion, or on a plain
 6128), `(basic)` is a reset, and `RUN"LISP` brings Lisp back -- with the
 512K, the RAM disc's files too.

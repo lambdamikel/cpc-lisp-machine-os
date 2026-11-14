@@ -1,6 +1,6 @@
-# CPC Lisp 0.96 — working notes for Claude
+# CPC Lisp 0.97 — working notes for Claude
 
-*A Lisp machine for the Amstrad CPC.* Version 0.96 since 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
+*A Lisp machine for the Amstrad CPC.* Version 0.97 since 2026-11-13 (the Model 4), 0.96 from 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
 banner, the ROM headers' version bytes and the documents' titles say so).
 
 A Lisp machine for the Amstrad CPC: **six ROMs** -- an auto-boot core and
@@ -784,10 +784,15 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   (255 = silent). `n` lists the slots. **Giving a slot ROM 0 means the CPC
   boots into it every time** -- to get BASIC back, set it to 255. Check `n`
   before Mike powers on after any change.
-* Slots (2026-11-07 night): 0 LISPLIB2 (ROM 5), 1 LISPVM (ROM 1), 2
-  Parados (ROM 7), 3 LISPDEMO (ROM 3), 4 LISP core (ROM 0), 5 LISPLIB
-  (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6) -- the README's
-  installation section has the table. All six Lisp ROMs must come from
+* Slots (since 2026-11-13): 0 LISPLIB2 (ROM 5), 1 LISPVM (ROM 1), 2
+  LISP core (ROM 0), 3 LISPDEMO (ROM 3), 4 Parados (ROM 7), 5 LISPLIB
+  (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6). Another Claude session
+  (the card's own work, Vortex) moved Parados from slot 2 into slot 4,
+  over the core; Mike, 2026-11-13: "core in slot 2" (over a silenced
+  VDOS that session can rebuild). **Agree with that session before
+  using the card's port**: two on the console interleave bytes. Before:
+  2 Parados, 4 the core -- the README's installation section has the
+  table. All six Lisp ROMs must come from
   one build: re-flash them together. Flashed: build 1944 (0.96, the release; build 31443 before it,
   the same but for the version -- 2026-11-12, evening:
   dropping library functions, lazy loading, far arrays, the fixes found
@@ -807,7 +812,7 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   head: Mike, 2026-11-07, "the vector head can go ... use the space
   instead for common lisp". Everything may be replaced **except
   Parados and the LS AI ROM**. `tools/card.py lisp` re-flashes the six
-  Lisp ROMs (it checks the CPC is off and refuses slots 2 and 6);
+  Lisp ROMs (it checks the CPC is off and refuses slots 4 and 6);
   `tools/card.py basic` silences the core. From the CPC (2026-11-12,
   Mike): `(basic [slot])` silences it and resets, `|BOOTLISP[,slot]`
   (library ROM 2's RSX, entry 1 of its name table) makes it ROM 0 and
@@ -828,7 +833,7 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   slideshow, Mike's to give: ~/claude/cpc/card-backup/
   slot54-slideshow-35.dsk). No slot is free. To test the disc versions
   the six Lisp ROM slots are silenced (`tools/card.py number SLOT 255`:
-  4, 5, 0, 7, 3, 1) -- too many background ROMs leave the disc version's
+  2, 5, 0, 7, 3, 1 -- the core's slot was 4 before 2026-11-13) -- too many background ROMs leave the disc version's
   resident part no room ("Too many ROMs") -- and `tools/card.py lisp`
   puts them back (|BOOTLISP cannot: it is in a silenced ROM). The drive
   saves itself back into its slot when another disc is loaded: what a
@@ -867,7 +872,14 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   `cpclisp512.dsk` (1975) and `cpclisp6128.dsk` (2538), the ROMs' test
   disc `cpclisp-hwtest.dsk`, `cpc-lisp-0.96.zip`, and the TRS-80 discs
   (`cpc-lisp-0.96-trs80-model1/3`, `.dsk` and `.hfe`, build 3059) --
-  the same files as `roms/` and `discs/`. A new one: refresh `roms/` from one
+  the same files as `roms/` and `discs/`; `v0.97` (2026-11-13: the
+  Model 4) = ROMs build 1471 (the 464's suite 37, the 6128's file tests
+  6; `(basic)` and `|BOOTLISP` default to slot 2 now), the disc
+  versions `cpclisp512.dsk`, `cpclisp6128.dsk`, the TRS-80 discs
+  (`cpc-lisp-0.97-trs80-model1/3`, `.dsk` and `.hfe`) and the Model 4's
+  (`-model4.dsk`, `.hfe`, `-model4-frehd`) all build 475 (512K 37,
+  6128 35, Model 4 30, the Model I's hwtest 8), the ROMs' test disc, the
+  demo disc `cpclisp-demo.dsk` (APFEL.LSP), `cpc-lisp-0.97.zip`. A new one: refresh `roms/` from one
   tested build, bump the version (banner, ROM headers, document
   titles), tag, `gh release create` with the same files.
 * Commit with the attribution lines the session gives you.

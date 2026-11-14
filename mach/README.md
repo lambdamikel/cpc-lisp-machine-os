@@ -1,4 +1,4 @@
-# CPC Lisp 0.96 -- the machine layer
+# CPC Lisp 0.97 -- the machine layer
 
 *A Lisp machine for the Amstrad CPC*
 

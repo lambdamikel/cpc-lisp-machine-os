@@ -8,7 +8,7 @@
 
     org PART_ORG
     db 1                        ; a background ROM
-    db 0,9,6                    ; mark, version, modification: 0.96
+    db 0,9,7                    ; mark, version, modification: 0.97
     dw lib_names
     jp lib_init                 ; the ROM walk: nothing to do
     jp rsx_bootlisp             ; |BOOTLISP, from BASIC (mach/cpc/card.asm)

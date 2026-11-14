@@ -1,12 +1,20 @@
-# CPC Lisp 0.96 -- the ROM images
+# CPC Lisp 0.97 -- the ROM images
 
 *A Lisp machine for the Amstrad CPC*
 
 Ready to use: six 16 KB ROM images, built from this repository (build
-1944, version 0.96). You do not need to build anything to use them.
+1471, version 0.97). You do not need to build anything to use them.
 (No ROM board? CPC Lisp loads from disc too, with a 512K expansion or on
 a 6128: [`discs/`](../discs/). The TRS-80's discs are there and with the
 release: see the end.)
+
+**New in 0.97**: CPC Lisp on the **TRS-80 Model 4**, natively, with 128
+KB under LS-DOS 6.3.1 -- 80 by 24, graphics on the high-resolution board
+(Radio Shack's, the Grafyx Solution, Ian Mavric's Improved Grafyx), on a
+floppy, an HxC or Gotek, or a FreHD (below); and **the Apfelmaennchen**,
+`(load "apfel")` `(apfel)`, on the discs -- `cpclisp-demo.dsk` and the
+others; on a CPC in mode 2, compiled.
+The CPC's ROMs are 0.96's but for the version.
 
 **New in 0.96**: programs bigger than memory -- `(load "big" :lazy t)`
 reads each function from the file when it is first called -- and library
@@ -65,22 +73,24 @@ and LS AI ROMs keep theirs):
 
 | slot | ROM number | image |
 |---|---|---|
-| 4 | 0 | `LISP.ROM` -- the CPC boots into it |
+| 2 | 0 | `LISP.ROM` -- the CPC boots into it |
 | 5 | 4 | `LISPLIB.ROM` |
 | 0 | 5 | `LISPLIB2.ROM` |
 | 7 | 6 | `LISPLIB3.ROM` |
 | 3 | 3 | `LISPDEMO.ROM` |
 | 1 | 1 | `LISPVM.ROM` |
-| 2 | 7 | Parados (the card's) |
+| 4 | 7 | Parados (the card's) |
 | 6 | 2 | LS AI (the card's) |
+
+(0.96 and before: the core in slot 4, Parados in 2.)
 
 Upload them with the card's ROM loader, with the CPC **switched off**.
 From this repository, `python3 tools/card.py lisp` uploads the images in
 `build/` to these slots (it uses the card's own loader, from the
 LambdaSpeak repository). **BASIC and back**: `(basic)` at `LISP>` resets
-the CPC into BASIC (the card silences slot 4), and `|BOOTLISP` in BASIC
+the CPC into BASIC (the card silences slot 2), and `|BOOTLISP` in BASIC
 back into Lisp -- or, from the PC with the CPC off, `tools/card.py basic`
-and `tools/card.py number 4 0`.
+and `tools/card.py number 2 0`.
 
 ## On a TRS-80
 
@@ -92,14 +102,25 @@ boot, each as a `.dsk` for emulators and an `.hfe` for a Gotek or HxC
 
 | file | for |
 |---|---|
-| `cpc-lisp-0.96-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp (0.95 also on a real Model I with X-MEM/80 and MIDI/80) |
-| `cpc-lisp-0.96-trs80-model3.dsk` / `.hfe` | a Model III: LDOS 5.1.4, double density (JV3) -- tested on a real Model III with X-MEM/80, Talker/80 and MIDI/80 |
+| `cpc-lisp-0.97-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp (0.95 also on a real Model I with X-MEM/80 and MIDI/80) |
+| `cpc-lisp-0.97-trs80-model3.dsk` / `.hfe` | a Model III: LDOS 5.1.4, double density (JV3) -- tested on a real Model III with X-MEM/80, Talker/80 and MIDI/80 (0.96) |
 
 Each has `HWTEST/LSP`, a test of the machine: `(load "hwtest")`,
 `(hwtest)`.
 
 Boot it, give LDOS the date (and on a Model I the time), type `LISP`.
 [`mach/trs80/README.md`](../mach/trs80/README.md) has the rest.
+
+**The TRS-80 Model 4** (128 KB, natively, LS-DOS 6.3.1) has its own:
+
+| file | for |
+|---|---|
+| `cpc-lisp-0.97-trs80-model4.dsk` / `.hfe` | a floppy, or an HxC or Gotek: LS-DOS 6.3.1's system disc with `LISP`, `HWTEST/LSP` and `APFEL/LSP` -- boot, the date and time, `LISP` |
+| `cpc-lisp-0.97-trs80-model4-frehd` | a FreHD: a bootable LS-DOS 6.3.1 hard disc with the same. Copy it to the FreHD's SD card **as `cpclisp4`** (no extension); its boot menu lists it, ENTER, `LISP` |
+
+Tested on a real Model 4 with a FreHD, an HxC and Ian Mavric's Improved
+Grafyx; [`mach/trs80m4/README.md`](../mach/trs80m4/README.md) has the
+keys (SHIFT down-arrow for `[ ] { } ~`...) and the rest.
 
 ## What next
 

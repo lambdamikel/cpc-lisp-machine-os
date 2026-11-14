@@ -176,15 +176,17 @@ cd_speech:
 ;; again and resets: Lisp. Both are the card ROM's |ROMNUM (&D0, slot,
 ;; number), sent from RAM -- once the slot changes, what was at &C000 is
 ;; not -- after &FF 20 (out of MIDI mode, should the card be in it; else a
-;; reset of its speech). The slot is 4, as tools/card.py puts the core, or
-;; given. Without the card, a reset and nothing else.
+;; reset of its speech). The slot is CD_CORE, where tools/card.py puts the
+;; core, or given. Without the card, a reset and nothing else.
 
 BS_RAM      equ #4000           ; where it runs: the reset throws it away
+CD_CORE     equ 2               ; the core's slot on Mike's card: 2 since
+                                ; 2026-11-13 (Parados went to 4; it was 4)
 
 ;; (basic [slot]): the CPC reset into BASIC
 ;@ BASIC 0 1 lf_basic
 lf_basic:
-    ld c,4
+    ld c,CD_CORE
     ld a,b
     or a
     jr z,.go
@@ -196,7 +198,7 @@ lf_basic:
     jr bs_go
 ;; |BOOTLISP[,slot]: from BASIC, the CPC reset into Lisp
 rsx_bootlisp:
-    ld c,4
+    ld c,CD_CORE
     or a
     jr z,.go
     ld c,(ix+0)
