@@ -433,6 +433,9 @@ compiled code (`docs/design.md` describes both)
           (`tools/trs80m4/mkhdv.py`); hwtest 8 yes from both in trs80gp.
           In `discs/`, with LS-DOS 6.3.1's own disc (Mike: "put ldos
           under discs")
+    - [x] On the real Model 4 (2026-11-13): the FreHD menu, LISP loads
+          -- then a black screen: bit 1 of &83 is the Grafyx's "no
+          text". Fixed (0); trs80gp -gt -gg -gc show the text
     - [ ] On the real Model 4: hwtest from the Gotek and from the FreHD,
           the Improved Grafyx (the text over the graphics is an
           undocumented Tandy port), the sound's pitch (calibrated to

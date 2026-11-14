@@ -7,20 +7,25 @@
 ;; The board is ports, seen in any memory map: &80 the X register (a
 ;; byte's column, 0-79), &81 the Y register (a row, 0-239), &82 the byte
 ;; there (bit 7 the leftmost pixel), &83 the options -- bit 0 the
-;; graphics shown, 1 the video waits (no snow), 2 and 3 X and Y counting
-;; down, 4 and 5 X and Y left as they are after a read, 6 and 7 after a
-;; write. &8E = 1 shows the text over the graphics (an undocumented port
-;; of the Tandy board's: a character over lit pixels is inverted). With no
-;; board (g_board 0) everything is done but the drawing: a test answers 0.
+;; graphics shown, 2 and 3 X and Y counting down, 4 and 5 X and Y left as
+;; they are after a read, 6 and 7 after a write. Bit 1 is the boards'
+;; difference: on the Tandy board the video waits (no snow while drawing),
+;; on the Grafyx "no text" -- set, the Grafyx shows the graphics alone:
+;; on Mike's Improved Grafyx the Lisp's screen went black (2026-11-13;
+;; trs80gp -gg, xtrs's grafyx_write_mode). So it is 0: the Grafyx shows
+;; the text over the graphics, the Tandy board draws without waits. &8E =
+;; 1 is the Tandy board's way to show the text over them (undocumented: a
+;; character over lit pixels is inverted). With no board (g_board 0)
+;; everything is done but the drawing: a test answers 0.
 
 HR_X        equ #80
 HR_Y        equ #81
 HR_DATA     equ #82
 HR_OPT      equ #83
 HR_MIXED    equ #8E
-HR_PIXEL    equ #F3             ; shown, waits, nothing counted: one pixel
-HR_ROW      equ #B3             ;   X counted after a write: a row
-HR_HIDDEN   equ #F2             ; the graphics not shown
+HR_PIXEL    equ #F1             ; shown, nothing counted: one pixel
+HR_ROW      equ #B1             ;   X counted after a write: a row
+HR_HIDDEN   equ #F0             ; the graphics not shown
 GW          equ 640             ; pixels
 GH          equ 240
 

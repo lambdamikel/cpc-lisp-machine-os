@@ -111,10 +111,12 @@ Keys come through LS-DOS (@KEY, @KBD), so its type-ahead works.
   Model I/III: + - * / and `sqrt` as good as the CPC's; `exp`, `log`,
   `sin`, `cos`, `tan`, `atan` about seven digits.
 * **Graphics** on the high-resolution board (`hires.asm`): Radio
-  Shack's 26-1126, which trs80gp has; the Grafyx Solution's Model 4
-  version is said to use the same ports, and the Improved Grafyx to be
-  compatible with both (untried; the text over the graphics is an
-  undocumented port of the Tandy board's). 640 by 240 pixels from the
+  Shack's 26-1126, the Grafyx Solution's Model 4 version and Ian
+  Mavric's Improved Grafyx -- the same ports, but the text over the
+  graphics is the Tandy board's undocumented port &8E, and on the
+  Grafyx bit 1 of &83 clear (set, it shows the graphics alone: the
+  Lisp's screen went black on Mike's Improved Grafyx). Tried in trs80gp
+  with all three (`-gt`, `-gg`, `-gc`; `M4HIRES` in run.sh). 640 by 240 pixels from the
   CPC's logical 640 by 400 (a pixel one unit wide, 5/3 high); the text
   over the graphics (port &8E); `ink-mode`; the turtle; circles, discs,
   boxes; `flood-fill`. One colour: a pen is lit or not. `cls` clears

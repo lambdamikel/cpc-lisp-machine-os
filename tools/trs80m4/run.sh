@@ -6,7 +6,8 @@
 #
 # MACH=trs80m4 tools/build.sh first. LS-DOS 6.3.1 boots from
 # build/trs80m4/lisp-m4.dsk, is given a date and time (M4DISC=hdv: from
-# lisp-m4.hdv, through trs80gp's FreHD and its boot menu), runs LISP; the
+# lisp-m4.hdv, through trs80gp's FreHD and its boot menu; M4HIRES=-gg or
+# -gc: the Grafyx or a clone of it, not the Tandy board), runs LISP; the
 # file's lines are typed as the Lisp asks for them and (quit) ends it.
 # The CPC harness's key actions, '!' lines while the line before runs,
 # are trs80gp's input commands: "!esc N" waits N frames and holds BREAK
@@ -57,7 +58,7 @@ if [ "${M4DISC:-dsk}" = hdv ]; then     # from the FreHD: its menu, ENTER
 else                                    # from the floppy: the date and time
     BOOT=(-d0 "$B/lisp-m4.dsk" -iw "Date" -i '11/13/86\r' -iw "Time" -i '12:00:00\r')
 fi
-( cd "$tmp" && timeout "${TIMEOUT:-900}" "$GP" ${M4MODEL:--m4} -mem 128 -ee -batch -turbo \
+( cd "$tmp" && timeout "${TIMEOUT:-900}" "$GP" ${M4MODEL:--m4} ${M4HIRES:-} -mem 128 -ee -batch -turbo \
     "${BOOT[@]}" -iw "Ready" -i 'LISP\r' \
     -iw "LISP>" -itime "${ITIME:-30000}" "${INPUT[@]}" -it -ix > /dev/null 2>&1 ) \
     || echo "run.sh: trs80gp did not finish" >&2

@@ -477,9 +477,14 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     it): ~1900 cells, 2.7 KB of strings. Doubling it would mean the
     code in the lower half (OPREG bit 6) and the heap in the upper.
   * The hi-res board (`hires.asm`, trs80gp's default): ports &80 X byte,
-    &81 Y, &82 data (bit 7 left), &83 options (bit 0 on, 1 waits, 2-3
-    count down, 4-7 *don't* count after read/write), &8E=1 text over
-    graphics. g_cell must keep DE: the fill reuses it (columns past 255
+    &81 Y, &82 data (bit 7 left), &83 options (bit 0 on, 2-3 count
+    down, 4-7 *don't* count after read/write), &8E=1 text over
+    graphics on the Tandy board. **Bit 1 of &83 is the Tandy's waits
+    but the Grafyx's "no text"**: with it set, Mike's Improved Grafyx
+    showed a black screen from m_init on (2026-11-13) -- it is 0 now.
+    trs80gp `-gg`/`-gc` emulate the Grafyx (xtrs's grafyx_write_mode
+    has the bits), `-is` screenshots what is shown (`-it` is only the
+    text RAM); run.sh `M4HIRES=-gg`. g_cell must keep DE: the fill reuses it (columns past 255
     came back /8 -- the fill ran along row 119 for ever).
   * trs80gp's `-m4` is "2 wait states per instruction": some 2.77 M
     T-states a second, measured; the speaker's delays are tuned to it.
