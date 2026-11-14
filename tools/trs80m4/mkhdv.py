@@ -15,7 +15,11 @@ Shack hard disc driver (RSHARD6/DCT, RSFORM6/CMD: the FreHD answers as
 that controller) and the CONFIG/SYS that loads it; everything else
 deleted, and every sector no file holds zeroed. 202 cylinders of 32
 sectors (256 in the file, the rest unused), 8 granules of 4 sectors a
-cylinder, the directory on 101: 1.6 MB. On
+cylinder, the directory on 101: 1.6 MB. Then, booted in trs80gp
+(-frehd_dir, -frehd_menu), SYSTEM (DRIVE=1,DISABLE), the same for 2 and
+3, and SYSGEN (2026-11-13, Mike: the FreHD's drives :1-:3 showed junk
+with only this image behind :0): its CONFIG/SYS has :0, the hard disc,
+and the floppies :4 and :5. --base alone does not do that step. On
 the FreHD's card its boot menu lists it (header byte 8 bit 0: it boots,
 byte 11: LS-DOS 6.3.1).
 """
