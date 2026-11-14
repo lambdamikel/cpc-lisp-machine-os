@@ -35,8 +35,13 @@ drives :2 and :3, choose `cpclisp4_JV3.hfe` there and type `LISP`:
 LS-DOS finds LISP/CMD and the images on any drive. Worked so with his
 HxC, its settings at their defaults ("Auto": the bitrate and interface
 mode from the image). Booting an LS-DOS from the FreHD instead, the
-FreHD takes :0-:3 and the floppies are :4 and :5 (`DEVICE` says; tried
-in trs80gp).
+FreHD takes :0-:3 and the floppies are :4 and :5; a third drive needs
+the floppy driver -- `SYSTEM (DRIVE=6,DRIVER="FLOPPY")`, and to "Enter
+drive I/O address <1-4>" the select line, 3 -- and is then :6 (`DEVICE`
+calls it "Floppy #4": it numbers the lines 1, 2, 4, 8). `ENABLE` alone
+gives a drive with no line ("Floppy #0", single density). Tried in
+trs80gp with Mike's FreHD LS-DOS: `LISP` from :6, hwtest 8 yes. It lasts
+until the next boot (`SYSGEN` would keep it, in that disc's CONFIG/SYS).
 
 `lisp-m4.hdv` is the same on a hard disc for the **FreHD**: a bootable
 LS-DOS 6.3.1 (`tools/trs80m4/ls631-frehd.hdv.gz`, `mkhdv.py`'s header
