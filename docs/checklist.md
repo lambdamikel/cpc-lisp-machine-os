@@ -455,7 +455,11 @@ compiled code (`docs/design.md` describes both)
           drive, `SYSTEM (DRIVE=2,ENABLE)`, `cpclisp4_JV3.hfe` as drive
           :2, `LISP` -- after the HxC's settings were back at their
           defaults (all "Auto")
-    - [ ] On the real Model 4: MIDI through MIDI/80 (untried)
+    - [x] Build 31726 on the real Model 4 (2026-11-13, Mike: "all
+          checks out"): the FreHD image with only drive :0, the HxC as
+          :6 through the floppy driver
+    - [ ] On the real Model 4: MIDI through MIDI/80 -- the only thing
+          not tried
     - [ ] More room: the heap in the upper 32 KB and the code in the
           lower (OPREG's bit 6 puts banks 1 and 2 there) would about
           double it -- the core's "a SUBR is at &C000 and up" tests,
