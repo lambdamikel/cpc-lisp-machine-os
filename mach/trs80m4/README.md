@@ -156,5 +156,8 @@ Keys come through LS-DOS (@KEY, @KBD), so its type-ahead works.
   files (DIR/SYS, read as a file). A name `B:FOO.LSP` is LS-DOS's
   `FOO/LSP:1`.
 * `(time)` counts 1/300 s, from LS-DOS's clock task.
+* **Speech** through Talker/80 (`say`, `mach/trs80/card.asm`): works on
+  Mike's Model 4 (2026-11-13), as do the tunes on the speaker. **MIDI**
+  (MIDI/80, `midi-out`, `midi-note`) is linked in, untried.
 * **Not yet**: the RAM disc and far arrays (`M:` says "no RAM disc on a
-  Model 4"); speech, MIDI (`mach/trs80/card.asm` is linked in, untried).
+  Model 4").

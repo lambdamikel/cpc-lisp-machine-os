@@ -447,9 +447,11 @@ compiled code (`docs/design.md` describes both)
           compiled where there is a compiler (11 min on a 464). On the
           way: fill-box on the Model 4 left every fifth pixel row out
           (it stepped 2 units, a CPC row): M_NEXTY steps there
-    - [ ] On the real Model 4: from the HxC (`cpclisp4_JV3.hfe`), the
-          sound's pitch (calibrated to trs80gp's -m4, 2 wait states an
-          instruction)
+    - [x] On the real Model 4 (2026-11-13, Mike): `(tune)` on the
+          speaker, `(say)` through Talker/80, the graphics -- "the
+          graphics are nice"
+    - [ ] On the real Model 4: from the HxC (`cpclisp4_JV3.hfe`); MIDI
+          through MIDI/80 (untried); `(apfel)` there
     - [ ] More room: the heap in the upper 32 KB and the code in the
           lower (OPREG's bit 6 puts banks 1 and 2 there) would about
           double it -- the core's "a SUBR is at &C000 and up" tests,

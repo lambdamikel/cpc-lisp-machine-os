@@ -474,7 +474,8 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     the bottom-left, a "_" now and then. *DO's code 15 turns it off
     (m_init), 14 on again at (quit).
   * **Passed on Mike's real Model 4** (2026-11-13): from the FreHD,
-    build 25495, Improved Grafyx: hwtest 8 yes, the editor, F1. His
+    build 25495, Improved Grafyx: hwtest 8 yes, the editor, F1, the
+    tunes on the speaker, `say` through Talker/80 (MIDI untried). His
     cards: the FreHD's at /media/mike/FREHD (`cpclisp4`), the HxC's at
     /media/mike/7C24-AC2B (`cpclisp4_JV3.hfe`, `cpclisp4.JV3`) -- look
     at an image's directory before replacing it: he may have saved there.
