@@ -304,7 +304,8 @@ down-arrow, then `-`** is `~`, then `/` is `\`, `8` `9` are `[` `]`...
 try on a real one. It was made in trs80gp, and runs on a real Model I
 and Model III with X-MEM/80 -- in its 16 KB mode -- Talker/80 and
 MIDI/80 (2026-11-12); the discs, with a test of the machine, are in
-[`discs/`](discs/).
+[`discs/`](discs/) -- the Model III's with the Apfelmaennchen too
+(`(load "apfel")`, `(apfel)`: the Model I's disc is full).
 
 ## The TRS-80 Model 4
 

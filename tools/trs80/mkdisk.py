@@ -2,7 +2,8 @@
 """The TRS-80 discs, with LISP/CMD and the images:
 
     mkdisk.py OUT  -- reads OUT/LISP.CMD and OUT/LISP*.ROM (and
-      mach/trs80/hwtest.lsp, as HWTEST/LSP), writes
+      mach/trs80/hwtest.lsp, as HWTEST/LSP; examples/apfel.lsp, as
+      APFEL/LSP, on the Model III's only), writes
       OUT/lisp-a.dsk: the Model I's, LDOS 5.3.1 single density
         (tools/trs80/ldos-m1.dsk, a JV1 system disc with nothing else on
         it), the images compressed (lz.py) to fit; were they to grow out
@@ -53,8 +54,10 @@ def main():
     elif os.path.exists(b):
         os.remove(b)
     m3 = L.Img(BASE3)
-    for name, ext, data in files:
-        L.add_file(m3, name, ext, data)
+    apfel = os.path.join(os.path.dirname(__file__), '../../examples/apfel.lsp')
+    for name, ext, data in files + [('APFEL', 'LSP', open(apfel, 'rb').read())]:
+        L.add_file(m3, name, ext, data)     # the Apfelmaennchen: the III's only
+                                            # (the Model I's disc is full)
     m3.save(os.path.join(out, 'lisp-m3.dsk'))
 
 if __name__ == '__main__':

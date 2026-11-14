@@ -18,7 +18,7 @@ the test discs for the real machine. Each disc's test is `HWTEST.LSP`:
 | `cpclisp-hwtest.dsk` | **the test of the ROMs' use of a RAM expansion** (or a 6128's second 64 KB): two files at once, lazy loading from the drive and from `M:`, the RAM disc, far arrays over its banks, the compiler. Needs the 0.96 ROMs or later (`roms/`) | -- |
 
 | `cpclisp-trs80-model1.dsk` | **CPC Lisp on a TRS-80 Model I** with X-MEM/80 (LDOS 5.3.1, single density): `LISP` at LDOS Ready, and its test, `HWTEST/LSP` -- also `(hwtest-big)`, the RAM disc past 256 KB | 475 |
-| `cpclisp-trs80-model3.dsk` | **the same for a Model III** (LDOS 5.1.4, double density, JV3) | 475 |
+| `cpclisp-trs80-model3.dsk` | **the same for a Model III** (LDOS 5.1.4, double density, JV3), and `APFEL/LSP` (since 2026-11-14: the same images, the disc made again) | 475 |
 | `cpclisp-trs80-model4.dsk` | **CPC Lisp on a TRS-80 Model 4** with 128 KB, natively (`mach/trs80m4`): LS-DOS 6.3.1's system disc (double density, 40 tracks, JV3) with `LISP` and `HWTEST/LSP` -- boot it, give the date and time, `LISP` | 2554 |
 | `cpclisp-trs80-model4.hfe` | the same disc for a **Gotek** (FlashFloppy) or an **HxC** | 2554 |
 | `frehd/cpclisp4` | the same on the **FreHD**'s hard disc: an LS-DOS 6.3.1 system (1.6 MB, Radio Shack hard disc driver; the hard disc is drive :0 only, the floppies :4 and :5) with `LISP` and `HWTEST/LSP`. Copy it to the root of the FreHD's SD card *as it is named* (no extension, as the FreHD's images); its boot menu lists it, ENTER boots it, `LISP` -- no date asked | 2554 |
@@ -41,7 +41,7 @@ and after `(quit)` and `LISP` `(hwtest2)` 2 yes, with all 367 KB of the
 RAM disc. For an HxC or a Gotek:
 `hxcfe -finput:cpclisp-trs80-model3.dsk -conv:HXC_HFE -foutput:x.hfe`.
 
-The CPC discs and the Model 4's also carry **APFEL.LSP**, the
+The CPC discs, the Model III's and the Model 4's also carry **APFEL.LSP**, the
 Apfelmaennchen (`examples/apfel.lsp`): `(load "apfel")`, `(apfel)`.
 
 (HWTEST writes small files to drive A -- LZ.LSP, NOTES.LSP -- and to
