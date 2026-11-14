@@ -190,8 +190,19 @@ di_rows:
     or a
     sbc hl,de                   ; cy - b
 .row:
-    bit 0,l
+    ifdef M_NEXTY
+    push hl                     ; a pixel row once, at its lowest y: on a
+    dec hl                      ;   Model 4 a row is 5/3 units, and the
+    call M_NEXTY                ;   CPC's even ys left every sixth row out
+    pop de
+    or a
+    sbc hl,de
+    ex de,hl
     ret nz
+    else
+    bit 0,l                     ; a pixel row once: the even y of the two
+    ret nz
+    endif
     jp ci_row
 
 ;; ci_pair: DE = a, HL = b -> the points (cx +- a, cy +- b), or the lines

@@ -32,11 +32,16 @@ editors in four more ROMs, and a bytecode compiler in a fifth.
   [X-MEM/80](https://github.com/lambdamikel/x-mem-80)** run it too, as a
   port: the same six images, under LDOS ([*On a
   TRS-80*](#on-a-trs-80), below).
-* **More Z80 machines are on the way**, in this order: the ZX Spectrum
-  128/+2/+3, the TRS-80 Model 4, MSX1, the TA alphatronic PC and the
-  Sharp MZ-700. Everything a machine provides is behind one interface
+* **The TRS-80 Model 4** with 128 KB runs it natively, under LS-DOS
+  6.3.1: 80 by 24 characters and **high-resolution graphics**, 640 by
+  240 on the Radio Shack board, the Grafyx Solution or the Improved
+  Grafyx -- from a floppy, an HxC or Gotek, or a FreHD ([*The TRS-80
+  Model 4*](#the-trs-80-model-4), below).
+* **More Z80 machines are to come**, in this order: the ZX Spectrum +2
+  (with a DivMMC), MSX1, the TA alphatronic PC and the Sharp MZ-700.
+  Everything a machine provides is behind one interface
   ([`mach/README.md`](mach/README.md)); the CPC's is `mach/cpc/`, the
-  TRS-80's `mach/trs80/`.
+  TRS-80's `mach/trs80/`, the Model 4's `mach/trs80m4/`.
 
 ## Videos
 
@@ -47,14 +52,29 @@ editors in four more ROMs, and a bytecode compiler in a fifth.
 
 ## Screenshots
 
-From the emulators: MAME for the CPC, trs80gp for the TRS-80. The same
-programs, the same Lisp.
+From the emulators: MAME for the CPC, trs80gp for the TRS-80s. The same
+programs, the same Lisp. First the Apfelmaennchen on all three:
 
 **On the Amstrad CPC**
 
 <table>
 <tr><td align="center" valign="top"><img src="docs/images/cpc-repl.png" width="190" alt="The REPL: <code>defun</code>, <code>mapcar</code>, <code>loop</code>, <code>format</code>, floats, the compiler"><br>The REPL: <code>defun</code>, <code>mapcar</code>, <code>loop</code>, <code>format</code>, floats, the compiler</td><td align="center" valign="top"><img src="docs/images/cpc-ed.png" width="190" alt="The function editor: <code>(ed 'rose)</code>, pretty-printed"><br>The function editor: <code>(ed 'rose)</code>, pretty-printed</td><td align="center" valign="top"><img src="docs/images/cpc-rose.png" width="190" alt="<code>(rose)</code>: a rose curve, in floats"><br><code>(rose)</code>: a rose curve, in floats</td><td align="center" valign="top"><img src="docs/images/cpc-koch.png" width="190" alt="<code>(koch 4)</code>: a Koch snowflake, turtle graphics"><br><code>(koch 4)</code>: a Koch snowflake, turtle graphics</td></tr>
 <tr><td align="center" valign="top"><img src="docs/images/cpc-tree.png" width="190" alt="<code>(tree)</code>: a recursive tree"><br><code>(tree)</code>: a recursive tree</td><td align="center" valign="top"><img src="docs/images/cpc-shapes.png" width="190" alt="<code>(shapes)</code>: discs and boxes in 16 colours"><br><code>(shapes)</code>: discs and boxes in 16 colours</td><td align="center" valign="top"><img src="docs/images/cpc-sierpinski.png" width="190" alt="<code>(sierpinski)</code>: the chaos game"><br><code>(sierpinski)</code>: the chaos game</td><td align="center" valign="top"><img src="docs/images/cpc-moire.png" width="190" alt="<code>(moire)</code>: lines drawn with XOR"><br><code>(moire)</code>: lines drawn with XOR</td></tr>
+</table>
+
+<table>
+<tr><td align="center" valign="top"><img src="docs/images/cpc-apfel.png" width="250" alt="<code>(apfel)</code> on the CPC: mode 2, compiled"><br><code>(apfel)</code> on the CPC: mode 2, compiled</td><td align="center" valign="top"><img src="docs/images/m4-apfel.png" width="250" alt="<code>(apfel)</code> on the TRS-80 Model 4: the high-resolution board"><br><code>(apfel)</code> on the TRS-80 Model 4: the high-resolution board</td><td align="center" valign="top"><img src="docs/images/trs80-apfel.png" width="250" alt="<code>(apfel)</code> on the TRS-80 Model I: in the 2 x 3 blocks"><br><code>(apfel)</code> on the TRS-80 Model I: in the 2 x 3 blocks</td></tr>
+</table>
+
+The Apfelmaennchen -- `(load "apfel")`, `(apfel)`, from the demo disc
+([`examples/apfel.lsp`](examples/apfel.lsp)) -- the same program on each.
+
+**On the TRS-80 Model 4, with the high-resolution board**
+
+<table>
+<tr><td align="center" valign="top"><img src="docs/images/m4-repl.png" width="250" alt="The REPL, 80 by 24"><br>The REPL, 80 by 24</td><td align="center" valign="top"><img src="docs/images/m4-ed.png" width="250" alt="The function editor: <code>(ed 'rose)</code>"><br>The function editor: <code>(ed 'rose)</code></td><td align="center" valign="top"><img src="docs/images/m4-rose.png" width="250" alt="<code>(rose)</code>: 640 by 240 pixels"><br><code>(rose)</code>: 640 by 240 pixels</td></tr>
+<tr><td align="center" valign="top"><img src="docs/images/m4-koch.png" width="250" alt="<code>(koch 4)</code>"><br><code>(koch 4)</code></td><td align="center" valign="top"><img src="docs/images/m4-tree.png" width="250" alt="<code>(tree)</code>"><br><code>(tree)</code></td><td align="center" valign="top"><img src="docs/images/m4-shapes.png" width="250" alt="<code>(shapes)</code>: discs and boxes, one colour"><br><code>(shapes)</code>: discs and boxes, one colour</td></tr>
+<tr><td align="center" valign="top"><img src="docs/images/m4-sierpinski.png" width="250" alt="<code>(sierpinski)</code>"><br><code>(sierpinski)</code></td><td align="center" valign="top"><img src="docs/images/m4-moire.png" width="250" alt="<code>(moire)</code>: lines drawn with XOR"><br><code>(moire)</code>: lines drawn with XOR</td><td align="center" valign="top"><img src="docs/images/m4-apfel.png" width="250" alt="<code>(apfel)</code>, with the text over the graphics"><br><code>(apfel)</code>, with the text over the graphics</td></tr>
 </table>
 
 **On the TRS-80 Model I with X-MEM/80**
@@ -84,8 +104,9 @@ The **library** comes in five more ROMs:
 
 It runs on a real 464, with the 1.0 and the 1.1 firmware, and in MAME on
 the 464 and the 6128; from disc on a 464 and a 6128 with 512K more and
-on a plain 6128, in MAME; and on a real TRS-80 Model I and Model III with
-X-MEM/80, and in trs80gp. On a TRS-80 the same functions are there but
+on a plain 6128, in MAME; on a real TRS-80 Model I and Model III with
+X-MEM/80, and in trs80gp; and natively on a real TRS-80 Model 4, with a
+FreHD, an HxC and the Improved Grafyx, and in trs80gp. On a TRS-80 the same functions are there but
 for the CPC's own -- colours and windows, user-defined characters, the
 joystick, `peek`/`poke`, the sound queues, PlayCity, `(basic)`: the
 [reference](docs/reference.md) marks them **CPC only**, and
@@ -205,9 +226,10 @@ cells.
     2430 cells free
 
 **The discs are ready in [`discs/`](discs/)** -- `cpclisp512.dsk` and
-`cpclisp6128.dsk`, and a test disc for the ROMs' use of a RAM expansion;
-each has `HWTEST.LSP`, a test of the real machine (`(load "hwtest")`,
-`(hwtest)`). Or build them: `MACH=cpc512 tools/build.sh` makes
+`cpclisp6128.dsk`, a test disc for the ROMs' use of a RAM expansion, and
+the demo disc `cpclisp-demo.dsk` with the Apfelmaennchen (`(load
+"apfel")`, `(apfel)`); each but the demo disc has `HWTEST.LSP`, a test of
+the real machine (`(load "hwtest")`, `(hwtest)`). Or build them: `MACH=cpc512 tools/build.sh` makes
 `build/cpc512/cpclisp512.dsk`, `MACH=cpc6128 tools/build.sh`
 `build/cpc6128/cpclisp6128.dsk`. `(basic)` goes back to BASIC, and
 `RUN"LISP` starts Lisp again (with the 512K, the RAM disc's files are
@@ -284,15 +306,36 @@ and Model III with X-MEM/80 -- in its 16 KB mode -- Talker/80 and
 MIDI/80 (2026-11-12); the discs, with a test of the machine, are in
 [`discs/`](discs/).
 
-**The TRS-80 Model 4** with 128 KB runs it natively, in its own mode,
-under LS-DOS 6.3.1: 80 by 24 characters, graphics on the
-high-resolution board (640 by 240), the Model III ROM's floats, no
-compiler, about 1900 cells ([`mach/trs80m4/README.md`](mach/trs80m4/README.md)).
-Its discs are in [`discs/`](discs/): `cpclisp-trs80-model4.dsk` and
-`.hfe` for a Gotek or an HxC (boot, the date and time, `LISP`), and
-`frehd/cpclisp4` for a FreHD (its boot menu, ENTER, `LISP`). Its test
-passed on a real Model 4 with a FreHD and the Improved Grafyx
-(2026-11-13).
+## The TRS-80 Model 4
+
+The **TRS-80 Model 4** with 128 KB runs it natively, in its own mode,
+under LS-DOS 6.3.1 -- no X-MEM/80: the six images in its three 32 KB
+banks.
+
+    CPC Lisp 0.97
+    A Lisp machine for the TRS-80 Model 4
+    library ROMs 2 4 5 6
+    1897 cells free
+
+What is the Model 4's ([`mach/trs80m4/`](mach/trs80m4/README.md)):
+
+* **80 by 24 characters**, and **high-resolution graphics, 640 by 240**,
+  on Radio Shack's board, the Grafyx Solution or Ian Mavric's Improved
+  Grafyx, the text shown over them: lines, circles and discs, boxes,
+  flood fill, XOR, the turtle -- every demo, and the Apfelmaennchen
+  (screenshots above).
+* The Model III ROM's floats, sound on the speaker, speech through
+  Talker/80, files through LS-DOS; F1 is COPY, F2 and F3 delete,
+  **SHIFT down-arrow, then a key** gives `[ ] { } ~ \ | ^ _`.
+* No compiler and no RAM disc; about 1900 cells.
+
+**The discs** are in [`discs/`](discs/) and with each release:
+`cpclisp-trs80-model4.dsk`, and `.hfe` for an HxC or a Gotek -- boot it,
+give the date and time, `LISP` -- and `frehd/cpclisp4`, a bootable hard
+disc for a **FreHD**: copy it to the SD card as it is named, choose it
+in the FreHD's menu, `LISP`. Each has `HWTEST/LSP` and `APFEL/LSP`. It
+runs on a real Model 4 with a FreHD, an HxC and the Improved Grafyx
+(2026-11-13); in trs80gp, `tools/trs80m4/run.sh` and `test.sh`.
 
 ## Documents
 
@@ -323,6 +366,8 @@ passed on a real Model 4 with a FreHD and the Improved Grafyx
   on a plain 6128
 * [`mach/trs80/README.md`](mach/trs80/README.md): the TRS-80 Model I and
   III with X-MEM/80 -- building, the discs, the keys, what works
+* [`mach/trs80m4/README.md`](mach/trs80m4/README.md): the TRS-80 Model 4
+  -- the discs (floppy, HxC, FreHD), the memory, the keys, what works
 * [`docs/hardware-test.txt`](docs/hardware-test.txt): what to type on a
   real CPC, and what it should answer
 * `CLAUDE.md`: working notes -- what was learned about the CPC, MAME and

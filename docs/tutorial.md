@@ -397,7 +397,38 @@ slow and leave the rest. A whole file at once:
 `load` then brings the functions back compiled, without compiling again.
 A compiled function cannot be shown by `ed` -- keep the source.
 
-## 12. Where next
+## 12. A bigger program: the Apfelmaennchen
+
+The demo disc (`cpclisp-demo.dsk`; on the Model 4's discs too) has
+[`APFEL.LSP`](../examples/apfel.lsp), the Mandelbrot set -- a program of
+three functions:
+
+    LISP> (load "apfel")
+    T
+    LISP> (apfel)                     ; or (apfel 40): more rounds a point
+
+On a CPC it switches to mode 2 and compiles itself first (`compile`,
+where the VM ROM is): the whole picture takes about 11 minutes on a 464.
+Worth reading, with `(ed 'apfel-depth)` or in the file, for three
+things this tour has shown:
+
+* **No floats.** A number is kept as a fixnum times 64 -- -2.3 is -147 --
+  and `(floor (* x y) 32)` is 2xy. Fixnums stop at 16383, so a point is
+  given up before its square could get there. Floats would be exact
+  enough, but each is a block of string space and a call into the maths.
+* **Coarse to fine.** Blocks of 16 units first, then 8, then 4: after the
+  first pass the whole shape is there. A block's first corner is its
+  parent's, and `test` reads what the screen shows, so a smaller block is
+  computed only where it is new and drawn only where it differs.
+* **One program, every machine.** The same file draws on a CPC in mode 2,
+  a TRS-80 Model 4's high-resolution board and a Model I's blocks -- it
+  asks `*features*` only whether to clear the screen with `mode` or `cls`.
+
+| CPC, mode 2 | TRS-80 Model 4 | TRS-80 Model I |
+|---|---|---|
+| ![(apfel) on the CPC](images/cpc-apfel.png) | ![(apfel) on the Model 4](images/m4-apfel.png) | ![(apfel) on the Model I](images/trs80-apfel.png) |
+
+## 13. Where next
 
 `(demo)` lists the demo programs: `(rose)`, `(bounce)`, `(sketch)`,
 `(koch 4)`, `(tune)`, `(midi-tune)`, `(queens 6)`... -- on a TRS-80 all

@@ -458,6 +458,10 @@ compiled code (`docs/design.md` describes both)
     - [x] Build 31726 on the real Model 4 (2026-11-13, Mike: "all
           checks out"): the FreHD image with only drive :0, the HxC as
           :6 through the floppy driver
+    - [x] `disc` on the Model 4 (2026-11-13): it drew only the CPC's
+          even y rows, and every sixth pixel row stayed dark; a row is
+          drawn once, at its lowest y (`M_NEXTY`). Build 2554, on Mike's
+          Model 4: "check out round now"
     - [ ] On the real Model 4: MIDI through MIDI/80 -- the only thing
           not tried
     - [ ] More room: the heap in the upper 32 KB and the code in the

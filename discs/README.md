@@ -19,9 +19,9 @@ the test discs for the real machine. Each disc's test is `HWTEST.LSP`:
 
 | `cpclisp-trs80-model1.dsk` | **CPC Lisp on a TRS-80 Model I** with X-MEM/80 (LDOS 5.3.1, single density): `LISP` at LDOS Ready, and its test, `HWTEST/LSP` -- also `(hwtest-big)`, the RAM disc past 256 KB | 475 |
 | `cpclisp-trs80-model3.dsk` | **the same for a Model III** (LDOS 5.1.4, double density, JV3) | 475 |
-| `cpclisp-trs80-model4.dsk` | **CPC Lisp on a TRS-80 Model 4** with 128 KB, natively (`mach/trs80m4`): LS-DOS 6.3.1's system disc (double density, 40 tracks, JV3) with `LISP` and `HWTEST/LSP` -- boot it, give the date and time, `LISP` | 475 |
-| `cpclisp-trs80-model4.hfe` | the same disc for a **Gotek** (FlashFloppy) or an **HxC** | 475 |
-| `frehd/cpclisp4` | the same on the **FreHD**'s hard disc: an LS-DOS 6.3.1 system (1.6 MB, Radio Shack hard disc driver; the hard disc is drive :0 only, the floppies :4 and :5) with `LISP` and `HWTEST/LSP`. Copy it to the root of the FreHD's SD card *as it is named* (no extension, as the FreHD's images); its boot menu lists it, ENTER boots it, `LISP` -- no date asked | 475 |
+| `cpclisp-trs80-model4.dsk` | **CPC Lisp on a TRS-80 Model 4** with 128 KB, natively (`mach/trs80m4`): LS-DOS 6.3.1's system disc (double density, 40 tracks, JV3) with `LISP` and `HWTEST/LSP` -- boot it, give the date and time, `LISP` | 2554 |
+| `cpclisp-trs80-model4.hfe` | the same disc for a **Gotek** (FlashFloppy) or an **HxC** | 2554 |
+| `frehd/cpclisp4` | the same on the **FreHD**'s hard disc: an LS-DOS 6.3.1 system (1.6 MB, Radio Shack hard disc driver; the hard disc is drive :0 only, the floppies :4 and :5) with `LISP` and `HWTEST/LSP`. Copy it to the root of the FreHD's SD card *as it is named* (no extension, as the FreHD's images); its boot menu lists it, ENTER boots it, `LISP` -- no date asked | 2554 |
 | `ld4-631.dsk` | **LS-DOS 6.3.1** for the Model 4, its system disc as distributed (Tim Mann's `ld4-631.zip`), which the Model 4 discs are made from -- see below | -- |
 
 Checked on a real CPC 464 with Revaldinho's universal 512K RAM card, on
@@ -53,7 +53,10 @@ build 25495, with the Improved Grafyx: `(hwtest)` 8 yes; F1 confirms the
 function editor), and in trs80gp from the floppy and from the FreHD
 image (trs80gp's FreHD, its boot menu); build 31726, the same code but
 for the version, passed there too (Mike: "all checks out"), and the
-release's build 475 passed every machine's tests in the emulators. From an HxC it worked on his Model 4
+release's build 475 passed every machine's tests in the emulators. The
+Model 4's discs are build 2554 since (2026-11-13): `disc` filled only
+the CPC's even rows and left every sixth pixel row out -- `(shapes)`'
+discs were striped; Mike: "check out round now". From an HxC it worked on his Model 4
 too: LS-DOS booted from a built-in floppy drive, `SYSTEM
 (DRIVE=2,ENABLE)` for the HxC as drives :2 and :3, the `.hfe` chosen
 there, `LISP` (LS-DOS finds it and its images on any drive). The HxC's

@@ -499,6 +499,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     has the bits), `-is` screenshots what is shown (`-it` is only the
     text RAM); run.sh `M4HIRES=-gg`. g_cell must keep DE: the fill reuses it (columns past 255
     came back /8 -- the fill ran along row 119 for ever).
+  * **`disc` drew only even y rows** (di_rows, `bit 0,l`): on the
+    Model 4 every sixth pixel row stayed dark -- `(shapes)` striped. A
+    row is drawn once at its lowest y there (`M_NEXTY` of y-1 = y), the
+    XOR still clean; found by a screenshot, then the hi-res dump (-ig).
   * **fill-box stepped 2 y units** (a CPC pixel row): on the Model 4 a
     row is 5/3, and every fifth row was left out (APFEL's cells were
     striped). `M_NEXTY` (the Model 4's only: mkjumps.py's per-directory

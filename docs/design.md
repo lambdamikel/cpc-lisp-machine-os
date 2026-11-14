@@ -61,6 +61,20 @@ longer mantissa. With half the CPC's RAM for the heap, block space's
 share and the file buffers' size became the machine's choice too
 (`MACH_BLOCKS`, `FILE_BUFSIZE`).
 
+**The second is the TRS-80 Model 4, natively** (`mach/trs80m4/`, [its
+README](../mach/trs80m4/README.md)): 128 KB under LS-DOS 6.3.1, no
+X-MEM/80. Its upper 32 KB switches between three banks, two images each
+-- so parts are assembled for &8000 as well as &C000 (`LIB_MIXED`,
+`liborgs`) -- and the heap stays in the fixed lower 32 KB beside LS-DOS,
+which every image sees: about 1900 cells. A resident part keeps LS-DOS's
+own image of the bank register in step, so its interrupt drivers keep
+working; the screen and keyboard (memory map 2), the Model III ROM's
+floats (map 0) and the high-resolution board's 640 by 240 pixels are the
+machine page's. Two things the CPC's graphics code took for granted
+became machine choices: a pixel row is 2 logical units there and 5/3
+here, so `fill-box` and `disc` step by the machine's own next row
+(`M_NEXTY`).
+
 ## The ROMs
 
 | ROM | source | |
