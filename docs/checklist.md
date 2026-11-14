@@ -436,10 +436,14 @@ compiled code (`docs/design.md` describes both)
     - [x] On the real Model 4 (2026-11-13): the FreHD menu, LISP loads
           -- then a black screen: bit 1 of &83 is the Grafyx's "no
           text". Fixed (0); trs80gp -gt -gg -gc show the text
-    - [ ] On the real Model 4: hwtest from the Gotek and from the FreHD,
-          the Improved Grafyx (the text over the graphics is an
-          undocumented Tandy port), the sound's pitch (calibrated to
-          trs80gp's -m4, 2 wait states an instruction)
+    - [x] On the real Model 4 (2026-11-13, Mike): hwtest 8 yes from the
+          FreHD (build 25495) with the Improved Grafyx -- the text over
+          the graphics; the editor works, F1 confirms. Asked for and
+          added: F2 delete, F3 backspace, the SHIFT down-arrow table in
+          the Model 4's docs (CTRL , is no `[` under LS-DOS)
+    - [ ] On the real Model 4: from the HxC (`cpclisp4_JV3.hfe`), the
+          sound's pitch (calibrated to trs80gp's -m4, 2 wait states an
+          instruction)
     - [ ] More room: the heap in the upper 32 KB and the code in the
           lower (OPREG's bit 6 puts banks 1 and 2 there) would about
           double it -- the core's "a SUBR is at &C000 and up" tests,

@@ -473,6 +473,11 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     and puts back what it saved -- a character of the Lisp's lost at
     the bottom-left, a "_" now and then. *DO's code 15 turns it off
     (m_init), 14 on again at (quit).
+  * **Passed on Mike's real Model 4** (2026-11-13): from the FreHD,
+    build 25495, Improved Grafyx: hwtest 8 yes, the editor, F1. His
+    cards: the FreHD's at /media/mike/FREHD (`cpclisp4`), the HxC's at
+    /media/mike/7C24-AC2B (`cpclisp4_JV3.hfe`, `cpclisp4.JV3`) -- look
+    at an image's directory before replacing it: he may have saved there.
   * The heap is the lower 32 KB beside LS-DOS (every image must see
     it): ~1900 cells, 2.7 KB of strings. Doubling it would mean the
     code in the lower half (OPREG bit 6) and the heap in the upper.

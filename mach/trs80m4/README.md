@@ -1,7 +1,8 @@
 # CPC Lisp on the TRS-80 Model 4
 
-*Runs in trs80gp (2026-11-13), from a floppy and from the FreHD; not yet
-tried on a real Model 4.* The
+*Runs on Mike's Model 4 (2026-11-13: 128 KB, LS-DOS 6.3.1 from the FreHD,
+Ian Mavric's Improved Grafyx -- `(hwtest)` 8 yes), and in trs80gp from a
+floppy and from the FreHD.* The
 same Lisp as on the CPC -- the images are built from the same sources --
 on a TRS-80 Model 4 with 128 KB, natively in its Model 4 mode, under
 LS-DOS 6.3.1: 80 by 24 characters, and graphics on the high-resolution
