@@ -793,7 +793,7 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   using the card's port**: two on the console interleave bytes. Before:
   2 Parados, 4 the core -- the README's installation section has the
   table. All six Lisp ROMs must come from
-  one build: re-flash them together. Flashed: build 1944 (0.96, the release; build 31443 before it,
+  one build: re-flash them together. Flashed: build 1471 (0.97, the release, 2026-11-13: the core into slot 2; every slot's sum32 read back equal to `roms/`); build 1944 (0.96, the release; build 31443 before it,
   the same but for the version -- 2026-11-12, evening:
   dropping library functions, lazy loading, far arrays, the fixes found
   on the hardware -- load's environment, M:'s 512-byte buffer, the RAM
@@ -827,9 +827,9 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   NOT mean it is off.
 * **Discs**: `tools/mkcpcdisk.py` builds a DSK and an HFE; `tools/dskloader.py`
   puts a `.dsk` in a flash slot or the drive (`--list`, `--slot N`,
-  `--load N`, `--get N`). Flash disc 8 is the 512K disc version, 14 the plain
+  `--load N`, `--get N`). Flash disc 3 is the demo disc (`cpclisp-demo.dsk`: APFEL; Oh Mummy, there before, is in ~/claude/cpc/card-backup/slot3-ohmummy.dsk), 8 the 512K disc version, 14 the plain
   6128's, 54 the ROM version's test disc -- each byte for byte the
-  one in `discs/` (2026-11-13, with APFEL.LSP added, read back) -- (HWTEST.LSP; 54 was a
+  one in `discs/` (2026-11-13, 0.97, read back) -- (HWTEST.LSP; 54 was a
   slideshow, Mike's to give: ~/claude/cpc/card-backup/
   slot54-slideshow-35.dsk). No slot is free. To test the disc versions
   the six Lisp ROM slots are silenced (`tools/card.py number SLOT 255`:
