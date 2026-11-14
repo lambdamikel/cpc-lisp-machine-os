@@ -17,8 +17,8 @@ differently -- the screen, sound, keys.
 
 Two keys first. **ESC** stops whatever is running and comes back to
 `LISP>` (BREAK on a TRS-80). The CPC has no tilde key, and `format`
-needs one: **CTRL + 2** types `~`. (On a TRS-80: SHIFT down-arrow, then
-`-`.)
+needs one: **CTRL + 2** types `~`. (On a TRS-80, the Model 4 too: SHIFT
+down-arrow, let go, then `-`; then `8` and `9` are `[` `]`.)
 
 ## 1. First steps
 

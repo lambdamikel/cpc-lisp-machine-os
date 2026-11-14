@@ -922,7 +922,12 @@ above, but for:
 - **Sound** on the speaker (port &90), one voice, as above.
 - **Floats** through the Model III ROM, as on a Model I or III -- a
   Model 4 without it (a 4P) says so at the start and has none.
-- **Keys**: as above, and F1 is COPY, CTRL-S is CTRL-S.
+- **Keys**: as above -- **SHIFT down-arrow, then a key** for `[ ] { }
+  ~ \ | ^ _` and backquote (`8` `[`, `9` `]`, `,` `{`, `.` `}`, `-` `~`,
+  `/` `\`, `1` `|`, `7` `` ` ``, `@` `^`, `0` `_`); SHIFT <- deletes to
+  the left, CLEAR under the cursor. **F1 is COPY**, and with CTRL-S
+  "done" in the function editor (BREAK: unchanged). LS-DOS gives no
+  brackets for CTRL with a key.
 - **Not there**: the compiler (`compile` is undefined), the RAM disc
   `M:` and far arrays.
 - About 1900 cells and 2.7 KB of strings.

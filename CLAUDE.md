@@ -490,6 +490,12 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     T-states a second, measured; the speaker's delays are tuned to it.
   * trs80gp input: `-id N` waits N frames, `-ik 6 4` holds BREAK (row 6
     bit 2), `-ik 6 0` lets go: run.sh plays the tests' `!esc`/`!type`.
+    **`-ik`'s mask is hex** (`-ik 5 10` is the comma, row 5 bit 4).
+    Measured under LS-DOS: CTRL @ is 0, CTRL and a digit the digit,
+    CLEAR and a key the key, SHIFT @ a backquote at @KEY -- no brackets
+    from CTRL (Mike tried CTRL , for `[`: a replacement ROM's, not
+    LS-DOS's); SHIFT down-arrow composes them, as on the Model I/III.
+    F1 (COPY) is "done" in the function editor -- Mike, 2026-11-13.
     `-ig` dumps the hi-res memory (128 bytes a row).
   * The suite: `tools/trs80m4/test.sh` (3 at a time, a disc copy each);
     build elsewhere meanwhile (`OUT=build/trs80m4-dev`,

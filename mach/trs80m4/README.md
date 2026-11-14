@@ -94,9 +94,32 @@ loading and `room` help as on the CPC.
 | CLEAR | CLR: the character under the cursor |
 | F1 | COPY: copies from the copy cursor; in the function editor, done |
 | CTRL-S | in the function editor, done (BREAK leaves it unchanged) |
-| SHIFT down, then a key | a character the keyboard has not got, as on the Model I/III (`mach/trs80/README.md`) |
+| SHIFT down, then a key | a character the keyboard has not got (below) |
 | SHIFT down twice | the copy cursor down |
-| SHIFT @ | output waits (LS-DOS's way) until another key |
+| SHIFT @ | output waits (LS-DOS's way) until another key; at the prompt, a backquote |
+
+To delete: SHIFT <- the character to the left, CLEAR the one under the
+cursor; <- and -> only move.
+
+The Model 4 has no `[ ] { } \ | ~ ^ _` keys, and LS-DOS gives none for
+CTRL with a key (CTRL @ is code 0, CTRL and a digit the digit; CTRL ,
+for `[` is a replacement ROM's, not LS-DOS's). **SHIFT down-arrow,
+pressed and let go, then a key** makes them, as on the Model I/III; the
+key may be shifted or not:
+
+| SHIFT down, then | gives | for |
+|---|---|---|
+| `8` or `(`, `9` or `)` | `[` `]` | `format`'s `~[ ~]` |
+| `,` or `<`, `.` or `>` | `{` `}` | `format`'s `~{ ~}` |
+| `-` or `=` | `~` | `format`'s directives: `"~A"` |
+| `/` or `?` | `\` | characters: `#\a`; escapes in strings |
+| `1` or `!` | `\|` | `\|odd names\|`, `#\| comments \|#` |
+| `7` or `'` | `` ` `` | backquote |
+| `@` | `^` | `format`'s `~^` |
+| `0` | `_` | |
+| `C` | COPY | the copy cursor's character; the function editor: done |
+| `S` | CTRL-S | the function editor: done |
+| down-arrow again | | the copy cursor down |
 
 Keys come through LS-DOS (@KEY, @KBD), so its type-ahead works.
 `key-down-p` takes the matrix's numbers, row * 8 + bit: ENTER 48, CLEAR
