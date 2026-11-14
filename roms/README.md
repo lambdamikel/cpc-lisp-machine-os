@@ -14,7 +14,9 @@ KB under LS-DOS 6.3.1 -- 80 by 24, graphics on the high-resolution board
 floppy, an HxC or Gotek, or a FreHD (below); and **the Apfelmaennchen**,
 `(load "apfel")` `(apfel)`, on the discs -- `cpclisp-demo.dsk` and the
 others; on a CPC in mode 2, compiled.
-The CPC's ROMs are 0.96's but for the version.
+The CPC's ROMs are 0.96's but for the version, and `(basic)` and
+`|BOOTLISP` default to card slot 2. Checked on a real 464 with the
+LambdaSpeak card (the demo disc's `(apfel)` too).
 
 **New in 0.96**: programs bigger than memory -- `(load "big" :lazy t)`
 reads each function from the file when it is first called -- and library
