@@ -643,13 +643,14 @@ m_gfx_paper:
 ;; KEYS: LS-DOS's (@KEY, @KBD), its codes made the CPC's
 ;;   BREAK ESC, CLEAR CLR, <- left, SHIFT <- DEL, -> right, SHIFT -> TAB,
 ;;   up and down, SHIFT up the copy cursor's up: the arrows only move, as
-;;   on the Model I/III; F1 is COPY. SHIFT DOWN-ARROW, pressed and let go,
+;;   on the Model I/III; F1 is COPY, F2 CLR (delete), F3 DEL (backspace:
+;;   Mike, 2026-11-13). SHIFT DOWN-ARROW, pressed and let go,
 ;;   makes the next key one the keyboard has not got (k_comp): twice is
 ;;   the copy cursor's down.
 
 k_codes:
     db #80,#FC, #1F,#10, #08,#F2, #18,#7F, #09,#F3, #19,#09
-    db #0B,#F0, #0A,#F1, #1B,#F4, #81,#E0, 0
+    db #0B,#F0, #0A,#F1, #1B,#F4, #81,#E0, #82,#10, #83,#7F, 0
 
 ;; after SHIFT DOWN-ARROW: a key, shifted or not, and what it makes
 k_comp:

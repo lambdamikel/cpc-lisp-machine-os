@@ -18,9 +18,9 @@ the test discs for the real machine. Each disc's test is `HWTEST.LSP`:
 
 | `cpclisp-trs80-model1.dsk` | **CPC Lisp on a TRS-80 Model I** with X-MEM/80 (LDOS 5.3.1, single density): `LISP` at LDOS Ready, and its test, `HWTEST/LSP` -- also `(hwtest-big)`, the RAM disc past 256 KB | 3059 |
 | `cpclisp-trs80-model3.dsk` | **the same for a Model III** (LDOS 5.1.4, double density, JV3) | 3059 |
-| `cpclisp-trs80-model4.dsk` | **CPC Lisp on a TRS-80 Model 4** with 128 KB, natively (`mach/trs80m4`): LS-DOS 6.3.1's system disc (double density, 40 tracks, JV3) with `LISP` and `HWTEST/LSP` -- boot it, give the date and time, `LISP` | 25495 |
-| `cpclisp-trs80-model4.hfe` | the same disc for a **Gotek** (FlashFloppy) or an **HxC** | 25495 |
-| `frehd/cpclisp4` | the same on the **FreHD**'s hard disc: an LS-DOS 6.3.1 system (1.6 MB, Radio Shack hard disc driver) with `LISP` and `HWTEST/LSP`. Copy it to the root of the FreHD's SD card *as it is named* (no extension, as the FreHD's images); its boot menu lists it, ENTER boots it, `LISP` -- no date asked | 25495 |
+| `cpclisp-trs80-model4.dsk` | **CPC Lisp on a TRS-80 Model 4** with 128 KB, natively (`mach/trs80m4`): LS-DOS 6.3.1's system disc (double density, 40 tracks, JV3) with `LISP` and `HWTEST/LSP` -- boot it, give the date and time, `LISP` | 26628 |
+| `cpclisp-trs80-model4.hfe` | the same disc for a **Gotek** (FlashFloppy) or an **HxC** | 26628 |
+| `frehd/cpclisp4` | the same on the **FreHD**'s hard disc: an LS-DOS 6.3.1 system (1.6 MB, Radio Shack hard disc driver) with `LISP` and `HWTEST/LSP`. Copy it to the root of the FreHD's SD card *as it is named* (no extension, as the FreHD's images); its boot menu lists it, ENTER boots it, `LISP` -- no date asked | 26628 |
 | `ld4-631.dsk` | **LS-DOS 6.3.1** for the Model 4, its system disc as distributed (Tim Mann's `ld4-631.zip`), which the Model 4 discs are made from -- see below | -- |
 
 Checked on a real CPC 464 with Revaldinho's universal 512K RAM card, on

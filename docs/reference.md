@@ -924,8 +924,9 @@ above, but for:
   Model 4 without it (a 4P) says so at the start and has none.
 - **Keys**: as above -- **SHIFT down-arrow, then a key** for `[ ] { }
   ~ \ | ^ _` and backquote (`8` `[`, `9` `]`, `,` `{`, `.` `}`, `-` `~`,
-  `/` `\`, `1` `|`, `7` `` ` ``, `@` `^`, `0` `_`); SHIFT <- deletes to
-  the left, CLEAR under the cursor. **F1 is COPY**, and with CTRL-S
+  `/` `\`, `1` `|`, `7` `` ` ``, `@` `^`, `0` `_`); **F3** (or SHIFT <-)
+  deletes to the left, **F2** (or CLEAR) under the cursor. **F1 is
+  COPY**, and with CTRL-S
   "done" in the function editor (BREAK: unchanged). LS-DOS gives no
   brackets for CTRL with a key.
 - **Not there**: the compiler (`compile` is undefined), the RAM disc

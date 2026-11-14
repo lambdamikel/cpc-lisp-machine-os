@@ -93,13 +93,15 @@ loading and `room` help as on the CPC.
 | SHIFT up | the copy cursor up |
 | CLEAR | CLR: the character under the cursor |
 | F1 | COPY: copies from the copy cursor; in the function editor, done |
+| F2 | delete: the character under the cursor (CLR) |
+| F3 | backspace: the character to the left (DEL) |
 | CTRL-S | in the function editor, done (BREAK leaves it unchanged) |
 | SHIFT down, then a key | a character the keyboard has not got (below) |
 | SHIFT down twice | the copy cursor down |
 | SHIFT @ | output waits (LS-DOS's way) until another key; at the prompt, a backquote |
 
-To delete: SHIFT <- the character to the left, CLEAR the one under the
-cursor; <- and -> only move.
+To delete: F3 or SHIFT <- the character to the left, F2 or CLEAR the
+one under the cursor; <- and -> only move.
 
 The Model 4 has no `[ ] { } \ | ~ ^ _` keys, and LS-DOS gives none for
 CTRL with a key (CTRL @ is code 0, CTRL and a digit the digit; CTRL ,
