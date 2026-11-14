@@ -13,6 +13,9 @@ VID_COLS    equ LIBSCR+234      ; columns on the screen
 VID_FONTSIZE equ 0              ; no font to copy
 VID_ROWS    equ 16              ; rows on the screen
 
+;; the function editor's status line, on the last row (lib/fed.asm)
+VID_STATUS: db " SHIFT down-arrow, then S or C: done     BREAK: cancel",0
+
 ;; VID_INIT: DE = VID_FONTSIZE bytes (none). The screen's size noted.
 VID_INIT:
     ld a,64

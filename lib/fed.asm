@@ -372,9 +372,14 @@ fe_edit:
     ld hl,(FE_BUF)
     ld (FE_CUR),hl
     ld (FE_TOP),hl
+    ifdef VID_STATUS            ; the machine's own words, plain (a TRS-80's
+    ld hl,VID_STATUS            ;   "inverse" is a block)
+    else
     call VID_INVERSE
     ld hl,fe_m_status
-    ld bc,24                    ; B = column 0, C = row 24
+    endif
+    ld bc,VID_ROWS-1            ; B = column 0, C = the last row (row 24 on
+                                ; a TRS-80 was past its screen: LDOS's RAM)
 .st:
     ld a,(hl)
     or a

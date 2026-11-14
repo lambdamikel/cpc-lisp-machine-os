@@ -10,14 +10,17 @@ LISP> (defun greet (who) (format nil "hello, ~A!" who))
 GREET
 LISP> (defun adder (n) #'(lambda (x) (+ x n)))
 ADDER
+LISP> (defun names () (list 'compile 'car (fboundp 'compile)))
+NAMES
 LISP> (save "src")
-(TW SQ GREET TWICE ADDER SUMSQ)
+(TW NAMES SQ GREET TWICE ADDER SUMSQ)
 LISP> (compile-file "src")
-;; 5 compiled
+;; 6 compiled
 "src.FAS"
 LISP> (with-open-file (s "src.fas") (loop for l = (read-line s nil) while l do (print l)))
 
 "(SETF (SYMBOL-FUNCTION 'TW) (%CODE '(\"66010C022DF663\") (LIST) 'TW))" 
+"(SETF (SYMBOL-FUNCTION 'NAMES) (%CODE '(\"6600030003010300E40201BA0363\") (LIST 'COMPILE 'CAR 'FBOUNDP) 'NAMES))" 
 "(SETF (SYMBOL-FUNCTION 'SQ) (%CODE '(\"66012D2DF663\") (LIST) 'SQ))" 
 "(SETF (SYMBOL-FUNCTION 'GREET) (%CODE '(\"66010603002DE70103\") (LIST '\"hello, ~A!\" 'FORMAT) 'GREET))" 
 "(DEFMACRO TWICE (X) `(* 2 ,X))" 
@@ -34,6 +37,8 @@ LISP> (fmakunbound 'greet)
 GREET
 LISP> (fmakunbound 'adder)
 ADDER
+LISP> (fmakunbound 'names)
+NAMES
 LISP> (load "src.fas")
 T
 LISP> (sumsq '(1 2 3))
@@ -44,6 +49,8 @@ LISP> (greet "CPC")
 "hello, CPC!"
 LISP> (funcall (adder 5) 10)
 15
+LISP> (names)
+(COMPILE CAR T)
 LISP> (disassemble 'sq)
   0 ENTER 1
   2 A0

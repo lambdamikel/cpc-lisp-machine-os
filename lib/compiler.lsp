@@ -737,8 +737,8 @@
       (format s "~2,'0X" x)
       (incf i))
     (format s "\") (LIST")
-    (dolist (x (cdr c))
-      (if (eql (%fn-info x) 3)
+    (dolist (x (cdr c))                 ; (a symbol is itself: %fn-info
+      (if (and (not (symbolp x)) (eql (%fn-info x) 3)) ; looks at its function)
           (progn (format s " ") (cc-write x s))
           (format s " '~S" x)))
     (format s ") '~S)" (car c))))

@@ -271,6 +271,12 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   464 with a disc ROM), then writes `(setf (symbol-function 'f) (%code
   '("hex"...) (list constants...) 'f))` per defun -- `%code` (a VM
   native) makes the function again, so `load` needs no compiler.
+  **A constant that is a symbol is written as one**: `cc-write` asked
+  `%fn-info`, which for a symbol looks at its *function* -- a quoted
+  `'compile` (a VM function) came out as an empty `(%CODE '("") (LIST)
+  'NIL)`, and APFEL's .FAS said "not a symbol: #<FUNCTION>" at
+  `(fboundp 'compile)` (Mike, 2026-11-14, on the Model III; fixed,
+  test/disccomp's NAMES).
 * **The machine layer** (2026-11-11, Mike: "start with the CPC abstract
   interface version"): everything CPC-specific is in `mach/cpc/` --
   `firmware.asm` (every firmware entry point, by name), `machine.asm`
@@ -345,6 +351,15 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     (&E0), then S is CTRL-S (&13) -- the function editor's "done" was
     out of reach before (k_comp in page.asm). `(reset)` goes back to
     LDOS (SYS_RESET = M_QUIT): RST 0 with X-MEM/80's pages switched hung.
+  * **The function editor drew its status line at row 24** (the CPC's
+    last), on a TRS-80 &3C00 + 24*64 = &4200-&423F -- the Model III's
+    ROM and LDOS variables (the time at &4216-&4219): 64 bytes of &8F
+    there turned LDOS's clock display on, ticking with nonsense (Mike,
+    2026-11-14). The row is VID_ROWS-1 now, and a TRS-80's fr.asm gives
+    its own words (VID_STATUS, plain: its "inverse" is a block). The
+    Model 4's went to &FF80 (unused video RAM). trs80gp has X-MEM/80
+    only on a Model I: the Model III's build cannot be run there -- the
+    Model I's has the same images.
   * What works where is marked in docs/reference.md (**CPC only**,
     **TRS-80 only**, *TRS-80:*) and the tutorial; keep it so when adding a
     machine-specific function (mach/*/ natives are the list).
