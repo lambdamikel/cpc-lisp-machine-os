@@ -19,8 +19,9 @@ board, 640 by 240.
     M4DISC=hdv tools/trs80m4/...  # the same from the FreHD image
 
 `lisp-m4.dsk` is LS-DOS 6.3.1's system disc (double density, 40 tracks)
-with its utilities thinned out and `LISP/CMD`, the six images and
-`HWTEST/LSP` on it; `lisp-m4.hfe` the same for a Gotek or an HxC (made
+with its utilities thinned out and `LISP/CMD`, the six images,
+`HWTEST/LSP` and `APFEL/LSP` (the Apfelmaennchen, `examples/apfel.lsp`:
+`(load "apfel")`, `(apfel)`) on it; `lisp-m4.hfe` the same for a Gotek or an HxC (made
 with hxcfe, if it is there: `$HXCFE`). At `LS-DOS Ready`, `LISP` loads
 them and starts; `(quit)` goes back. `tools/trs80m4/mkdisk.py` starts
 from LS-DOS 6.3.1's own disc (`discs/ld4-631.dsk`, from the LS-DOS 6.3.1

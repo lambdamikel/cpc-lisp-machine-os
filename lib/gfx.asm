@@ -310,10 +310,12 @@ gx_box:
     jp m,.ordered
     ex de,hl
 .ordered:
+    ifndef M_NEXTY
     ld a,l                      ; a pixel row is two y values: from the
     and #FE                     ;   even one of the lowest row to the odd
     ld l,a                      ;   one of the highest, two at a time
     set 0,e
+    endif                       ; (a Model 4's row is 5/3: M_NEXTY steps)
     ld (ix+BX_Y2),e
     ld (ix+BX_Y2+1),d
 .row:
@@ -329,8 +331,12 @@ gx_box:
     call gx_line
     ld l,(ix+BX_Y1)
     ld h,(ix+BX_Y1+1)
+    ifdef M_NEXTY
+    call M_NEXTY                ; the next y on another pixel row
+    else
     inc hl
     inc hl
+    endif
     ld e,(ix+BX_Y2)
     ld d,(ix+BX_Y2+1)
     ex de,hl

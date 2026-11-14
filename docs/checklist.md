@@ -441,6 +441,12 @@ compiled code (`docs/design.md` describes both)
           the graphics; the editor works, F1 confirms. Asked for and
           added: F2 delete, F3 backspace, the SHIFT down-arrow table in
           the Model 4's docs (CTRL , is no `[` under LS-DOS)
+    - [x] The Apfelmaennchen (Mike: "can you add an appleman program",
+          and for the CPC in mode 2): `examples/apfel.lsp` on the CPC
+          discs and the Model 4's -- fixnums times 64, coarse to fine,
+          compiled where there is a compiler (11 min on a 464). On the
+          way: fill-box on the Model 4 left every fifth pixel row out
+          (it stepped 2 units, a CPC row): M_NEXTY steps there
     - [ ] On the real Model 4: from the HxC (`cpclisp4_JV3.hfe`), the
           sound's pitch (calibrated to trs80gp's -m4, 2 wait states an
           instruction)

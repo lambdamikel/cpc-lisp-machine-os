@@ -187,6 +187,33 @@ g_pix:
     pop de
     ret
 
+;; M_NEXTY: HL = a y, logical, from the origin -> HL = the next y up on
+;; another pixel row: y+1 or y+2, a row being 5/3 units. fill-box (lib/
+;; gfx.asm) steps by it: every row once, none left out (two at a time, as
+;; on the CPC, left every fifth row out). BC, DE kept.
+m_m_nexty:
+    push bc
+    push de
+    push hl
+    ld de,0
+    call g_pix                  ; HL = y's row
+    ex (sp),hl                  ; it kept; HL = y
+    inc hl
+    push hl
+    ld de,0
+    call g_pix                  ; HL = y+1's row
+    pop de                      ; DE = y+1
+    pop bc                      ; BC = y's row
+    or a
+    sbc hl,bc
+    ex de,hl
+    jr nz,.new
+    inc hl                      ; the same row: y+2 is on the next
+.new:
+    pop de
+    pop bc
+    ret
+
 ;; g_cell: DE = a pixel's column, HL = its row -> the board's X and Y at
 ;; its byte, C = its bit; NC if it is off the screen (or there is no
 ;; board). DE, HL kept.

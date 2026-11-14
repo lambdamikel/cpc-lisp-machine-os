@@ -13,3 +13,6 @@ rm -f build/cpclisp-hwtest.dsk
 "$IDSK" build/cpclisp-hwtest.dsk -n >/dev/null
 cp mach/cpc/hwtest.lsp build/HWTEST.LSP
 ( cd build && "$IDSK" cpclisp-hwtest.dsk -i HWTEST.LSP -t 0 >/dev/null 2>&1 )
+# and the Apfelmaennchen: (load "apfel"), (apfel)
+cp examples/apfel.lsp build/APFEL.LSP
+( cd build && "$IDSK" cpclisp-hwtest.dsk -i APFEL.LSP -t 0 >/dev/null 2>&1 )

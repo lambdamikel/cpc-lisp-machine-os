@@ -18,13 +18,13 @@ LISP> (dir)
 
 Drive A: user  0
 
+APFEL   .LSP   3K   LISP2   .IMG  17K
 HWTEST  .LSP   5K   LISP3   .IMG  17K
 LISP    .BIN   3K   LISP4   .IMG  17K
 LISP0   .IMG  17K   LISP5   .IMG  17K
 LISP1   .IMG  17K   WORK    .LSP   1K
-LISP2   .IMG  17K
 
- 67K free
+ 64K free
 
 NIL
 LISP> (fmakunbound 'sq)
@@ -55,13 +55,14 @@ LISP> (dir)
 
 Drive A: user  0
 
-HWTEST  .LSP   5K   LISP3   .IMG  17K
-LISP    .BIN   3K   LISP4   .IMG  17K
-LISP0   .IMG  17K   LISP5   .IMG  17K
-LISP1   .IMG  17K   TWO     .LSP   1K
-LISP2   .IMG  17K   WORK    .LSP   1K
+APFEL   .LSP   3K   LISP3   .IMG  17K
+HWTEST  .LSP   5K   LISP4   .IMG  17K
+LISP    .BIN   3K   LISP5   .IMG  17K
+LISP0   .IMG  17K   TWO     .LSP   1K
+LISP1   .IMG  17K   WORK    .LSP   1K
+LISP2   .IMG  17K
 
- 66K free
+ 63K free
 
 NIL
 LISP> 

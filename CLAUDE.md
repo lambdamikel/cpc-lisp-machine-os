@@ -491,6 +491,19 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     has the bits), `-is` screenshots what is shown (`-it` is only the
     text RAM); run.sh `M4HIRES=-gg`. g_cell must keep DE: the fill reuses it (columns past 255
     came back /8 -- the fill ran along row 119 for ever).
+  * **fill-box stepped 2 y units** (a CPC pixel row): on the Model 4 a
+    row is 5/3, and every fifth row was left out (APFEL's cells were
+    striped). `M_NEXTY` (the Model 4's only: mkjumps.py's per-directory
+    extra, so the Model I/III's numbers stay) gives the next y on
+    another row; lib/gfx.asm uses it `ifdef M_NEXTY` -- every other
+    machine's ROMs byte for byte the same (BUILD_ID=77).
+  * `examples/apfel.lsp`, the Apfelmaennchen (Mike, 2026-11-13), is on
+    the CPC discs and the Model 4's: fixnums times 64 (no floats: slow,
+    and string space), coarse to fine with `test` reading the parent's
+    colour. Lighting every other escape band flooded the picture (the
+    bands near the set are wider than a cell); the set alone is it.
+    Compiled on a 464: 33088 frames. A test of it in Python first
+    (the same integer arithmetic) saved rounds in the emulators.
   * trs80gp's `-m4` is "2 wait states per instruction": some 2.77 M
     T-states a second, measured; the speaker's delays are tuned to it.
   * trs80gp input: `-id N` waits N frames, `-ik 6 4` holds BREAK (row 6

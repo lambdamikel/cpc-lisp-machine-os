@@ -25,17 +25,18 @@ DROP = [('DOS', 'HLP'), ('BASIC', 'CMD'), ('BASIC', 'OV1'), ('BASIC', 'OV2'),
         ('CONV', 'CMD')]
 
 def lisp_files(out):
-    """[(name, ext, data)]: LISP/CMD, the six images, HWTEST/LSP"""
+    """[(name, ext, data)]: LISP/CMD, the six images, HWTEST/LSP, APFEL/LSP"""
     files = [('LISP', 'CMD', open(os.path.join(out, 'LISP.CMD'), 'rb').read())]
     for name, rom in IMAGES:
         data = lz.compress(open(os.path.join(out, rom), 'rb').read().rstrip(b'\xff'))
         files.append((name, 'IMG', data))
-    test = os.path.join(HERE, '..', '..', 'mach', 'trs80m4', 'hwtest.lsp')
-    if os.path.exists(test):            # the test of the real machine
-        lines = open(test).read().split('\n')
+    for name, src in (('HWTEST', 'mach/trs80m4/hwtest.lsp'),  # the test of the
+                      ('APFEL', 'examples/apfel.lsp')):     # machine; the Apfelmaennchen
+        src = os.path.join(HERE, '..', '..', src)
+        lines = open(src).read().split('\n')
         text = '\n'.join(l.strip() for l in lines
                          if l.strip() and not l.strip().startswith(';'))
-        files.append(('HWTEST', 'LSP', (text + '\n').encode()))
+        files.append((name, 'LSP', (text + '\n').encode()))
     return files
 
 def main():

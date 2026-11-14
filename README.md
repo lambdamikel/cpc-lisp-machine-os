@@ -295,6 +295,8 @@ passed on a real Model 4 with a FreHD and the Improved Grafyx
 
 * [`roms/README.md`](roms/README.md): the ready-made ROM images -- what
   each is, and how to install them
+* [`examples/`](examples/): programs on the discs -- the Apfelmaennchen,
+  `(load "apfel")` `(apfel)`
 * [`discs/README.md`](discs/README.md): CPC Lisp from disc (512K, plain
   6128), the TRS-80 discs (Model I, III, 4 -- the Model 4's for a FreHD
   too) and the test discs for the real machine

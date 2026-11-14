@@ -23,6 +23,9 @@ import sys
 # the machine directory: mach/trs80, or another (mkjumps.py mach/trs80m4)
 D = (sys.argv[1] if len(sys.argv) > 1
      else os.path.join(os.path.dirname(__file__), '..', '..', 'mach', 'trs80'))
+# a machine's own, after the shared ones (so the others' numbers stay): the
+# Model 4's M_NEXTY, the next y on another pixel row (fill-box, lib/gfx.asm)
+NAMES += {'trs80m4': ['M_NEXTY']}.get(os.path.basename(os.path.normpath(D)), [])
 
 def main():
     assert len(NAMES) == len(set(NAMES)) and 2 * len(NAMES) < 256

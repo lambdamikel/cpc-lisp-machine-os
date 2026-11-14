@@ -34,3 +34,6 @@ done
 # the test for the real machine: (load "hwtest"), (hwtest)
 cp mach/cpc6128/hwtest.lsp "$OUT/HWTEST.LSP"
 ( cd "$OUT" && "$IDSK" cpclisp6128.dsk -i HWTEST.LSP -t 0 >/dev/null 2>&1 )
+# and the Apfelmaennchen: (load "apfel"), (apfel)
+cp examples/apfel.lsp "$OUT/APFEL.LSP"
+( cd "$OUT" && "$IDSK" cpclisp6128.dsk -i APFEL.LSP -t 0 >/dev/null 2>&1 )
