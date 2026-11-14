@@ -1,6 +1,7 @@
 # CPC Lisp on the TRS-80 Model 4
 
-*Runs in trs80gp (2026-11-13); not yet tried on a real Model 4.* The
+*Runs in trs80gp (2026-11-13), from a floppy and from the FreHD; not yet
+tried on a real Model 4.* The
 same Lisp as on the CPC -- the images are built from the same sources --
 on a TRS-80 Model 4 with 128 KB, natively in its Model 4 mode, under
 LS-DOS 6.3.1: 80 by 24 characters, and graphics on the high-resolution
@@ -9,19 +10,33 @@ board, 640 by 240.
 ## Building and running
 
     MACH=trs80m4 tools/build.sh   # build/trs80m4: the images, LISP/CMD,
-                                  #   the disc lisp-m4.dsk
+                                  #   the discs lisp-m4.dsk, .hfe, .hdv
     tools/trs80m4/run.sh file.lsp # type a file at it in trs80gp (headless),
                                   #   print the transcript
     tools/trs80m4/test.sh         # the regression tests (test/skip.trs80m4
                                   #   lists the ones left out)
+    M4DISC=hdv tools/trs80m4/...  # the same from the FreHD image
 
 `lisp-m4.dsk` is LS-DOS 6.3.1's system disc (double density, 40 tracks)
 with its utilities thinned out and `LISP/CMD`, the six images and
-`HWTEST/LSP` on it. At `LS-DOS Ready`, `LISP` loads them and starts;
-`(quit)` goes back. `tools/trs80m4/mkdisk.py` starts from LS-DOS 6.3.1's
-own disc (`ld4-631.dsk`, from the LS-DOS 6.3.1 distribution, which Roy
-Soltoff and William Schroeder made free to use and pass on): `$LSDOS631`,
-or `tools/trs80m4/ld4-631.dsk`.
+`HWTEST/LSP` on it; `lisp-m4.hfe` the same for a Gotek or an HxC (made
+with hxcfe, if it is there: `$HXCFE`). At `LS-DOS Ready`, `LISP` loads
+them and starts; `(quit)` goes back. `tools/trs80m4/mkdisk.py` starts
+from LS-DOS 6.3.1's own disc (`discs/ld4-631.dsk`, from the LS-DOS 6.3.1
+distribution, which Roy Soltoff made free to use and pass on; or
+`$LSDOS631`).
+
+`lisp-m4.hdv` is the same on a hard disc for the **FreHD**: a bootable
+LS-DOS 6.3.1 (`tools/trs80m4/ls631-frehd.hdv.gz`, `mkhdv.py`'s header
+says what it is) with the Lisp's files added. On the FreHD's SD card
+(`discs/frehd/cpclisp4`: copied to its root as it is named) the FreHD's
+boot menu lists it; ENTER boots it, no date is asked, `LISP`. In trs80gp,
+`run.sh` with `M4DISC=hdv` boots it through trs80gp's own FreHD and its
+menu (`-frehd_dir`, `-frehd_patch`, `-frehd_menu`). LS-DOS on this disc
+has 202 cylinders of 32 sectors (the file keeps 256 a cylinder),
+granules of 4 sectors; `tools/trs80/ldoswrite.py` reads the granule size
+off DIR/SYS. Its cylinder 0 is the boot's: sectors 4-13 hold boot code
+the GAT does not mark, so no file goes there.
 
 The loader says why it will not start: something in high memory (HIGH$
 must be X'FFFF'), a 32 KB bank in use (by the spooler, a RAM disc

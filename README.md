@@ -281,12 +281,22 @@ and Model III with X-MEM/80 -- in its 16 KB mode -- Talker/80 and
 MIDI/80 (2026-11-12); the discs, with a test of the machine, are in
 [`discs/`](discs/).
 
+**The TRS-80 Model 4** with 128 KB runs it natively, in its own mode,
+under LS-DOS 6.3.1: 80 by 24 characters, graphics on the
+high-resolution board (640 by 240), the Model III ROM's floats, no
+compiler, about 1900 cells ([`mach/trs80m4/README.md`](mach/trs80m4/README.md)).
+Its discs are in [`discs/`](discs/): `cpclisp-trs80-model4.dsk` and
+`.hfe` for a Gotek or an HxC (boot, the date and time, `LISP`), and
+`frehd/cpclisp4` for a FreHD (its boot menu, ENTER, `LISP`). Tried in
+trs80gp so far (2026-11-13).
+
 ## Documents
 
 * [`roms/README.md`](roms/README.md): the ready-made ROM images -- what
   each is, and how to install them
 * [`discs/README.md`](discs/README.md): CPC Lisp from disc (512K, plain
-  6128) and the test discs for the real machine
+  6128), the TRS-80 discs (Model I, III, 4 -- the Model 4's for a FreHD
+  too) and the test discs for the real machine
 * [`docs/tutorial.md`](docs/tutorial.md): a tour at the keyboard -- the
   language, then the screen, graphics, the turtle, keys, sound, speech,
   files and the compiler

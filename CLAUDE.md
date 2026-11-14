@@ -489,6 +489,23 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   * The suite: `tools/trs80m4/test.sh` (3 at a time, a disc copy each);
     build elsewhere meanwhile (`OUT=build/trs80m4-dev`,
     `TRS80M4_BUILD=...`): each test copies the disc as it starts.
+  * **The FreHD** (Mike uses it and a Gotek): the build makes
+    `lisp-m4.hdv` (`tools/trs80m4/mkhdv.py`) from a clean LS-DOS 6.3.1
+    hard disc (`ls631-frehd.hdv.gz`, made with `--base` from the image on
+    Mike's card: only LS-DOS's own files, the rest zeroed -- his card's
+    images hold his and others' programs: never publish them). The
+    FreHD's boot menu lists every file on the card's root with the
+    xtrs/Reed header (56 CB) and byte 8 bit 0 set; its LS-DOS uses the
+    Radio Shack driver (RSHARD6: the FreHD answers as that controller).
+    **The geometry is not the header's**: 256 sectors a cylinder in the
+    file, but LS-DOS uses the first 32 -- 8 granules of 4 sectors (from
+    DIR/SYS, which fills its cylinder). Reading granule g at g*32 found
+    zeros, and a wipe by that zeroed real files. **Cylinder 0 is the
+    boot's**: sectors 4-13 hold boot code the GAT does not mark (zeroing
+    them stopped the boot after the logo). trs80gp: `-frehd_dir DIR
+    -frehd_patch -frehd_menu` boots its own FreHD menu; wait for "==>"
+    (`-iw`), then ENTER -- a fixed `-id` lost the key. `M4DISC=hdv`
+    run.sh/test.sh. Mike's card mounts at /media/mike/FREHD.
 * **Dropping library functions** (2026-11-12, Mike asked how programs
   could use more memory): when `cons` finds no cell after a GC it calls
   `lnum` +15, `ln_short` (`lib/short.asm`, part 1). Pass 0 hides every
@@ -592,7 +609,7 @@ should see.
 |---|---|
 | rasm 3.2.7 | `~/claude/midi80/toolchain/rasm/rasm` |
 | iDSK | `~/claude/midi80/toolchain/idsk/iDSK` |
-| hxcfe (HFE images) | `~/claude/midi80/toolchain/hxc/build/hxcfe` (with `LD_LIBRARY_PATH` that directory: `libhxcfe.so`) |
+| hxcfe (HFE images) | `~/claude/midi80/toolchain/hxc/build/hxcfe` (with `LD_LIBRARY_PATH` that directory: `libhxcfe.so`; the Model 4's build makes its .hfe with it) |
 | MAME | `/usr/games/mame`; CPC ROMs in `~/claude/cpc/mame-roms` (`-rompath`) |
 | 464 OS/BASIC 1.0 ROM image | `~/claude/cpc/mame-roms/cpc464/cpc464.rom`; firmware jumpblock table at &08AC, two bytes an entry |
 
@@ -795,7 +812,9 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   `roms/README.md`. Never commit Amstrad's ROMs (the MAME romsets in
   `build/mame`) or disc images -- except the two LDOS system discs the
   TRS-80 build starts from (`tools/trs80/ldos-m1.dsk`, `ldos-m3.dsk`:
-  Mike, 2026-11-12, "publish them"), and our own discs in `discs/` (the
+  Mike, 2026-11-12, "publish them"), LS-DOS 6.3.1's (`discs/ld4-631.dsk`,
+  and the FreHD base `tools/trs80m4/ls631-frehd.hdv.gz`: Mike, 2026-11-13,
+  "put ldos under discs"), and our own discs in `discs/` (the
   disc versions and the hardware test discs: Mike, 2026-11-12, "add the
   hw test disks to the repo"; copy them from one tested build, and say
   the build in `discs/README.md`); `build/` is ignored. **GPL-3.0** since 2026-11-07 (`LICENSE`, Mike's

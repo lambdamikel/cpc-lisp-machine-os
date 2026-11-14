@@ -912,7 +912,8 @@ KB under LS-DOS 6.3.1 ([`mach/trs80m4/README.md`](../mach/trs80m4/README.md);
 above, but for:
 
 - **Starting**: boot the Lisp's LS-DOS disc, give the date and time,
-  type `LISP`; `(quit)` goes back to LS-DOS.
+  type `LISP`; `(quit)` goes back to LS-DOS. On a FreHD: its image
+  `cpclisp4`, chosen in the FreHD's boot menu (`discs/README.md`).
 - **The screen** is 80 by 24. **Graphics** are the high-resolution
   board's (Radio Shack's 26-1126 and those that answer as it does), 640
   by 240 pixels from the logical 640 by 400, the text over them; `cls`

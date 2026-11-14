@@ -10,6 +10,7 @@
 # where they differ from NAME.out) -- read them before committing. Each
 # test gets a copy of the disc. test/skip.trs80m4 lists the tests left out
 # (the compiler, the RAM disc, the CPC's own hardware); N run at once (3).
+# M4DISC=hdv: from the FreHD's hard disc (run.sh).
 cd "$(dirname "$0")/../.."
 UPDATE= JOBS=3
 while getopts "uj:" o; do
@@ -33,7 +34,7 @@ trap 'rm -rf "$tmp"' EXIT
 run_one() {
     local n=$1
     mkdir -p "$tmp/$n"
-    cp build/trs80m4/lisp-m4.dsk "$tmp/$n/"
+    cp build/trs80m4/lisp-m4.dsk build/trs80m4/lisp-m4.hdv "$tmp/$n/"
     TRS80M4_BUILD=$tmp/$n tools/trs80m4/run.sh "test/$n.lsp" 2>"$tmp/$n.err" \
         > "$tmp/$n.raw"
     # from the first prompt on, ending at the prompt (quit) was typed at --

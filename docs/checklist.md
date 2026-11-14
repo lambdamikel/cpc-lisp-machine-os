@@ -427,10 +427,16 @@ compiled code (`docs/design.md` describes both)
           the speaker; BREAK. The suite passes in trs80gp
           (`tools/trs80m4/test.sh`, `test/*.trs80m4.out`,
           `test/skip.trs80m4`); `mach/trs80m4/hwtest.lsp` 8 yes
-    - [ ] On the real Model 4: hwtest, the Improved Grafyx (the text
-          over the graphics is an undocumented Tandy port), the sound's
-          pitch (calibrated to trs80gp's -m4, 2 wait states an
-          instruction), the FreHD (IMPORT2) to get builds onto it
+    - [x] The discs (2026-11-13, Mike: "a FreHD version and a Gotek /
+          HxC version"): `lisp-m4.dsk` and `.hfe`, and `lisp-m4.hdv`, a
+          bootable LS-DOS 6.3.1 hard disc for the FreHD's menu
+          (`tools/trs80m4/mkhdv.py`); hwtest 8 yes from both in trs80gp.
+          In `discs/`, with LS-DOS 6.3.1's own disc (Mike: "put ldos
+          under discs")
+    - [ ] On the real Model 4: hwtest from the Gotek and from the FreHD,
+          the Improved Grafyx (the text over the graphics is an
+          undocumented Tandy port), the sound's pitch (calibrated to
+          trs80gp's -m4, 2 wait states an instruction)
     - [ ] More room: the heap in the upper 32 KB and the code in the
           lower (OPREG's bit 6 puts banks 1 and 2 there) would about
           double it -- the core's "a SUBR is at &C000 and up" tests,

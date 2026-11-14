@@ -1,4 +1,5 @@
-"""Insert a file into an LDOS 5.1 disk image (JV3 Model III / JV1 Model I).
+"""Insert a file into an LDOS 5.1 disk image (JV3 Model III / JV1 Model I),
+or an LS-DOS 6 hard disc (the FreHD's .hdv: tools/trs80m4/mkhdv.py).
 
 From Mike's MIDI-80 (tools/ldoswrite.py), with one change: a new file never
 takes the first two entries of a directory sector. LDOS finds SYS0-SYS13 by
@@ -19,7 +20,29 @@ class Img:
     def __init__(self, path):
         self.path=path
         self.d=bytearray(open(path,'rb').read())
-        if len(self.d)==89600:                      # JV1: 35 x 10 x 256
+        self.ndir=16                                # directory sectors at most
+        if self.d[:2]==b'\x56\xcb':                 # a hard disc: xtrs's .hdv
+            # (the FreHD's): a 256-byte header, then 256 sectors a cylinder
+            # (header byte 29, 0 = 256), of which LS-DOS uses the first
+            # granules x sectors a granule; a "track" here is a cylinder.
+            # The sectors a granule: DIR/SYS's, which fills its cylinder
+            # (4 on the FreHD's LS-DOS: 8 granules, 32 sectors a cylinder)
+            self.kind='hdv'; self.tracks=self.d[28] or 256; self.gpt=self.d[30]
+            hb=self.d[4]*256; stride=self.d[29] or 256
+            at=lambda t,s: hb+(t*stride+s)*256
+            dt=self.d[at(0,0)+2]
+            self.spt=None
+            for s in range(2,34):
+                for e in range(8):
+                    ent=self.d[at(dt,s)+e*32:at(dt,s)+e*32+32]
+                    if ent[0]&0x10 and ent[5:16]==b'DIR     SYS':
+                        ngr=(ent[23]&0x1f)+1        # one extent: the cylinder
+                        self.spt=(ent[20]|ent[21]<<8)//ngr*self.gpt
+            assert self.spt, 'no DIR/SYS on the hard disc'
+            self.ndir=min(32,self.spt-2)
+            self.sectors={(t,s):(at(t,s),256)
+                          for t in range(self.tracks) for s in range(self.spt)}
+        elif len(self.d)==89600:                    # JV1: 35 x 10 x 256
             self.kind='jv1'; self.spt=10; self.gpt=2; self.tracks=35
             self.sectors={(t,s):((t*10+s)*256,256) for t in range(35) for s in range(10)}
         else:                                       # JV3
@@ -51,7 +74,8 @@ def ldos_hash(nm):
 def free_granules(img):
     gat=img.rd(img.dirtrack,0)
     out=[]
-    for t in range(img.tracks):
+    for t in range(1 if img.kind=='hdv' else 0, img.tracks):   # a hard disc's
+        # cylinder 0 is its boot's
         for g in range(img.gpt):
             if not (gat[t]>>g)&1: out.append((t,g))
     return out
@@ -59,7 +83,7 @@ def free_granules(img):
 def find_entry(img, name, ext):
     """-> (dir_sector, entry_index, entry) for a file, or None."""
     name=name.upper().ljust(8)[:8]; ext=ext.upper().ljust(3)[:3]
-    for s in range(2,2+16):
+    for s in range(2,2+img.ndir):
         if (img.dirtrack,s) not in img.sectors: break
         blk=img.rd(img.dirtrack,s)
         for e in range(8):
@@ -127,7 +151,7 @@ def add_file(img, name, ext, data, month=9, day=7, year=1985):
 
     # ---- find a free directory slot ----------------------------------
     slot=None
-    for s in range(2,2+16):
+    for s in range(2,2+img.ndir):
         if (img.dirtrack,s) not in img.sectors: break
         blk=img.rd(img.dirtrack,s)
         for e in range(2,8):    # entries 0, 1: the system files' places
