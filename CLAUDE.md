@@ -816,7 +816,7 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   puts a `.dsk` in a flash slot or the drive (`--list`, `--slot N`,
   `--load N`, `--get N`). Flash disc 8 is the 512K disc version, 14 the plain
   6128's, 54 the ROM version's test disc -- each byte for byte the
-  one in `discs/` (2026-11-12, read back) -- (HWTEST.LSP; 54 was a
+  one in `discs/` (2026-11-13, with APFEL.LSP added, read back) -- (HWTEST.LSP; 54 was a
   slideshow, Mike's to give: ~/claude/cpc/card-backup/
   slot54-slideshow-35.dsk). No slot is free. To test the disc versions
   the six Lisp ROM slots are silenced (`tools/card.py number SLOT 255`:
