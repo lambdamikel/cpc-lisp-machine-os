@@ -28,12 +28,15 @@ from LS-DOS 6.3.1's own disc (`discs/ld4-631.dsk`, from the LS-DOS 6.3.1
 distribution, which Roy Soltoff made free to use and pass on; or
 `$LSDOS631`).
 
-On a Model 4 that boots from its FreHD, the floppy (on an HxC or a
-Gotek) is a drive beside it: boot an LS-DOS from the FreHD, put the disc
-in -- drive :4 under a usual FreHD setup (`DEVICE` says) -- and type
-`LISP`: LS-DOS finds LISP/CMD and the images on any drive. Worked so on
-Mike's Model 4 with his HxC (2026-11-13), its settings at their defaults
-("Auto": the bitrate and interface mode from the image).
+**With a floppy emulator beside real drives**, as on Mike's Model 4
+(2026-11-13): boot LS-DOS from a built-in floppy drive (:0), type
+`SYSTEM (DRIVE=2,ENABLE)` to make the HxC -- on the third drive select --
+drives :2 and :3, choose `cpclisp4_JV3.hfe` there and type `LISP`:
+LS-DOS finds LISP/CMD and the images on any drive. Worked so with his
+HxC, its settings at their defaults ("Auto": the bitrate and interface
+mode from the image). Booting an LS-DOS from the FreHD instead, the
+FreHD takes :0-:3 and the floppies are :4 and :5 (`DEVICE` says; tried
+in trs80gp).
 
 `lisp-m4.hdv` is the same on a hard disc for the **FreHD**: a bootable
 LS-DOS 6.3.1 (`tools/trs80m4/ls631-frehd.hdv.gz`, `mkhdv.py`'s header

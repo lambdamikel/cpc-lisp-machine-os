@@ -479,8 +479,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     from his HxC (Lotharek's: settings live in the device, its menu is
     "SD card out, both buttons", a reset to its defaults "right button
     at power-on, 5 s" -- his changed bitrate gave "Data record not
-    found"). His Model 4 boots the FreHD: the HxC is drive :4 under his
-    `lsdos`, `LISP` there. His
+    found"). His Model 4 has two real floppy drives and the HxC on the
+    third drive select: he boots LS-DOS from a real drive, `SYSTEM
+    (DRIVE=2,ENABLE)` makes the HxC :2 and :3, `LISP` (his FreHD images
+    take :0-:3 when booted from the FreHD). His
     cards: the FreHD's at /media/mike/FREHD (`cpclisp4`), the HxC's at
     /media/mike/7C24-AC2B (`cpclisp4_JV3.hfe`, `cpclisp4.JV3`) -- look
     at an image's directory before replacing it: he may have saved there.

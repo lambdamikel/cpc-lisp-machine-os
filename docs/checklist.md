@@ -451,9 +451,10 @@ compiled code (`docs/design.md` describes both)
           speaker, `(say)` through Talker/80, the graphics -- "the
           graphics are nice"
     - [x] On the real Model 4 from the HxC (2026-11-13, Mike: "all
-          worked! from the hxc"): `cpclisp4_JV3.hfe` as drive :4 under
-          his own LS-DOS from the FreHD, `LISP` -- after the HxC's
-          settings were back at their defaults (all "Auto")
+          worked! from the hxc"): LS-DOS booted from a built-in floppy
+          drive, `SYSTEM (DRIVE=2,ENABLE)`, `cpclisp4_JV3.hfe` as drive
+          :2, `LISP` -- after the HxC's settings were back at their
+          defaults (all "Auto")
     - [ ] On the real Model 4: MIDI through MIDI/80 (untried)
     - [ ] More room: the heap in the upper 32 KB and the code in the
           lower (OPREG's bit 6 puts banks 1 and 2 there) would about
