@@ -525,8 +525,11 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     another row; lib/gfx.asm uses it `ifdef M_NEXTY` -- every other
     machine's ROMs byte for byte the same (BUILD_ID=77).
   * `examples/apfel.lsp`, the Apfelmaennchen (Mike, 2026-11-13), is on
-    the CPC discs, the Model III's (2026-11-14, Mike: "the apfel demo is
-    not on the disk"; the Model I's is full) and the Model 4's: fixnums times 64 (no floats: slow,
+    every disc (2026-11-14, Mike: "put apfel on all disk images we
+    make"): on the Model I's squeezed (mkdisk.py's `squeeze`, as
+    HWTEST), in the two granules of LDOS's KI/DVR, left out -- nothing
+    loads it, there is no CONFIG/SYS; a second disc would mean swapping
+    the system disc away. Fixnums times 64 (no floats: slow,
     and string space), coarse to fine with `test` reading the parent's
     colour. Lighting every other escape band flooded the picture (the
     bands near the set are wider than a cell); the set alone is it.

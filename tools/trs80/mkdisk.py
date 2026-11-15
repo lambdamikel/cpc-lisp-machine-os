@@ -3,14 +3,16 @@
 
     mkdisk.py OUT  -- reads OUT/LISP.CMD and OUT/LISP*.ROM (and
       mach/trs80/hwtest.lsp, as HWTEST/LSP; examples/apfel.lsp, as
-      APFEL/LSP, on the Model III's only), writes
+      APFEL/LSP), writes
       OUT/lisp-a.dsk: the Model I's, LDOS 5.3.1 single density
         (tools/trs80/ldos-m1.dsk, a JV1 system disc with nothing else on
-        it), the images compressed (lz.py) to fit; were they to grow out
-        of it, the rest would go on OUT/lisp-b.dsk (LDOS looks in every
-        drive for a file)
+        it, but for KI/DVR, left out: nothing loads it -- there is no
+        CONFIG/SYS -- and its two granules hold APFEL/LSP), the images
+        compressed (lz.py) and the .LSP files squeezed (comment lines
+        and indentation out) to fit; were they to grow out of it, the rest
+        would go on OUT/lisp-b.dsk (LDOS looks in every drive for a file)
       OUT/lisp-m3.dsk: the Model III's, LDOS 5.1.4 double density
-        (tools/trs80/ldos-m3.dsk, JV3): all on one
+        (tools/trs80/ldos-m3.dsk, JV3): all on one, APFEL/LSP whole
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
@@ -27,21 +29,28 @@ def granules(img, n):
     g = img.spg * 256
     return (n + g - 1) // g
 
+def squeeze(text):
+    """A Lisp file's comment lines and indentation out (none of ours has a
+    comment after code on a line, nor a string over two lines)"""
+    lines = text.split('\n')
+    return '\n'.join(l.strip() for l in lines
+                     if l.strip() and not l.strip().startswith(';')) + '\n'
+
 def main():
     out = sys.argv[1]
     files = [('LISP', 'CMD', open(os.path.join(out, 'LISP.CMD'), 'rb').read())]
     for name, rom in IMAGES:
         data = lz.compress(open(os.path.join(out, rom), 'rb').read().rstrip(b'\xff'))
         files.append((name, 'IMG', data))
-    test = os.path.join(os.path.dirname(__file__), '../../mach/trs80/hwtest.lsp')
-    if os.path.exists(test):            # the test of the real machine, its
-        lines = open(test).read().split('\n')  # comments and indentation out:
-        text = '\n'.join(l.strip() for l in lines  # it fits on the Model I's
-                         if l.strip() and not l.strip().startswith(';'))
-        files.append(('HWTEST', 'LSP', (text + '\n').encode()))  # disc then
-    discs = [L.Img(BASE), L.Img(BASE)]
+    here = os.path.dirname(__file__)                    # the test of the real
+    test = open(os.path.join(here, '../../mach/trs80/hwtest.lsp')).read()  # machine
+    files.append(('HWTEST', 'LSP', squeeze(test).encode()))
+    apfel = open(os.path.join(here, '../../examples/apfel.lsp')).read()  # the
+    discs = [L.Img(BASE), L.Img(BASE)]                  # Apfelmaennchen
+    for d in discs:
+        L.delete_file(d, 'KI', 'DVR')
     k = 0
-    for name, ext, data in files:
+    for name, ext, data in files + [('APFEL', 'LSP', squeeze(apfel).encode())]:
         while granules(discs[k], len(data)) > len(L.free_granules(discs[k])):
             k += 1
             if k == len(discs):
@@ -54,10 +63,8 @@ def main():
     elif os.path.exists(b):
         os.remove(b)
     m3 = L.Img(BASE3)
-    apfel = os.path.join(os.path.dirname(__file__), '../../examples/apfel.lsp')
-    for name, ext, data in files + [('APFEL', 'LSP', open(apfel, 'rb').read())]:
-        L.add_file(m3, name, ext, data)     # the Apfelmaennchen: the III's only
-                                            # (the Model I's disc is full)
+    for name, ext, data in files + [('APFEL', 'LSP', apfel.encode())]:
+        L.add_file(m3, name, ext, data)
     m3.save(os.path.join(out, 'lisp-m3.dsk'))
 
 if __name__ == '__main__':

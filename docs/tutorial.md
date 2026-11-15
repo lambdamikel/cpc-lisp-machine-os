@@ -399,8 +399,7 @@ A compiled function cannot be shown by `ed` -- keep the source.
 
 ## 12. A bigger program: the Apfelmaennchen
 
-The demo disc (`cpclisp-demo.dsk`; on the Model III's and the Model 4's
-discs too) has
+The demo disc (`cpclisp-demo.dsk`; every other disc of `discs/` too) has
 [`APFEL.LSP`](../examples/apfel.lsp), the Mandelbrot set -- a program of
 three functions:
 

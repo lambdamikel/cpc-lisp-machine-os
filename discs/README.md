@@ -17,7 +17,7 @@ the test discs for the real machine. Each disc's test is `HWTEST.LSP`:
 | `cpclisp-demo.dsk` | **the demo disc**, for the ROMs (or a disc version): the programs of `examples/` -- `APFEL.LSP`, the Apfelmaennchen: `(load "apfel")`, `(apfel)` (mode 2) | -- |
 | `cpclisp-hwtest.dsk` | **the test of the ROMs' use of a RAM expansion** (or a 6128's second 64 KB): two files at once, lazy loading from the drive and from `M:`, the RAM disc, far arrays over its banks, the compiler. Needs the 0.96 ROMs or later (`roms/`) | -- |
 
-| `cpclisp-trs80-model1.dsk` | **CPC Lisp on a TRS-80 Model I** with X-MEM/80 (LDOS 5.3.1, single density): `LISP` at LDOS Ready, and its test, `HWTEST/LSP` -- also `(hwtest-big)`, the RAM disc past 256 KB | 19680 |
+| `cpclisp-trs80-model1.dsk` | **CPC Lisp on a TRS-80 Model I** with X-MEM/80 (LDOS 5.3.1, single density): `LISP` at LDOS Ready, and its test, `HWTEST/LSP` -- also `(hwtest-big)`, the RAM disc past 256 KB -- and `APFEL/LSP` (since 2026-11-14, without its comments: in the room of LDOS's KI/DVR, which nothing loads) | 19680 |
 | `cpclisp-trs80-model3.dsk` | **the same for a Model III** (LDOS 5.1.4, double density, JV3), and `APFEL/LSP` (since 2026-11-14: the same images, the disc made again) | 19680 |
 | `cpclisp-trs80-model4.dsk` | **CPC Lisp on a TRS-80 Model 4** with 128 KB, natively (`mach/trs80m4`): LS-DOS 6.3.1's system disc (double density, 40 tracks, JV3) with `LISP` and `HWTEST/LSP` -- boot it, give the date and time, `LISP` | 19042 |
 | `cpclisp-trs80-model4.hfe` | the same disc for a **Gotek** (FlashFloppy) or an **HxC** | 19042 |
@@ -41,7 +41,7 @@ and after `(quit)` and `LISP` `(hwtest2)` 2 yes, with all 367 KB of the
 RAM disc. For an HxC or a Gotek:
 `hxcfe -finput:cpclisp-trs80-model3.dsk -conv:HXC_HFE -foutput:x.hfe`.
 
-The CPC discs, the Model III's and the Model 4's also carry **APFEL.LSP**, the
+Every disc here also carries **APFEL.LSP**, the
 Apfelmaennchen (`examples/apfel.lsp`): `(load "apfel")`, `(apfel)`.
 
 (HWTEST writes small files to drive A -- LZ.LSP, NOTES.LSP -- and to
