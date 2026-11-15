@@ -90,7 +90,9 @@ the key may be shifted or not:
 
 (Keys are read through the ROM's keyboard routine, as LDOS has it
 without KI/DVR; with KI/DVR loaded this is untried. The Model I's disc
-has no KI/DVR: its room holds APFEL/LSP.)
+has no KI/DVR: its room holds APFEL/LSP. `(compile-file "apfel")` there
+fills the last granule: the disc is full after it -- save to `m:` or
+`"b:name"`, or `KILL APFEL/FAS`.)
 
 `key-down-p` takes the matrix's numbers, row * 8 + bit: ENTER 48, CLEAR
 49, BREAK 50, up 51, down 52, left 53, right 54, SPACE 55.

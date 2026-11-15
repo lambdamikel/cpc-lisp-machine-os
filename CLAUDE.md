@@ -816,7 +816,7 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   using the card's port**: two on the console interleave bytes. Before:
   2 Parados, 4 the core -- the README's installation section has the
   table. All six Lisp ROMs must come from
-  one build: re-flash them together. Flashed: build 1471 (0.97, the release, 2026-11-13: the core into slot 2; every slot's sum32 read back equal to `roms/`; Mike: "yes that worked" -- the 464 boots it, the demo disc's `(apfel)`); build 1944 (0.96, the release; build 31443 before it,
+  one build: re-flash them together. Flashed: build 19680 (2026-11-14, Mike: "go ahead and flash the cpc card": 0.97 still, with the compile-file fix -- `roms/` and the release stay 1471; console 'n' read back equal to build/, slots 4 and 6 unchanged, the other session agreed first); build 1471 (0.97, the release, 2026-11-13: the core into slot 2; every slot's sum32 read back equal to `roms/`; Mike: "yes that worked" -- the 464 boots it, the demo disc's `(apfel)`); build 1944 (0.96, the release; build 31443 before it,
   the same but for the version -- 2026-11-12, evening:
   dropping library functions, lazy loading, far arrays, the fixes found
   on the hardware -- load's environment, M:'s 512-byte buffer, the RAM
