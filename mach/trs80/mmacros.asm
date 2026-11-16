@@ -19,13 +19,20 @@ macro MACH_INIT
 mend
 
 ;; MACH_BLOCKS: HL = the bytes for cells and blocks -> HL = block space's
-;; share: a quarter. The file buffers are small here, but compiled code and
-;; the compiler's constants want the room.
+;; share: three eighths (a quarter until 2026-11-15: some 4 KB of strings,
+;; and Mike's Model III said "out of string space" after an afternoon of
+;; demos and editing -- every name read stays there, compiled code too).
+;; DE is free here.
 macro MACH_BLOCKS
     srl h
     rr l
     srl h
-    rr l
+    rr l                        ; a quarter
+    ld d,h
+    ld e,l
+    srl d
+    rr e                        ; an eighth
+    add hl,de
 mend
 
 ;; FM routine: a maths routine, through the jumpblock

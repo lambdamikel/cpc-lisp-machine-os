@@ -76,9 +76,12 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   Lisp (`lib/lisp2.lsp`) and the demos (`lib/demo.lsp`): new library code
   goes here or in part 1. **A fifth part is not possible as it is**: an
   LSUBR's or AUTOLOAD's data word keeps the part in two bits (the VM ROM,
-  below, is no part). Space (2026-11-12, later): core 62 bytes free
-  (TRS-80 102), parts 0-3 242, 127, 519, 444; the VM ROM 574 (512K:
-  part 0 30, part 1 ~150; the TRS-80's part 0 2991).
+  below, is no part). Space (2026-11-15): core 58 bytes free
+  (TRS-80 94), parts 0-3 212, 114, 519, 409; the VM ROM 568 (512K:
+  part 0 **1**, part 1 151; the plain 6128's part 0 **0**; the TRS-80's
+  part 0 2905). A change to part 0 must give back what it takes
+  there: fe_reserve's size tests compare high bytes (`ld a,h : cp n`,
+  the sizes are whole pages) to pay for the drop.
   `src/xrom.asm` explains the arrangement: the core finds
   them by signature and build number (all ROMs come from one
   `tools/build.sh` run, and call each other by address), each says which
@@ -143,7 +146,13 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
 * **The function editor** (`lib/fed.asm`, Mike's idea): `(ed 'foo)` shows
   foo's definition pretty-printed (`lib/pp.asm`, also `pprint`) on a full
   screen; COPY or CTRL-S reads and evaluates it, ESC drops it; `(ed)`
-  reopens the last text (kept in `V_EDITSTR`). Its buffer is lent from the
+  reopens the last text (kept in `V_EDITSTR`). **A new `(ed 'name)`
+  lets that text go when the buffer would not fit** (fe_reserve with B
+  = 1: drop, collect, try once more -- Mike's Model III said "out of
+  string space" after an afternoon of editing, `(gc)` or not,
+  2026-11-15). The reader's `V_SRCOBJ` is a GC root and kept the text
+  alive after its evaluation: it is cleared where the reader stops
+  reading a string (the fed's `.end`, `tl_state`). Its buffer is lent from the
   top of block space (`V_BLKSAVE`; toplevel gives it back). The core's
   `putc` can print into memory or just count (`V_OUTMODE`), and the reader
   can read a string by index (`V_INSRC` 2), which the GC may move.
@@ -324,7 +333,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     after FP_MOVE); keep that in any machine's maths.
   * Block space and file buffers are machine choices (MACH_BLOCKS,
     FILE_BUFSIZE): with half a CPC's heap the CPC's 11/64 left too little
-    string space for compiled code.
+    string space for compiled code. A quarter (4 KB) ran out too, after
+    an afternoon of demos and editing (Mike's Model III, 2026-11-14:
+    every name read stays): 3/8 since 2026-11-15, 2315 cells at start
+    (2827 before).
   * The RAM disc (`rdisc80.asm`, pages 9-31) is seen in the &C000
     window, where the machine page itself runs: `RS_XFER` (resident)
     maps a page for one LDIR to or from RAM below &C000 (the file's

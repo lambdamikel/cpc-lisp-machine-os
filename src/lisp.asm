@@ -294,6 +294,7 @@ intern_builtins:
 tl_state:
     ld hl,NIL
     ld (V_INPTR),hl
+    ld (V_SRCOBJ),hl            ; (no string kept alive by the reader)
     xor a
     ld (V_PEEK),a
     ld (V_DEPTH),a

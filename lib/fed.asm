@@ -55,7 +55,7 @@ lf_ed:
     or l
     jr nz,.again
     ld hl,fe_m_nothing
-    jp lib_error
+    jp fe_reserve.err           ; (with no object)
 .again:
     call fe_reserve
     ld hl,(V_EDITSTR)
@@ -64,8 +64,7 @@ lf_ed:
     ld hl,(FE_LIM)
     ld de,(FE_BUF)
     or a
-    sbc hl,de                   ; room
-    or a
+    sbc hl,de                   ; room (no carry: FE_LIM is above)
     sbc hl,bc
     jr nc,.fits
     add hl,bc
@@ -89,6 +88,7 @@ lf_ed:
     pop de
     push de
     push hl
+    ld b,1                      ; the last text may go, if need be
     call fe_reserve
     ld a,1                      ; print into the buffer
     ld (V_OUTMODE),a
@@ -170,6 +170,9 @@ lf_ed:
 .end:
     xor a
     ld (V_INSRC),a
+    ld h,a                      ; the text is no longer read: only
+    ld l,a                      ;   V_EDITSTR holds it (fe_reserve may
+    ld (V_SRCOBJ),hl            ;   let it go)
     pop hl
     ret
 
@@ -180,13 +183,16 @@ fe_m_status:  db " COPY or CTRL-S: done   ESC: cancel",0
 fe_m_cannot:  db "cannot edit a builtin:",0
 
 
-;; fe_reserve: lend the buffer out of block space (not while a file has it)
+;; fe_reserve: lend the buffer out of block space (not while a file has it).
+;; B = 1, (ed 'name): when the room is too small, the last text (V_EDITSTR)
+;; is let go and collected first, once; B = 0, (ed): that is the text
 fe_reserve:
     ld hl,(V_BLKSAVE)
     ld a,h
     or l
     jr z,.free
     ld hl,fl_m_busy
+.err:
     ld de,UNBOUND
     jp lib_error
 .free:
@@ -194,11 +200,14 @@ fe_reserve:
     ld de,(V_BLKTOP)
     or a
     sbc hl,de
-    ld de,2*FE_MAXBUF
-    or a
-    sbc hl,de
+    assert (FE_MAXBUF and #FF) == 0 && (VID_FONTSIZE and #FF) == 0
+    ld a,h                      ; (the sizes here are whole pages: the
+    cp 2*FE_MAXBUF/256          ;   high byte says)
     jr nc,.room
+.gc:
+    push bc
     CORE gc
+    pop bc
 .room:
     ld hl,(V_BLKHI)
     ld de,(V_BLKTOP)
@@ -206,20 +215,20 @@ fe_reserve:
     sbc hl,de
     srl h
     rr l                        ; half of what is free
-    ld de,FE_MAXBUF
-    push hl
-    or a
-    sbc hl,de
-    pop hl
+    ld a,h
+    cp FE_MAXBUF/256
     jr c,.size
-    ex de,hl
+    ld hl,FE_MAXBUF
 .size:
-    ld de,256+VID_FONTSIZE
-    push hl
-    or a
-    sbc hl,de
-    pop hl
+    ld a,h
+    cp (256+VID_FONTSIZE)/256
     jr nc,.ok
+    djnz .nostr                 ; (ed 'name), the first time: the last text
+    ld h,b                      ;   goes (B = 0 now: only once)
+    ld l,b
+    ld (V_EDITSTR),hl
+    jr .gc
+.nostr:
     ld hl,m_nostr
     ld de,UNBOUND
     CORE error
