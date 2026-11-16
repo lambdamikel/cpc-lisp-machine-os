@@ -1,4 +1,4 @@
-# CPC Lisp 0.97 -- reference
+# CPC Lisp 0.98 -- reference
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -53,7 +53,7 @@ no compiler and no RAM disc.
 
 With the core ROM at ROM 0 (replacing BASIC), the CPC starts in Lisp:
 
-    CPC Lisp 0.97
+    CPC Lisp 0.98
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -63,7 +63,7 @@ The numbers are the ROMs where the library parts were found (LISPLIB,
 LISPLIB2, LISPLIB3, LISPDEMO); the VM ROM is not listed. At any other ROM
 number, `|LISP` from BASIC starts it. *TRS-80:* boot the LDOS disc and
 type `LISP` (`mach/trs80/README.md`); it says `A Lisp machine for the
-TRS-80` and about 2800 cells free.
+TRS-80` and about 2300 cells free (and some 6 KB of string space).
 
 ## The REPL
 
@@ -98,7 +98,8 @@ A continuation line starts indented Lisp-style.
 
 **The function editor**: `(ed 'name)` shows name's definition,
 pretty-printed, on the whole screen; `(ed)` reopens the last text (after an
-error in it, say).
+error in it, say). When string space is too short for the editor, a new
+`(ed 'name)` lets that last text go first.
 
 | Key | |
 |---|---|
@@ -902,7 +903,7 @@ there:
   `joystick`, `peek`, `poke`, `release`, `sound-check`, `sound-hold`,
   `sound-continue`, PlayCity's `playcity`, `pc-tone`, `pc-off`, and
   `(basic)`; the `(chords)` demo. `midi-off` does nothing.
-- About 2800 cells instead of 6600.
+- About 2300 cells instead of 6600, and some 6 KB of string space.
 
 ### On a TRS-80 Model 4
 

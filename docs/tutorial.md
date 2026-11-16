@@ -1,4 +1,4 @@
-# CPC Lisp 0.97 -- a tour
+# CPC Lisp 0.98 -- a tour
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -24,7 +24,7 @@ down-arrow, let go, then `-`; then `8` and `9` are `[` `]`.)
 
 When the CPC is switched on it says
 
-    CPC Lisp 0.97
+    CPC Lisp 0.98
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -32,7 +32,7 @@ When the CPC is switched on it says
 
 *On a TRS-80*: boot the LDOS disc, answer its date (and on a Model I its
 time), and type `LISP` at `LDOS Ready`; it says `A Lisp machine for the
-TRS-80` and about 2800 cells free. `(quit)` goes back to LDOS.
+TRS-80` and about 2300 cells free. `(quit)` goes back to LDOS.
 
 Type an expression and RETURN; the value comes back:
 

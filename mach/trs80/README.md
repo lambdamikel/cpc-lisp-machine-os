@@ -50,7 +50,8 @@ makes the jumpblock from one list). The loader (`loader.asm`, LISP/CMD)
 reads the seven pages through LDOS, each into page 1 at &8000 first, and
 decodes it into its own.
 
-About 3150 cells are free at start, half a CPC's.
+About 2300 cells are free at start, a third of a CPC's, and some 6 KB of
+string space (3/8 of the heap: names, strings, compiled code).
 
 ## The keys
 

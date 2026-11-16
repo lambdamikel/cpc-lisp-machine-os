@@ -1,12 +1,24 @@
-# CPC Lisp 0.97 -- the ROM images
+# CPC Lisp 0.98 -- the ROM images
 
 *A Lisp machine for the Amstrad CPC*
 
 Ready to use: six 16 KB ROM images, built from this repository (build
-1471, version 0.97). You do not need to build anything to use them.
+14193, version 0.98). You do not need to build anything to use them.
 (No ROM board? CPC Lisp loads from disc too, with a 512K expansion or on
 a 6128: [`discs/`](../discs/). The TRS-80's discs are there and with the
 release: see the end.)
+
+**New in 0.98**: fixes found on the real machines. `compile-file` wrote
+a quoted name of a compiled function (`'compile`) as an empty function,
+and the `.fas` file said "not a symbol" when loaded (the Apfelmaennchen's
+did). A new `(ed 'name)` lets the last edited text go when string space
+is short -- after a long session it said "out of string space", `(gc)`
+or not. On the TRS-80 the function editor drew its key line past the
+screen, into the Model III's LDOS variables (it turned LDOS's clock
+on); it is on the last row now, with the TRS-80's keys -- SHIFT -> is
+indent. The Model I and III have half as much string space again (3/8
+of the heap, about 6 KB, for some 500 cells), and the Apfelmaennchen is
+on every disc, the Model I's too.
 
 **New in 0.97**: CPC Lisp on the **TRS-80 Model 4**, natively, with 128
 KB under LS-DOS 6.3.1 -- 80 by 24, graphics on the high-resolution board
@@ -57,7 +69,7 @@ LambdaSpeak card, below. The rules:
 
 When it starts, it says
 
-    CPC Lisp 0.97
+    CPC Lisp 0.98
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -104,8 +116,8 @@ boot, each as a `.dsk` for emulators and an `.hfe` for a Gotek or HxC
 
 | file | for |
 |---|---|
-| `cpc-lisp-0.97-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp (0.95 also on a real Model I with X-MEM/80 and MIDI/80) |
-| `cpc-lisp-0.97-trs80-model3.dsk` / `.hfe` | a Model III: LDOS 5.1.4, double density (JV3) -- tested on a real Model III with X-MEM/80, Talker/80 and MIDI/80 (0.96) |
+| `cpc-lisp-0.98-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp (0.95 also on a real Model I with X-MEM/80 and MIDI/80) |
+| `cpc-lisp-0.98-trs80-model3.dsk` / `.hfe` | a Model III: LDOS 5.1.4, double density (JV3) -- tested on a real Model III with X-MEM/80, Talker/80 and MIDI/80 (0.96) |
 
 Each has `HWTEST/LSP`, a test of the machine: `(load "hwtest")`,
 `(hwtest)`.
@@ -117,8 +129,8 @@ Boot it, give LDOS the date (and on a Model I the time), type `LISP`.
 
 | file | for |
 |---|---|
-| `cpc-lisp-0.97-trs80-model4.dsk` / `.hfe` | a floppy, or an HxC or Gotek: LS-DOS 6.3.1's system disc with `LISP`, `HWTEST/LSP` and `APFEL/LSP` -- boot, the date and time, `LISP` |
-| `cpc-lisp-0.97-trs80-model4-frehd` | a FreHD: a bootable LS-DOS 6.3.1 hard disc with the same. Copy it to the FreHD's SD card **as `cpclisp4`** (no extension); its boot menu lists it, ENTER, `LISP` |
+| `cpc-lisp-0.98-trs80-model4.dsk` / `.hfe` | a floppy, or an HxC or Gotek: LS-DOS 6.3.1's system disc with `LISP`, `HWTEST/LSP` and `APFEL/LSP` -- boot, the date and time, `LISP` |
+| `cpc-lisp-0.98-trs80-model4-frehd` | a FreHD: a bootable LS-DOS 6.3.1 hard disc with the same. Copy it to the FreHD's SD card **as `cpclisp4`** (no extension); its boot menu lists it, ENTER, `LISP` |
 
 Tested on a real Model 4 with a FreHD, an HxC and Ian Mavric's Improved
 Grafyx; [`mach/trs80m4/README.md`](../mach/trs80m4/README.md) has the

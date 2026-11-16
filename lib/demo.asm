@@ -9,7 +9,7 @@
 
     org PART_ORG
     db 1                        ; a background ROM
-    db 0,9,7                    ; mark, version, modification: 0.97
+    db 0,9,8                    ; mark, version, modification: 0.98
     dw lib_names
     jp lib_init                 ; the ROM walk: nothing to do
 

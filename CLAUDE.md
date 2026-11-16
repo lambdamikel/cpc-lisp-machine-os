@@ -1,6 +1,6 @@
-# CPC Lisp 0.97 — working notes for Claude
+# CPC Lisp 0.98 — working notes for Claude
 
-*A Lisp machine for the Amstrad CPC.* Version 0.97 since 2026-11-13 (the Model 4), 0.96 from 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
+*A Lisp machine for the Amstrad CPC.* Version 0.98 since 2026-11-15 (fixes from the real machines), 0.97 from 2026-11-13 (the Model 4), 0.96 from 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
 banner, the ROM headers' version bytes and the documents' titles say so).
 
 A Lisp machine for the Amstrad CPC: **six ROMs** -- an auto-boot core and
@@ -914,7 +914,14 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   (`cpc-lisp-0.97-trs80-model1/3`, `.dsk` and `.hfe`) and the Model 4's
   (`-model4.dsk`, `.hfe`, `-model4-frehd`) all build 475 (512K 37,
   6128 35, Model 4 30, the Model I's hwtest 8), the ROMs' test disc, the
-  demo disc `cpclisp-demo.dsk` (APFEL.LSP), `cpc-lisp-0.97.zip`. A new one: refresh `roms/` from one
+  demo disc `cpclisp-demo.dsk` (APFEL.LSP), `cpc-lisp-0.97.zip`; `v0.98`
+  (2026-11-15: fixes from the real machines -- compile-file's symbols,
+  the TRS-80 editor's key line, (ed 'name) and string space, 3/8 of the
+  Model I/III heap for strings, APFEL on the Model I's disc) = ROMs
+  build 14193 (the 464's suite 37, the 6128's file tests 6, the same
+  build by BUILD_ID), the 512K's disc 14340, the 6128's 14943 (512K 37,
+  6128 35), the TRS-80 discs 14193 (the Model I's hwtest 8 yes), the
+  Model 4's 14431 (30 ok), the same file names as 0.97's. A new one: refresh `roms/` from one
   tested build, bump the version (banner, ROM headers, document
   titles), tag, `gh release create` with the same files.
 * Commit with the attribution lines the session gives you.
