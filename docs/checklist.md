@@ -33,6 +33,20 @@ CPC; the README says how to install the ROMs.
       ESC, the compiler, Parados -- and the RAM disc `M:` on a RAM
       expansion, under the 1.0 firmware too
 - [ ] A real 6128, 664: not tried
+- [x] Under FutureOS (`mach/futureos`, 2026-11-17): started from its
+      desktop, `(reset)` back to it -- a firmware island running the 512K
+      version, files through the disc ROM (AMSDOS, Parados, VDOS). MAME:
+      hwtest 7 yes
+- [ ] Under FutureOS on the real 464: FutureOS in the card's slots, Lisp
+      from the card's Vortex drive E (VDOS), Revaldinho's card in
+      configuration 8
+- [ ] Under FutureOS, its benefits (Mike, 2026-11-17: after the hardware
+      test): Lisp's expansion blocks marked in FutureOS's XRAM variables
+      (the images and M: survive the desktop: a second start skips
+      loading); the images loaded through FutureOS's own loaders (faster,
+      from any FutureOS medium, the M4 too); later a native console and
+      keyboard (a FutureOS program proper: fast text, IM 2, the
+      alternate registers)
 
 ## The language (Common Lisp syntax and semantics where they fit)
 
