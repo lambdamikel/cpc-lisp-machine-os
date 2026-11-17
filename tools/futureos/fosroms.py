@@ -24,8 +24,9 @@ LambdaSpeak. Its LambdaSpeak III code (the eight bytes |OS sends at
 &F592, the probe in ROM C at &F9E4 -- a read of &20 is an LS3 -- the
 clock at &DEFD/&DF3C: &F3, &D5, &D4... and speech) speaks the LS3's
 protocol, and a LambdaSpeak 4 takes &Dx otherwise (&D0: a ROM number
-and a reset): on Mike's 464, 2026-11-16, the desktop came up, then hung
-or reset.
+and a reset): on Mike's 464, 2026-11-16, the desktop came up, spoke, and
+hung or ended in DECtalk output. (The card's one restart that evening was
+an expansion card on the wrong pins, not FutureOS.)
 
 No other `ld a/c,10-13` in the four ROMs selects a ROM (checked: they
 are writes to expansion ports). Nothing of FutureOS is in this file: the
