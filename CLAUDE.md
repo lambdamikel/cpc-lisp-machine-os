@@ -835,11 +835,15 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   (255 = silent). `n` lists the slots. **Giving a slot ROM 0 means the CPC
   boots into it every time** -- to get BASIC back, set it to 255. Check `n`
   before Mike powers on after any change.
-* **Since 2026-11-16 the six Lisp slots are silenced (255)**: Mike runs
-  FutureOS from his X-MEM beside the card, and the ROM numbers clashed
-  (the card answers only 2, LS AI, and 7, Parados; the 464 boots BASIC).
-  Restore, CPC off: `tools/card.py number` 0 5, 1 1, 2 0, 3 3, 5 4, 7 6
-  (no re-flash; tell the card session).
+* **Since 2026-11-16 the card holds FutureOS, not the ROM Lisp** (Mike:
+  "install the ROMs by hand"; the X-MEM's RAM has the C3 bug, so the
+  X-MEM is out and Revaldinho's card in): slots 0, 1, 3, 5 = FutureOS
+  A, B, C, D as ROMs 1, 3, 4, 5 (`tools/futureos/fosroms.py SRC OUT 1 3
+  4 5` from the installer disc OS_DE_2026-11-15.dsk; images in
+  ~/claude/cpc/futureos/card-1345; 'n' sum32 001cb760 001fdc12
+  001ff68c 001e7726, ls3-selfsum ok), slots 2 and 7 the silenced Lisp
+  core and LISPLIB3, 4 Parados (7), 6 LS AI (2). The ROM Lisp back:
+  `tools/card.py lisp` (from build/: check it equals roms/ first).
 * Slots (since 2026-11-13): 0 LISPLIB2 (ROM 5), 1 LISPVM (ROM 1), 2
   LISP core (ROM 0), 3 LISPDEMO (ROM 3), 4 Parados (ROM 7), 5 LISPLIB
   (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6). Another Claude session
