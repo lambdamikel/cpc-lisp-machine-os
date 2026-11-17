@@ -870,8 +870,13 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   ROMAN 2 (its download, DSK and manual, in ~/claude/cpc/flashgordon:
   `RUN"DISC`, the write switch on; never under FutureOS) or by the
   FutureOS installer (option 9); the ROMAN it ships in slot 15 is past
-  a 464's ROM walk (1-7). Slots 2 and 7 the silenced Lisp
-  core and LISPLIB3, 4 Parados (7), 6 LS AI (2). The ROM Lisp back:
+  a 464's ROM walk (1-7); its ROM 0 and 7 switches stay off (Parados
+  is the card's 7). Slots 2 and 7 the silenced Lisp
+  core and LISPLIB3, 4 Parados (7), 6 LS AI silenced too while the
+  FlashGordon is in (2026-11-17, Mike's yes; `tools/card.py number 6
+  2` brings it back); the drive holds ROMAN 2 (a PC upload; the
+  installer it replaced is ~/claude/cpc/card-backup/drive-fos-nofbee-
+  2026-11-17.dsk). The ROM Lisp back:
   `tools/card.py lisp` (from build/: check it equals roms/ first).
 * Slots (since 2026-11-13): 0 LISPLIB2 (ROM 5), 1 LISPVM (ROM 1), 2
   LISP core (ROM 0), 3 LISPDEMO (ROM 3), 4 Parados (ROM 7), 5 LISPLIB
