@@ -876,6 +876,9 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   with `kitloader.cpc_is_off()` (`~/git/lambdaspeak4/tools/kitloader.py`):
   two `d` readings with `/IORQ /RD /WR` all zero. Counters standing still do
   NOT mean it is off.
+  **Chain writes behind `tools/card.py off &&`**: a `python -c` that
+  prints cpc_is_off exits 0 either way (2026-11-16 it let a --get run
+  with the CPC on). `card.py number`/`basic` check it themselves now.
 * **Discs**: `tools/mkcpcdisk.py` builds a DSK and an HFE; `tools/dskloader.py`
   puts a `.dsk` in a flash slot or the drive (`--list`, `--slot N`,
   `--load N`, `--get N`). Flash disc 3 is the demo disc (`cpclisp-demo.dsk`: APFEL; Oh Mummy, there before, is in ~/claude/cpc/card-backup/slot3-ohmummy.dsk), 8 the 512K disc version, 14 the plain
