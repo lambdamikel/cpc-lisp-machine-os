@@ -835,105 +835,49 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   (255 = silent). `n` lists the slots. **Giving a slot ROM 0 means the CPC
   boots into it every time** -- to get BASIC back, set it to 255. Check `n`
   before Mike powers on after any change.
-* **Since 2026-11-16 the card holds FutureOS, not the ROM Lisp** (Mike:
-  "install the ROMs by hand"; the X-MEM's RAM has the C3 bug, so the
-  X-MEM is out and Revaldinho's card in): slots 0, 1, 3, 5 = FutureOS
-  A, B, C, D as ROMs 1, 3, 4, 5 (`tools/futureos/fosroms.py SRC OUT 1 3
-  4 5 --no-fbee` from the installer disc OS_DE_2026-11-15.dsk; images
-  in ~/claude/cpc/futureos/card-1345-nofbee; 'n' sum32 001cb780
-  001fdc12 001ff694 001e7726, ls3-selfsum ok. Without --no-fbee the
-  desktop came up, spoke, hung or ended in DECtalk output: FutureOS
-  speaks the LambdaSpeak III protocol on &FBEE -- "Mission beendet" at
-  END -- which the LambdaSpeak 4 implements, clock included (the card
-  session): the hang was the slots' select timing, below, so --no-fbee
-  is only a precaution; the card's restart that evening was another
-  expansion card on the wrong pins). **FutureOS cannot run from the card's ROMs**: its
-  cross-ROM stubs (`ld bc,&DFnn : out (c),c : jp (hl)`, the &FF page
-  the same in all four) fetch from the new ROM 1.5-2 us after the OUT,
-  and the card applies a select in its ISR, some 2.5-4 us after it
-  ('d': "ROM select, us to apply" 1-3 us from the ISR's word, plus the
-  PIO push and the interrupt; ~/claude/cpc/futureos/card-d-2026-11-16-
-  after-fos.txt) -- a garbled desktop, then a freeze. MAME switches at
-  once. The fix is firmware (the select in PIO/DMA, the card session's:
-  ~0.15 us, nothing else lost -- one state machine on pio2, 2-3 DMA
-  channels, a 1 KB table, one or two instructions freed in pio0 (31 of
-  32 used); Mike's to schedule, after the rev 3 bring-up). Only 4 of
-  the 28 stubs are that fast -- the plain jumps ROM_A..ROM_D at
-  &FF00/06/0C/12 (`out (c),c : jp (hl)`); the 24 x2y stubs leave ~10 us
-  going in (`pop bc : call &FFF0`, `jp (ix)`) and ~6 us coming back
-  (`pop bc : ret`). So the card's select must take under ~1.5 us,
-  worst case. A FOS-side fix was ruled out: the four are fixed 6-byte
-  API entries in a full &FF page, and a 1-byte `rst` into RAM fails
-  because FOS turns the lower ROM on now and then (gate array &82).
-  Both sessions agree; it's the card session's, with Mike.
-  So FutureOS's ROMs go on Mike's FlashGordon (PulkoMandy's), with the
-  --no-fbee installer disc ~/claude/cpc/futureos/installer-nofbee/; on a
-  464 ROM A at 1-7. Installed at 1-4 (2026-11-17): the desktop came
-  up, drive A's DIR showed garbage -- MAME reads the same disc at 1-4
-  fine ("Format: Data"; FutureOS reads Data, System, IBM and Vortex
-  discs, no format of its own). **The FlashGordon answers every ROM
-  number 0-31**, 0 and 7 only by its DIP switches (PulkoMandy's page,
-  pulkomandy.github.io/shinra.github.io/gordon.html), whatever a
-  position holds -- ROMAN's delete or park leaves it answering: with it
-  in, the card must serve nothing at 1-6, or both drive the bus (the
-  LS AI at 2 met FutureOS's ROM B, its floppy ROM). With the LS AI
-  silenced and FutureOS installed again at 1-4, DIR was still garbage
-  at first, then "all coming out clean" (Mike, 2026-11-17; nothing
-  changed on the card that we know of). FutureOS's read loop is ROM B's
-  page &FE: `in l,(c) : jp (hl)` with H = &FE -- the FDC's status
-  byte is the jump target (&30 wait, &F0 read a byte, &B0 write one, &D0
-  results, anything else an error or mid-instruction), and it reads the
-  data 6 us after the status said &F0 (AMSDOS 13 us; MAME, measured);
-  the DIR is one multi-sector read, C1-C4. The card session's finding
-  (its 'F' and 'd'): two timing-dependent causes, so it comes and goes.
-  (1) A starved status read: with the card's MSR FIFO empty the
-  responder serves the port's low byte, &7E, and FOS jumps to &FE7E --
-  `out (&FBFF),&84`, then it returns from the read early, the DIR buffer
-  half filled. (2) FOS reads and writes &FBFE (the DK'tronics speech
-  port) between disc commands; the card's interrupt then hands the
-  drive's responders back to speech, and the next status read finds a
-  floating bus (&78). The card's firmware stays as it is (Mike: work
-  around the card); the card-side fix would be a DMA channel keeping
-  the MSR FIFO full. **`fosroms.py --card`** (2026-11-17) works around it
-  in FutureOS: --no-fbee, --no-fbfe (its DK'tronics probe, the one &FBFE
-  access, to &FFFE) and --msr-mask (the dispatch reads the status `and
-  &F0`, so &7E and &78 mean "wait"; the one-shot FDC check before every
-  DIR retries ~2 ms) -- the docstring has the bytes. MAME, with a fault
-  injected into every Nth status read (&7E/&78 alternately; a copy of
-  emu/repl.lua with an I/O tap): the original ROMs' DIR broke at N=37,
-  the patched ones listed the disc cleanly at N=37, 11, 5, 4 and 3 and
-  never touched &FBFE (N=2 overruns the FDC: one extra wait per byte).
-  **On Mike's 464 it works** (2026-11-17, "you unblocked us"): the
-  card's 'F' afterwards -- 1,629,577 status reads served, 90,508
-  starved (5.6%, every one &7E), data reads 0 starved; the speech
-  handbacks nearly stopped (claimed 18 -> 20). The installer's own
-  renumbering (written back to the disc's FOSC-*.ROM) came out byte
-  for byte as `fosroms.py ... 1 2 3 4 --card`.
-  Installer disc with them: ~/claude/cpc/futureos/installer-card/
-  OS_DE_2026-11-15-card.dsk (ROMs at 10-13; the installer renumbers).
-  ROM C's boot check of the FDC (&F95A) is one-shot still (no room).
-  **The card's FutureOS gotchas are the card session's** (Mike,
-  2026-11-17: "we are the Lisp session"): handed over with fosroms.py's
-  place, to document in its repo. CPC Lisp must not depend on the
-  card -- its drive and ROM slots are Mike's development convenience;
-  any ROM board, any drive (DDI-3, Gotek, M4) will do. The card's slow
-  select broke only FutureOS's own stubs: the ROM Lisp runs from the
-  card's slots (0.98). Beside FutureOS on the FlashGordon (untried):
-  the library ROMs do nothing at the ROM walk and the core looks for
-  them at 1-15 itself (NBANKS), so they may sit at 8-15; only the core
-  needs a number the 464 walks (|LISP at 5 or 6). It is flashed with
-  ROMAN 2 (its download, DSK and manual, in ~/claude/cpc/flashgordon:
-  `RUN"DISC`, the write switch on; never under FutureOS) or by the
-  FutureOS installer (option 9); the ROMAN it ships in slot 15 is past
-  a 464's ROM walk (1-7); its ROM 0 and 7 switches stay off (Parados
-  is the card's 7). Slots 2 and 7 the silenced Lisp
-  core and LISPLIB3, 4 Parados (7), 6 LS AI silenced too while the
-  FlashGordon is in (2026-11-17, Mike's yes; `tools/card.py number 6
-  2` brings it back); the drive holds the --card installer (a PC
-  upload; before it the no-fbee one, and ROMAN 2, its copy
-  ~/claude/cpc/card-backup/drive-roman2-2026-11-17.dsk). The ROM Lisp back:
-  `tools/card.py lisp` (from build/: check it equals roms/ first).
-* Slots (since 2026-11-13): 0 LISPLIB2 (ROM 5), 1 LISPVM (ROM 1), 2
+* **Since 2026-11-17 the card runs FutureOS from its own slots** (the
+  card session's firmware, lambdaspeak4 branch `fast-rom-select`: the ROM
+  select in PIO + DMA, console `QS`; the LS3 clock getters answered in
+  the bus ISR; a DMA feeder keeping the drive's status FIFO full -- its
+  regression passed): slot 0 FOS-A (ROM 1), 1 FOS-B (3), 3 FOS-C (4), 5
+  FOS-D (5), the official, unpatched ROMs; 6 LS AI (2), 4 Parados (7), 2
+  and 7 the silenced Lisp core and LISPLIB3. **Tell the card session
+  before flashing anything**: `tools/card.py upload`/`lisp` refuse a slot
+  that holds no CPC Lisp ROM (header version 0.9x) without `--force`.
+  The ROM Lisp and FutureOS do not both fit in eight slots (FutureOS 4,
+  Parados, LS AI, the Lisp 6): CPC Lisp beside FutureOS is a disc
+  version (Mike: this "opens the path for CPC Lisp, with Revaldinho's RAM
+  card and the card"). FutureOS on a LambdaSpeak 4 is documented in
+  lambdaspeak4's docs/futureos.md. What this session learned on the way
+  (2026-11-16/17):
+  * FutureOS needs a RAM expansion doing C3 as a 6128 does: the X-MEM's
+    RAM has "the famous C3 bug"; Revaldinho's card in config 8 (ON OFF
+    OFF OFF, 448 KB, bank 3 shadowing) works -- our 512K disc version
+    wants config 4. On a 464 its ROM A must be at 1-7 (the ROM walk).
+    Its installer renumbers the ROMs by poking fixed addresses;
+    `tools/futureos/fosroms.py` does the same, byte for byte, and
+    `--card` patches FutureOS for the card's older firmware (the
+    docstring has every byte and why).
+  * Its cross-ROM jumps (`out (c),c : jp (hl)` at &FF00/06/0C/12) fetch
+    from the new ROM 1.5-2 us after the OUT: a ROM board must switch
+    faster (the card's old ISR select took 2.5-4 us -- a garbled
+    desktop, a freeze). Its disc loop jumps on the FDC's status byte
+    (ROM B, page &FE: `in l,(c) : jp (hl)`): an illegal status (a starved
+    &7E, a floating &78) derails it.
+  * MAME runs FutureOS headless: the ROMs renumbered to 1-4 in the ROM
+    box (`-exp ddi1 -flop D -exp:ddi1:exp rom -rom1 A ... -rom4 D`,
+    cpc464 `-ramsize 576K`), `|OS` typed at EDIT (LISP_EDIT=0xBD3A), then
+    `!press 47`, `!press 69`, `!press 61` -- SPACE, A, D: drive A's DIR.
+    I/O taps in copies of emu/repl.lua (this session's scratchpad:
+    repl-io, -fault, -low). A Z80 disassembler: ~/claude/cpc/tools/z80d.py.
+  * The FlashGordon (PulkoMandy's; flashed with ROMAN 2 from disc,
+    ~/claude/cpc/flashgordon, `RUN"DISC`, never under FutureOS) answers
+    every ROM number 0-31, 0 and 7 only by its DIP switches, whatever a
+    position holds: with it in, the card may serve nothing at 1-6.
+  FutureOS's files are TFM's (~/claude/cpc/futureos): never in this
+  repo. The ROM Lisp back: `tools/card.py lisp --force`, only after
+  agreeing (it overwrites FutureOS).
+* The Lisp's slots (2026-11-13 to -16): 0 LISPLIB2 (ROM 5), 1 LISPVM (ROM 1), 2
   LISP core (ROM 0), 3 LISPDEMO (ROM 3), 4 Parados (ROM 7), 5 LISPLIB
   (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6). Another Claude session
   (the card's own work, Vortex) moved Parados from slot 2 into slot 4,
@@ -957,7 +901,8 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   errors, format, types, file streams (checked on the 464 through
   Parados), the extended loop, the editor's fixes, string streams,
   |symbols|, ~<). Mike keeps the CPC off: flash each build that passes
-  the tests on both machines, no need to ask. Slot 1 held the vector
+  the tests on both machines, no need to ask -- **until 2026-11-16:
+  FutureOS holds the card's slots now, so ask first**. Slot 1 held the vector
   head: Mike, 2026-11-07, "the vector head can go ... use the space
   instead for common lisp". Everything may be replaced **except
   Parados and the LS AI ROM**. `tools/card.py lisp` re-flashes the six

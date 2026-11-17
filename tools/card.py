@@ -28,6 +28,11 @@ slot's number in flash ("rom: slot written"): they refuse with the CPC
 on, as `upload` does. `off` is the same check alone, to put in front of
 a chain of other tools' writes (dskloader.py --save, --slot...):
 `tools/card.py off && ...` stops there when the CPC is on.
+
+Since 2026-11-17 slots 0, 1, 3, 5 hold FutureOS (the card session's: its
+fast ROM select runs it from the card), so `upload` and `lisp` refuse a
+slot that does not hold a CPC Lisp ROM already (header version 0.9x) --
+`--force` after agreeing with the card session and Mike.
 """
 import os, sys, time
 
@@ -40,6 +45,7 @@ LISP_SET = [(2, 0, 'build/LISP.ROM'), (5, 4, 'build/LISPLIB.ROM'),
             (3, 3, 'build/LISPDEMO.ROM'), (1, 1, 'build/LISPVM.ROM')]
 CORE_SLOT = 2
 PROTECTED = {4: 'Parados', 6: 'the LS AI ROM'}
+FORCE = False
 
 
 def drain(card, until, timeout=60):
@@ -70,6 +76,11 @@ def slots(card, port):
     return rows
 
 
+def is_ours(header):
+    """A CPC Lisp ROM's header: version 0.9x (bytes 1, 2 = 00 09)."""
+    return header.split()[1:3] == ['00', '09']
+
+
 def require_off(card, port):
     if not kitloader.cpc_is_off(card._open(port)):
         sys.exit('card: the CPC is on -- switch it off first (flash writes '
@@ -88,6 +99,14 @@ def upload(card, port, jobs):
             sys.exit(f'card: slot {slot} is {PROTECTED[slot]} -- not touching it')
         images.append((slot, num, path, data))
     require_off(card, port)
+    if not FORCE:
+        now = {r['slot']: r['header'] for r in slots(card, port)}
+        for slot, num, path, data in images:
+            if not is_ours(now.get(slot, '')):
+                sys.exit(f'card: slot {slot} holds another ROM (header '
+                         f'{now.get(slot)}) -- FutureOS lives in 0, 1, 3, 5 '
+                         'since 2026-11-17; agree with the card session and '
+                         'Mike, then --force')
     for slot, num, path, data in images:
         print(f'{path} -> slot {slot}, ROM {num}')
         card.send_rom(port, slot, num, data)
@@ -99,7 +118,9 @@ def upload(card, port, jobs):
 
 
 def main():
-    args = sys.argv[1:]
+    global FORCE
+    args = [a for a in sys.argv[1:] if a != '--force']
+    FORCE = '--force' in sys.argv[1:]
     port = None
     if args[:1] == ['-p']:
         port, args = args[1], args[2:]
