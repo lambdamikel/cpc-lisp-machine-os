@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Renumber FutureOS's four ROMs by hand, as its installer does.
 
-    tools/futureos/fosroms.py SRCDIR OUTDIR A B C D [--plus] [--no-fbee]
+    tools/futureos/fosroms.py SRCDIR OUTDIR A B C D [--plus]
+                              [--no-fbee] [--no-fbfe] [--msr-mask] [--card]
 
 reads FOSC-A.ROM ... FOSC-D.ROM (FOSP-* with --plus; with or without
 their AMSDOS header) from SRCDIR, as they come on the installer disc --
@@ -28,6 +29,40 @@ and a reset): on Mike's 464, 2026-11-16, the desktop came up, spoke, and
 hung or ended in DECtalk output. (The card's one restart that evening was
 an expansion card on the wrong pins, not FutureOS.)
 
+--no-fbfe moves the DK'tronics speech probe (ROM C &FA15, `ld bc,&FBFE`:
+idle, busy after a write, idle again -- the only &FBFE access in the four
+ROMs) to &FFFE: neither a floating &78 nor &FF passes it, so FutureOS
+finds no DK'tronics. On a LambdaSpeak 4 the probe passed, and every access
+to &FBFE made the card hand its drive's responders back to speech: the next
+FDC status read found nothing (the card session, 2026-11-17).
+
+--msr-mask: ROM B's disc loop dispatches on the FDC's status byte --
+`ld hl,&FE10` (&C1B6), then `dec c : in l,(c) : inc c : jp (hl)` at &FE10/
+30/50/70 (wait), &FEF0 a byte in, &FEB0 a byte out, &FED0 the results. A
+status value no µPD765 shows -- the &7E a starved LambdaSpeak 4 serves,
+the &78 of a floating bus -- lands mid-instruction (&FE7E: `out
+(&FBFF),&84`, an early return, a half-read DIR). This adds `dec c : in
+a,(c) : and &F0 : ld l,a : inc c : jp (hl)` at &FE23 (the zeros after
+&FE20's `jp &EF7F`: status &23, unreachable once masked) and sends the
+four wait entries there (`jr`) and the byte paths' next status read
+(`jp &FE24`). &7E and &78 then read as &70: wait. A is free there (the
+data is stored first; &C1C4 and &EF7F do not use it). It costs 6 us a
+wait and 3 us a byte: 22 us at worst from a byte's arrival to its
+read, inside the 32 us of a double-density byte. Checked in MAME, where
+the FDC stops a read on an overrun.
+Before every DIR, ROM B checks the internal FDC once (&EE3C: `ld
+bc,&FB7E : in a,(c) : cp &80`; &FF is no FDC, bit 7 clear "skip it") --
+one starved read there and the DIR is not read at all, the screen
+showing old memory as its entries. That `ld bc / in` becomes `call
+&FE43 : nop : nop`, and &FE43 (more zeros out of the masked dispatch's
+reach) reads up to 251 times, ~2 ms, until bit 7 is set: `ld bc,&FB7E :
+ld e,b : in a,(c) : ret m : dec e : jr nz : ret`. E is free there
+(each drive's block, and &EF58, load HL and DE first; &FCFF uses A and
+BC). ROM C's check at boot (&F95A) is the same, but ROM C has no room:
+left as it is.
+
+--card is all three, for a CPC with a LambdaSpeak 4.
+
 No other `ld a/c,10-13` in the four ROMs selects a ROM (checked: they
 are writes to expansion ports). Nothing of FutureOS is in this file: the
 ROMs are TFM's, from futureos.de, free for non-commercial use.
@@ -46,6 +81,28 @@ STUBS = {  # the API page: where each ROM's physical number is built in
 ROM_A_SELECTS = (0xFD89, 0xFDA2, 0xFDBB, 0xFDD4)
 DEFAULT = {'A': 10, 'B': 11, 'C': 12, 'D': 13}
 
+# (ROM, address, the bytes there now, the bytes it gets)
+PATCHES = {
+    '--no-fbfe': [('C', 0xFA15, '01 FE FB ED 78 CB 7F', '01 FE FF')],
+    '--msr-mask': [
+        ('B', 0xFE20, 'C3 7F EF 00 00 00 00 00 00 00 00',
+         'C3 7F EF 0D ED 78 E6 F0 6F 0C E9'),       # &FE23: the masked read
+        ('B', 0xFE10, '0D ED 68 0C E9', '18 11'),  # jr &FE23
+        ('B', 0xFE30, '0D ED 68 0C E9', '18 F1'),
+        ('B', 0xFE50, '0D ED 68 0C E9', '18 D1'),
+        ('B', 0xFE70, '0D ED 68 0C E9', '18 B1'),
+        ('B', 0xFEB0, '1A ED 79 13 0D ED 68 0C E9',
+         '1A ED 79 13 0D C3 24 FE'),                # out, then jp &FE24
+        ('B', 0xFEF0, 'ED 78 12 13 0D ED 68 0C E9',
+         'ED 78 12 13 0D C3 24 FE'),                # in, then jp &FE24
+        ('B', 0xC1B6, '21 10 FE', '21 10 FE'),     # the one entry: as it was
+        ('B', 0xFE40, 'C3 7F EF 00 00 00 00 00 00 00 00 00 00 00 00 00',
+         'C3 7F EF 01 7E FB 58 ED 78 F8 1D 20 FA C9'),  # &FE43: the retry
+        ('B', 0xEE3C, '01 7E FB ED 78 FE 80', 'CD 43 FE 00 00'),
+    ],
+}
+FLAGS = ('--plus', '--no-fbee', '--no-fbfe', '--msr-mask', '--card')
+
 
 def image(path):
     raw = open(path, 'rb').read()
@@ -60,16 +117,22 @@ def image(path):
 
 
 def main():
-    args = [a for a in sys.argv[1:] if a not in ('--plus', '--no-fbee')]
-    if len(args) != 6:
+    args = [a for a in sys.argv[1:] if a not in FLAGS]
+    if len(args) != 6 or any(a.startswith('--') for a in args):
         sys.exit(__doc__)
+    flags = set(sys.argv[1:]) & set(FLAGS)
+    if '--card' in flags:
+        flags |= {'--no-fbee', '--no-fbfe', '--msr-mask'}
     src, out = args[:2]
     nums = dict(zip('ABCD', (int(n, 0) for n in args[2:])))
     if not 0 <= nums['A'] <= 15 or not all(1 <= nums[r] <= 255 for r in 'BCD'):
         sys.exit('fosroms: ROM A is 0-15, B, C, D 1-255 (as the installer asks)')
     if len(set(nums.values())) != 4:
         sys.exit('fosroms: four different numbers, please')
-    kind = 'FOSP' if '--plus' in sys.argv else 'FOSC'
+    kind = 'FOSP' if '--plus' in flags else 'FOSC'
+    if kind == 'FOSP' and flags & {'--no-fbfe', '--msr-mask'}:
+        sys.exit('fosroms: --no-fbfe and --msr-mask are worked out on the '
+                 'CPC ROMs (FOSC) only')
     os.makedirs(out, exist_ok=True)
     for rom in 'ABCD':
         d = image(os.path.join(src, f'{kind}-{rom}.ROM'))
@@ -84,17 +147,32 @@ def main():
                          f'number {DEFAULT[r]} -- another version? not touching it')
             d[o] = nums[r]
         moved = 0
-        if '--no-fbee' in sys.argv:
+        if '--no-fbee' in flags:
             k = d.find(b'\x01\xEE\xFB')
             while k >= 0:
                 d[k + 2] = 0xFF
                 moved += 1
                 k = d.find(b'\x01\xEE\xFB', k + 3)
+        done = []
+        for flag in ('--no-fbfe', '--msr-mask'):
+            if flag not in flags:
+                continue
+            for r, addr, now, new in PATCHES[flag]:
+                if r != rom:
+                    continue
+                now, new, o = bytes.fromhex(now), bytes.fromhex(new), addr - 0xC000
+                if d[o:o + len(now)] != now:
+                    sys.exit(f'fosroms: {kind}-{rom}: &{addr:04X} is not '
+                             f'{now.hex(" ")} -- another version? not touching it')
+                d[o:o + len(new)] = new
+                if flag[2:] not in done:
+                    done.append(flag[2:])
         d[0x3FFF] = sum(d[:0x3FFF]) & 0xFF
         name = os.path.join(out, f'FOS-{rom}.ROM')
         open(name, 'wb').write(d)
         print(f'{name}: ROM {nums[rom]}, {len(sites)} numbers, '
-              + (f'{moved} &FBEE -> &FFEE, ' if '--no-fbee' in sys.argv else '')
+              + (f'{moved} &FBEE -> &FFEE, ' if '--no-fbee' in flags else '')
+              + (f'{"/".join(done)}, ' if done else '')
               + f'checksum {d[0x3FFF]:02X}')
 
 

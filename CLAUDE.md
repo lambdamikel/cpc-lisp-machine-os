@@ -882,10 +882,20 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   half filled. (2) FOS reads and writes &FBFE (the DK'tronics speech
   port) between disc commands; the card's interrupt then hands the
   drive's responders back to speech, and the next status read finds a
-  floating bus (&78). Parked (Mike: FutureOS is no priority). The fixes,
-  if wanted: a DMA channel keeping the MSR FIFO full (card firmware, no
-  PIO change), and FOS's &FBFE accesses moved away as fosroms.py
-  --no-fbee does &FBEE. It is flashed with
+  floating bus (&78). The card's firmware stays as it is (Mike: work
+  around the card); the card-side fix would be a DMA channel keeping
+  the MSR FIFO full. **`fosroms.py --card`** (2026-11-17) works around it
+  in FutureOS: --no-fbee, --no-fbfe (its DK'tronics probe, the one &FBFE
+  access, to &FFFE) and --msr-mask (the dispatch reads the status `and
+  &F0`, so &7E and &78 mean "wait"; the one-shot FDC check before every
+  DIR retries ~2 ms) -- the docstring has the bytes. MAME, with a fault
+  injected into every Nth status read (&7E/&78 alternately; a copy of
+  emu/repl.lua with an I/O tap): the original ROMs' DIR broke at N=37,
+  the patched ones listed the disc cleanly at N=37, 11, 5, 4 and 3 and
+  never touched &FBFE (N=2 overruns the FDC: one extra wait per byte).
+  Installer disc with them: ~/claude/cpc/futureos/installer-card/
+  OS_DE_2026-11-15-card.dsk (ROMs at 10-13; the installer renumbers).
+  ROM C's boot check of the FDC (&F95A) is one-shot still (no room). It is flashed with
   ROMAN 2 (its download, DSK and manual, in ~/claude/cpc/flashgordon:
   `RUN"DISC`, the write switch on; never under FutureOS) or by the
   FutureOS installer (option 9); the ROMAN it ships in slot 15 is past
