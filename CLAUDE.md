@@ -852,7 +852,10 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   ('d': "ROM select, us to apply" 1-3 us from the ISR's word, plus the
   PIO push and the interrupt; ~/claude/cpc/futureos/card-d-2026-11-16-
   after-fos.txt) -- a garbled desktop, then a freeze. MAME switches at
-  once. The fix is firmware (the select in PIO/DMA, the card session's).
+  once. The fix is firmware (the select in PIO/DMA, the card session's:
+  ~0.15 us, nothing else lost -- one state machine on pio2, 2-3 DMA
+  channels, a 1 KB table, one or two instructions freed in pio0 (31 of
+  32 used); Mike's to schedule, after the rev 3 bring-up).
   So FutureOS's ROMs go on Mike's FlashGordon (PulkoMandy's), with the
   --no-fbee installer disc ~/claude/cpc/futureos/installer-nofbee/; on a
   464 ROM A at 1-7, none at 2 or 7 (the card's LS AI, Parados), slots 2 and 7 the silenced Lisp
