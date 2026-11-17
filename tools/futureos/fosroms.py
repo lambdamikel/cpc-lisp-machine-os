@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Renumber FutureOS's four ROMs by hand, as its installer does.
 
-    tools/futureos/fosroms.py SRCDIR OUTDIR A B C D [--plus]
+    tools/futureos/fosroms.py SRCDIR OUTDIR A B C D [--plus] [--no-fbee]
 
 reads FOSC-A.ROM ... FOSC-D.ROM (FOSP-* with --plus; with or without
 their AMSDOS header) from SRCDIR, as they come on the installer disc --
@@ -17,6 +17,15 @@ What the installer (DISC, "ROM-Nummern anpassen", 2026-11-15) changes:
   (the byte after &0E: &FD89 ...), ROM A's number (line 3380);
 * the last byte, &FFFF: the sum of the other 16383 bytes, mod 256
   (FLASHALL.Z80's routine at &3425, "Pruefsummen anpassen").
+
+--no-fbee moves every `ld bc,&FBEE` (four in ROM A, one in ROM C) to the
+unused port &FFEE, where a read gives &FF: FutureOS then finds no
+LambdaSpeak. Its LambdaSpeak III code (the eight bytes |OS sends at
+&F592, the probe in ROM C at &F9E4 -- a read of &20 is an LS3 -- the
+clock at &DEFD/&DF3C: &F3, &D5, &D4... and speech) speaks the LS3's
+protocol, and a LambdaSpeak 4 takes &Dx otherwise (&D0: a ROM number
+and a reset): on Mike's 464, 2026-11-16, the desktop came up, then hung
+or reset.
 
 No other `ld a/c,10-13` in the four ROMs selects a ROM (checked: they
 are writes to expansion ports). Nothing of FutureOS is in this file: the
@@ -50,7 +59,7 @@ def image(path):
 
 
 def main():
-    args = [a for a in sys.argv[1:] if a != '--plus']
+    args = [a for a in sys.argv[1:] if a not in ('--plus', '--no-fbee')]
     if len(args) != 6:
         sys.exit(__doc__)
     src, out = args[:2]
@@ -73,10 +82,19 @@ def main():
                 sys.exit(f'fosroms: {kind}-{rom}: &{addr:04X} is not ROM {r}\'s '
                          f'number {DEFAULT[r]} -- another version? not touching it')
             d[o] = nums[r]
+        moved = 0
+        if '--no-fbee' in sys.argv:
+            k = d.find(b'\x01\xEE\xFB')
+            while k >= 0:
+                d[k + 2] = 0xFF
+                moved += 1
+                k = d.find(b'\x01\xEE\xFB', k + 3)
         d[0x3FFF] = sum(d[:0x3FFF]) & 0xFF
         name = os.path.join(out, f'FOS-{rom}.ROM')
         open(name, 'wb').write(d)
-        print(f'{name}: ROM {nums[rom]}, {len(sites)} numbers, checksum {d[0x3FFF]:02X}')
+        print(f'{name}: ROM {nums[rom]}, {len(sites)} numbers, '
+              + (f'{moved} &FBEE -> &FFEE, ' if '--no-fbee' in sys.argv else '')
+              + f'checksum {d[0x3FFF]:02X}')
 
 
 main()
