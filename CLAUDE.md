@@ -857,7 +857,15 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   once. The fix is firmware (the select in PIO/DMA, the card session's:
   ~0.15 us, nothing else lost -- one state machine on pio2, 2-3 DMA
   channels, a 1 KB table, one or two instructions freed in pio0 (31 of
-  32 used); Mike's to schedule, after the rev 3 bring-up).
+  32 used); Mike's to schedule, after the rev 3 bring-up). Only 4 of
+  the 28 stubs are that fast -- the plain jumps ROM_A..ROM_D at
+  &FF00/06/0C/12 (`out (c),c : jp (hl)`); the 24 x2y stubs leave ~10 us
+  going in (`pop bc : call &FFF0`, `jp (ix)`) and ~6 us coming back
+  (`pop bc : ret`). So the card's select must take under ~1.5 us,
+  worst case. A FOS-side fix was ruled out: the four are fixed 6-byte
+  API entries in a full &FF page, and a 1-byte `rst` into RAM fails
+  because FOS turns the lower ROM on now and then (gate array &82).
+  Both sessions agree; it's the card session's, with Mike.
   So FutureOS's ROMs go on Mike's FlashGordon (PulkoMandy's), with the
   --no-fbee installer disc ~/claude/cpc/futureos/installer-nofbee/; on a
   464 ROM A at 1-7. Installed at 1-4 (2026-11-17): the desktop came
