@@ -866,7 +866,17 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   pulkomandy.github.io/shinra.github.io/gordon.html), whatever a
   position holds -- ROMAN's delete or park leaves it answering: with it
   in, the card must serve nothing at 1-6, or both drive the bus (the
-  LS AI at 2 met FutureOS's ROM B, its floppy ROM). It is flashed with
+  LS AI at 2 met FutureOS's ROM B, its floppy ROM). With the LS AI
+  silenced and FutureOS installed again at 1-4, DIR was still garbage
+  at first, then "all coming out clean" (Mike, 2026-11-17; nothing
+  changed on the card that we know of). FutureOS's read loop is ROM B's
+  page &FE: `in l,(c) : jp (hl)` with H = &FE -- the FDC's status
+  byte is the jump target (&30 wait, &F0 read a byte, &B0 write one, &D0
+  results, anything else an error or mid-instruction), and it reads the
+  data 6 us after the status said &F0 (AMSDOS 13 us; MAME, measured);
+  the DIR is one multi-sector read, C1-C4. A card that shows &F0 before
+  its byte is there, or a passing status value, would garble it now
+  and then: asked the card session. It is flashed with
   ROMAN 2 (its download, DSK and manual, in ~/claude/cpc/flashgordon:
   `RUN"DISC`, the write switch on; never under FutureOS) or by the
   FutureOS installer (option 9); the ROMAN it ships in slot 15 is past
