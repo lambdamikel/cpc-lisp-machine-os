@@ -461,6 +461,11 @@ compiled code (`docs/design.md` describes both)
           the graphics; the editor works, F1 confirms. Asked for and
           added: F2 delete, F3 backspace, the SHIFT down-arrow table in
           the Model 4's docs (CTRL , is no `[` under LS-DOS)
+    - [x] The classics disc (Mike, 2026-11-17: "ELIZA or symbolic
+          differentiation, classic Lisp programs"): ELIZA, deriv, the
+          animal game that learns, Lisp in Lisp, Life -- `examples/`,
+          `cpclisp-classics.dsk` and the TRS-80s' data discs; MAME's
+          464 and 6128 (`test/classic*`), trs80gp's Model I and Model 4
     - [x] The Apfelmaennchen (Mike: "can you add an appleman program",
           and for the CPC in mode 2): `examples/apfel.lsp` on the CPC
           discs and the Model 4's -- fixnums times 64, coarse to fine,

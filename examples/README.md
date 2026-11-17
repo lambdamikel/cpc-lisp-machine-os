@@ -24,10 +24,11 @@ is best there.
 | `deriv.lsp` | **Symbolic differentiation**: `(deriv '(* x (sin x)) 'x)` gives `(+ (* X (COS X)) (SIN X))`, simplified as it is built | `(deriv-demo)` |
 | `animals.lsp` | **The guessing game that learns**: a tree of questions, grown when it guesses wrong, saved as `ZOO` and loaded again next time | `(animals)` |
 | `meval.lsp` | **Lisp in Lisp**: McCarthy's eval and apply for a small Scheme, closures and all, as in SICP chapter 4 | `(meval-demo)`, `(meval-repl)` |
-| `queens.lsp` | **n queens** by backtracking: the first solution, drawn, or how many | `(queens 8)`, `(queens-count 6)` |
-| `hanoi.lsp` | **The Towers of Hanoi** | `(hanoi 4)`, `(hanoi-count 10)` |
 | `life.lsp` | **Conway's Game of Life**, a glider and a blinker on a board that wraps round | `(life 8)` |
 | `classics.lsp` | the list above, in 40 columns | `(load "classics")` |
+
+The Towers of Hanoi and n queens need no disc: `(hanoi 4)` and
+`(queens 6)` are among the ROMs' own demos, which `(demo)` lists.
 
 Checked in MAME on a 464 and a 6128 (`test/classic*.lsp`) and in
 trs80gp on a Model I with X-MEM/80 and a Model 4 (2026-11-17). ELIZA on

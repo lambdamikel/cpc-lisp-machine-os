@@ -437,3 +437,18 @@ first time they run, and `(ed 'bounce)` shows how each is written -- the
 best examples there are of everything above. The
 [reference](reference.md) has the rest; [the design](design.md) how it is
 made.
+
+The classics disc (`cpclisp-classics.dsk`; the TRS-80s' in
+`cpclisp-trs80-classics-model1/3/4.dsk`) has the programs every Lisp
+book has: ELIZA, Weizenbaum's DOCTOR -- `(load "eliza")`, `(eliza)` --
+symbolic differentiation, the animal game that learns and saves what it
+learnt, an evaluator for Lisp written in Lisp, and Conway's Life.
+`(load "classics")` lists them; each file explains itself at its top
+([`examples/`](../examples/)).
+
+    LISP> (load "eliza")
+    T
+    LISP> (eliza)
+    I am ELIZA. Tell me your problem -- BYE ends it.
+    > I want a holiday
+    What would it mean if you got a holiday?

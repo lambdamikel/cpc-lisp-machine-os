@@ -43,8 +43,7 @@ def files_on(img):
 def main():
     out = sys.argv[1]
     programs = [os.path.join(ROOT, 'examples', f + '.lsp') for f in
-                ('classics', 'eliza', 'deriv', 'animals', 'meval', 'queens',
-                 'hanoi', 'life')]
+                ('classics', 'eliza', 'deriv', 'animals', 'meval', 'life')]
     for disc, base in BASES:
         img = L.Img(base)
         for name, ext in files_on(img):

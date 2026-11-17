@@ -695,8 +695,9 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,
   as Weizenbaum's), `deriv`, `animals` (learns, `save`s ZOO), `meval`
-  (SICP's eval), `queens`, `hanoi`, `life`, and `classics.lsp`, a 40-
-  column menu. Text only: every machine. `build/cpclisp-classics.dsk`
+  (SICP's eval), `life`, and `classics.lsp`, a 40-column menu
+  (`hanoi` and `queens` were written too, then dropped: lib/demo.lsp has
+  had both since 0.9 -- check `(demo)` before writing a demo). Text only: every machine. `build/cpclisp-classics.dsk`
   (mach/cpc/post-build.sh), `build/trs80/classics-m1/m3/m4.dsk` and
   .hfe (`tools/trs80/mkclassics.py`: the LDOS/LS-DOS system discs with
   every file but BOOT/SYS and DIR/SYS deleted -- a data disc for drive

@@ -229,7 +229,10 @@ cells.
 **The discs are ready in [`discs/`](discs/)** -- `cpclisp512.dsk` and
 `cpclisp6128.dsk`, a test disc for the ROMs' use of a RAM expansion, and
 the demo disc `cpclisp-demo.dsk` with the Apfelmaennchen (`(load
-"apfel")`, `(apfel)`); each but the demo disc has `HWTEST.LSP`, a test of
+"apfel")`, `(apfel)`), and the classics disc `cpclisp-classics.dsk`:
+ELIZA, symbolic differentiation, the animal game that learns, Lisp in
+Lisp and Conway's Life (`(load "classics")` lists them). Each but the
+demo and the classics disc has `HWTEST.LSP`, a test of
 the real machine (`(load "hwtest")`, `(hwtest)`). Or build them: `MACH=cpc512 tools/build.sh` makes
 `build/cpc512/cpclisp512.dsk`, `MACH=cpc6128 tools/build.sh`
 `build/cpc6128/cpclisp6128.dsk`. `(basic)` goes back to BASIC, and
@@ -277,7 +280,10 @@ the RAM disc. Or build it: `MACH=trs80 tools/build.sh` (rasm and Python 3, as fo
 CPC, above) makes `build/trs80/lisp-a.dsk` for a Model I -- LDOS 5.3.1,
 single density, JV1, with `LISP/CMD` and the seven images on it,
 compressed -- and `build/trs80/lisp-m3.dsk` for a Model III -- LDOS
-5.1.4, double density, JV3.
+5.1.4, double density, JV3. The classics -- ELIZA, symbolic
+differentiation, the animal game, Lisp in Lisp, Life -- are on a data
+disc for a second drive: `cpclisp-trs80-classics-model1.dsk` or
+`-model3.dsk` (`(load "classics")`).
 
 **Starting**: boot that disc, give LDOS the date (and on a Model I the
 time), and at `LDOS Ready` type
@@ -335,7 +341,9 @@ What is the Model 4's ([`mach/trs80m4/`](mach/trs80m4/README.md)):
 `cpclisp-trs80-model4.dsk`, and `.hfe` for an HxC or a Gotek -- boot it,
 give the date and time, `LISP` -- and `frehd/cpclisp4`, a bootable hard
 disc for a **FreHD**: copy it to the SD card as it is named, choose it
-in the FreHD's menu, `LISP`. Each has `HWTEST/LSP` and `APFEL/LSP`. It
+in the FreHD's menu, `LISP`. Each has `HWTEST/LSP` and `APFEL/LSP`.
+The classics are on a data disc for a second drive,
+`cpclisp-trs80-classics-model4.dsk` (and `.hfe`). It
 runs on a real Model 4 with a FreHD, an HxC and the Improved Grafyx
 (2026-11-13); in trs80gp, `tools/trs80m4/run.sh` and `test.sh`.
 
@@ -344,7 +352,8 @@ runs on a real Model 4 with a FreHD, an HxC and the Improved Grafyx
 * [`roms/README.md`](roms/README.md): the ready-made ROM images -- what
   each is, and how to install them
 * [`examples/`](examples/): programs on the discs -- the Apfelmaennchen,
-  `(load "apfel")` `(apfel)`
+  `(load "apfel")` `(apfel)`, and the classics: ELIZA, symbolic
+  differentiation, the animal game, Lisp in Lisp, Life
 * [`discs/README.md`](discs/README.md): CPC Lisp from disc (512K, plain
   6128), the TRS-80 discs (Model I, III, 4 -- the Model 4's for a FreHD
   too) and the test discs for the real machine
