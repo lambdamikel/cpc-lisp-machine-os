@@ -901,7 +901,17 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   for byte as `fosroms.py ... 1 2 3 4 --card`.
   Installer disc with them: ~/claude/cpc/futureos/installer-card/
   OS_DE_2026-11-15-card.dsk (ROMs at 10-13; the installer renumbers).
-  ROM C's boot check of the FDC (&F95A) is one-shot still (no room). It is flashed with
+  ROM C's boot check of the FDC (&F95A) is one-shot still (no room).
+  **The card's FutureOS gotchas are the card session's** (Mike,
+  2026-11-17: "we are the Lisp session"): handed over with fosroms.py's
+  place, to document in its repo. CPC Lisp must not depend on the
+  card -- its drive and ROM slots are Mike's development convenience;
+  any ROM board, any drive (DDI-3, Gotek, M4) will do. The card's slow
+  select broke only FutureOS's own stubs: the ROM Lisp runs from the
+  card's slots (0.98). Beside FutureOS on the FlashGordon (untried):
+  the library ROMs do nothing at the ROM walk and the core looks for
+  them at 1-15 itself (NBANKS), so they may sit at 8-15; only the core
+  needs a number the 464 walks (|LISP at 5 or 6). It is flashed with
   ROMAN 2 (its download, DSK and manual, in ~/claude/cpc/flashgordon:
   `RUN"DISC`, the write switch on; never under FutureOS) or by the
   FutureOS installer (option 9); the ROMAN it ships in slot 15 is past
