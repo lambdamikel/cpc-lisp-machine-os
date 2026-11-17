@@ -893,6 +893,12 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   emu/repl.lua with an I/O tap): the original ROMs' DIR broke at N=37,
   the patched ones listed the disc cleanly at N=37, 11, 5, 4 and 3 and
   never touched &FBFE (N=2 overruns the FDC: one extra wait per byte).
+  **On Mike's 464 it works** (2026-11-17, "you unblocked us"): the
+  card's 'F' afterwards -- 1,629,577 status reads served, 90,508
+  starved (5.6%, every one &7E), data reads 0 starved; the speech
+  handbacks nearly stopped (claimed 18 -> 20). The installer's own
+  renumbering (written back to the disc's FOSC-*.ROM) came out byte
+  for byte as `fosroms.py ... 1 2 3 4 --card`.
   Installer disc with them: ~/claude/cpc/futureos/installer-card/
   OS_DE_2026-11-15-card.dsk (ROMs at 10-13; the installer renumbers).
   ROM C's boot check of the FDC (&F95A) is one-shot still (no room). It is flashed with
