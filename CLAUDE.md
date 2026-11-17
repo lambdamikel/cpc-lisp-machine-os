@@ -639,6 +639,17 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   367K free. The TRS-80 discs are in `discs/` too. TRS-80 far-refs are
   slow too (100 setf in 3.7 s, not looked into). Don't probe trs80gp's
   options by running it by hand: it pops up windows on Mike's screen.
+* **FutureOS** (2026-11-16, asked by TFM, its author; Mike: disc
+  based, "future os takes all the roms"): planned as a disc version
+  like mach/cpc512 -- the images in E-RAM, a machine layer on
+  FutureOS's API (fast text output, files loaded into and saved from
+  E-RAM, its memory manager); our own keyboard scan, graphics, sound;
+  floats open (the lower ROM's maths in place, or a package of our
+  own). FutureOS needs &A000-&BFFF; its ROMs sit at 10-13 (the 464's
+  ROM walk sees 0-7). Mike's hardware: the X-MEM (512 KB RAM, 512 KB
+  flash: FutureOS's ROMs), the card's drive, a DDI-3, the M4. System .8,
+  its installers, ROMs and API docs: ~/claude/cpc/futureos (not ours:
+  never commit them).
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
@@ -819,6 +830,11 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   (255 = silent). `n` lists the slots. **Giving a slot ROM 0 means the CPC
   boots into it every time** -- to get BASIC back, set it to 255. Check `n`
   before Mike powers on after any change.
+* **Since 2026-11-16 the six Lisp slots are silenced (255)**: Mike runs
+  FutureOS from his X-MEM beside the card, and the ROM numbers clashed
+  (the card answers only 2, LS AI, and 7, Parados; the 464 boots BASIC).
+  Restore, CPC off: `tools/card.py number` 0 5, 1 1, 2 0, 3 3, 5 4, 7 6
+  (no re-flash; tell the card session).
 * Slots (since 2026-11-13): 0 LISPLIB2 (ROM 5), 1 LISPVM (ROM 1), 2
   LISP core (ROM 0), 3 LISPDEMO (ROM 3), 4 Parados (ROM 7), 5 LISPLIB
   (ROM 4), 6 LS AI (ROM 2), 7 LISPLIB3 (ROM 6). Another Claude session
