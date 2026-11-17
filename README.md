@@ -231,7 +231,8 @@ cells.
 the demo disc `cpclisp-demo.dsk` with the Apfelmaennchen (`(load
 "apfel")`, `(apfel)`), and the classics disc `cpclisp-classics.dsk`:
 ELIZA, symbolic differentiation, the animal game that learns, Lisp in
-Lisp and Conway's Life (`(load "classics")` lists them). Each but the
+Lisp, Conway's Life, tic-tac-toe by minimax and SICP's Huffman codes
+(`(load "classics")` lists them). Each but the
 demo and the classics disc has `HWTEST.LSP`, a test of
 the real machine (`(load "hwtest")`, `(hwtest)`). Or build them: `MACH=cpc512 tools/build.sh` makes
 `build/cpc512/cpclisp512.dsk`, `MACH=cpc6128 tools/build.sh`
@@ -281,7 +282,8 @@ CPC, above) makes `build/trs80/lisp-a.dsk` for a Model I -- LDOS 5.3.1,
 single density, JV1, with `LISP/CMD` and the seven images on it,
 compressed -- and `build/trs80/lisp-m3.dsk` for a Model III -- LDOS
 5.1.4, double density, JV3. The classics -- ELIZA, symbolic
-differentiation, the animal game, Lisp in Lisp, Life -- are on a data
+differentiation, the animal game, Lisp in Lisp, Life, tic-tac-toe,
+Huffman codes -- are on a data
 disc for a second drive: `cpclisp-trs80-classics-model1.dsk` or
 `-model3.dsk` (`(load "classics")`).
 
@@ -353,7 +355,8 @@ runs on a real Model 4 with a FreHD, an HxC and the Improved Grafyx
   each is, and how to install them
 * [`examples/`](examples/): programs on the discs -- the Apfelmaennchen,
   `(load "apfel")` `(apfel)`, and the classics: ELIZA, symbolic
-  differentiation, the animal game, Lisp in Lisp, Life
+  differentiation, the animal game, Lisp in Lisp, Life, tic-tac-toe,
+  Huffman codes
 * [`discs/README.md`](discs/README.md): CPC Lisp from disc (512K, plain
   6128), the TRS-80 discs (Model I, III, 4 -- the Model 4's for a FreHD
   too) and the test discs for the real machine

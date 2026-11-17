@@ -25,6 +25,8 @@ is best there.
 | `animals.lsp` | **The guessing game that learns**: a tree of questions, grown when it guesses wrong, saved as `ZOO` and loaded again next time | `(animals)` |
 | `meval.lsp` | **Lisp in Lisp**: McCarthy's eval and apply for a small Scheme, closures and all, as in SICP chapter 4 | `(meval-demo)`, `(meval-repl)` |
 | `life.lsp` | **Conway's Game of Life**, a glider and a blinker on a board that wraps round | `(life 8)` |
+| `tictac.lsp` | **Tic-tac-toe** against a player that cannot lose: minimax with alpha-beta pruning, compiled on a CPC with a compiler (some 5 s a hard move on a 464; interpreted, as on a TRS-80, up to 20) | `(tictac)`; type a square, 1-9 |
+| `huffman.lsp` | **Huffman codes** after SICP 2.3.4: the tree built from the weights, encoding and decoding -- SICP's A-H example, and exercise 2.70's rock song in 84 bits, not 108 | `(huffman-demo)`, `(huffman-song)` |
 | `classics.lsp` | the list above, in 40 columns | `(load "classics")` |
 
 The Towers of Hanoi and n queens need no disc: `(hanoi 4)` and

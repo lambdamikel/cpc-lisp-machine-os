@@ -51,7 +51,26 @@ LISP> (meval-demo)
 (MAP (MAKE-ADDER 10) (LIST 1 2 3))
   => (11 12 13)
 NIL
+LISP> (load "huffman")
+T
+LISP> (huffman-demo)
+The code, from the weights ((A 8) (B 3) (C 1) (D 1) (E 1) (F 1) (G 1) (H 1)):
+ A 0
+ B 111
+ C 1000
+ D 1001
+ E 1010
+ F 1011
+ G 1100
+ H 1101
+(B A C A D A E A F A B B A A G A H)
+is 41 bits, not 51: 11101000010010101001011011111100110001101
+decoded: (B A C A D A E A F A B B A A G A H)
+NIL
+LISP> (huffman-song)
+36 symbols, 84 bits -- at 3 bits a symbol 108
+T
 LISP> (room)
-5552 cells, 287 symbols, 4856 string bytes free
+4664 cells, 247 symbols, 4280 string bytes free
 NIL
 LISP> 

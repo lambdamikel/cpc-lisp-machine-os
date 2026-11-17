@@ -463,7 +463,8 @@ compiled code (`docs/design.md` describes both)
           the Model 4's docs (CTRL , is no `[` under LS-DOS)
     - [x] The classics disc (Mike, 2026-11-17: "ELIZA or symbolic
           differentiation, classic Lisp programs"): ELIZA, deriv, the
-          animal game that learns, Lisp in Lisp, Life -- `examples/`,
+          animal game that learns, Lisp in Lisp, Life, tic-tac-toe
+          (minimax, alpha-beta), SICP's Huffman codes -- `examples/`,
           `cpclisp-classics.dsk` and the TRS-80s' data discs; MAME's
           464 and 6128 (`test/classic*`), trs80gp's Model I and Model 4
     - [x] The Apfelmaennchen (Mike: "can you add an appleman program",

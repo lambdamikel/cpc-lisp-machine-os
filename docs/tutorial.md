@@ -442,7 +442,8 @@ The classics disc (`cpclisp-classics.dsk`; the TRS-80s' in
 `cpclisp-trs80-classics-model1/3/4.dsk`) has the programs every Lisp
 book has: ELIZA, Weizenbaum's DOCTOR -- `(load "eliza")`, `(eliza)` --
 symbolic differentiation, the animal game that learns and saves what it
-learnt, an evaluator for Lisp written in Lisp, and Conway's Life.
+learnt, an evaluator for Lisp written in Lisp, Conway's Life,
+tic-tac-toe against minimax, and SICP's Huffman codes.
 `(load "classics")` lists them; each file explains itself at its top
 ([`examples/`](../examples/)).
 

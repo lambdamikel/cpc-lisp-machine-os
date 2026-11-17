@@ -695,7 +695,12 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,
   as Weizenbaum's), `deriv`, `animals` (learns, `save`s ZOO), `meval`
-  (SICP's eval), `life`, and `classics.lsp`, a 40-column menu
+  (SICP's eval), `life`, `tictac` (minimax with alpha-beta, a win
+  checked only along the last move's lines, compiled on a CPC with
+  `compile`: the hardest move 1870 -> 239 frames; the Model I ran out
+  of memory compiling it -- interpreted on the TRS-80s), `huffman` (SICP
+  2.3.4, and exercise 2.70's song: 84 bits), and `classics.lsp`, a
+  40-column menu
   (`hanoi` and `queens` were written too, then dropped: lib/demo.lsp has
   had both since 0.9 -- check `(demo)` before writing a demo). Text only: every machine. `build/cpclisp-classics.dsk`
   (mach/cpc/post-build.sh), `build/trs80/classics-m1/m3/m4.dsk` and

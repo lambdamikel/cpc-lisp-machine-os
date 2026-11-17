@@ -2,4 +2,7 @@
 (life 2)
 (load "meval")
 (meval-demo)
+(load "huffman")
+(huffman-demo)
+(huffman-song)
 (room)
