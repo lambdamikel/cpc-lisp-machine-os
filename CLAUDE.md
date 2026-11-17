@@ -858,7 +858,19 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   32 used); Mike's to schedule, after the rev 3 bring-up).
   So FutureOS's ROMs go on Mike's FlashGordon (PulkoMandy's), with the
   --no-fbee installer disc ~/claude/cpc/futureos/installer-nofbee/; on a
-  464 ROM A at 1-7, none at 2 or 7 (the card's LS AI, Parados), slots 2 and 7 the silenced Lisp
+  464 ROM A at 1-7. Installed at 1-4 (2026-11-17): the desktop came
+  up, drive A's DIR showed garbage -- MAME reads the same disc at 1-4
+  fine ("Format: Data"; FutureOS reads Data, System, IBM and Vortex
+  discs, no format of its own). **The FlashGordon answers every ROM
+  number 0-31**, 0 and 7 only by its DIP switches (PulkoMandy's page,
+  pulkomandy.github.io/shinra.github.io/gordon.html), whatever a
+  position holds -- ROMAN's delete or park leaves it answering: with it
+  in, the card must serve nothing at 1-6, or both drive the bus (the
+  LS AI at 2 met FutureOS's ROM B, its floppy ROM). It is flashed with
+  ROMAN 2 (its download, DSK and manual, in ~/claude/cpc/flashgordon:
+  `RUN"DISC`, the write switch on; never under FutureOS) or by the
+  FutureOS installer (option 9); the ROMAN it ships in slot 15 is past
+  a 464's ROM walk (1-7). Slots 2 and 7 the silenced Lisp
   core and LISPLIB3, 4 Parados (7), 6 LS AI (2). The ROM Lisp back:
   `tools/card.py lisp` (from build/: check it equals roms/ first).
 * Slots (since 2026-11-13): 0 LISPLIB2 (ROM 5), 1 LISPVM (ROM 1), 2
