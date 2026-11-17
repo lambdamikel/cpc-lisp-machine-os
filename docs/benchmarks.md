@@ -177,7 +177,5 @@ only).
 * **Gabriel's numbers:** his Raw Time tables for TAK (pp. 86-87) and
   DERIV (pp. 173-174), from dreamsongs.com/Files/Timrep.pdf.
 
-Still to come: the CPC's own Lisps of the day, which ran under CP/M --
-HiSoft Lisp on the 6128 (said in that thread to come from muLISP-80,
-which Microsoft sold as Microsoft LISP) and others. They need their discs from Mike's thread
-on the CPCWiki forum.
+Still to come: HiSoft Lisp proper (its HLE environment) and Lisp-80,
+from the discs attached to Mike's CPCWiki thread.
