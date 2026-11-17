@@ -370,6 +370,9 @@ runs on a real Model 4 with a FreHD, an HxC and the Improved Grafyx
 * [`docs/internals.md`](docs/internals.md): the internals in detail --
   the `%` names, lexical closures, tail calls, the speed work, and how
   the compiler was bootstrapped
+* [`docs/benchmarks.md`](docs/benchmarks.md): how fast -- against UOLisp
+  (1982) on a TRS-80, SBCL on a PC, and the Lisp machines and VAXes of
+  Gabriel's 1985 book
 * [`docs/checklist.md`](docs/checklist.md): everything implemented, by
   ROM, and what is still open
 * [`mach/README.md`](mach/README.md): the machine layer -- the interface

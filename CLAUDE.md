@@ -714,6 +714,21 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   on the Model I's runner, the key at the start of the next line); with
   every program loaded at once string space runs out -- one at a time; a
   Model 4 with ELIZA has ~300 cells left.
+* **Benchmarks** (`docs/benchmarks.md`, `tools/bench/`, 2026-11-17, Mike:
+  "UOLisp ... who wins?"): fib 20, tak 18 12 6, Gabriel's deriv x100,
+  interpreted and compiled, on MAME's 464, trs80gp's Model I (UOLisp
+  V1.5b and CPC Lisp, `tools/bench/bench80.py`: a screen dump every
+  25-400 frames, ~60 a second) and SBCL 2.2.9 (Mike's, read-only:
+  ~/claude/homepage/tools/sbcl/usr/bin/sbcl, SBCL_HOME .../usr/lib/sbcl
+  -- the homepage session's; don't modify it). UOLisp: its images and
+  manual from the Computer History Museum's SPG in ~/claude/trs80/uolisp
+  (not ours; Mike imaged the disc); TRSDOS 2.3, LISP48, `(FLOAD "COMP ")`
+  -- the trailing space --, PLUS2 in compiled code (an FEXPR cannot see
+  compiled locals), MAPCAR list first, 13-bit integers that wrap
+  ((fib 20) = -1427), `!*FAST` crashed deriv to DOS; trs80gp's `-iw`
+  cannot match the Model I's 1-26 letter codes (use `-id`). Gabriel's
+  book: ~/claude/refs/gabriel-timrep.pdf. Still open: the CPC's CP/M
+  Lisps (HiSoft Lisp...): CPCWiki is behind Cloudflare -- Mike fetches.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
