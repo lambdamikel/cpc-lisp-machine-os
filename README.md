@@ -20,6 +20,12 @@ editors in four more ROMs, and a bytecode compiler in a fifth.
     LISP> (mapcar #'(lambda (x) (* x x)) '(1 2 3 4 5))
     (1 4 9 16 25)
 
+**Read on:** [the tutorial](docs/tutorial.md) ·
+[the reference manual](docs/reference.md) ·
+[benchmarks and history](docs/benchmarks.md) ·
+[how it is made](docs/design.md). The [Documents](#documents) section
+at the end says what is in each.
+
 ## Machines
 
 * **The Amstrad CPC** -- 464, 664 and 6128 -- is its home: six ROMs, on
@@ -351,33 +357,90 @@ runs on a real Model 4 with a FreHD, an HxC and the Improved Grafyx
 
 ## Documents
 
+### The tutorial: [`docs/tutorial.md`](docs/tutorial.md)
+
+A tour at the keyboard, in thirteen short chapters. It starts with the
+language, with first steps, the line and function editors, and saving
+your work. Then come the things that make it a CPC Lisp: the text
+screen, graphics, the turtle, keys and time, sound, speech through the
+LambdaSpeak card, PlayCity and MIDI. It ends with files as streams, the
+compiler, and a bigger program, the Apfelmaennchen. Everything in it
+can be typed as it stands and was checked on the machine. What works
+differently on a TRS-80 is marked.
+
+### The reference manual: [`docs/reference.md`](docs/reference.md)
+
+Every built-in function, special form and macro, in some thirty
+sections. It covers the REPL, the editors, the syntax and evaluation;
+macros and the compiler; symbols, lists, sequences, numbers, strings,
+vectors, structures and hash tables; input and output and files; and
+the screen, graphics, the turtle, sound, speech, MIDI and keys. Each
+entry says which ROM it lives in. Where CPC Lisp follows Common Lisp
+the entries are short; where it differs they say so, and *Differences
+from Common Lisp* collects all of it. Functions for one machine only
+are marked **CPC only** or **TRS-80 only**.
+
+### Benchmarks and history: [`docs/benchmarks.md`](docs/benchmarks.md)
+
+How fast CPC Lisp is, measured with `fib`, `tak` and Gabriel's `deriv`.
+It is compared with the CPC's own CP/M Lisps of the 1980s (muLISP-80,
+HiSoft Lisp, LISP/80, XLisp), with UOLisp (1982) on a TRS-80, with SBCL
+on a PC, and with the Lisp machines and VAXes of Gabriel's 1985 book.
+In a nutshell:
+
+* **CPC Lisp's interpreter is level with muLISP-80's**, the fastest
+  of its day, and 2-65 times faster than the others.
+* **Its compiler is 1.5-4 times faster than any of the CPC's CP/M
+  Lisps**, none of which had one.
+* **It is a draw with UOLisp's native code** at UOLisp's safe
+  setting.
+* **Compiled, it runs TAK as fast as a VAX 11/750** did with Franz
+  Lisp at its slowest settings, in Gabriel's table.
+
+The page also shows how to define a function in each of those
+dialects, which for most of them is far from obvious, and takes a blunt
+look at what using them was like. Their discs are in
+[`vintage/`](vintage/).
+
+### How it is made: [`docs/design.md`](docs/design.md) and [`docs/internals.md`](docs/internals.md)
+
+**The design** is the overview: a Common Lisp for a 4 MHz Z80 with 64
+KB, in six 16 KB ROMs. It covers:
+
+* the machine layer that makes it portable;
+* how the ROMs find and call each other;
+* the memory and the objects;
+* the garbage collector and the evaluator;
+* the reader, the printer and the editors;
+* files and the RAM disc;
+* the bytecode machine, and the compiler, which compiled itself at
+  build time.
+
+**The internals** go deeper, with real listings from the machine:
+
+* the `%` names;
+* lexical closures, in the interpreter and in the compiler;
+* tail calls;
+* what made it fast;
+* the bootstrap step by step;
+* what was hard, and what cannot be done.
+
+### Programs, ROMs and discs
+
 * [`roms/README.md`](roms/README.md): the ready-made ROM images -- what
   each is, and how to install them
+* [`discs/README.md`](discs/README.md): CPC Lisp from disc (512K, plain
+  6128), the TRS-80 discs (Model I, III, 4 -- the Model 4's for a FreHD
+  too) and the test discs for the real machine
 * [`examples/`](examples/): programs on the discs -- the Apfelmaennchen,
   `(load "apfel")` `(apfel)`, and the classics: ELIZA, symbolic
   differentiation, the animal game, Lisp in Lisp, Life, tic-tac-toe,
   Huffman codes
-* [`discs/README.md`](discs/README.md): CPC Lisp from disc (512K, plain
-  6128), the TRS-80 discs (Model I, III, 4 -- the Model 4's for a FreHD
-  too) and the test discs for the real machine
-* [`docs/tutorial.md`](docs/tutorial.md): a tour at the keyboard -- the
-  language, then the screen, graphics, the turtle, keys, sound, speech,
-  files and the compiler
-* [`docs/reference.md`](docs/reference.md): the reference manual -- the
-  REPL, the editors, the syntax, and every function, form and macro
-* [`docs/design.md`](docs/design.md): how it is made -- the memory, the
-  objects, the evaluator, the ROMs, the bytecode machine and the compiler
-* [`docs/internals.md`](docs/internals.md): the internals in detail --
-  the `%` names, lexical closures, tail calls, the speed work, and how
-  the compiler was bootstrapped
-* [`docs/benchmarks.md`](docs/benchmarks.md): how fast -- against UOLisp
-  (1982) on a TRS-80, the CPC's own CP/M Lisps (muLISP-80, HiSoft Lisp,
-  LISP/80, XLisp), SBCL on a PC, and the Lisp machines and VAXes of
-  Gabriel's 1985 book; and how to define a function in each of those
-  dialects
-* [`vintage/`](vintage/): those Lisps of the day, as disc images
-* [`docs/checklist.md`](docs/checklist.md): everything implemented, by
-  ROM, and what is still open
+* [`vintage/`](vintage/): the Lisps of the day from the benchmarks, as
+  disc images
+
+### Other machines
+
 * [`mach/README.md`](mach/README.md): the machine layer -- the interface
   a port to another Z80 machine provides
 * [`mach/cpc512/README.md`](mach/cpc512/README.md): CPC Lisp from disc,
@@ -388,6 +451,11 @@ runs on a real Model 4 with a FreHD, an HxC and the Improved Grafyx
   III with X-MEM/80 -- building, the discs, the keys, what works
 * [`mach/trs80m4/README.md`](mach/trs80m4/README.md): the TRS-80 Model 4
   -- the discs (floppy, HxC, FreHD), the memory, the keys, what works
+
+### On the workbench
+
+* [`docs/checklist.md`](docs/checklist.md): everything implemented, by
+  ROM, and what is still open
 * [`docs/hardware-test.txt`](docs/hardware-test.txt): what to type on a
   real CPC, and what it should answer
 * `CLAUDE.md`: working notes -- what was learned about the CPC, MAME and
