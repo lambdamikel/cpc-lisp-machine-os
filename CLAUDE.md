@@ -841,9 +841,10 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   the bus ISR; a DMA feeder keeping the drive's status FIFO full -- its
   regression passed): slot 0 FOS-A (ROM 1), 1 FOS-B (3), 3 FOS-C (4), 5
   FOS-D (5), the official, unpatched ROMs; 6 LS AI (2), 4 Parados (7), 2
-  the silenced Lisp core, 7 the card session's VDOS 2.0 for the Vortex
-  ports (vdos_fbf6.py, sum32 00206b73; over LISPLIB3, Mike's OK,
-  2026-11-17). **Tell the card session
+  FutureOS's TOOL-DEU.ROM XROM (Konfig OS, numbered by TFM's
+  -XROM-DE.BAS) as ROM 6, 7 the card session's VDOS 2.0 for the Vortex
+  ports (vdos_fbf6.py, sum32 00206b73; silent until |VORTEX,7). No slot
+  holds Lisp any more (2026-11-17, with Mike's OK). **Tell the card session
   before flashing anything**: `tools/card.py upload`/`lisp` refuse a slot
   that holds no CPC Lisp ROM (header version 0.9x) without `--force`.
   The ROM Lisp and FutureOS do not both fit in eight slots (FutureOS 4,
