@@ -839,9 +839,11 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   "install the ROMs by hand"; the X-MEM's RAM has the C3 bug, so the
   X-MEM is out and Revaldinho's card in): slots 0, 1, 3, 5 = FutureOS
   A, B, C, D as ROMs 1, 3, 4, 5 (`tools/futureos/fosroms.py SRC OUT 1 3
-  4 5` from the installer disc OS_DE_2026-11-15.dsk; images in
-  ~/claude/cpc/futureos/card-1345; 'n' sum32 001cb760 001fdc12
-  001ff68c 001e7726, ls3-selfsum ok), slots 2 and 7 the silenced Lisp
+  4 5 --no-fbee` from the installer disc OS_DE_2026-11-15.dsk; images
+  in ~/claude/cpc/futureos/card-1345-nofbee; 'n' sum32 001cb780
+  001fdc12 001ff694 001e7726, ls3-selfsum ok. Without --no-fbee the
+  desktop came up, spoke, hung or ended in DECtalk output: FutureOS
+  speaks the LambdaSpeak III protocol on &FBEE), slots 2 and 7 the silenced Lisp
   core and LISPLIB3, 4 Parados (7), 6 LS AI (2). The ROM Lisp back:
   `tools/card.py lisp` (from build/: check it equals roms/ first).
 * Slots (since 2026-11-13): 0 LISPLIB2 (ROM 5), 1 LISPVM (ROM 1), 2
