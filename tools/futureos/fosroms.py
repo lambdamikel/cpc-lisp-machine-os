@@ -19,8 +19,8 @@ What the installer (DISC, "ROM-Nummern anpassen", 2026-11-15) changes:
   (FLASHALL.Z80's routine at &3425, "Pruefsummen anpassen").
 
 --no-fbee moves every `ld bc,&FBEE` (four in ROM A, one in ROM C) to the
-unused port &FFEE, where a read gives &FF: FutureOS then finds no
-LambdaSpeak. Its LambdaSpeak III code (the eight bytes |OS sends at
+unused port &FFEE (nothing decodes it; a read gave &78 on Mike's 464, &FF
+in MAME -- not the LS3's &20): FutureOS then finds no LambdaSpeak. Its LambdaSpeak III code (the eight bytes |OS sends at
 &F592, the probe in ROM C at &F9E4 -- a read of &20 is an LS3 -- the
 clock at &DEFD/&DF3C: &F3, &D5, &D4... and speech) speaks the LS3's
 protocol, and a LambdaSpeak 4 takes &Dx otherwise (&D0: a ROM number

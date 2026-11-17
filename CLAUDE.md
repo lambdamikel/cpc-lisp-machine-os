@@ -843,8 +843,19 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   in ~/claude/cpc/futureos/card-1345-nofbee; 'n' sum32 001cb780
   001fdc12 001ff694 001e7726, ls3-selfsum ok. Without --no-fbee the
   desktop came up, spoke, hung or ended in DECtalk output: FutureOS
-  speaks the LambdaSpeak III protocol on &FBEE; the card's restart that
-  evening was another expansion card on the wrong pins), slots 2 and 7 the silenced Lisp
+  speaks the LambdaSpeak III protocol on &FBEE -- "Mission beendet" at
+  END; the card's restart that evening was another expansion card on
+  the wrong pins). **FutureOS cannot run from the card's ROMs**: its
+  cross-ROM stubs (`ld bc,&DFnn : out (c),c : jp (hl)`, the &FF page
+  the same in all four) fetch from the new ROM 1.5-2 us after the OUT,
+  and the card applies a select in its ISR, some 2.5-4 us after it
+  ('d': "ROM select, us to apply" 1-3 us from the ISR's word, plus the
+  PIO push and the interrupt; ~/claude/cpc/futureos/card-d-2026-11-16-
+  after-fos.txt) -- a garbled desktop, then a freeze. MAME switches at
+  once. The fix is firmware (the select in PIO/DMA, the card session's).
+  So FutureOS's ROMs go on Mike's FlashGordon (PulkoMandy's), with the
+  --no-fbee installer disc ~/claude/cpc/futureos/installer-nofbee/; on a
+  464 ROM A at 1-7, none at 2 or 7 (the card's LS AI, Parados), slots 2 and 7 the silenced Lisp
   core and LISPLIB3, 4 Parados (7), 6 LS AI (2). The ROM Lisp back:
   `tools/card.py lisp` (from build/: check it equals roms/ first).
 * Slots (since 2026-11-13): 0 LISPLIB2 (ROM 5), 1 LISPVM (ROM 1), 2
