@@ -874,9 +874,18 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   byte is the jump target (&30 wait, &F0 read a byte, &B0 write one, &D0
   results, anything else an error or mid-instruction), and it reads the
   data 6 us after the status said &F0 (AMSDOS 13 us; MAME, measured);
-  the DIR is one multi-sector read, C1-C4. A card that shows &F0 before
-  its byte is there, or a passing status value, would garble it now
-  and then: asked the card session. It is flashed with
+  the DIR is one multi-sector read, C1-C4. The card session's finding
+  (its 'F' and 'd'): two timing-dependent causes, so it comes and goes.
+  (1) A starved status read: with the card's MSR FIFO empty the
+  responder serves the port's low byte, &7E, and FOS jumps to &FE7E --
+  `out (&FBFF),&84`, then it returns from the read early, the DIR buffer
+  half filled. (2) FOS reads and writes &FBFE (the DK'tronics speech
+  port) between disc commands; the card's interrupt then hands the
+  drive's responders back to speech, and the next status read finds a
+  floating bus (&78). Parked (Mike: FutureOS is no priority). The fixes,
+  if wanted: a DMA channel keeping the MSR FIFO full (card firmware, no
+  PIO change), and FOS's &FBFE accesses moved away as fosroms.py
+  --no-fbee does &FBEE. It is flashed with
   ROMAN 2 (its download, DSK and manual, in ~/claude/cpc/flashgordon:
   `RUN"DISC`, the write switch on; never under FutureOS) or by the
   FutureOS installer (option 9); the ROMAN it ships in slot 15 is past
