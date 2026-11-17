@@ -24,10 +24,15 @@ unused port &FFEE (nothing decodes it; a read gave &78 on Mike's 464, &FF
 in MAME -- not the LS3's &20): FutureOS then finds no LambdaSpeak. Its LambdaSpeak III code (the eight bytes |OS sends at
 &F592, the probe in ROM C at &F9E4 -- a read of &20 is an LS3 -- the
 clock at &DEFD/&DF3C: &F3, &D5, &D4... and speech) speaks the LS3's
-protocol, and a LambdaSpeak 4 takes &Dx otherwise (&D0: a ROM number
-and a reset): on Mike's 464, 2026-11-16, the desktop came up, spoke, and
-hung or ended in DECtalk output. (The card's one restart that evening was
-an expansion card on the wrong pins, not FutureOS.)
+protocol -- which the LambdaSpeak 4 implements, clock included (&D2-&D9
+getters, &DB/&DA setters: the card session, its ls4_proto.c), and FutureOS
+did speak through it. The hang on Mike's 464, 2026-11-16, came from the
+ROMs being in the card's slots (the select timing), not from this: so
+--no-fbee is a precaution, and FutureOS's speech and clock through the
+card are untested -- build without it to try. (The card's one restart
+that evening was an expansion card on the wrong pins, not FutureOS.)
+The card session keeps these patches documented in its repo
+(lambdaspeak4: docs/futureos.md, tools/fosroms.py).
 
 --no-fbfe moves the DK'tronics speech probe (ROM C &FA15, `ld bc,&FBFE`:
 idle, busy after a write, idle again -- the only &FBFE access in the four

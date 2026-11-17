@@ -844,8 +844,10 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   001fdc12 001ff694 001e7726, ls3-selfsum ok. Without --no-fbee the
   desktop came up, spoke, hung or ended in DECtalk output: FutureOS
   speaks the LambdaSpeak III protocol on &FBEE -- "Mission beendet" at
-  END; the card's restart that evening was another expansion card on
-  the wrong pins). **FutureOS cannot run from the card's ROMs**: its
+  END -- which the LambdaSpeak 4 implements, clock included (the card
+  session): the hang was the slots' select timing, below, so --no-fbee
+  is only a precaution; the card's restart that evening was another
+  expansion card on the wrong pins). **FutureOS cannot run from the card's ROMs**: its
   cross-ROM stubs (`ld bc,&DFnn : out (c),c : jp (hl)`, the &FF page
   the same in all four) fetch from the new ROM 1.5-2 us after the OUT,
   and the card applies a select in its ISR, some 2.5-4 us after it
