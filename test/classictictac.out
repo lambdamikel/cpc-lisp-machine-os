@@ -74,6 +74,6 @@ Your square? 9
 A draw.
 NIL
 LISP> (room)
-5588 cells, 257 symbols, 4024 string bytes free
+5582 cells, 257 symbols, 4024 string bytes free
 NIL
 LISP> 
