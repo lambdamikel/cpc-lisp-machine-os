@@ -33,6 +33,8 @@
 --   !esc N         !press 66 N
 --   !type N text   type text with natkeyboard ({ENTER} etc. as it takes them)
 --   !shot N        a screenshot, LISP_SHOT with -1, -2... before the .png
+--   !poke N ADDR FILE  write FILE's bytes into memory at hex ADDR (a
+--                  program to start by hand, as under FutureOS)
 --
 -- A line is typed only when the ROM is waiting for one, which is known by a
 -- second tap on EDHOOK, which the REPL calls before every line.
@@ -157,6 +159,8 @@ local function directives()
     end
     local d2, text = l:match("^!type (%d+) (.*)$")
     if d2 then list[#list + 1] = { tonumber(d2), "type", text } end
+    local d4, addr, file = l:match("^!poke (%d+) (%x+) (.+)$")
+    if d4 then list[#list + 1] = { tonumber(d4), "poke", { tonumber(addr, 16), file } } end
     local d3 = l:match("^!shot (%d+)")
     if d3 then list[#list + 1] = { tonumber(d3), "shot" } end
   end
@@ -232,6 +236,9 @@ NOTIFY = emu.add_machine_frame_notifier(function()
       if a[2] == "press" then for _, k in ipairs(a[3]) do KEYFIELD[k]:set_value(1) end
       elseif a[2] == "release" then for _, k in ipairs(a[3]) do KEYFIELD[k]:set_value(0) end
       elseif a[2] == "type" then NK:post_coded(a[3])
+      elseif a[2] == "poke" then
+        local fh = io.open(a[3][2], "rb"); local data = fh:read("a"); fh:close()
+        for i = 1, #data do MEM:write_u8(a[3][1] + i - 1, data:byte(i)) end
       elseif a[2] == "shot" and SHOT then
         SHOTS = SHOTS + 1
         SCR:snapshot((SHOT:gsub("%.png$", "")) .. "-" .. SHOTS .. ".png")
