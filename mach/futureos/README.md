@@ -66,6 +66,12 @@ for &C9 there, BASIC's mark, before patching &AC01-&AC06 and copying
 code to &BF00. &AC00 is Lisp's line buffer, which holds only typed text,
 so it should never see &C9 there; nothing yet shows that it does.
 
+**FutureOS has preemptive multitasking.** While Lisp runs, FutureOS is
+off: a background task waits until `(reset)`. Lisp does not yet read
+FutureOS's XRAM variables, so it could overwrite a task's blocks (bit 6),
+a loaded file's (7) or a long-term buffer (2). Taking only the blocks
+marked free, and marking Lisp's, is the next step.
+
 FutureOS may use the expansion's blocks while its desktop runs: for
 directories, short-term buffers, a background program. Lisp overwrites
 them, and TUR_D forgets the buffered directories. So M: does not survive

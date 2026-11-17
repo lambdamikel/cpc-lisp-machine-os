@@ -41,12 +41,16 @@ CPC; the README says how to install the ROMs.
       from the card's Vortex drive E (VDOS), Revaldinho's card in
       configuration 8
 - [ ] Under FutureOS, its benefits (Mike, 2026-11-17: after the hardware
-      test): Lisp's expansion blocks marked in FutureOS's XRAM variables
-      (the images and M: survive the desktop: a second start skips
+      test): Lisp's expansion blocks taken only where FutureOS's XRAM
+      variables say free -- FutureOS has preemptive multitasking (Mike),
+      and a task's blocks (bit 6), loaded files (7), long-term buffers
+      (2) and other programs' (4) must not be overwritten -- and marked
+      there (the images and M: survive the desktop: a second start skips
       loading); the images loaded through FutureOS's own loaders (faster,
       from any FutureOS medium, the M4 too); later a native console and
       keyboard (a FutureOS program proper: fast text, IM 2, the
-      alternate registers)
+      alternate registers; and then Lisp as a task beside others, with
+      TFM's description of the task interface)
 
 ## The language (Common Lisp syntax and semantics where they fit)
 
