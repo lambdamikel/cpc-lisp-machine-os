@@ -1,129 +1,113 @@
-# CPC Lisp under FutureOS (work in progress)
+# CPC Lisp under FutureOS
 
-The goal (Mike, 2026-11-17): run CPC Lisp under FutureOS, TFM's operating
-system for the CPC. FutureOS's ROMs sit in the LambdaSpeak 4's slots, or
-any ROM board fast enough for its ROM switching. Lisp starts from the
-desktop, from any FutureOS drive: the card's Vortex drive E, a DDI, the
-M4. It uses Revaldinho's RAM card and needs neither the firmware nor BASIC.
-TFM asked for this himself. FutureOS offers fast text output, fast file
-access, a memory manager, and the interrupts and alternate registers free
-for the program.
+CPC Lisp started from FutureOS's desktop, on a CPC 464 with Revaldinho's
+512K card in configuration 8 (the C3 mode FutureOS needs) and FutureOS's
+ROMs on a ROM board: the LambdaSpeak 4's slots, with its fast ROM
+select. `(reset)` goes back to the desktop. This was Mike's goal for
+2026-11-17; TFM, FutureOS's author, had asked for it.
 
-Nothing of FutureOS is in this repository. TFM's ROMs, discs and documents
-are free for non-commercial use from futureos.de; `fos.asm` names the
-entries this machine uses, with addresses from his public documentation.
+    CPC Lisp 0.98
+    A Lisp machine for the Amstrad CPC, 512K
+    library ROMs 1 2 3 4
+    6121 cells free
 
-## What FutureOS asks of a program
+Nothing of FutureOS is in this repository. TFM's ROMs, discs and
+documents are free for non-commercial use from futureos.de.
 
-From TFM's documentation: API-ENG, API-A to D, the manual, and "How to
-create an Application for FutureOS".
+## How it works: a firmware island
 
-* **Programs.** A program is a binary with an AMSDOS header: `.64K` runs
-  in main RAM, `.X16` in expansion RAM. The desktop's RUN icon (hot key
-  X) loads the first tagged file and jumps to its exec address. With
-  nothing tagged, RUN 3 jumps into RAM: you give an address and a
-  configuration (&C0 is main RAM). The MAME tests start programs that way.
-* **Main RAM.**
+FutureOS keeps its variables, tables and stack at &A000-&BFFF, where the
+CPC's firmware keeps its own. The firmware is always in the lower ROM,
+so Lisp takes it back for a while:
 
-  | range | use |
-  |---|---|
-  | &0000-&9FFF | the program's |
-  | &0000-&3FFF | also the desktop's buffer when it sorts a directory |
-  | &8000-&8FFF | also a sector buffer when more than 16 KB loads at once |
-  | &9000-&9FFF | never touched by the OS |
-  | &A000-&AFFF | the file-tagging bytes |
-  | &B000-&B7FF | a text buffer |
-  | &B800-&BFFF | FutureOS's: its variables, the IM 2 table at &BD00 (I = &BD), the stack |
+1. FutureOS loads `LISP.64K` at &8000 and starts it at &9000. The stub
+   (`loader.asm`) puts FutureOS's RAM aside in bank 7's block 3:
+   &A000-&BFFF, &0000-&00FF, the way back (`fosback.asm`) and the
+   numbers of ROMs B and D.
+2. It starts the firmware as the 464 starts a program. That is MC START
+   PROGRAM's body in the lower ROM, at &060E: the firmware's RAM is
+   cleared, every pack initialised, IM 1, EI, and then the stub's routine
+   is called. There is no ROM walk and no BASIC.
+3. The 512K version's loader (`loader512.asm`, a link to
+   `mach/cpc512/loader.asm`) starts only ROM 7, the disc's (AMSDOS,
+   Parados or VDOS), through KL INIT BACK. A ROM walk would also start
+   FutureOS's four ROMs, whose workspace takes the resident part's room.
+   The loader then reads `LISP0.IMG` to `LISP5.IMG` through the disc
+   ROM and starts Lisp. From here on Lisp is the 512K version: the
+   firmware for text, graphics and sound, and the disc ROM for files.
+4. `(reset)` maps bank 7's block 3, copies the way back to &8000 and runs
+   it. It restores FutureOS's RAM, its colours (ROM B's table at &FE0B)
+   and the screen's start. Then come ROM D, IM 2 with I = &BD, and
+   TUR_D, which draws the desktop afresh.
 
-  Disc work overwrites &A000-&B7FF.
-* **Interrupts** are off when a program starts, in IM 2; &0038 holds a
-  RET and &0066 a RETN.
-* **Expansion RAM** comes in 16 KB blocks shown at &4000 (&7FC4...). A
-  program reserves blocks through the XRAM_C4..XRAM_FF variables; KZS2E
-  finds a free one.
-* **Calling FutureOS.** The OS is four ROMs, A to D. Programs reach them
-  through the API page at &FF00, identical in all four: ROM_A..ROM_D jump
-  to HL in that ROM; ROM_x2y calls IX in ROM y and comes back to ROM x.
-  KLICK or TUR_D in ROM D return to the desktop.
-* **Text** through FutureOS's routines (TERM_2 and friends, mode 2) needs
-  a character set at &3800: the lower ROM's, switched in, or a copy.
+Everything else comes from `mach/cpc512` through links, with
+`variant.asm` setting `FUTUREOS`. The 512K version's builds are byte for
+byte unchanged by the `ifdef FUTUREOS` parts.
 
-## The plan
+**Bank 3 is never used.** In configurations 8 and 12, Revaldinho's card
+makes bank 3 a shadow of the base RAM. So under FutureOS:
+* the images go to block 3 of banks 0, 1, 2, 4, 5 and 6 (`BANK_CFGS`
+  in `memmap.asm`, and the loader's `map_bank`);
+* the RAM disc's banks 3-6 are banks 4-7 (`RS_XFER` in
+  `resident.asm`);
+* the RAM disc's top 16 KB, bank 7's block 3, keeps FutureOS's RAM, so
+  M: is 336 KB.
 
-An overlay on `mach/cpc512`, as `mach/cpc6128` is. The same six images go
-into block 3 of six expansion banks and run at &C000 in configuration
-C1 + 8n. A resident part in main RAM does the work. Every firmware
-routine is replaced:
+In MAME no gate array configuration of bank 3 is ever written.
 
-| interface | under FutureOS |
-|---|---|
-| `CON_`, `VID_` (text) | our renderer (`fr.asm` draws into the screen already), with the font read from the lower ROM at &3800 |
-| `KEY_` | our own keyboard scan through the PPI and PSG; the ESC test polls it |
-| `FILE_` | FutureOS's own functions. To load: read the drive's directory (LESEDIR), find the name, tag the file, load it into expansion RAM (LADEN), and stream it from there. To save: write into expansion RAM, then FutureOS puts it on disc (BBTT, EGEN, SICHRE, SIDIR). The details are still to work out; TFM offered help. |
-| `FP_` | the lower ROM's maths package, called at its own addresses with the lower ROM on. The 464 ROM's jumpblock table at &08AC gives them, so the ROM tells us where they are. Move, add, subtract, multiply, divide, compare and the conversions use no RAM. SQR, LOG, EXP, the powers and the trigonometry use &B8E4-&B8F7, which belongs to FutureOS, so those 20 bytes are saved and restored around them. A 6128's ROM is still to check. |
-| `GFX_` | our own plot, line and fill into the screen |
-| `SND_` | our own PSG writes; there are no firmware sound queues |
-| `SYS_` | `(reset)` and `(quit)` go back to the desktop (TUR_D); time comes from a frame counter, or the clock |
+FutureOS may use the expansion's blocks while its desktop runs: for
+directories, short-term buffers, a background program. Lisp overwrites
+them, and TUR_D forgets the buffered directories. So M: does not survive
+a trip to the desktop. For that, Lisp would have to mark its blocks in
+FutureOS's XRAM_C4..XRAM_FF variables.
 
-The 512K version's resident part and fixed buffers sit at &A160-&B0FF,
-which is FutureOS's. They move below &A000, to &9000-&9FFF.
+## On Mike's 464
 
-The loader, `LISP.64K`, reserves six blocks: block 3 of six banks, the
-blocks that configuration C1 can show at &C000. It loads `LISP0.IMG` to
-`LISP5.IMG` into them, sets up the resident part and starts Lisp.
+* FutureOS's official ROMs in the card's slots: the card session's
+  firmware with the fast ROM select (`QS`).
+* Revaldinho's card in configuration 8 (DIP 1234 = 1000).
+* `build/futureos/cpclispfos-vortex.dsk` in the card's drive. It has
+  the same files as `cpclispfos.dsk`, in the Vortex format
+  (`tools/futureos/vortexdisk.py`).
 
-## Milestones
+Then:
 
-1. **Done (2026-11-17).** A FutureOS program assembled here runs in MAME.
-   `hello.asm` prints a line and goes back to the desktop.
-2. The core and part 0 run under FutureOS: text out, keys, the REPL. No
-   files yet, no floats.
-3. Files: `load`, `save` and `dir` through FutureOS. Then the loader
-   reads the images itself.
-4. Floats, graphics, sound and time. Then the test suite runs under
-   FutureOS in MAME.
-5. On Mike's 464: FutureOS from the card's slots, Lisp from the card's
-   Vortex drive E.
+    |VORTEX,7       the drive at the Vortex ports, VDOS as ROM 7
+    |OS             the desktop
+    SPACE, E, D     drive E's directory
+    LISP.64K        tag it: the pointer on it, COPY
+    X               RUN: Lisp starts
+
+`(load "hwtest")` and `(hwtest)` check what the 512K version checks, with
+check 5's far arrays sized for the smaller RAM disc. `(reset)` goes back
+to the desktop.
+
+A disc with AMSDOS or Parados works the same way (`cpclispfos.dsk`):
+Lisp uses whatever disc ROM is ROM 7.
 
 ## Testing in MAME
 
-FutureOS's ROMs are renumbered to 1-4 for MAME's ROM box with
-`tools/futureos/fosroms.py SRC OUT 1 2 3 4`. Its installer disc has
-the ROMs; they stay in ~/claude/cpc/futureos. A test then types `|OS` at
-BASIC's EDIT, puts the program in RAM, and starts it from the RUN menu:
+    MACH=futureos tools/build.sh
+    tools/futureos/run.sh [-f frames] [-s shot.png] file.lsp
 
-    |OS
-    !shot 700
-    !poke 10 9000 hello.bin
-    !press 63 30            X: RUN
-    !press 57 60            3: RAM application
-    !press 33 60            9 0 0 0, RETURN: the address
-    !press 32 20
-    !press 32 20
-    !press 32 20
-    !press 18 20
-    !press 62 60            C 0, RETURN: the configuration
-    !press 32 20
-    !press 18 20
-    !shot 100
+The 464 has 576K and a DDI-1 with `cpclispfos.dsk`. Behind it, MAME's
+ROM box holds FutureOS's ROMs renumbered 1-4, made with
+`tools/futureos/fosroms.py SRC ~/claude/cpc/futureos/mame-1234 1 2 3 4`
+from the installer disc. The run types `|OS`, puts `LISP.64K` at &8000
+(`!poke`) and starts it from the RUN menu: X, 3, &9000, &C0. Then it
+types the file's lines when Lisp asks for them. MAME has no Vortex
+controller, so the Vortex disc is checked only by reading it back.
 
-Run it with:
+`hello.asm` is a first FutureOS program built here. It prints with
+TERM_2 and goes back with KLICK, and `fos.asm` names the FutureOS entries
+it uses.
 
-    LISP_IN=test.txt LISP_OUT=out.txt LISP_SHOT=s.png LISP_FRAMES=2200 \
-    LISP_EDIT=0xBD3A xvfb-run -a mame -video none -nothrottle cpc464 \
-      -ramsize 576K -exp rom -rom1 FOS-A.ROM -rom2 FOS-B.ROM \
-      -rom3 FOS-C.ROM -rom4 FOS-D.ROM -autoboot_script emu/repl.lua
+## Further
 
-For a disc, put MAME's DDI-1 in front of the ROM box: `-exp ddi1 -flop
-D.dsk -exp:ddi1:exp rom ...`. On the desktop, SPACE A selects drive A
-and D reads its directory.
-
-## Open questions
-
-* Will FutureOS leave block 3 of six banks free? It needs about 32 KB of
-  expansion RAM for its directory buffers, and Revaldinho's configuration
-  8 lends bank 3 to the base RAM.
-* How should FutureOS's tag-based file functions be driven by name, for
-  loading and for saving?
-* The screen mode and inks under FutureOS, and what the desktop expects
-  back.
+* A 664's or 6128's firmware: MC START PROGRAM's body sits elsewhere
+  in their lower ROMs, and the stub only accepts the 464's for now.
+* The maths package under FutureOS proper: the arithmetic uses no RAM,
+  but SQR, LOG, EXP, the powers and the trigonometry use &B8E4-&B8F7.
+* A native Lisp, without the island, through FutureOS's text, keyboard
+  and file functions. That is a firmware's worth of routines to write;
+  the island needed none of them.

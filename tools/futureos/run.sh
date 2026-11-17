@@ -44,6 +44,6 @@ env -u WAYLAND_DISPLAY GDK_BACKEND=x11 timeout 600 xvfb-run -a \
     /usr/games/mame -rompath $HOME/claude/cpc/mame-roms -video none -sound none -nothrottle \
     -skip_gameinfo cpc464 -ramsize 576K -exp ddi1 -flop "$tmp/disc.dsk" \
     -exp:ddi1:exp rom -rom1 "$R/FOS-A.ROM" -rom2 "$R/FOS-B.ROM" -rom3 "$R/FOS-C.ROM" -rom4 "$R/FOS-D.ROM" \
-    -autoboot_script emu/repl.lua 2>&1 \
+    -autoboot_script "${REPL_LUA:-emu/repl.lua}" 2>&1 \
   | grep -v -E "^Warning: -video none|^Average speed|WRONG CHECKSUMS|EXPECTED: CRC|FOUND: CRC|might not run correctly" >&2 || true
 cat "$tmp/out"

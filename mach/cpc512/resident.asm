@@ -163,8 +163,26 @@ r_vidchar:
 ;; buffer, low in block space): so each piece goes through rx_buf, read in
 ;; the one configuration and written in the other. The Lisp's bank after.
 r_xfer:
+    ifdef FUTUREOS
+    push af                     ; under FutureOS (mach/futureos) the RAM
+    and #38                     ;   disc's banks 3-6 are banks 4-7: bank 3
+    cp #18                      ;   is the base RAM's shadow on Revaldinho's
+    jr c,.lo                    ;   card in configurations 8 and 12, which
+    pop af                      ;   FutureOS needs on a 464
+    push af
+    add a,8
+    jr .cfg
+.lo:
+    pop af
+    push af
+.cfg:
     ld (rx_src),a
     ld (rx_dst),a
+    pop af                      ; (the caller's carry)
+    else
+    ld (rx_src),a
+    ld (rx_dst),a
+    endif
     ld a,(rs_cfg)
     jr c,.tomain
     ld (rx_src),a               ; from the main RAM to the block

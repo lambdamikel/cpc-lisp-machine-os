@@ -35,3 +35,6 @@ cp mach/futureos/hwtest.lsp "$OUT/HWTEST.LSP"
 ( cd "$OUT" && "$IDSK" cpclispfos.dsk -i HWTEST.LSP -t 0 >/dev/null 2>&1 )
 cp examples/apfel.lsp "$OUT/APFEL.LSP"
 ( cd "$OUT" && "$IDSK" cpclispfos.dsk -i APFEL.LSP -t 0 >/dev/null 2>&1 )
+# the same files on a Vortex disc, for VDOS and FutureOS's drive E (the
+# card's drive after |VORTEX,7): cpclispfos-vortex.dsk
+python3 tools/futureos/vortexdisk.py "$dsk" "$OUT/cpclispfos-vortex.dsk"

@@ -15,6 +15,11 @@ KL_U_ROM_DISABLE equ #B903
 KL_L_ROM_DISABLE equ #B909
 CAS_IN_DIRECT    equ #BC83
 NIMAGES          equ 6
+    ifdef FUTUREOS
+LBANKS           equ 7          ; banks 0-6: 0-2 and 4-7 (map_bank)
+    else
+LBANKS           equ 8
+    endif
 BUF              equ #8800      ; AMSDOS's 2 KB, while a file is read
 
     org #8000
@@ -49,7 +54,7 @@ start:
     ld (hl),a
     inc e
     ld a,e
-    cp 8
+    cp LBANKS
     jr c,.save
     ld e,0
 .mark:
@@ -59,7 +64,7 @@ start:
     ld (#4000),a
     inc e
     ld a,e
-    cp 8
+    cp LBANKS
     jr c,.mark
     ld e,0
 .check:
@@ -71,7 +76,7 @@ start:
     jr nz,.counted
     inc e
     ld a,e
-    cp 8
+    cp LBANKS
     jr c,.check
 .counted:
     ld a,e
@@ -86,7 +91,7 @@ start:
     ld (#4000),a
     inc e
     ld a,e
-    cp 8
+    cp LBANKS
     jr c,.restore
     call map_main
     ld a,(nbanks)
@@ -168,8 +173,15 @@ start:
     ret
 
 ;; map_bank: E = a bank -> its block 3 at &4000 (configuration C7). BC lost.
+;; Under FutureOS (mach/futureos) banks 3-6 are banks 4-7: bank 3 is the
+;; base RAM's shadow on Revaldinho's card in configurations 8 and 12.
 map_bank:
     ld a,e
+    ifdef FUTUREOS
+    cp 3
+    ccf
+    adc a,0
+    endif
     add a,a
     add a,a
     add a,a

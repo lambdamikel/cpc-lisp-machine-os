@@ -655,6 +655,32 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   (no cursor) -- FutureOS needs a RAM expansion that does configuration
   C3 as the 6128 does (on a 464: Revaldinho's card). Only one RAM
   expansion at a time. Our 512K images use C1 and C4-C7, not C3.
+* **CPC Lisp under FutureOS** (`mach/futureos`, 2026-11-17; Mike's goal:
+  FutureOS in the card's slots, Lisp started from its desktop, from a
+  Vortex disc): a **firmware island**. LISP.64K (loaded at &8000, started
+  at &9000) puts FutureOS's RAM (&A000-&BFFF, &0000-&00FF) aside in bank
+  7's block 3, starts the firmware through the 464 lower ROM's MC START
+  PROGRAM body (&060E: no ROM walk, no BASIC), and runs the 512K
+  version's loader, which starts only ROM 7 (KL INIT BACK: FutureOS's
+  four ROMs as background ROMs left the resident part no room, "Too many
+  ROMs") and loads the images through the disc ROM -- AMSDOS, Parados,
+  VDOS. `(reset)` restores FutureOS's RAM, colours (ROM B &FE0B) and
+  screen start and jumps to TUR_D. The rest links to mach/cpc512, with
+  `ifdef FUTUREOS` there (the 512K builds byte for byte the same,
+  BUILD_ID=77): bank 3 is skipped (Revaldinho's configuration 8 makes it
+  the base RAM's shadow) in BANK_CFGS, the loader's map_bank and
+  RS_XFER; the RAM disc gives up its top unit (bank 7's block 3): 336
+  KB, so its own hwtest.lsp sizes check 5 at 50000. MAME
+  (`tools/futureos/run.sh`, FutureOS's ROMs renumbered 1-4 in
+  ~/claude/cpc/futureos/mame-1234): hwtest 7 yes, no bank-3
+  configuration written, the desktop reads drive A after (reset). The
+  disc for the card: cpclispfos-vortex.dsk (`tools/futureos/
+  vortexdisk.py`: EXM 3 extents as TFM's own Vortex discs have them --
+  lambdaspeak4's mkvortex.py takes 16 KB files only). Lessons: a stub
+  that maps blocks at &4000 must not run from &4000-&7FFF; RS_XFER's
+  carry is its direction (keep it across a bank translation); the
+  resident part had 60 bytes left (the way back lives in the save
+  block). mach/futureos/README.md has the steps on the 464.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the

@@ -48,5 +48,9 @@ VARS_END          equ LIBSCR
 ;; on the 512K CPC, block 3 of the expansion's bank k at &C000 (C1 + 8k).
 NBANKS            equ 8             ; banks 1 to NBANKS-1 may hold the library
 macro BANK_CFGS
+    ifdef FUTUREOS              ; (mach/futureos: bank 3 is the base RAM's
+    db #C1,#C9,#D1,#E1,#E9,#F1,#F9,#F9  ; shadow under FutureOS on a 464)
+    else
     db #C1,#C9,#D1,#D9,#E1,#E9,#F1,#F9
+    endif
 mend
