@@ -76,6 +76,40 @@ written in Z80 assembly.
   compiled CPC Lisp on a 464. Even its interpreter beats the 464's
   compiled code by a factor of 1,000-3,000.
 
+## The CPC's own Lisps of the day
+
+The CPC's Lisps of the 1980s ran under CP/M. Mike's thread on the
+CPCWiki forum, "Lisp on the CPC" (2018), dug up three that work:
+LinguaSoft/HiSoft Lisp (which needs a 6128), muLISP-80 and Lisp-80. The
+disc sold as HiSoft's "LISP Interpreter" (1987, £39.95; CPC-Power's copy)
+boots CP/M Plus on a 6128. Its LISP.COM calls itself
+
+    muLISP-80 2.15 (03/01/82)
+    Standard CP/M Version
+    Copyright (C) 1981 The SOFT WAREHOUSE
+    Licensed by MICROSOFT, Inc.
+
+That is the Soft Warehouse's muLISP, the Lisp of the muMATH computer
+algebra system, which Microsoft sold. As the thread found, this copy is
+not HiSoft Lisp proper, and it is cut down: its library does not load,
+so there is no `DEFUN`, `MAPCAR`, `PROG` or `ADD1`. Its benchmarks are
+written with `PUTD`, `DIFFERENCE` and recursion
+(`tools/bench/mulisp.txt`), and `deriv` maps with two small recursive
+functions where the others call `mapcar`. It has no compiler.
+
+| CPC 6128 (Z80, 4 MHz), MAME | `(fib 20)` | `(tak 18 12 6)` | `deriv` × 100 |
+|---|---|---|---|
+| muLISP-80 2.15 (1982), interpreted | **56.8 s** | **186 s** | **7.4 s** |
+| CPC Lisp, interpreted | 58.6 s | 266 s | 7.9 s |
+| CPC Lisp, compiled | 16.9 s | 46 s | 4.8 s |
+
+* **The two interpreters are level.** muLISP-80 is 3% faster on
+  `fib`, 1.4 times on `tak` and 6% on `deriv`. It was the fast
+  microcomputer Lisp of its day, built for a computer algebra system.
+* **With its compiler CPC Lisp is 3.4, 4 and 1.5 times faster.**
+* HiSoft Lisp proper and Lisp-80 are still to time: their discs are
+  attached to the thread, behind CPCWiki's browser check.
+
 ## In the company of 1985
 
 Gabriel's book timed TAK and DERIV on the Lisps and machines of the
@@ -100,6 +134,7 @@ only).
 | **TRS-80 Model I, UOLisp, compiled** | **107 s** | **665 s** |
 | **TRS-80 Model I, CPC Lisp, compiled** | **87 s** | **460 s** |
 | **CPC 464, CPC Lisp, interpreted** | **265 s** | **395 s** |
+| **CPC 6128, muLISP-80 (1982), interpreted** | **186 s** | **371 s** |
 | PC 2019, SBCL, compiled | 0.00026 s | 0.0009 s |
 
 * **A 4 MHz home computer of 1984 with CPC Lisp's compiler runs TAK as
@@ -129,6 +164,14 @@ only).
   * `MAPCAR` takes the list first, and `DVRUN` loops with `PROG`.
   * It loads the compiler as `(FLOAD "COMP ")`: the name wants its
     trailing space.
+* **CP/M on the CPC:** MAME's 6128 boots CP/M Plus from the disc (`|CPM`),
+  and `tools/bench/cpm.lua` types into the program and logs every
+  character it prints, with its frame. It finds the BIOS's console output
+  (CONOUT) from the jump table that &0001 points into. muLISP calls the
+  console input only once a key is waiting, so the next line goes in when
+  its prompt, `$ `, comes back. `tools/bench/cpmtime.py` gives the frames
+  from a form's RETURN to the first character of its result (50 a
+  second).
 * **SBCL:** `tools/bench/sbcl.lisp`, each run repeated 3-5,000 times. The
   same source, no declarations, Mike's SBCL 2.2.9.
 * **Gabriel's numbers:** his Raw Time tables for TAK (pp. 86-87) and

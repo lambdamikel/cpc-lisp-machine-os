@@ -727,8 +727,16 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   compiled locals), MAPCAR list first, 13-bit integers that wrap
   ((fib 20) = -1427), `!*FAST` crashed deriv to DOS; trs80gp's `-iw`
   cannot match the Model I's 1-26 letter codes (use `-id`). Gabriel's
-  book: ~/claude/refs/gabriel-timrep.pdf. Still open: the CPC's CP/M
-  Lisps (HiSoft Lisp...): CPCWiki is behind Cloudflare -- Mike fetches.
+  book: ~/claude/refs/gabriel-timrep.pdf. CP/M on the CPC:
+  `tools/bench/cpm.lua` (MAME 6128, |CPM; CONOUT from the BIOS jump
+  table at (1)-3+12, logged with frames; muLISP calls CONIN only once a
+  key waits: CPM_PROMPT='$ '; a line ending in \ runs on), `cpmtime.py`.
+  muLISP-80 2.15 (CPC-Power's "HiSoft LISP Interpreter" disc,
+  ~/claude/cpc/lisps/hisoft-cpcpower.dsk; Mike's thread: an old muLISP):
+  no ' reader macro, no DEFUN/MAPCAR/PROG/ADD1 (an undefined call
+  returns itself) -- PUTD; interpreters level with ours. Still open:
+  HiSoft Lisp proper and Lisp-80 (the thread's attachments: CPCWiki is
+  behind Cloudflare -- Mike fetches).
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
