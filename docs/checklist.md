@@ -371,7 +371,8 @@ compiled code (`docs/design.md` describes both)
         TRS-80 Model I and III with X-MEM/80, the ZX Spectrum
         128/+2/+3, the TRS-80 Model 4, MSX1, the TA alphatronic PC and
         the Sharp MZ-700 (these two need banked memory added), and the
-        NABU PC (Mike, 2026-11-17)
+        NABU PC (Mike, 2026-11-17: much like the MSX1 -- the same
+        TMS9918A video and AY-3-8910 sound)
     - [x] The machine layer: everything CPC-specific in `mach/cpc/`
           behind an interface (`mach/README.md`); the CPC's ROMs byte for
           byte what they were (2026-11-11)
