@@ -680,7 +680,13 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   that maps blocks at &4000 must not run from &4000-&7FFF; RS_XFER's
   carry is its direction (keep it across a bank translation); the
   resident part had 60 bytes left (the way back lives in the save
-  block). mach/futureos/README.md has the steps on the 464.
+  block). **VDOS 2.0 assumes BASIC's RAM** (the card session): its
+  catalogue fills 4 KB (the ROM Lisp's (dir) crashed under it,
+  2026-11-13) -- under FutureOS CAS CATALOG's trampoline is r_catalog
+  (mkfw.py's OWN), with 4 KB in the save block, and (dir) lends nothing;
+  and it zeroes &AC01, a ticker waiting for BASIC's &C9 there before it
+  patches &AC01-&AC06 and &BF00 (Lisp's line buffer: typed text only).
+  mach/futureos/README.md has the steps on the 464.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the

@@ -23,7 +23,8 @@ so Lisp takes it back for a while:
 1. FutureOS loads `LISP.64K` at &8000 and starts it at &9000. The stub
    (`loader.asm`) puts FutureOS's RAM aside in bank 7's block 3:
    &A000-&BFFF, &0000-&00FF, the way back (`fosback.asm`) and the
-   numbers of ROMs B and D.
+   numbers of ROMs B and D. The block's last 4 KB is the catalogue's
+   (below).
 2. It starts the firmware as the 464 starts a program. That is MC START
    PROGRAM's body in the lower ROM, at &060E: the firmware's RAM is
    cleared, every pack initialised, IM 1, EI, and then the stub's routine
@@ -54,6 +55,16 @@ makes bank 3 a shadow of the base RAM. So under FutureOS:
   M: is 336 KB.
 
 In MAME no gate array configuration of bank 3 is ever written.
+
+**VDOS 2.0 assumes BASIC's RAM** (the card session's finding). Its
+catalogue fills 4 KB, where Lisp lends 2 KB; that crashed `(dir)` when
+the ROM Lisp was ROM 0, on 2026-11-13. Under FutureOS, CAS CATALOG's
+trampoline is the resident part's `r_catalog` (`tools/cpc512/mkfw.py`
+makes it so). It hands VDOS 4 KB in bank 7's block 3, so `(dir)` lends
+no string space. VDOS also zeroes &AC01, and its 50 Hz ticker waits
+for &C9 there, BASIC's mark, before patching &AC01-&AC06 and copying
+code to &BF00. &AC00 is Lisp's line buffer, which holds only typed text,
+so it should never see &C9 there; nothing yet shows that it does.
 
 FutureOS may use the expansion's blocks while its desktop runs: for
 directories, short-term buffers, a background program. Lisp overwrites

@@ -147,6 +147,19 @@ r_reset:
     rst 0
     endif
 
+    ifdef FUTUREOS
+;; r_catalog: CAS CATALOG (its trampoline, under FutureOS -- fwtab.inc)
+;; with 4 KB in bank 7's block 3 at &4000 (FOS_SAVE_CAT, mach/futureos):
+;; VDOS 2.0's catalogue fills 4 KB, the Lisp's file buffer is 2 KB (DE,
+;; not used). The screen at &C000 and the Lisp's stack, above &8000, stay.
+r_catalog:
+    ld bc,#7F00+FOS_SAVE_CFG
+    out (c),c
+    ld de,FOS_SAVE_CAT
+    call CAS_CATALOG
+    jp to_lisp
+    endif
+
 r_vidinit:
     call to_main
     call VID_INIT

@@ -479,9 +479,13 @@ lf_dir:
     ld hl,fl_m_name
     jp lib_error
 .disc:
+    ifdef FUTUREOS              ; (mach/futureos: CAS CATALOG has 4 KB of
+    call FILE_CAT               ;   its own there, as VDOS wants -- no
+    else                        ;   string space lent)
     call fl_lend
     call FILE_CAT
     call fl_release
+    endif
     jp lnil
 
 ;; fl_in_open, fl_out_open: as CAS IN OPEN and CAS OUT OPEN, or the RAM

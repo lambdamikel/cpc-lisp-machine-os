@@ -128,7 +128,11 @@
     assert $ == FWJB+5*63
     call fwc : dw #BC95           ; CAS_OUT_CHAR
     assert $ == FWJB+5*64
+    ifdef FUTUREOS
+    jp r_catalog : db 0,0            ; CAS_CATALOG (mach/futureos)
+    else
     call fwc : dw #BC9B           ; CAS_CATALOG
+    endif
     assert $ == FWJB+5*65
     call fwc : dw #BCAA           ; SOUND_QUEUE
     assert $ == FWJB+5*66

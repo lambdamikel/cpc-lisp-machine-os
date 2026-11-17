@@ -17,6 +17,9 @@ here = os.path.dirname(os.path.abspath(__file__))
 root = os.path.join(here, '..', '..')
 src = open(os.path.join(root, 'mach', 'cpc', 'firmware.asm')).read().splitlines()
 DIRECT = re.compile(r'^(M_|FIRM_464_PROBE$|KL_ROM_WALK$|KL_L_ROM_ENABLE$|KL_ROM_RESTORE$|KL_ROM_SELECT$|KL_CURR_SELECTION$)')
+# under FutureOS (mach/futureos) these trampolines are the resident part's
+# own routines: CAS CATALOG gets a 4 KB buffer, as VDOS 2.0 wants
+OWN = {'CAS_CATALOG': 'r_catalog'}
 out, real, tab, k = [], [], [], 0
 head = (";; CPC Lisp -- the 512K CPC's firmware names (made by tools/cpc512/mkfw.py\n"
         ";; from mach/cpc/firmware.asm: do not edit). A routine's name is its\n"
@@ -32,7 +35,12 @@ for line in src:
     if DIRECT.match(name):
         out.append(line); continue
     out.append('%s%sequ FWJB+5*%d%s' % (name, sp, k, rest))
-    tab.append('    assert $ == FWJB+5*%d\n    call fwc : dw %s           ; %s' % (k, addr, name))
+    if name in OWN:     # under FutureOS a routine of the resident part's
+        tab.append('    assert $ == FWJB+5*%d\n    ifdef FUTUREOS\n    jp %s : db 0,0'
+                   '            ; %s (mach/futureos)\n    else\n    call fwc : dw %s           ; %s\n'
+                   '    endif' % (k, OWN[name], name, addr, name))
+    else:
+        tab.append('    assert $ == FWJB+5*%d\n    call fwc : dw %s           ; %s' % (k, addr, name))
     k += 1
 open(os.path.join(root, 'mach', 'cpc512', 'firmware.asm'), 'w').write(head + '\n'.join(out) + '\n')
 open(os.path.join(root, 'mach', 'cpc512', 'fwreal.asm'), 'w').write(

@@ -9,6 +9,7 @@ FUTUREOS        equ 1           ; (quit), (reset), (basic): back to FutureOS
 FOS_SAVE_CFG    equ #FF         ; FutureOS's RAM kept in bank 7's block 3
                                 ;   (at &4000: C7 + 8 * 7), by LISP.64K:
                                 ;   &A000-&BFFF at &4000, &0000-&00FF at
-FOS_SAVE_BACK   equ #7000       ;   &6000, the way back (fosback.asm) here,
-FOS_SAVE_ROMD   equ #7FFE       ;   ROM D's number, then &DF,
-FOS_SAVE_ROMB   equ #7FFC       ;   ROM B's
+FOS_SAVE_BACK   equ #6100       ;   &6000, the way back (fosback.asm) here,
+FOS_SAVE_ROMD   equ #6180       ;   ROM D's number, then &DF,
+FOS_SAVE_ROMB   equ #6182       ;   ROM B's;
+FOS_SAVE_CAT    equ #7000       ;   and 4 KB for CAS CATALOG (r_catalog)
