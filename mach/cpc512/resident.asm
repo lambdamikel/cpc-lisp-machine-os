@@ -19,6 +19,7 @@
 ;;   RESIDENT+6   RS_RAMRD: HL -> A = (HL) in the main RAM. All else kept.
 ;;   RESIDENT+9   RS_RAMWR: HL, A -> (HL) = A in the main RAM. All kept.
 ;;   RESIDENT+12  RS_RESET: the main RAM in, RST 0: the CPC starts again
+;;                (under FutureOS, mach/futureos: back to its desktop)
 ;;   RESIDENT+15  VID_INIT, RESIDENT+18 VID_CHAR (frcode.asm)
 ;;   RESIDENT+21  RS_XFER: A = #C4-#C7 + 8 * bank, carry if HL is its
 ;;                side: BC bytes from HL to DE, between that block at &4000
@@ -133,7 +134,18 @@ r_ramwr:
     jp to_lisp
 r_reset:
     call to_main
+    ifdef FUTUREOS
+    di                          ; back to FutureOS's desktop: the way back
+    ld bc,#7F00+FOS_SAVE_CFG    ;   (fosback.asm), kept beside FutureOS's
+    out (c),c                   ;   RAM, overwrites this part: it runs from
+    ld hl,FOS_SAVE_BACK         ;   &8000 (the cells: no longer needed)
+    ld de,#8000
+    ld bc,128
+    ldir
+    jp #8000
+    else
     rst 0
+    endif
 
 r_vidinit:
     call to_main

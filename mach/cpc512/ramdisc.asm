@@ -224,6 +224,9 @@ rd_ready:
     add a,a
     add a,a
     add a,18
+    ifdef FUTUREOS
+    dec a                       ; the top unit, bank 7's block 3, keeps
+    endif                       ;   FutureOS's RAM (mach/futureos)
     ld b,a
     srl a
     srl a

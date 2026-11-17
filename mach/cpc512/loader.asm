@@ -21,7 +21,12 @@ BUF              equ #8800      ; AMSDOS's 2 KB, while a file is read
 start:
     ld de,#0040                 ; RUN of a binary file restarts the firmware:
     ld hl,#ABFF                 ;   the background ROMs (the disc's) are
-    call KL_ROM_WALK            ;   ours to start, as a foreground ROM would
+    ifdef FUTUREOS              ;   ours to start, as a foreground ROM would
+    ld c,7                      ; -- under FutureOS (mach/futureos) only
+    call #BCCE                  ;   the disc's, ROM 7 (KL INIT BACK): its
+    else                        ;   own four ROMs would take the resident
+    call KL_ROM_WALK            ;   part's room
+    endif
     ld de,RESIDENT_END-1        ; their workspace from the top down: it must
     or a                        ;   leave the resident part room
     sbc hl,de
