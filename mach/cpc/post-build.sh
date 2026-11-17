@@ -20,3 +20,12 @@ cp examples/apfel.lsp build/APFEL.LSP
 rm -f build/cpclisp-demo.dsk
 "$IDSK" build/cpclisp-demo.dsk -n >/dev/null
 ( cd build && "$IDSK" cpclisp-demo.dsk -i APFEL.LSP -t 0 >/dev/null 2>&1 )
+# the classics disc: the classic programs of examples/ (ELIZA, deriv,
+# animals, meval, queens, hanoi, life) and CLASSICS.LSP, their menu
+rm -f build/cpclisp-classics.dsk
+"$IDSK" build/cpclisp-classics.dsk -n >/dev/null
+for f in classics eliza deriv animals meval queens hanoi life; do
+    b=$(tr a-z A-Z <<<"$f").LSP
+    cp "examples/$f.lsp" "build/$b"
+    ( cd build && "$IDSK" cpclisp-classics.dsk -i "$b" -t 0 >/dev/null 2>&1 )
+done

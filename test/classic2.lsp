@@ -1,0 +1,5 @@
+(load "life")
+(life 2)
+(load "meval")
+(meval-demo)
+(room)

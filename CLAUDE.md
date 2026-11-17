@@ -691,6 +691,23 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   and it zeroes &AC01, a ticker waiting for BASIC's &C9 there before it
   patches &AC01-&AC06 and &BF00 (Lisp's line buffer: typed text only).
   mach/futureos/README.md has the steps on the 464.
+* **The classics disc** (Mike, 2026-11-17: "another disk of demo
+  programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
+  (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,
+  as Weizenbaum's), `deriv`, `animals` (learns, `save`s ZOO), `meval`
+  (SICP's eval), `queens`, `hanoi`, `life`, and `classics.lsp`, a 40-
+  column menu. Text only: every machine. `build/cpclisp-classics.dsk`
+  (mach/cpc/post-build.sh), `build/trs80/classics-m1/m3/m4.dsk` and
+  .hfe (`tools/trs80/mkclassics.py`: the LDOS/LS-DOS system discs with
+  every file but BOOT/SYS and DIR/SYS deleted -- a data disc for drive
+  1); copies in `discs/`. Tests: `test/classic*.lsp` (test.sh gives a
+  `classic*` test a disc of examples/); `tools/trs80m4/run.sh` takes
+  `M4DISC1=` for drive 1, the Model I's TRS80_BUILD a dir with
+  lisp-b.dsk. Lessons: the harness types every line with a leading space
+  (trim what read-line gives); y-or-n-p takes a key, not a line (`!type`;
+  on the Model I's runner, the key at the start of the next line); with
+  every program loaded at once string space runs out -- one at a time; a
+  Model 4 with ELIZA has ~300 cells left.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the

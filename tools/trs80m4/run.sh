@@ -9,6 +9,7 @@
 # lisp-m4.hdv, through trs80gp's FreHD and its boot menu; M4HIRES=-gg or
 # -gc: the Grafyx or a clone of it, not the Tandy board), runs LISP; the
 # file's lines are typed as the Lisp asks for them and (quit) ends it.
+# M4DISC1=x.dsk puts a disc in drive 1 too (a copy).
 # The CPC harness's key actions, '!' lines while the line before runs,
 # are trs80gp's input commands: "!esc N" waits N frames and holds BREAK
 # for 8, "!type N text" waits and types it ({ENTER} is ENTER); "!press"
@@ -57,6 +58,11 @@ if [ "${M4DISC:-dsk}" = hdv ]; then     # from the FreHD: its menu, ENTER
     BOOT=(-frehd_dir "$tmp/frehd" -frehd_patch -frehd_menu -iw "==>" -id 30 -i '\r')
 else                                    # from the floppy: the date and time
     BOOT=(-d0 "$B/lisp-m4.dsk" -iw "Date" -i '11/13/86\r' -iw "Time" -i '12:00:00\r')
+fi
+# M4DISC1=a.dsk: a disc in drive 1 too (the classics: tools/trs80/mkclassics.py)
+if [ -n "${M4DISC1:-}" ]; then
+    cp "$M4DISC1" "$tmp/drive1.dsk"
+    BOOT+=(-d1 "$tmp/drive1.dsk")
 fi
 ( cd "$tmp" && timeout "${TIMEOUT:-900}" "$GP" ${M4MODEL:--m4} ${M4HIRES:-} -mem 128 -ee -batch -turbo \
     "${BOOT[@]}" -iw "Ready" -i 'LISP\r' \

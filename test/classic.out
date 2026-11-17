@@ -1,0 +1,59 @@
+LISP> (load "classics")
+
+Classic Lisp programs. Load one, then:
+ eliza    (eliza)       DOCTOR, 1966
+ deriv    (deriv-demo)  differentiation
+ animals  (animals)     it learns
+ meval    (meval-demo)  Lisp in Lisp
+ queens   (queens 8)    eight queens
+ hanoi    (hanoi 4)     Towers of Hanoi
+ life     (life 8)      Conway's Life
+(load "eliza") loads ELIZA, and so on.
+T
+LISP> (load "deriv")
+T
+LISP> (deriv-demo)
+d/dx (+ (* 3 (^ X 2)) (* 2 X) 1)
+   = (+ (* 6 X) 2)
+d/dx (* X (SIN X))
+   = (+ (* X (COS X)) (SIN X))
+d/dx (/ 1 X)
+   = (/ -1 (^ X 2))
+d/dx (EXP (* 2 X))
+   = (* 2 (EXP (* 2 X)))
+d/dx (LOG (^ X 2))
+   = (/ (* 2 X) (^ X 2))
+d/dx (SIN (COS X))
+   = (* (COS (COS X)) (* -1 (SIN X)))
+d/dx (* (+ X 1) (- X 1))
+   = (+ (+ X 1) (- X 1))
+NIL
+LISP> (load "hanoi")
+T
+LISP> (hanoi 3)
+disc 1 from A to C
+disc 2 from A to B
+disc 1 from C to B
+disc 3 from A to C
+disc 1 from B to A
+disc 2 from B to C
+disc 1 from A to C
+NIL
+LISP> (hanoi-count 10)
+1023
+LISP> (load "queens")
+T
+LISP> (queens 6)
+. Q . . . . 
+. . . Q . . 
+. . . . . Q 
+Q . . . . . 
+. . Q . . . 
+. . . . Q . 
+(4 2 0 5 3 1)
+LISP> (queens-count 6)
+4
+LISP> (room)
+5351 cells, 300 symbols, 5018 string bytes free
+NIL
+LISP> 

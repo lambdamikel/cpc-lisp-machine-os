@@ -8,7 +8,8 @@
 # match test/NAME.out -- or test/NAME.464.out, NAME.6128.out where the
 # machines differ. -u writes the transcripts as the new expectations --
 # read them before committing. Several tests run at once. A test whose name
-# starts with "disc" gets a blank disc in drive A (a DDI-1 on the 464).
+# starts with "disc" gets a blank disc in drive A (a DDI-1 on the 464);
+# one with "classic" a disc with the example programs (examples/*.lsp).
 cd "$(dirname "$0")/.."
 MACH=464 UPDATE=
 while getopts "m:u" o; do
@@ -31,6 +32,16 @@ for n in "${names[@]}"; do
     disc=()
     if [[ $n == disc* ]]; then
         "$IDSK" "$tmp/$n.dsk" -n >/dev/null 2>&1
+        disc=(-d "$tmp/$n.dsk")
+    fi
+    # classic*: a disc with the example programs (examples/*.lsp)
+    if [[ $n == classic* ]]; then
+        "$IDSK" "$tmp/$n.dsk" -n >/dev/null 2>&1
+        for f in examples/*.lsp; do
+            b=$(basename "$f" | tr a-z A-Z)
+            cp "$f" "$tmp/$b"
+            ( cd "$tmp" && "$IDSK" "$n.dsk" -i "$b" -t 0 >/dev/null 2>&1 )
+        done
         disc=(-d "$tmp/$n.dsk")
     fi
     # card*: what was written to the LambdaSpeak card (&FBEE) goes at the
