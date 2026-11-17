@@ -6,6 +6,7 @@
     tools/card.py [-p PORT] lisp                     the usual set, below
     tools/card.py [-p PORT] number SLOT NUM          renumber a slot
     tools/card.py [-p PORT] basic                    BASIC back (core slot 255)
+    tools/card.py [-p PORT] off                      exit 1 unless the CPC is off
 
 This is not an uploader of its own: it drives the GUI's Card class
 (~/git/lambdaspeak4/tools/romloader.py) -- its wait_idle() and send_rom(),
@@ -22,7 +23,11 @@ Vortex work moved it there from slot 2) and slot 6 the card's LS AI ROM
 VDOS (Mike, 2026-11-13: "core in slot 2"); before, slot 2 was Parados
 and the core in slot 4. Another Claude session works on the card too:
 agree with it before using the port (two on the console interleave).
-`basic` silences the core's slot again.
+`basic` silences the core's slot again. `number` and `basic` save the
+slot's number in flash ("rom: slot written"): they refuse with the CPC
+on, as `upload` does. `off` is the same check alone, to put in front of
+a chain of other tools' writes (dskloader.py --save, --slot...):
+`tools/card.py off && ...` stops there when the CPC is on.
 """
 import os, sys, time
 
@@ -65,6 +70,12 @@ def slots(card, port):
     return rows
 
 
+def require_off(card, port):
+    if not kitloader.cpc_is_off(card._open(port)):
+        sys.exit('card: the CPC is on -- switch it off first (flash writes '
+                 'stall the card, and a CPC running from it goes down)')
+
+
 def upload(card, port, jobs):
     images = []
     for slot, num, path in jobs:
@@ -76,10 +87,7 @@ def upload(card, port, jobs):
         if slot in PROTECTED:
             sys.exit(f'card: slot {slot} is {PROTECTED[slot]} -- not touching it')
         images.append((slot, num, path, data))
-    s = card._open(port)
-    if not kitloader.cpc_is_off(s):
-        sys.exit('card: the CPC is on -- switch it off first (flash writes '
-                 'stall the card, and a CPC running from it goes down)')
+    require_off(card, port)
     for slot, num, path, data in images:
         print(f'{path} -> slot {slot}, ROM {num}')
         card.send_rom(port, slot, num, data)
@@ -108,10 +116,14 @@ def main():
     elif cmd == 'upload' and len(args) >= 4 and len(args) % 3 == 1:
         upload(card, port, [(int(args[k]), int(args[k + 1]), args[k + 2])
                             for k in range(1, len(args), 3)])
+    elif cmd == 'off':
+        require_off(card, port)
+        print('card: the CPC is off')
     elif cmd == 'lisp':
         upload(card, port, LISP_SET)
     elif cmd in ('number', 'basic'):
         slot, num = (CORE_SLOT, 255) if cmd == 'basic' else map(int, args[1:3])
+        require_off(card, port)
         card.set_number(port, slot, num)
         print(drain(card, 'note'))
         slots(card, port)
