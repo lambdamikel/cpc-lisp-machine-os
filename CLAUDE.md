@@ -650,6 +650,11 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   flash: FutureOS's ROMs), the card's drive, a DDI-3, the M4. System .8,
   its installers, ROMs and API docs: ~/claude/cpc/futureos (not ours:
   never commit them).
+  Installed on the X-MEM 2026-11-16 (from the card's drive, German
+  installer 2026-11-15): with the X-MEM's own RAM, "the famous C3 bug"
+  (no cursor) -- FutureOS needs a RAM expansion that does configuration
+  C3 as the 6128 does (on a 464: Revaldinho's card). Only one RAM
+  expansion at a time. Our 512K images use C1 and C4-C7, not C3.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
