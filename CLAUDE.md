@@ -308,8 +308,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   six images would run unchanged at &C000; Talker/80 and MIDI/80, also
   his, for speech and sound), then the ZX Spectrum 128/+2/+3 (banks 0,
   1, 3, 4, 6, 7 at &C000 are exactly six), the TRS-80 Model 4, MSX1, the
-  TA alphatronic PC and the Sharp MZ-700. Mike has all of these; no PCW,
-  MSX2 or Enterprise.
+  TA alphatronic PC and the Sharp MZ-700; and the NABU PC (Mike,
+  2026-11-17: "the Naboo computer" -- the 1982 network computer: Z80
+  at 3.58 MHz, 64 KB, TMS9918A video, AY-3-8910 sound, no ROM board).
+  Mike has all of these; no PCW, MSX2 or Enterprise.
 * **The TRS-80 port** (`mach/trs80/`, branch `trs80`; its README has the
   user's side). Lessons, each one cost a round:
   * trs80gp delivers `-i`/`-if` typed input only to a program waiting in

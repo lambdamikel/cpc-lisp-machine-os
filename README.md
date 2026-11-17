@@ -38,7 +38,8 @@ editors in four more ROMs, and a bytecode compiler in a fifth.
   Grafyx -- from a floppy, an HxC or Gotek, or a FreHD ([*The TRS-80
   Model 4*](#the-trs-80-model-4), below).
 * **More Z80 machines are to come**, in this order: the ZX Spectrum +2
-  (with a DivMMC), MSX1, the TA alphatronic PC and the Sharp MZ-700.
+  (with a DivMMC), MSX1, the TA alphatronic PC, the Sharp MZ-700 and the
+  NABU PC.
   Everything a machine provides is behind one interface
   ([`mach/README.md`](mach/README.md)); the CPC's is `mach/cpc/`, the
   TRS-80's `mach/trs80/`, the Model 4's `mach/trs80m4/`.

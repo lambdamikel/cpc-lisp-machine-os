@@ -370,7 +370,8 @@ compiled code (`docs/design.md` describes both)
 10. [ ] **Other Z80 machines** (Mike, 2026-11-11), in this order: the
         TRS-80 Model I and III with X-MEM/80, the ZX Spectrum
         128/+2/+3, the TRS-80 Model 4, MSX1, the TA alphatronic PC and
-        the Sharp MZ-700 (these two need banked memory added)
+        the Sharp MZ-700 (these two need banked memory added), and the
+        NABU PC (Mike, 2026-11-17)
     - [x] The machine layer: everything CPC-specific in `mach/cpc/`
           behind an interface (`mach/README.md`); the CPC's ROMs byte for
           byte what they were (2026-11-11)
