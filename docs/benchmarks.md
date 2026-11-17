@@ -27,21 +27,25 @@ Each runs interpreted, then compiled.
 ## In a nutshell
 
 Each Lisp's time divided by CPC Lisp's on the same machine: above 1,
-CPC Lisp is faster; below 1, the other Lisp is. Interpreters are
-compared with CPC Lisp's interpreter, compilers with its compiler.
+CPC Lisp is faster; below 1, the other Lisp is.
+
+**Interpreted**, against CPC Lisp's interpreter:
 
 | Lisp (year), machine | `fib` | `tak` | `deriv` |
 |---|---|---|---|
-| *interpreted* | | | |
-| muLISP-80 (1980), CPC 6128 | 0.94 | **0.69** | 0.96 |
+| muLISP-80 (1980), CPC 6128 | 0.94 | 0.69 | 0.96 |
 | muLISP-80 2.15 (1982), CPC 6128 | 0.97 | 0.70 | 0.94 |
 | LinguaSoft/HiSoft Lisp (1986), CPC 6128 | 2.5 | 2.1 | 2.8 |
 | UOLisp (1982), TRS-80 Model I | 11.8 | 10.4 | 11.0 |
 | LISP/80 (1980), CPC 6128 | 18 | fails | 17 |
 | XLisp 1.1 (1985), CPC 6128 | 65 | wrong answer | crashes |
-| *compiled* | | | |
-| UOLisp, `!*OPT`, TRS-80 Model I | **0.66** | 1.23 | 1.45 |
-| UOLisp, `!*FAST`, TRS-80 Model I | **0.45** | **0.55** | crashes |
+
+**Compiled**, against CPC Lisp's compiler (the CP/M Lisps have none):
+
+| Lisp (year), machine | `fib` | `tak` | `deriv` |
+|---|---|---|---|
+| UOLisp (1982), `!*OPT`, TRS-80 Model I | 0.66 | 1.23 | 1.45 |
+| UOLisp, `!*FAST`, TRS-80 Model I | 0.45 | 0.55 | crashes |
 
 * **Only muLISP's interpreter is faster than CPC Lisp's**, by 3-6% on
   `fib` and `deriv` and 1.45 times on `tak`. The others are 2-65 times
@@ -69,14 +73,23 @@ on the CPC, under LDOS. It needs Mike's X-MEM/80, since its six 16 KB
 images live in the card's pages. Its compiler makes bytecode for a VM
 written in Z80 assembly.
 
+**Interpreted**
+
 | Model I, 1.77 MHz | `(fib 20)` | `(tak 18 12 6)` | `deriv` × 100 |
 |---|---|---|---|
-| CPC Lisp, interpreted | **121 s** | **578 s** | **17.5 s** |
-| UOLisp, interpreted | 1,433 s | 6,007 s | 193 s |
-| CPC Lisp, compiled (bytecode) | 32.5 s | **87 s** | **9.2 s** |
-| UOLisp, compiled (native, `!*OPT`) | **21.3 s** | 107 s | 13.3 s |
-| UOLisp, compiled, `!*OPT` `!*FLINK` | 21.3 s | 107 s | 13.3 s |
-| UOLisp, compiled, `!*OPT` `!*FLINK` `!*FAST` | 14.6 s | 48 s | crashes to DOS |
+| CPC Lisp | **121 s** | **578 s** | **17.5 s** |
+| UOLisp | 1,433 s | 6,007 s | 193 s |
+
+**Compiled**
+
+| Model I, 1.77 MHz | `(fib 20)` | `(tak 18 12 6)` | `deriv` × 100 |
+|---|---|---|---|
+| CPC Lisp (bytecode) | 32.5 s | **87 s** | **9.2 s** |
+| UOLisp (native, `!*OPT`) | **21.3 s** | 107 s | 13.3 s |
+| UOLisp, `!*OPT` `!*FLINK` | 21.3 s | 107 s | 13.3 s |
+| UOLisp, `!*OPT` `!*FLINK` `!*FAST` | 14.6 s | 48 s | crashes to DOS |
+
+In bold, the winner at each Lisp's safe settings.
 
 * **Interpreted, CPC Lisp wins by 10-12 times** on all three.
 * **Compiled, at UOLisp's safe settings, it is a draw.** UOLisp's
@@ -93,12 +106,22 @@ written in Z80 assembly.
 
 ## The same Lisp on a CPC, and SBCL
 
+The CPC is a 464 (1984; Z80, 4 MHz), the PC a 2019 Core i3-9100 at 3.6
+GHz with SBCL 2.2.9.
+
+**Interpreted**
+
 | | `(fib 20)` | `(tak 18 12 6)` | `deriv` × 100 |
 |---|---|---|---|
-| CPC Lisp on a CPC 464 (1984; Z80, 4 MHz), interpreted | 58 s | 265 s | 7.9 s |
-| CPC Lisp on a CPC 464, compiled | 16.9 s | 46 s | 4.8 s |
-| SBCL 2.2.9, PC (2019, Core i3-9100, 3.6 GHz), interpreted (`sb-eval`) | 19 ms | 54 ms | 1.8 ms |
-| SBCL 2.2.9, PC, compiled | 0.11 ms | 0.26 ms | 0.018 ms |
+| CPC Lisp, CPC 464 | 58 s | 265 s | 7.9 s |
+| SBCL, PC (`sb-eval`) | 19 ms | 54 ms | 1.8 ms |
+
+**Compiled**
+
+| | `(fib 20)` | `(tak 18 12 6)` | `deriv` × 100 |
+|---|---|---|---|
+| CPC Lisp, CPC 464 | 16.9 s | 46 s | 4.8 s |
+| SBCL, PC | 0.11 ms | 0.26 ms | 0.018 ms |
 
 * The CPC runs the same Lisp about twice as fast as the Model I. Its
   Z80 runs at 4 MHz, about 3.3 MHz once the video's wait states are
@@ -131,17 +154,24 @@ that makes five Lisps on four discs, all in [`vintage/`](../vintage/):
 * **XLisp 1.1** (David Betz, 1985), written in C. AutoCAD's AutoLISP
   grew out of an early XLisp.
 
-None of them has a compiler. All five ran on MAME's 6128:
+All five ran on MAME's 6128 (Z80, 4 MHz).
 
-| CPC 6128 (Z80, 4 MHz), MAME | `(fib 20)` | `(tak 18 12 6)` | `deriv` × 100 |
+**Interpreted**
+
+| CPC 6128 | `(fib 20)` | `(tak 18 12 6)` | `deriv` × 100 |
 |---|---|---|---|
 | muLISP-80 (1980) | **55.2 s** | **183 s** | 7.6 s |
 | muLISP-80 2.15 (1982) | 56.8 s | 186 s | **7.4 s** |
-| CPC Lisp, interpreted | 58.6 s | 266 s | 7.9 s |
+| CPC Lisp | 58.6 s | 266 s | 7.9 s |
 | LinguaSoft/HiSoft Lisp 1.57B (1986) | 146 s | 554 s | 22.1 s |
 | LISP/80 1.1 (1980) | 1,041 s | fails | 132 s |
 | XLisp 1.1 (1985) | 3,780 s | wrong: 12 | crashes |
-| CPC Lisp, compiled | 16.9 s | 46 s | 4.8 s |
+
+**Compiled**: none of the others has a compiler.
+
+| CPC 6128 | `(fib 20)` | `(tak 18 12 6)` | `deriv` × 100 |
+|---|---|---|---|
+| CPC Lisp | 16.9 s | 46 s | 4.8 s |
 
 * **muLISP-80 and CPC Lisp's interpreter are level.** muLISP is 3-7%
   faster on `fib` and `deriv`, and 1.45 times on `tak`. The 1980 8080
@@ -415,7 +445,9 @@ Gabriel's book timed TAK and DERIV on the Lisps and machines of the
 early 1980s: Lisp machines, minicomputers, a Cray. A selection, next to
 ours. DERIV here is all 5,000 derivatives: ours times 50, Gabriel's CPU
 time plus garbage collection where he gives both (the 3600's, CPU
-only).
+only). Ours are in bold.
+
+**Compiled**: Gabriel's numbers are all compiled code.
 
 | machine, Lisp | TAK | DERIV |
 |---|---|---|
@@ -428,14 +460,20 @@ only).
 | MIT CADR, ZetaLisp | 3.1 s | -- |
 | VAX 11/730, Common Lisp | 10.55 s | 180 s |
 | VAX 11/750, Franz Lisp, generic arithmetic, slow calls | 47.6 s | -- |
-| **CPC 464, CPC Lisp, compiled** | **46 s** | **240 s** |
-| **TRS-80 Model I, UOLisp, compiled, `!*FAST`** | **48 s** | -- |
-| **TRS-80 Model I, UOLisp, compiled** | **107 s** | **665 s** |
-| **TRS-80 Model I, CPC Lisp, compiled** | **87 s** | **460 s** |
-| **CPC 464, CPC Lisp, interpreted** | **265 s** | **395 s** |
-| **CPC 6128, muLISP-80 (1982), interpreted** | **186 s** | **371 s** |
-| **CPC 6128, HiSoft Lisp (1986), interpreted** | **554 s** | **1,105 s** |
-| PC 2019, SBCL, compiled | 0.00026 s | 0.0009 s |
+| **CPC 464, CPC Lisp** | **46 s** | **240 s** |
+| **TRS-80 Model I, UOLisp, `!*FAST`** | **48 s** | -- |
+| **TRS-80 Model I, UOLisp** | **107 s** | **665 s** |
+| **TRS-80 Model I, CPC Lisp** | **87 s** | **460 s** |
+| PC 2019, SBCL | 0.00026 s | 0.0009 s |
+
+**Interpreted**: the 8-bit interpreters, and SBCL's, for scale.
+
+| machine, Lisp | TAK | DERIV |
+|---|---|---|
+| **CPC 6128, muLISP-80 (1982)** | **186 s** | **371 s** |
+| **CPC 464, CPC Lisp** | **265 s** | **395 s** |
+| **CPC 6128, HiSoft Lisp (1986)** | **554 s** | **1,105 s** |
+| PC 2019, SBCL (`sb-eval`) | 0.054 s | 0.09 s |
 
 * **A 4 MHz home computer of 1984 with CPC Lisp's compiler runs TAK as
   fast as a VAX 11/750 did** in the slowest row of Gabriel's table:
