@@ -2,15 +2,15 @@
 
 *A Lisp machine for the Amstrad CPC*
 
-How fast is CPC Lisp, against a Lisp of its own time on the same kind of
-machine, against the big machines of the 1980s, and against a Lisp of
+How fast is CPC Lisp, against the Lisps of its own time on the same kind
+of machine, against the big machines of the 1980s, and against a Lisp of
 today? Measured on 2026-11-17, at Mike's question: "if you compare CPC
 Lisp with UOLisp for the TRS-80, which also had a compiler, who wins?"
 
 ## The benchmarks
 
-The same three small programs everywhere, written once in Common Lisp
-and once in UOLisp's Standard LISP (`tools/bench/`):
+The same three small programs everywhere, written in Common Lisp and in
+each other Lisp's own dialect (`tools/bench/`):
 
 * **`(fib 20)`**: the doubly recursive Fibonacci, 21,891 calls. Small
   integers and function calls, nothing else.
@@ -23,6 +23,38 @@ and once in UOLisp's Standard LISP (`tools/bench/`):
   so multiply by 50 to compare with his tables.
 
 Each runs interpreted, then compiled.
+
+## In a nutshell
+
+Each Lisp's time divided by CPC Lisp's on the same machine: above 1,
+CPC Lisp is faster; below 1, the other Lisp is. Interpreters are
+compared with CPC Lisp's interpreter, compilers with its compiler.
+
+| Lisp (year), machine | `fib` | `tak` | `deriv` |
+|---|---|---|---|
+| *interpreted* | | | |
+| muLISP-80 (1980), CPC 6128 | 0.94 | **0.69** | 0.96 |
+| muLISP-80 2.15 (1982), CPC 6128 | 0.97 | 0.70 | 0.94 |
+| LinguaSoft/HiSoft Lisp (1986), CPC 6128 | 2.5 | 2.1 | 2.8 |
+| UOLisp (1982), TRS-80 Model I | 11.8 | 10.4 | 11.0 |
+| LISP/80 (1980), CPC 6128 | 18 | fails | 17 |
+| XLisp 1.1 (1985), CPC 6128 | 65 | wrong answer | crashes |
+| *compiled* | | | |
+| UOLisp, `!*OPT`, TRS-80 Model I | **0.66** | 1.23 | 1.45 |
+| UOLisp, `!*FAST`, TRS-80 Model I | **0.45** | **0.55** | crashes |
+
+* **Only muLISP's interpreter is faster than CPC Lisp's**, by 3-6% on
+  `fib` and `deriv` and 1.45 times on `tak`. The others are 2-65 times
+  slower; two of them cannot finish `tak`.
+* **None of the CPC's CP/M Lisps has a compiler.** CPC Lisp's compiled
+  code is 1.5-4 times faster than muLISP's interpreter, and 4.6-12 times
+  faster than HiSoft's.
+* **Against UOLisp's native code on the TRS-80 it is a draw** at
+  UOLisp's safe setting. UOLisp's `!*FAST` is about twice as fast, but
+  it crashes on `deriv`, and UOLisp's 13-bit integers give the wrong
+  `(fib 20)`.
+* **SBCL on a 2019 PC** is 3,000-4,900 times faster than CPC Lisp
+  interpreted, and 154,000-267,000 times faster compiled.
 
 ## Who wins on the TRS-80
 
