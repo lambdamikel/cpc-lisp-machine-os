@@ -731,12 +731,23 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   `tools/bench/cpm.lua` (MAME 6128, |CPM; CONOUT from the BIOS jump
   table at (1)-3+12, logged with frames; muLISP calls CONIN only once a
   key waits: CPM_PROMPT='$ '; a line ending in \ runs on), `cpmtime.py`.
-  muLISP-80 2.15 (CPC-Power's "HiSoft LISP Interpreter" disc,
-  ~/claude/cpc/lisps/hisoft-cpcpower.dsk; Mike's thread: an old muLISP):
-  no ' reader macro, no DEFUN/MAPCAR/PROG/ADD1 (an undefined call
-  returns itself) -- PUTD; interpreters level with ours. Still open:
-  HiSoft Lisp proper and Lisp-80 (the thread's attachments: CPCWiki is
-  behind Cloudflare -- Mike fetches).
+  The CP/M Lisps (2026-11-17; Mike's 2018 discs were in ~/Downloads/CPC
+  LISP, copies in ~/claude/cpc/lisps/thread-discs with the manuals):
+  muLISP-80 1980 and 2.15 (CPC-Power's "HiSoft LISP Interpreter",
+  damaged: no library, `(TIMES 12 12)` = 180), LinguaSoft/HiSoft Lisp
+  1.57B, LISP/80 1.1, XLisp 1.1 -- `vintage/` has their discs and
+  UOLisp's (Mike: "nobody cares for 40 year old software copyrights";
+  the manuals are too big, links in vintage/README.md), and
+  docs/benchmarks.md a guide to defining a function in each. Lessons:
+  LinguaSoft writes through the firmware (CPM_TXT taps &BB5A), its echo
+  is not logged (`cpmtime.py --typed`), `'-)` hangs its reader, EQ fails
+  on numbers; it and LISP/80 lose keys typed while they read a line --
+  type definitions a line at a time at the continuation prompt
+  (CPM_PROMPT_PAT='%d>$' for LISP/80, whose `>` before an answer is
+  printed before evaluating: `--skip '>'`); LISP/80 defines with
+  DEFPROP (its DEFINE is broken in 1.1), CTRL-C leaves it (a `^C` line);
+  muLISP's RDS loads UTILITY.LIB (DEFUN, MAPCAR); XLisp 1.1 has no if,
+  not, mapcar, caddr.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the
@@ -1034,7 +1045,8 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   everybody wants to make their own"): copy them from `build/` -- one
   tested build -- when a release changes, and say the build in
   `roms/README.md`. Never commit Amstrad's ROMs (the MAME romsets in
-  `build/mame`) or disc images -- except the two LDOS system discs the
+  `build/mame`) or disc images -- except `vintage/`, the Lisps of the
+  day we measured against (Mike, 2026-11-17), and the two LDOS system discs the
   TRS-80 build starts from (`tools/trs80/ldos-m1.dsk`, `ldos-m3.dsk`:
   Mike, 2026-11-12, "publish them"), LS-DOS 6.3.1's (`discs/ld4-631.dsk`,
   and the FreHD base `tools/trs80m4/ls631-frehd.hdv.gz`: Mike, 2026-11-13,

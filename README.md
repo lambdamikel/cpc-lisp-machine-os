@@ -371,8 +371,11 @@ runs on a real Model 4 with a FreHD, an HxC and the Improved Grafyx
   the `%` names, lexical closures, tail calls, the speed work, and how
   the compiler was bootstrapped
 * [`docs/benchmarks.md`](docs/benchmarks.md): how fast -- against UOLisp
-  (1982) on a TRS-80, SBCL on a PC, and the Lisp machines and VAXes of
-  Gabriel's 1985 book
+  (1982) on a TRS-80, the CPC's own CP/M Lisps (muLISP-80, HiSoft Lisp,
+  LISP/80, XLisp), SBCL on a PC, and the Lisp machines and VAXes of
+  Gabriel's 1985 book; and how to define a function in each of those
+  dialects
+* [`vintage/`](vintage/): those Lisps of the day, as disc images
 * [`docs/checklist.md`](docs/checklist.md): everything implemented, by
   ROM, and what is still open
 * [`mach/README.md`](mach/README.md): the machine layer -- the interface

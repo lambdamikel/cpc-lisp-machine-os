@@ -78,37 +78,304 @@ written in Z80 assembly.
 
 ## The CPC's own Lisps of the day
 
-The CPC's Lisps of the 1980s ran under CP/M. Mike's thread on the
-CPCWiki forum, "Lisp on the CPC" (2018), dug up three that work:
-LinguaSoft/HiSoft Lisp (which needs a 6128), muLISP-80 and Lisp-80. The
-disc sold as HiSoft's "LISP Interpreter" (1987, £39.95; CPC-Power's copy)
-boots CP/M Plus on a 6128. Its LISP.COM calls itself
+The CPC's Lisps of the 1980s ran under CP/M. Mike's 2018 thread on the
+CPCWiki forum, "Lisp on the CPC", dug up the ones that work, and he put
+two discs together from several CP/M sources. With two of CPC-Power's,
+that makes five Lisps on four discs, all in [`vintage/`](../vintage/):
 
-    muLISP-80 2.15 (03/01/82)
-    Standard CP/M Version
-    Copyright (C) 1981 The SOFT WAREHOUSE
-    Licensed by MICROSOFT, Inc.
+* **muLISP-80** (The Soft Warehouse, Honolulu, 1980; licensed by
+  Microsoft), the Lisp of the muMATH computer algebra system. There are
+  two versions: the 8080 version of 10/06/80 on Mike's disc, and 2.15
+  (03/01/82), which HiSoft sold in 1987 as its "LISP Interpreter"
+  (£39.95). CPC-Power's copy of that is damaged. Its library does not
+  load, even started as `lisp baselisp`, so there is no `DEFUN`,
+  `MAPCAR` or `PROG`. Its multiplication is broken: `(TIMES 12 12)` is
+  180. The benchmarks do not multiply, and its `fib` and `tak` answers
+  are right.
+* **LinguaSoft Lisp 1.57B** (Ofer and Shelly Ben-Ami, 1986-88). This is
+  HiSoft's real Lisp, for the 6128 and the PCW, and comes with HLE, a
+  full-screen editor.
+* **LISP/80 1.1** (T. W. Yonkman, The Software Toolworks, 1980).
+* **XLisp 1.1** (David Betz, 1985), written in C. AutoCAD's AutoLISP
+  grew out of an early XLisp.
 
-That is the Soft Warehouse's muLISP, the Lisp of the muMATH computer
-algebra system, which Microsoft sold. As the thread found, this copy is
-not HiSoft Lisp proper, and it is cut down: its library does not load,
-so there is no `DEFUN`, `MAPCAR`, `PROG` or `ADD1`. Its benchmarks are
-written with `PUTD`, `DIFFERENCE` and recursion
-(`tools/bench/mulisp.txt`), and `deriv` maps with two small recursive
-functions where the others call `mapcar`. It has no compiler.
+None of them has a compiler. All five ran on MAME's 6128:
 
 | CPC 6128 (Z80, 4 MHz), MAME | `(fib 20)` | `(tak 18 12 6)` | `deriv` × 100 |
 |---|---|---|---|
-| muLISP-80 2.15 (1982), interpreted | **56.8 s** | **186 s** | **7.4 s** |
+| muLISP-80 (1980) | **55.2 s** | **183 s** | 7.6 s |
+| muLISP-80 2.15 (1982) | 56.8 s | 186 s | **7.4 s** |
 | CPC Lisp, interpreted | 58.6 s | 266 s | 7.9 s |
+| LinguaSoft/HiSoft Lisp 1.57B (1986) | 146 s | 554 s | 22.1 s |
+| LISP/80 1.1 (1980) | 1,041 s | fails | 132 s |
+| XLisp 1.1 (1985) | 3,780 s | wrong: 12 | crashes |
 | CPC Lisp, compiled | 16.9 s | 46 s | 4.8 s |
 
-* **The two interpreters are level.** muLISP-80 is 3% faster on
-  `fib`, 1.4 times on `tak` and 6% on `deriv`. It was the fast
-  microcomputer Lisp of its day, built for a computer algebra system.
-* **With its compiler CPC Lisp is 3.4, 4 and 1.5 times faster.**
-* HiSoft Lisp proper and Lisp-80 are still to time: their discs are
-  attached to the thread, behind CPCWiki's browser check.
+* **muLISP-80 and CPC Lisp's interpreter are level.** muLISP is 3-7%
+  faster on `fib` and `deriv`, and 1.45 times on `tak`. The 1980 8080
+  version is as fast as 2.15. It was the fast microcomputer Lisp of its
+  day, built for computer algebra.
+* **HiSoft's Lisp, the one sold for the 6128, is 2-3 times slower**
+  than either.
+* **LISP/80 and XLisp are another world**: 19 and 68 times slower than
+  muLISP on `fib`. XLisp, written in C, takes a cell for every integer
+  it computes.
+* **Neither finishes `tak`.** LISP/80 seems to lose stack as it goes:
+  `tak` stops with ERROR 18 after 54 s with the default stack, and
+  after 15 minutes with a 20 KB one (`LISP_80 S=20000`). A `PROG` loop
+  of `deriv` stops with ERROR 13 after some 36 rounds, so the table's
+  `deriv` loops by recursion. XLisp corrupts its heap on a long run:
+  `(tak 18 12 6)` answered 12 after 50 minutes, though `(tak 12 8 4)`
+  and smaller come out right. Its `deriv` stopped after 222 s with
+  "bad node type (172) found during left scan", from its garbage
+  collector, and fell back to CP/M's `A>`.
+* **Only muLISP counts past 16 bits**: its `(TIMES 300 300)` is 90000.
+  LinguaSoft, LISP/80 and XLisp wrap: 200 times 200 is -25536.
+  LinguaSoft's `*` at least reports an overflow.
+* **With its compiler CPC Lisp is 3.3, 4 and 1.5 times faster than
+  muLISP.**
+
+## Defining a function, in each dialect
+
+Each of these Lisps starts at a bare prompt, and for most of them it is
+not obvious how to make a function of your own. The manuals, where they
+survive, are scans (vintage/README.md says where they are). Here is each one's way, as it answered in the emulator: a
+function defined, called, and the way back out. The discs boot CP/M Plus
+with `|CPM`.
+
+**CPC Lisp** (and SBCL: this is Common Lisp)
+
+    LISP> (defun square (n) (* n n))
+    SQUARE
+    LISP> (square 12)
+    144
+    LISP> (compile 'square)
+    SQUARE
+
+**muLISP-80**: `MULISP` on vintage/cpc/mulisp-lisp80.dsk (`LISP` on
+the 2.15 disc). A function is a `LAMBDA` put on its name with `PUTD`:
+
+    $ (PUTD (QUOTE SQUARE) (QUOTE (LAMBDA (N) (TIMES N N))))
+    (LAMBDA (N) (TIMES N N))
+    $ (SQUARE 12)
+    144
+    $ (PUTD (QUOTE FACT) (QUOTE (LAMBDA (N) ((ZEROP N) 1)
+      (TIMES N (FACT (DIFFERENCE N 1))))))
+    (LAMBDA (N) ((ZEROP N) 1) (TIMES N (FACT (DIFFERENCE N 1))))
+    $ (FACT 7)
+    5040
+    $ (SYSTEM)
+    A>
+
+* A function's body is an implicit `COND`. An element whose head is a
+  list is a test: if it holds, its other elements are evaluated and the
+  function returns the last one, as `((ZEROP N) 1)` above.
+* There is no `'`: `(CAR '(A B))` is `'`. Write `QUOTE`.
+* A call of an undefined function comes back as it was typed:
+  `(ADD1 5)` answers `(ADD1 5)`.
+* `(RDS (QUOTE UTILITY) (QUOTE LIB))` loads the 1980 version's library.
+  Then there are `DEFUN`, `(DEFUN SQUARE (LAMBDA (N) (TIMES N N)))`, and
+  `MAPCAR`, `ADD1`, `APPEND`...
+
+**LinguaSoft/HiSoft Lisp**: `LISP6128` on vintage/cpc/hisoft-lisp.dsk.
+The prompt is `§`:
+
+    § (DEFUN SQUARE (N) (TIMES N N))
+    Value is...
+    SQUARE
+    § (SQUARE 12)
+    Value is...
+    144
+    § (EXIT)
+    A>
+
+* `EQ` is false for numbers: `(EQ 300 300)` is NIL. Write `EQUAL`, or
+  `(LESSP N 1)` for `ZEROP`, which is not there either.
+* `MAPCAR` takes the list first: `(MAPCAR '((1) (2)) 'CAR)` is `(1 2)`.
+* `'-` right before a `)` hangs the reader: write `'- )`.
+
+**LISP/80**: `LISP_80` on vintage/cpc/mulisp-lisp80.dsk (`LISP_80
+S=20000` for a bigger stack). The number in the prompt counts the open
+parentheses, and an answer follows a `>`:
+
+    0>(DEFPROP SQUARE (LAMBDA (N) (TIMES N N)) EXPR)
+    >(LAMBDA(N)(TIMES N N))
+    0>(SQUARE 12)
+    >144
+
+CTRL-C goes back to `A>`.
+
+* `DEFPROP` puts the `LAMBDA` on the name's property list as its EXPR.
+  The manual's `DEFINE ((SQUARE (N) ...))` makes a broken definition in
+  version 1.1, and ERROR 1 when it is called.
+* There is no `'`: write `QUOTE`. There is no `SUB1` or `ZEROP`.
+* `MAPCAR` takes the function first.
+
+**XLisp 1.1**: vintage/cpc/xlisp11.dsk starts it by itself:
+
+    > (defun square (n) (* n n))
+    square
+    > (square 12)
+    144
+    > (exit)
+    A>
+
+* Its core has no `if`, `not`, `mapcar` or `caddr`. Write `cond`,
+  `null`, recursion and `car`/`cdr`.
+
+**UOLisp** (TRS-80 Model I): `LISP48` at `TRSDOS READY`, with the
+prompt `*`. Standard LISP defines with `DE`, `(DE FIB (N) ...)`. After
+`(FLOAD "COMP ")` (the space is needed) and `(SETQ !*COMP T)`, `DE`
+compiles to Z80 code. There, add with `PLUS2`: `PLUS` is an FEXPR, which
+cannot see a compiled function's variables.
+
+The benchmark's `fib`, in each:
+
+    ; CPC Lisp, SBCL
+    (defun fib (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))
+    ; UOLisp
+    (DE FIB (N) (COND ((LESSP N 2) N) (T (PLUS2 (FIB (SUB1 N)) (FIB (DIFFERENCE N 2))))))
+    ; muLISP-80
+    (PUTD (QUOTE FIB) (QUOTE (LAMBDA (N) (COND ((LESSP N 2) N)
+      (T (PLUS (FIB (DIFFERENCE N 1)) (FIB (DIFFERENCE N 2))))))))
+    ; LinguaSoft/HiSoft Lisp
+    (DEFUN FIB (N) (COND ((LESSP N 2) N) (T (PLUS (FIB (DIFFERENCE N 1)) (FIB (DIFFERENCE N 2))))))
+    ; LISP/80
+    (DEFPROP FIB (LAMBDA (N) (COND ((LESSP N 2) N)
+      (T (PLUS (FIB (DIFFERENCE N 1)) (FIB (DIFFERENCE N 2)))))) EXPR)
+    ; XLisp 1.1
+    (defun fib (n) (cond ((< n 2) n) (t (+ (fib (- n 1)) (fib (- n 2))))))
+
+`tak` and `deriv` in each are in `tools/bench/`: `cpc.lsp`,
+`uolisp-*.txt`, `mulisp.txt`, `linguasoft.txt`, `lisp80.txt`,
+`xlisp.txt`. `deriv` maps with `MAPCAR` where the Lisp has it, and with
+two small recursive functions where it has not (muLISP, XLisp).
+
+## The utter horrors of the 1980s: alien toy Lisp dialects on microcomputers
+
+Getting each of them to define and run three small functions took from
+a few minutes to an afternoon. A blunt verdict, from that:
+
+**muLISP-80 is the only one you could have worked in.** It is fast, as
+fast as CPC Lisp's interpreter, from a 9.5 KB program, and its
+integers do not wrap. But it fights you on every line. There is no `'`,
+so every constant is `(QUOTE ...)`, and a function is `(PUTD (QUOTE F)
+(QUOTE (LAMBDA ...)))` until you load the library that brings `DEFUN`.
+Worst of all, a misspelt function is no error: `(ADD1 5)` without the
+library answers `(ADD1 5)`, and a typo deep in a program quietly hands
+its own call back up as data. The copy HiSoft sold in 1987 cannot
+multiply.
+
+**LinguaSoft/HiSoft Lisp has the friendliest face on a slow engine.**
+It reads like a real Lisp, with `DEFUN`, `'`, and errors in English that
+name the culprit ("Expression in function position not a function --
+Faulty argument:- ((1) (2))"). It comes with a full-screen editor. Then
+it trips you:
+
+* `EQ` is false for two equal numbers, so the textbook `(EQ N 0)`
+  recurses until "Variable binding space exhausted".
+* `'-` before a `)` hangs the reader without a word.
+* `TIMES` wraps at 16 bits in silence, while `*` reports the overflow.
+* It drops keys typed while it reads a line.
+
+It is 2-3 times slower than muLISP, which was six years older, and no
+manual for it has turned up.
+
+**LISP/80 is a teaching toy that cannot finish its homework.** Its
+manual is a friendly tutorial, but the tutorial's way to define a
+function, `DEFINE`, makes a broken definition in version 1.1. The way
+that works, `DEFPROP`, takes guessing. Errors are bare numbers, "ERROR
+14", with no table to look them up in. It is 19 times slower than
+muLISP, and it cannot run `(tak 18 12 6)` or a `PROG` loop of 100
+rounds: it loses stack as it goes, and stops with ERROR 18 or ERROR 13.
+
+**XLisp 1.1 is the future, at an hour per `fib`.** It is the only one
+that looks modern: lower case, `defun`, `'`, `(exit)`. Its descendants,
+XLISP-PLUS and AutoCAD's AutoLISP, lived on. On a 4 MHz Z80 it is
+unusable: `(fib 20)` takes an hour, 68 times muLISP. It also cannot be
+trusted with a long run. After 50 minutes of `(tak 18 12 6)` it answers
+12 instead of 7, and `deriv` ends in its garbage collector's "bad node
+type (172) found during left scan" and a drop back to CP/M. Its core
+has no `if`, `not`, `mapcar` or `caddr` ("error: null function"), and
+its integers wrap at 16 bits.
+
+**UOLisp has a real compiler and arithmetic you cannot trust.** Native
+Z80 code from a 48 KB TRS-80 in 1982 was ahead of its time. But its
+13-bit integers wrap in silence, and `(fib 20)` answers -1427 with a
+straight face. Its interpreter is 10-12 times slower than CPC Lisp's.
+`(FLOAD "COMP")` fails without a trailing space, compiled code cannot
+use `PLUS` ("NOT GLOBAL N"), and its fastest setting took the machine
+back to DOS.
+
+**What they share.** They give text only: no graphics or sound. They
+offer little help when something goes wrong, and two have no `'`.
+Four of them wrap their integers, mostly without a word. For a CPC
+owner in 1987 it was muLISP, if you could find a copy that worked, or
+HiSoft's, if you had patience.
+
+**And CPC Lisp.** The same pitfalls, typed into the ROM version on a
+464:
+
+    LISP> (defun square (n) (* n n))
+    SQUARE
+    LISP> (add1 5)
+    Error: undefined function ADD1
+    LISP> (eq 300 300)
+    T
+    LISP> (* 300 300)
+    90000.0
+    LISP> (list '- '* '/)
+    (- * /)
+    LISP> (mapcar #'square '(1 2 3))
+    (1 4 9)
+    LISP> (car 5)
+    Error: not a list: 5
+    LISP> (ignore-errors (car 5))
+    NIL
+    "not a list: 5"
+
+It is Common Lisp as a modern programmer expects it, so the tutorial
+above is one line long. It comes on when the machine is switched on,
+with no CP/M disc to boot. Its line editor shows the `(` that a typed
+`)` closes, indents continuation lines and remembers earlier ones. `(ed
+'fact)` puts a definition on a full screen to edit. Errors are messages
+that name the culprit, and they can be caught. An integer past 15 bits
+goes on as a float instead of wrapping. It has closures, `loop`,
+`format`, structures, files, graphics and sound, and a compiler one
+call away.
+
+Its own weak spots:
+
+* **It needs more hardware.** The ROM version takes six ROM slots: a
+  ROM board, or Mike's LambdaSpeak card. The disc versions need a 6128
+  or a 512 KB expansion.
+* **It has no exact big integers.** Past 16383 come floats with about
+  nine digits: `(fact 10)` is 3628800.0, and `(fact 20)` can only be
+  approximate.
+* **Memory is tight.** 6527 cells are free on a 464. String space is
+  the tight resource on the disc versions.
+* **It is a subset of Common Lisp**, with no packages, no CLOS and one
+  dimension of array.
+* **Its interpreter is no faster than muLISP's.**
+
+**In fairness**, the others lived in 10-40 KB of a CP/M machine's
+memory, with nothing to learn from but the minicomputer Lisps of the
+1970s. CPC Lisp takes 96 KB of ROM, and was written with forty years of
+hindsight and Common Lisp to copy. The comfort is what those 96 KB buy.
+
+**Where Lisp really lived** was not on 8-bit micros. In the 1970s it
+lived on timeshared PDP-10s: MacLisp at MIT, which ran Macsyma, and InterLisp at
+BBN and Xerox PARC. In the 1980s it lived on VAXes, with Berkeley's
+Franz Lisp, and for those who could pay about $100,000 a seat, on Lisp
+machines from Symbolics, LMI, TI and Xerox. Gabriel's table below shows
+the VAX keeping up in speed: Franz Lisp's TAK, 1.09 s, beats the
+Dandelion and the CADR. What the Lisp machines sold was the environment:
+editor, debugger, inspector and windows, all in one Lisp. On an 8-bit
+micro, only muLISP was serious: it ran muMATH in 64 KB, and from 1988
+Derive on PCs. Comfortable Lisp reached ordinary desks with the 68000
+and 386 machines of 1985-88: Suns with Lucid and Allegro Common Lisp,
+Macs with Coral, PCs with Golden Common Lisp. They ended the Lisp
+machines.
 
 ## In the company of 1985
 
@@ -135,6 +402,7 @@ only).
 | **TRS-80 Model I, CPC Lisp, compiled** | **87 s** | **460 s** |
 | **CPC 464, CPC Lisp, interpreted** | **265 s** | **395 s** |
 | **CPC 6128, muLISP-80 (1982), interpreted** | **186 s** | **371 s** |
+| **CPC 6128, HiSoft Lisp (1986), interpreted** | **554 s** | **1,105 s** |
 | PC 2019, SBCL, compiled | 0.00026 s | 0.0009 s |
 
 * **A 4 MHz home computer of 1984 with CPC Lisp's compiler runs TAK as
@@ -167,15 +435,19 @@ only).
 * **CP/M on the CPC:** MAME's 6128 boots CP/M Plus from the disc (`|CPM`),
   and `tools/bench/cpm.lua` types into the program and logs every
   character it prints, with its frame. It finds the BIOS's console output
-  (CONOUT) from the jump table that &0001 points into. muLISP calls the
-  console input only once a key is waiting, so the next line goes in when
-  its prompt, `$ `, comes back. `tools/bench/cpmtime.py` gives the frames
-  from a form's RETURN to the first character of its result (50 a
-  second).
+  (CONOUT) from the jump table that &0001 points into; LinguaSoft writes
+  through the firmware, so for it the log taps TXT OUTPUT (&BB5A,
+  `CPM_TXT`). muLISP, LinguaSoft and XLisp read the keys only once one is
+  waiting, so the next line goes in when the prompt comes back
+  (`CPM_PROMPT`). LinguaSoft and LISP/80 lose keys typed while they read
+  a line, so their definitions go in a line at a time, at their
+  continuation prompts. `tools/bench/cpmtime.py` gives the frames from a
+  form's RETURN (its echo, or with `--typed` the moment its last key went
+  up) to the first character of its result (`--skip` passes LISP/80's
+  `>` and LinguaSoft's "Value is...", printed before the evaluation), 50
+  a second.
 * **SBCL:** `tools/bench/sbcl.lisp`, each run repeated 3-5,000 times. The
   same source, no declarations, Mike's SBCL 2.2.9.
 * **Gabriel's numbers:** his Raw Time tables for TAK (pp. 86-87) and
   DERIV (pp. 173-174), from dreamsongs.com/Files/Timrep.pdf.
 
-Still to come: HiSoft Lisp proper (its HLE environment) and Lisp-80,
-from the discs attached to Mike's CPCWiki thread.
