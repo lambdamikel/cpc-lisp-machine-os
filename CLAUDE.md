@@ -718,9 +718,12 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   (hwtest 7 yes, (reset)). TFM tests the 6128 version. **Passed on
   Mike's 6128** (build 4236, discs/cpclispfos.dsk): 7 yes, (rose), the
   demos, (reset) back to the desktop; Revaldinho's card in configuration 0, the card's 6128 firmware
-  serving FutureOS, the disc on the Gotek as drive A (a first try from
-  the card's drive E found it empty: on the 6128 the card has no flash
-  discs, and USB unplugged with the CPC off loses the drive's disc).
+  serving FutureOS (lambdaspeak4 f008560), the disc on the Gotek as
+  drive A; LISP.64K also loads from the card's drive E and runs (the
+  images still from A, through AMSDOS). One earlier load from E went
+  back to the desktop quietly and is not understood; reloading the
+  drive fixed it (it had also lost its disc to a power cut, USB out
+  with the 6128 off).
   Mike's Gotek stick mounts at /media/mike/D831-1ECE (FlashFloppy,
   alphabetical; CPCLISPFOS.dsk on it).
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
@@ -809,8 +812,14 @@ fixed it (the drive is PSRAM: lost at power-off; store it in a free slot,
   floats through the 664/6128 maths package, the line editor, ESC, the
   compiler, Parados; the RAM disc `M:` on the expansion under 1.0 and
   1.1 alike.
-* **CPC 6128** with a Gotek on its own drive -- put away for now. The card
-  runs a separate 664/6128 firmware build there.
+* **CPC 6128** with a Gotek on its own drive. **The card needs its 664/6128 firmware build
+  there, flashed before it goes in** (lambdaspeak4 docs/two-firmwares.md:
+  never answers ROM 7, its drive is the Vortex controller at &FBF6 --
+  FutureOS's drive E -- from power-up, no flash discs, the fast ROM
+  select read from the 464's settings; a PC upload into its drive is
+  lost when the card loses power). Under FutureOS it passed on
+  2026-11-17 (mach/futureos); the ROM Lisp from the card's slots is
+  untried on it.
 * The 664 is untried.
 
 Mike tests on the real machines. Tell him exactly what to type, and what he

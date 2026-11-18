@@ -46,10 +46,13 @@ RAM disc. For an HxC or a Gotek:
 
 `cpclispfos.dsk` passed on Mike's 6128 under FutureOS (2026-11-17):
 `(hwtest)` 7 yes, `(rose)`, the demos and `(reset)` back to the
-desktop -- FutureOS from the card's
-slots, Revaldinho's card in configuration 0, the disc on the 6128's
-Gotek as drive A; on his 464 the build before it (the same but for the
-664's and 6128's firmware), 7 yes and `(reset)` back to the desktop.
+desktop -- FutureOS from the LambdaSpeak card's slots (the card on its
+664/6128 firmware), Revaldinho's card in configuration 0, the disc on the
+6128's Gotek as drive A (`LISP.64K` also loads from the card's drive E;
+the images come from A). On his 464 the build before it (the same but
+for the 664's and 6128's lower ROMs) passed too: 7 yes, `(rose)`,
+`(reset)` -- the card on its 464 firmware, `|DDI1,4`, the disc in the
+card's drive as A. `mach/futureos/README.md` has the details.
 
 Every disc here also carries **APFEL.LSP**, the
 Apfelmaennchen (`examples/apfel.lsp`): `(load "apfel")`, `(apfel)`.

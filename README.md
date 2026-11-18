@@ -174,6 +174,16 @@ and 6);
 `tools/card.py slots` lists the slots. `card.py` drives the uploader of
 the LambdaSpeak 4 tools (`~/git/lambdaspeak4/tools`).
 
+**On a 664 or 6128 the card needs its 664/6128 firmware**, flashed while
+the card is still on the PC and before it goes in -- the 464 firmware's
+disc drive at &FB7E and its disc ROM at 7 would fight the machine's own
+controller and AMSDOS for the data bus. That build never answers ROM 7
+(slot 4's Parados stays dark; the machine's AMSDOS is the disc ROM), and
+its drive is a Vortex controller at &FBF6. The LambdaSpeak 4's
+`docs/two-firmwares.md` has why and how to move the card. CPC Lisp's
+ROMs from the card's slots have not been tried on a real 6128 yet; its
+FutureOS version has (below).
+
 **BASIC and back**, with no PC: `(basic)` at `LISP>` makes the core's
 slot silent and resets -- the CPC comes up in BASIC; there, `|BOOTLISP`
 makes it ROM 0 again and resets into Lisp. (Both take the slot if it is
@@ -248,6 +258,15 @@ still there). [`mach/cpc512/README.md`](mach/cpc512/README.md) and
 [`mach/cpc6128/README.md`](mach/cpc6128/README.md) have how they work.
 Both run on a real 464 with Revaldinho's 512K card -- in its DIP
 configuration 4 (2026-11-12): [`discs/README.md`](discs/README.md).
+
+**Under FutureOS** -- TFM's operating system for the CPC -- the 512K
+version starts from FutureOS's desktop, on a 464, 664 or 6128 with a 512K
+expansion: `discs/cpclispfos.dsk` in drive A, tag `LISP.64K`, RUN (X);
+`(reset)` goes back to the desktop. It puts FutureOS's RAM aside, starts
+the CPC's firmware for itself, and gives everything back at the end.
+Passed on Mike's 464 and 6128 (2026-11-17):
+[`mach/futureos/README.md`](mach/futureos/README.md) has the steps, how
+it works, and what was tested where.
 
 ## On a TRS-80
 
@@ -447,6 +466,10 @@ KB, in six 16 KB ROMs. It covers:
   on a CPC with a 512K expansion
 * [`mach/cpc6128/README.md`](mach/cpc6128/README.md): CPC Lisp from disc,
   on a plain 6128
+* [`mach/futureos/README.md`](mach/futureos/README.md): CPC Lisp under
+  FutureOS, on a 464, 664 or 6128 with a 512K expansion -- building,
+  starting it from the desktop, the firmware island, the memory, the
+  screen, what was tested where
 * [`mach/trs80/README.md`](mach/trs80/README.md): the TRS-80 Model I and
   III with X-MEM/80 -- building, the discs, the keys, what works
 * [`mach/trs80m4/README.md`](mach/trs80m4/README.md): the TRS-80 Model 4

@@ -32,14 +32,23 @@ CPC; the README says how to install the ROMs.
       build 22482): floats through its maths package, the line editor,
       ESC, the compiler, Parados -- and the RAM disc `M:` on a RAM
       expansion, under the 1.0 firmware too
-- [ ] A real 6128, 664: not tried
+- [x] A real 6128 (2026-11-17): the 512K version under FutureOS --
+      `(hwtest)` 7 yes, the demos (`mach/futureos`). The ROMs and the
+      other disc versions not yet tried there
+- [ ] A real 664: not tried
 - [x] Under FutureOS (`mach/futureos`, 2026-11-17): started from its
       desktop, `(reset)` back to it -- a firmware island running the 512K
       version, files through the disc ROM (AMSDOS, Parados, VDOS). MAME:
       hwtest 7 yes
-- [ ] Under FutureOS on the real 464: FutureOS in the card's slots, Lisp
-      from the card's Vortex drive E (VDOS), Revaldinho's card in
-      configuration 8
+- [x] Under FutureOS on the real 464 and 6128 (2026-11-17): FutureOS in
+      the card's slots; on the 464 Revaldinho's card in configuration 8,
+      Parados and the card's drive as A; on the 6128 configuration 0,
+      the card on its 664/6128 firmware, the disc on the Gotek as A.
+      `(hwtest)` 7 yes, `(rose)`, `(reset)` to the desktop. The lower
+      ROMs of the 464, 664 and 6128 found (the 664's untried); the
+      screen's geometry set and given back
+- [ ] Under FutureOS with a Vortex-format disc on the 464's drive E
+      (VDOS): FutureOS hung loading `LISP.64K` there (the card's side)
 - [ ] Under FutureOS, its benefits (Mike, 2026-11-17: after the hardware
       test): Lisp's expansion blocks taken only where FutureOS's XRAM
       variables say free -- FutureOS has preemptive multitasking (Mike),
