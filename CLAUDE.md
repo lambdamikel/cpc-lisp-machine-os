@@ -718,8 +718,9 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   (hwtest 7 yes, (reset)). TFM tests the 6128 version. **Passed on
   Mike's 6128** (build 4236, discs/cpclispfos.dsk): 7 yes, (rose), the
   demos; Revaldinho's card in configuration 0, the card's 6128 firmware
-  serving FutureOS, the disc on the Gotek as drive A (from the card's
-  drive E FutureOS went back to the desktop without starting it).
+  serving FutureOS, the disc on the Gotek as drive A (a first try from
+  the card's drive E found it empty: on the 6128 the card has no flash
+  discs, and USB unplugged with the CPC off loses the drive's disc).
   Mike's Gotek stick mounts at /media/mike/D831-1ECE (FlashFloppy,
   alphabetical; CPCLISPFOS.dsk on it).
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo

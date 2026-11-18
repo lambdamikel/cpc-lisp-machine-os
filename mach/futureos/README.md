@@ -126,9 +126,10 @@ jumbled before; with this, the text, `(rose)` and the desktop after
 **Passed on Mike's 6128, 2026-11-17** (build 4236, `discs/cpclispfos.dsk`):
 `(hwtest)` 7 yes, `(rose)`, the demos. FutureOS from the card's slots
 (its 6128 firmware), Revaldinho's card in configuration 0, the disc on
-the Gotek as drive A. Loaded from the card's drive E, FutureOS went back
-to its desktop without starting LISP.64K -- the card session's to look
-at. After a few demos string space runs out, as on the other disc
+the Gotek as drive A. (A first try from the card's drive E went back to
+the desktop: the drive was empty -- USB unplugged with the 6128 off
+loses it, and the card's 6128 firmware has no flash discs to reload.)
+After a few demos string space runs out, as on the other disc
 versions.
 
 The same disc and steps, with the 6128's own drive A (Mike's has a
