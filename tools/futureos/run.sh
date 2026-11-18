@@ -1,7 +1,7 @@
 #!/bin/bash
 # Type a file at CPC Lisp under FutureOS in MAME, and print the transcript:
 #
-#     tools/futureos/run.sh [-f frames] [-s shot.png] file.lsp
+#     tools/futureos/run.sh [-m 6128] [-f frames] [-s shot.png] file.lsp
 #
 # MACH=futureos tools/build.sh first. A 464 with 576K (a 512K expansion),
 # a DDI-1 with build/futureos/cpclispfos.dsk in drive A, and behind it
@@ -13,9 +13,10 @@
 # &C0); then the file's lines are typed when Lisp asks for them.
 set -e
 cd "$(dirname "$0")/../.."
-FRAMES=30000 SHOT=
-while getopts "f:s:" o; do
+FRAMES=30000 SHOT= M=464
+while getopts "m:f:s:" o; do
     case $o in
+        m) M=$OPTARG ;;
         f) FRAMES=$OPTARG ;;
         s) SHOT=$(realpath -m "$OPTARG") ;;
         *) exit 2 ;;
@@ -39,11 +40,18 @@ cp "$B/cpclispfos.dsk" "$tmp/disc.dsk"
         '!press 62 60' '!press 32 20' '!press 18 20'
     cat "$IN"
 } > "$tmp/in.lsp"
-LISP_IN=$tmp/in.lsp LISP_OUT=$tmp/out LISP_SHOT=$SHOT LISP_FRAMES=$FRAMES LISP_EDIT=$EDIT LISP_EDIT2=0xBD3A \
+# the 464 with a DDI-1 and the ROM box behind it; the 6128 with its own
+# drive and the ROM box (BASIC's EDIT is &BD5E there)
+FOS="-rom1 $R/FOS-A.ROM -rom2 $R/FOS-B.ROM -rom3 $R/FOS-C.ROM -rom4 $R/FOS-D.ROM"
+case $M in
+    464)  SYS="cpc464 -ramsize 576K -exp ddi1 -flop $tmp/disc.dsk -exp:ddi1:exp rom $FOS"; EDIT2=0xBD3A ;;
+    6128) SYS="cpc6128 -ramsize 576K -flop1 $tmp/disc.dsk -exp rom $FOS"; EDIT2=0xBD5E ;;
+    *) echo "run: -m 464 or 6128" >&2; exit 2 ;;
+esac
+LISP_IN=$tmp/in.lsp LISP_OUT=$tmp/out LISP_SHOT=$SHOT LISP_FRAMES=$FRAMES LISP_EDIT=$EDIT LISP_EDIT2=$EDIT2 \
 env -u WAYLAND_DISPLAY GDK_BACKEND=x11 timeout 600 xvfb-run -a \
     /usr/games/mame -rompath $HOME/claude/cpc/mame-roms -video none -sound none -nothrottle \
-    -skip_gameinfo cpc464 -ramsize 576K -exp ddi1 -flop "$tmp/disc.dsk" \
-    -exp:ddi1:exp rom -rom1 "$R/FOS-A.ROM" -rom2 "$R/FOS-B.ROM" -rom3 "$R/FOS-C.ROM" -rom4 "$R/FOS-D.ROM" \
+    -skip_gameinfo $SYS \
     -autoboot_script "${REPL_LUA:-emu/repl.lua}" 2>&1 \
   | grep -v -E "^Warning: -video none|^Average speed|WRONG CHECKSUMS|EXPECTED: CRC|FOUND: CRC|might not run correctly" >&2 || true
 cat "$tmp/out"

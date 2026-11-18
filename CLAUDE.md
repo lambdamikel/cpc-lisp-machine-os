@@ -712,7 +712,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   PSRAM only: USB unplugged with the CPC off wipes it, and the card
   puts back its last flash disc (cfg.active). The card session can read the card's state
   while the CPC hangs (the CPU's ROM and address, the FDC's commands):
-  ask it before Mike resets.
+  ask it before Mike resets. **The 664 and 6128**: LISP.64K finds MC
+  START PROGRAM's body at &060E (464), &061F (6128, and a 464 with 1.1)
+  or &0609 (664) by its bytes; `tools/futureos/run.sh -m 6128` passed
+  (hwtest 7 yes, (reset)). TFM tests the 6128 version.
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,

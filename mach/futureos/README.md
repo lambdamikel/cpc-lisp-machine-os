@@ -83,10 +83,13 @@ FutureOS's XRAM_C4..XRAM_FF variables.
 **Passed on Mike's 464, 2026-11-17**: `(hwtest)` 7 yes, `(reset)` back
 to the desktop. The setup:
 
-* The 464's **1.0 firmware**. LISP.64K starts the firmware through the
-  464's lower ROM, and checks the bytes it jumps to; under the 1.1 ROM
-  it goes straight back to the desktop (the 6128's lower ROM has the
-  same routine at &061F, the 664's at &0609: not done yet).
+* The 464's 1.0 firmware. LISP.64K starts the firmware through MC
+  START PROGRAM's body in the lower ROM -- &060E on a 464, &061F on a
+  6128 (or a 464 with the 1.1 firmware), &0609 on a 664 -- and checks
+  the bytes before it jumps; with none of them it goes back to the
+  desktop. The 6128's passed in MAME the same evening (hwtest 7 yes,
+  `(reset)`: `tools/futureos/run.sh -m 6128`); the 664's is untried
+  (MAME here has no 664 romset).
 * FutureOS's official ROMs in the card's slots: the card session's
   firmware with the fast ROM select (`QS`).
 * Revaldinho's card in configuration 8 (DIP 1234 = 1000).
@@ -117,6 +120,17 @@ and R13. LISP.64K sets the firmware's four before starting it, and the
 way back sets FutureOS's again (on the 464 the text and graphics came out
 jumbled before; with this, the text, `(rose)` and the desktop after
 `(reset)` were right there, the same evening).
+
+## On a 6128
+
+The same disc and steps, with the 6128's own drive A (Mike's has a
+Gotek) and its AMSDOS as ROM 7. A RAM expansion of 512 KB is needed as
+on a 464: Revaldinho's card in configuration 0 (DIP 1234 = 0000; the
+6128 does C3 itself). Lisp does not yet ask FutureOS which expansion
+RAM is free: banks 0-2 and 4-6 take its images and RAM disc, and bank
+7's block 3 FutureOS's own RAM while Lisp runs -- keep nothing there.
+The LambdaSpeak card needs its 664/6128 firmware in a 6128 (the card
+session's; it never answers ROM 7 there).
 
 ## Testing in MAME
 

@@ -11,7 +11,10 @@
 ;; (loader512.asm, a link), which walks the ROMs (the disc's: AMSDOS,
 ;; Parados, VDOS), loads the six images and starts Lisp, as RUN"LISP does.
 ;; Lisp is then the 512K CPC's; (quit), (reset), (basic) go back to the
-;; desktop. A 464's firmware only, so far (checked: the bytes at &060E).
+;; desktop. MC START PROGRAM's body is at &060E in the 464's lower ROM,
+;; &061F in the 6128's (also a 464 with the 1.1 firmware) and &0609 in
+;; the 664's, entered the same way (DE, the routine to call): the bytes
+;; are checked at each.
 
     include "fos.asm"
     include "loader512.asm"     ; at &8000-&87FF, its buffer &8800-&8FFF
@@ -45,16 +48,31 @@ fos_start:                      ;   stub must stay out of &4000-&7FFF)
     ld a,#C0                    ;   ROM in
     out (c),a
     out (c),c
-    ld hl,fw464                 ; a 464's firmware?
-    ld de,#060E
-    ld b,fw464_end-fw464
+    ld ix,fw_tab                ; which firmware: its MC START PROGRAM body
+    ld c,(fw_tab_end-fw_tab)/2
+.try:
+    ld e,(ix+0)
+    ld d,(ix+1)
+    ld hl,fw_body
+    ld b,fw_body_end-fw_body
 .chk:
     ld a,(de)
     cp (hl)
-    jr nz,fos_fail
+    jr nz,.next
     inc hl
     inc de
     djnz .chk
+    ld l,(ix+0)                 ; found: the jump below goes there
+    ld h,(ix+1)
+    ld (fw_go+1),hl
+    jr .found
+.next:
+    inc ix
+    inc ix
+    dec c
+    jr nz,.try
+    jp fos_fail                 ; none of them
+.found:
     ld hl,crtc_fw               ; the firmware's screen geometry: FutureOS's
     ld e,crtc_fw_end-crtc_fw    ;   is 64 bytes by 256 lines, and the firmware
 .crtc:                          ;   sets only R12 and R13 (fosback.asm puts
@@ -72,10 +90,16 @@ fos_start:                      ;   stub must stay out of &4000-&7FFF)
     ld de,fos_island            ; called once the firmware is up
     ld hl,0
     ld c,0
-    jp #060E
-fw464:
+fw_go:
+    jp #060E                    ; (patched above)
+fw_tab:
+    dw #060E                    ; 464
+    dw #061F                    ; 6128, or a 464 with the 1.1 firmware
+    dw #0609                    ; 664
+fw_tab_end:
+fw_body:
     db #F3,#ED,#56,#D9,#01,#00,#DF  ; di : im 1 : exx : ld bc,&DF00
-fw464_end:
+fw_body_end:
 crtc_fw:
     db 1,#28, 2,#2E, 6,#19, 7,#1E   ; R1, R2, R6, R7 as the firmware's
 crtc_fw_end:                        ;   reset sets them
