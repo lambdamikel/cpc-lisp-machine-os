@@ -690,7 +690,15 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   (mkfw.py's OWN), with 4 KB in the save block, and (dir) lends nothing;
   and it zeroes &AC01, a ticker waiting for BASIC's &C9 there before it
   patches &AC01-&AC06 and &BF00 (Lisp's line buffer: typed text only).
-  mach/futureos/README.md has the steps on the 464.
+  mach/futureos/README.md has the steps on the 464. On Mike's 464
+  (2026-11-17): **LISP.64K needs the 1.0 lower ROM** (it checks the
+  bytes at &060E; the 1.1/6128 ROM has that body at &061F, the 664's at
+  &0609 -- not done yet: under 1.1 X just stays on the desktop), and
+  **VDOS 2.0 takes &052E bytes of workspace** (AMSDOS &0500): "Too many
+  ROMs" at &A6F0, so FutureOS's resident part is &A120-&A6AF
+  (RESIDENT_END in its variant.asm, `ifndef` in jumps.asm). MAME never
+  ran VDOS (no Vortex controller); its ROM: ~/claude/cpc/roms/CPC SYSTEM
+  ROMS/Vortex20.zip, the card's port patch lambdaspeak4's vdos_fbf6.py.
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,

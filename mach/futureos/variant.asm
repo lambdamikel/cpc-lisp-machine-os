@@ -3,7 +3,11 @@
 ;; 512K CPC's resets (FUTUREOS: resident.asm, fosback.asm); jumps.asm
 ;; includes this.
 
-RESIDENT        equ #A160       ; as the 512K CPC's
+RESIDENT        equ #A120       ; 64 bytes below the 512K CPC's: VDOS 2.0,
+RESIDENT_END    equ #A6B0       ;   the Vortex's ROM 7, takes &052E bytes of
+                                ;   workspace (AMSDOS &0500) and leaves &A6CD
+                                ;   -- under &A6F0 it said "Too many ROMs"
+                                ;   on Mike's 464 (2026-11-17)
 RAMDISC         equ 1
 FUTUREOS        equ 1           ; (quit), (reset), (basic): back to FutureOS
 FOS_SAVE_CFG    equ #FF         ; FutureOS's RAM kept in bank 7's block 3

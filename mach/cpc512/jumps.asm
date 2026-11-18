@@ -26,7 +26,9 @@ RS_FIABANDON    equ RESIDENT+33 ; FILE_IABANDON
 RS_FOCLOSE      equ RESIDENT+36 ; FILE_OCLOSE
 RS_FOABANDON    equ RESIDENT+39 ; FILE_OABANDON
 FWJB            equ RESIDENT+42 ; the firmware's trampolines, 5 bytes each
+    ifndef RESIDENT_END         ; (a variant may set it: FutureOS's)
 RESIDENT_END    equ #A6F0
+    endif
 
 ;; the RAM disc's state, shared by the resident part and the library's
 ;; RAM disc (ramdisc.asm); the loader clears it and sets RD_NBANKS

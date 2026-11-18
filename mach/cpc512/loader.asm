@@ -210,7 +210,11 @@ m_none:   db 13,10,"No 512K expansion found: CPC Lisp needs",13,10
 m_found:  db " (of 8).",13,10,0
 m_nofile: db 13,10,"Cannot load it: is the CPC Lisp disc in?",13,10,0
 m_rom:    db "Too many ROMs: their workspace is where CPC Lisp's",13,10
+    ifdef FUTUREOS
+          db "resident part goes, under &A6B0.",13,10,0
+    else
           db "resident part goes, under &A6F0.",13,10,0
+    endif
 saved:    defs 8,0               ; each bank's byte under the mark
 nbanks:   db 0
 n_img:    db "LISP0.IMG"
