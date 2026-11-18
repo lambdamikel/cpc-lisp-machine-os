@@ -45,7 +45,8 @@ RAM disc. For an HxC or a Gotek:
 `hxcfe -finput:cpclisp-trs80-model3.dsk -conv:HXC_HFE -foutput:x.hfe`.
 
 `cpclispfos.dsk` passed on Mike's 6128 under FutureOS (2026-11-17):
-`(hwtest)` 7 yes, `(rose)` and the demos -- FutureOS from the card's
+`(hwtest)` 7 yes, `(rose)`, the demos and `(reset)` back to the
+desktop -- FutureOS from the card's
 slots, Revaldinho's card in configuration 0, the disc on the 6128's
 Gotek as drive A; on his 464 the build before it (the same but for the
 664's and 6128's firmware), 7 yes and `(reset)` back to the desktop.

@@ -124,7 +124,8 @@ jumbled before; with this, the text, `(rose)` and the desktop after
 ## On a 6128
 
 **Passed on Mike's 6128, 2026-11-17** (build 4236, `discs/cpclispfos.dsk`):
-`(hwtest)` 7 yes, `(rose)`, the demos. FutureOS from the card's slots
+`(hwtest)` 7 yes, `(rose)`, the demos, `(reset)` back to the desktop.
+FutureOS from the card's slots
 (its 6128 firmware), Revaldinho's card in configuration 0, the disc on
 the Gotek as drive A. (A first try from the card's drive E went back to
 the desktop: the drive was empty -- USB unplugged with the 6128 off
