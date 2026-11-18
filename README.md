@@ -6,6 +6,11 @@ ROMs that start a Lisp instead of BASIC. Common Lisp syntax, lexical closures, m
 -- in 16 KB of Z80 assembly -- with graphics, sound, files, floats and
 editors in four more ROMs, and a bytecode compiler in a fifth.
 
+**It also runs from disc -- and under FutureOS**, TFM's operating system
+for the CPC: started from FutureOS's desktop on a 464, 664 or 6128 with a
+512K expansion, and back to the desktop with `(reset)`
+([*Under FutureOS*](#under-futureos), below).
+
     CPC Lisp 0.98
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
@@ -34,6 +39,9 @@ at the end says what is in each.
   Revaldinho's, the DK'tronics, any that banks the DK'tronics way -- runs
   the same six images loaded into it; a plain 6128 runs five, without
   the compiler ([*From disc*](#from-disc), below).
+* **Under FutureOS** on a 464, 664 or 6128 with a 512K expansion: the
+  512K version, started from FutureOS's desktop ([*Under
+  FutureOS*](#under-futureos), below).
 * **The TRS-80 Model I and Model III with
   [X-MEM/80](https://github.com/lambdamikel/x-mem-80)** run it too, as a
   port: the same six images, under LDOS ([*On a
@@ -259,14 +267,28 @@ still there). [`mach/cpc512/README.md`](mach/cpc512/README.md) and
 Both run on a real 464 with Revaldinho's 512K card -- in its DIP
 configuration 4 (2026-11-12): [`discs/README.md`](discs/README.md).
 
-**Under FutureOS** -- TFM's operating system for the CPC -- the 512K
-version starts from FutureOS's desktop, on a 464, 664 or 6128 with a 512K
-expansion: `discs/cpclispfos.dsk` in drive A, tag `LISP.64K`, RUN (X);
-`(reset)` goes back to the desktop. It puts FutureOS's RAM aside, starts
-the CPC's firmware for itself, and gives everything back at the end.
-Passed on Mike's 464 and 6128 (2026-11-17):
-[`mach/futureos/README.md`](mach/futureos/README.md) has the steps, how
-it works, and what was tested where.
+
+## Under FutureOS
+
+[FutureOS](https://futureos.de), TFM's operating system for the CPC,
+takes the place of BASIC and the firmware, with a fast graphical
+desktop of its own. CPC Lisp runs under it: the 512K version, started from FutureOS's desktop,
+on a 464, 664 or 6128 with a 512K RAM expansion that does the 6128's C3
+mode (Revaldinho's card: configuration 8 on a 464, 0 on a 6128).
+
+    SPACE, A, D     drive A's directory: discs/cpclispfos.dsk in drive A
+    LISP.64K        tag it: the pointer on it, COPY
+    X               RUN -- CPC Lisp loads, and LISP> comes up
+    (reset)         back to FutureOS's desktop
+
+Lisp puts FutureOS's RAM aside in the expansion, starts the CPC's own
+firmware for itself -- found in the lower ROM of whichever CPC it is --
+reads its six images through the machine's disc ROM, and gives FutureOS
+everything back at the end: its RAM, colours, screen and ROMs. It passed
+on Mike's 464 and 6128 on 2026-11-17 -- `(hwtest)` 7 yes, the graphics,
+the demos, the way back. [`mach/futureos/README.md`](mach/futureos/README.md)
+has what it needs, building, how it works, the memory, and what was
+tested where.
 
 ## On a TRS-80
 
