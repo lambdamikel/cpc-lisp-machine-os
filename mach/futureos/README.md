@@ -6,7 +6,7 @@ the 512K disc version, run as a *firmware island*: Lisp puts FutureOS's
 RAM aside, starts the CPC's own firmware for itself, and gives FutureOS
 everything back at the end. TFM, FutureOS's author, asked for it; Mike
 set it as the goal for 2026-11-17, and it passed on his 464 and his 6128
-that evening.
+that evening. **Video:** [CPC LISP running on the CPC 6128 with FutureOS -- Vortex Floppy Emulation with LambdaSpeak AI](https://youtu.be/s4BsQOroQUc) (5:08).
 
     CPC Lisp 0.98
     A Lisp machine for the Amstrad CPC, 512K

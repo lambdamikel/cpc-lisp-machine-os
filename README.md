@@ -9,7 +9,8 @@ editors in four more ROMs, and a bytecode compiler in a fifth.
 **It also runs from disc -- and under FutureOS**, TFM's operating system
 for the CPC: started from FutureOS's desktop on a 464, 664 or 6128 with a
 512K expansion, and back to the desktop with `(reset)`
-([*Under FutureOS*](#under-futureos), below).
+([*Under FutureOS*](#under-futureos), below). **Video:**
+[CPC Lisp on the 6128 under FutureOS](https://youtu.be/s4BsQOroQUc) (5:08).
 
     CPC Lisp 0.98
     A Lisp machine for the Amstrad CPC
@@ -64,6 +65,8 @@ at the end says what is in each.
 |---|---|
 | <a href="https://youtu.be/rrI9Di3qzVM"><img src="https://img.youtube.com/vi/rrI9Di3qzVM/maxresdefault.jpg" width="400" alt="A Modern Lisp OS for the Amstrad CPC"></a> | <a href="https://youtu.be/qcSBfZ-axFA"><img src="https://img.youtube.com/vi/qcSBfZ-axFA/maxresdefault.jpg" width="400" alt="CPC Lisp 0.9 demos"></a> |
 | [A Modern Lisp OS for the Amstrad CPC -- Common Lisp in ROM!](https://youtu.be/rrI9Di3qzVM) (11:32) | [CPC Lisp 0.9 Demos -- Turn your Amstrad CPC into a Lisp Machine!](https://youtu.be/qcSBfZ-axFA) (6:51) |
+| <a href="https://youtu.be/s4BsQOroQUc"><img src="https://img.youtube.com/vi/s4BsQOroQUc/maxresdefault.jpg" width="400" alt="CPC Lisp under FutureOS on the CPC 6128"></a> | |
+| [CPC LISP running on the CPC 6128 with FutureOS -- Vortex Floppy Emulation with LambdaSpeak AI](https://youtu.be/s4BsQOroQUc) (5:08) | |
 
 ## Screenshots
 
@@ -289,6 +292,10 @@ on Mike's 464 and 6128 on 2026-11-17 -- `(hwtest)` 7 yes, the graphics,
 the demos, the way back. [`mach/futureos/README.md`](mach/futureos/README.md)
 has what it needs, building, how it works, the memory, and what was
 tested where.
+
+<a href="https://youtu.be/s4BsQOroQUc"><img src="https://img.youtube.com/vi/s4BsQOroQUc/maxresdefault.jpg" width="400" alt="CPC Lisp under FutureOS on the CPC 6128"></a>
+
+[CPC LISP running on the CPC 6128 with FutureOS -- Vortex Floppy Emulation with LambdaSpeak AI](https://youtu.be/s4BsQOroQUc) (5:08)
 
 ## On a TRS-80
 
