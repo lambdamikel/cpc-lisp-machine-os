@@ -115,7 +115,8 @@ FutureOS's screen is 64 bytes by 256 lines (CRTC R1 &20, R2 &2A, R6 &20,
 R7 &22); the firmware's is 80 by 200, and MC START PROGRAM sets only R12
 and R13. LISP.64K sets the firmware's four before starting it, and the
 way back sets FutureOS's again (on the 464 the text and graphics came out
-jumbled before).
+jumbled before; with this, the text, `(rose)` and the desktop after
+`(reset)` were right there, the same evening).
 
 ## Testing in MAME
 

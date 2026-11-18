@@ -707,7 +707,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   &2A, R6 &20, R7 &22; logged in MAME with an I/O tap on &BCxx/&BDxx):
   text and (rose) came out jumbled until LISP.64K set the firmware's
   (&28 &2E &19 &1E) and fosback FutureOS's again (its slot grew to 192
-  bytes: FOS_BACK_LEN). The card session can read the card's state
+  bytes: FOS_BACK_LEN) -- checked on the 464: text, (rose), the
+  desktop after (reset). A PC upload into the card's drive lives in
+  PSRAM only: USB unplugged with the CPC off wipes it, and the card
+  puts back its last flash disc (cfg.active). The card session can read the card's state
   while the CPC hangs (the CPU's ROM and address, the FDC's commands):
   ask it before Mike resets.
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
