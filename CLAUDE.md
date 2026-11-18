@@ -715,7 +715,13 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   ask it before Mike resets. **The 664 and 6128**: LISP.64K finds MC
   START PROGRAM's body at &060E (464), &061F (6128, and a 464 with 1.1)
   or &0609 (664) by its bytes; `tools/futureos/run.sh -m 6128` passed
-  (hwtest 7 yes, (reset)). TFM tests the 6128 version.
+  (hwtest 7 yes, (reset)). TFM tests the 6128 version. **Passed on
+  Mike's 6128** (build 4236, discs/cpclispfos.dsk): 7 yes, (rose), the
+  demos; Revaldinho's card in configuration 0, the card's 6128 firmware
+  serving FutureOS, the disc on the Gotek as drive A (from the card's
+  drive E FutureOS went back to the desktop without starting it).
+  Mike's Gotek stick mounts at /media/mike/D831-1ECE (FlashFloppy,
+  alphabetical; CPCLISPFOS.dsk on it).
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,

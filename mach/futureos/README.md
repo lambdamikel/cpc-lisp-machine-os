@@ -123,6 +123,14 @@ jumbled before; with this, the text, `(rose)` and the desktop after
 
 ## On a 6128
 
+**Passed on Mike's 6128, 2026-11-17** (build 4236, `discs/cpclispfos.dsk`):
+`(hwtest)` 7 yes, `(rose)`, the demos. FutureOS from the card's slots
+(its 6128 firmware), Revaldinho's card in configuration 0, the disc on
+the Gotek as drive A. Loaded from the card's drive E, FutureOS went back
+to its desktop without starting LISP.64K -- the card session's to look
+at. After a few demos string space runs out, as on the other disc
+versions.
+
 The same disc and steps, with the 6128's own drive A (Mike's has a
 Gotek) and its AMSDOS as ROM 7. A RAM expansion of 512 KB is needed as
 on a 464: Revaldinho's card in configuration 0 (DIP 1234 = 0000; the
