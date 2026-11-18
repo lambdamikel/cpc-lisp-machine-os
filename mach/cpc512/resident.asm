@@ -140,7 +140,7 @@ r_reset:
     out (c),c                   ;   RAM, overwrites this part: it runs from
     ld hl,FOS_SAVE_BACK         ;   &8000 (the cells: no longer needed)
     ld de,#8000
-    ld bc,128
+    ld bc,FOS_BACK_LEN
     ldir
     jp #8000
     else

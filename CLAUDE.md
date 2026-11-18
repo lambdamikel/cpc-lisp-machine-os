@@ -699,6 +699,17 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   (RESIDENT_END in its variant.asm, `ifndef` in jumps.asm). MAME never
   ran VDOS (no Vortex controller); its ROM: ~/claude/cpc/roms/CPC SYSTEM
   ROMS/Vortex20.zip, the card's port patch lambdaspeak4's vdos_fbf6.py.
+  **Passed on the 464** the same evening: 1.0 firmware, `|DDI1,4` (the
+  card's drive at &FB7E, Parados ROM 7), cpclispfos.dsk on drive A,
+  hwtest 7 yes, `(reset)` back to the desktop. FutureOS hung loading
+  from drive E (the Vortex disc) in ROM B's seek loop -- the card
+  session's to chase. **FutureOS's screen is 64 x 256** (CRTC R1 &20, R2
+  &2A, R6 &20, R7 &22; logged in MAME with an I/O tap on &BCxx/&BDxx):
+  text and (rose) came out jumbled until LISP.64K set the firmware's
+  (&28 &2E &19 &1E) and fosback FutureOS's again (its slot grew to 192
+  bytes: FOS_BACK_LEN). The card session can read the card's state
+  while the CPC hangs (the CPU's ROM and address, the FDC's commands):
+  ask it before Mike resets.
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,

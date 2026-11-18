@@ -80,27 +80,42 @@ FutureOS's XRAM_C4..XRAM_FF variables.
 
 ## On Mike's 464
 
+**Passed on Mike's 464, 2026-11-17**: `(hwtest)` 7 yes, `(reset)` back
+to the desktop. The setup:
+
+* The 464's **1.0 firmware**. LISP.64K starts the firmware through the
+  464's lower ROM, and checks the bytes it jumps to; under the 1.1 ROM
+  it goes straight back to the desktop (the 6128's lower ROM has the
+  same routine at &061F, the 664's at &0609: not done yet).
 * FutureOS's official ROMs in the card's slots: the card session's
   firmware with the fast ROM select (`QS`).
 * Revaldinho's card in configuration 8 (DIP 1234 = 1000).
-* `build/futureos/cpclispfos-vortex.dsk` in the card's drive. It has
-  the same files as `cpclispfos.dsk`, in the Vortex format
-  (`tools/futureos/vortexdisk.py`).
+* The card's drive in its normal place with Parados as ROM 7:
+  `|DDI1,4` at BASIC, and `build/futureos/cpclispfos.dsk` in the drive.
 
 Then:
 
-    |VORTEX,7       the drive at the Vortex ports, VDOS as ROM 7
     |OS             the desktop
-    SPACE, E, D     drive E's directory
+    SPACE, A, D     drive A's directory
     LISP.64K        tag it: the pointer on it, COPY
     X               RUN: Lisp starts
 
 `(load "hwtest")` and `(hwtest)` check what the 512K version checks, with
-check 5's far arrays sized for the smaller RAM disc. `(reset)` goes back
-to the desktop.
+check 5's far arrays sized for the smaller RAM disc (it takes a few
+minutes). `(reset)` goes back to the desktop.
 
-A disc with AMSDOS or Parados works the same way (`cpclispfos.dsk`):
-Lisp uses whatever disc ROM is ROM 7.
+Lisp uses whatever disc ROM is ROM 7: AMSDOS, Parados, or VDOS 2.0 (its
+1326 bytes of workspace are why the resident part is at &A120). The
+Vortex disc, `cpclispfos-vortex.dsk` with `|VORTEX,7` and drive E, is
+not there yet: FutureOS itself hung loading LISP.64K from it, in ROM B's
+seek loop on the card's Vortex controller, two times in three. The card
+session is looking into it (FutureOS has no drive E configured).
+
+FutureOS's screen is 64 bytes by 256 lines (CRTC R1 &20, R2 &2A, R6 &20,
+R7 &22); the firmware's is 80 by 200, and MC START PROGRAM sets only R12
+and R13. LISP.64K sets the firmware's four before starting it, and the
+way back sets FutureOS's again (on the 464 the text and graphics came out
+jumbled before).
 
 ## Testing in MAME
 

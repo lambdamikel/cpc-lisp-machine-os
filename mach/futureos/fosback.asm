@@ -43,6 +43,22 @@ fos_back:
     inc c
     bit 2,c
     jr z,.ink
+    ld bc,#BC01                 ; FutureOS's screen, 64 bytes by 256 lines:
+    out (c),c                   ;   R1, R2, R6, R7 as its ROMs set them (the
+    ld bc,#BD20                 ;   firmware's are 80 by 200: LISP.64K sets
+    out (c),c                   ;   those; the CRTC's registers cannot be
+    ld bc,#BC02                 ;   read back, and MC START PROGRAM sets only
+    out (c),c                   ;   R12 and R13)
+    ld bc,#BD2A
+    out (c),c
+    ld bc,#BC06
+    out (c),c
+    ld bc,#BD20
+    out (c),c
+    ld bc,#BC07
+    out (c),c
+    ld bc,#BD22
+    out (c),c
     ld bc,#BC0C                 ; the screen at &C000 again, unscrolled
     out (c),c
     ld bc,#BD30
@@ -60,4 +76,4 @@ fos_back:
     ld sp,#C000
     jp #FEA0                    ; TUR_D (fos.asm)
 fos_back_end:
-    assert fos_back_end-fos_back <= 128     ; (the reset copies 128)
+    assert fos_back_end-fos_back <= FOS_BACK_LEN    ; (the reset copies that)

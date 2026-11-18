@@ -55,6 +55,20 @@ fos_start:                      ;   stub must stay out of &4000-&7FFF)
     inc hl
     inc de
     djnz .chk
+    ld hl,crtc_fw               ; the firmware's screen geometry: FutureOS's
+    ld e,crtc_fw_end-crtc_fw    ;   is 64 bytes by 256 lines, and the firmware
+.crtc:                          ;   sets only R12 and R13 (fosback.asm puts
+    ld b,#BC                    ;   FutureOS's back)
+    ld c,(hl)
+    out (c),c                   ; the register
+    inc hl
+    ld b,#BD
+    ld c,(hl)
+    out (c),c                   ; its value
+    inc hl
+    dec e
+    dec e
+    jr nz,.crtc
     ld de,fos_island            ; called once the firmware is up
     ld hl,0
     ld c,0
@@ -62,6 +76,9 @@ fos_start:                      ;   stub must stay out of &4000-&7FFF)
 fw464:
     db #F3,#ED,#56,#D9,#01,#00,#DF  ; di : im 1 : exx : ld bc,&DF00
 fw464_end:
+crtc_fw:
+    db 1,#28, 2,#2E, 6,#19, 7,#1E   ; R1, R2, R6, R7 as the firmware's
+crtc_fw_end:                        ;   reset sets them
 
 fos_island:
     call start                  ; the 512K loader: back only if it failed
