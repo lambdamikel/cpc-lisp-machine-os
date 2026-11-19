@@ -76,9 +76,12 @@ if CARDLOG then
 end
 
 OUT = {}
-TAPO = MEM:install_read_tap(0xBB5A, 0xBB5A, "txtout", function(offset, data, mask)
+-- LISP_TXTOUT: where TXT OUTPUT is entered (&BB5A, the firmware's; under
+-- FutureOS natively, mach/fos, the resident part's trampoline)
+TXTOUT = tonumber(getenv("LISP_TXTOUT", "0xBB5A"))
+TAPO = MEM:install_read_tap(TXTOUT, TXTOUT, "txtout", function(offset, data, mask)
   local pc = CPU.state["PC"].value
-  if pc == 0xBB5A or pc == 0xBB5B then
+  if pc == TXTOUT or pc == TXTOUT + 1 then
     OUT[#OUT + 1] = string.char(CPU.state["A"].value & 0xFF)
   end
   return data

@@ -777,6 +777,25 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   loading of LISP.64K is tested now; `FOS_DIR=0` the old RAM start and
   the AMSDOS fallback. repl.lua has `!dump N LO-HI`. For the next step:
   SICHRE (save) writes &8000-&9FFF and &B000-&BFFF and saves whole KB.
+* **CPC Lisp on FutureOS itself** (`mach/fos`, 2026-11-19; Mike chose
+  "native" over the island for TFM's request): no firmware -- FutureOS
+  stays resident with its RAM (&A000-&BFFF), Lisp's fixed area and
+  resident part move to &9000-&9FFF, and a seventh image, the machine
+  page (`page.asm`, bank 7's block 3), has a routine of the firmware's
+  contract for each of the 82 names (`tools/fos/mkfw.py`: trampolines
+  `call fwp : dw &C000+3k`). Text through FutureOS's PR_2 (ROM A &C9BD:
+  C_POS &B848, the glyph from &3800 -- the lower ROM in, the interrupts
+  off), our own IM 1 interrupt (300 Hz tick, keyboard matrix, the
+  firmware's three translation tables from the 464's ROM at &1D69),
+  floats from the lower ROM at real addresses (its jumpblock table, found
+  by the copy code "00 BB 01 CF n"; FutureOS has no floats), the maths'
+  RAM swapped (a restore would lose FP_ANGLE). Phase 1 runs in MAME on
+  the 464 and 6128; files (phase 2), graphics and sound (3) to come.
+  Lessons: the cursor routines must keep every register (cur_hide ate
+  TXT OUTPUT's character: every character came out as 0); a global
+  label between a routine and its `.local` moves the local's scope;
+  rasm takes no local labels starting with a digit. Its README has the
+  rest.
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,
