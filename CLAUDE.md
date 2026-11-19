@@ -812,7 +812,20 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   wild), FutureOS's own stack for its calls. Variables found in ROM C:
   &B8C4 blocks, &BBCC/&BBCD the last extent's RC and S1 (G_BLK), REG16_8
   &B8F4 the name, REG08_1 &B8DD the drive. repl.lua prints PC and SP
-  on a timeout.
+  on a timeout. **Phase 3** (2026-11-19, MAME): graphics in the page
+  (plot, Bresenham lines, rows a byte at a time through r_span -- 15
+  discs in 1257 ticks against the firmware's 1619; slanted lines twice
+  its time), text in modes 0/1 by our renderer (mode 2's by PR_2), the
+  sixteen inks; sound (three queues of four, amplitude envelopes, the AY
+  from the page's snd_tick, 100 Hz, the interrupt mapping the page in;
+  `LISP_AYLOG` logs the AY's writes). Pitfalls that cost a round each:
+  ADD HL sets no Z or S (the line never ended: use OR A : ADC HL); CP
+  then RET NZ returns with carry set when A was lower (every save
+  "succeeded"); a helper that loads HL clobbers a count kept there (the
+  file's blocks came out 11); a comment line holding "label:" fools a
+  count of labels. Not yet: the RAM disc and far arrays, hwtest, `(dir
+  "e:")` (part 0 is full), re-reading a changed disc's directory; the
+  resident part has ~150 bytes left.
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,
