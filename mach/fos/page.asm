@@ -54,12 +54,6 @@ ctl_code:   db 0
 ctl_par:    defs 9,0
 ctl_p:      dw 0
 km_back:    db 0                ; KM CHAR RETURN's character, 0 if none
-gfx_x:      dw 0                ; the graphics cursor (stubs)
-gfx_y:      dw 0
-gfx_ox:     dw 0
-gfx_oy:     dw 0
-gfx_pen:    db 1
-gfx_paper:  db 0
 m_first:    dw 256              ; SYMBOL: the first user-defined character
 m_tab:      dw 0                ;   and their table
 inks:       defs 17,0           ; the inks' hardware colours (16: border)
@@ -357,48 +351,173 @@ draw_at:
     pop af
     ld (hl),a
     pop bc
-;; draw_cell: A, C = column, B = row: drawn, from the shadow's character
-;; (inverted when the paper is the lit ink)
+;; draw_cell: A, C = column, B = row: drawn in the text pen and paper.
+;; In mode 2, a character of the lower ROM's font in two inks by FutureOS's
+;; PR_2 (or PR_2I); anything else -- modes 0 and 1, a user-defined
+;; character, a pen the same as the paper -- by draw_gen.
 draw_cell:
+    ld e,0
+;; draw_it: as draw_cell, E = 1 for the cursor (pen and paper swapped)
+draw_it:
     push af
     call cell_addr
     pop af
-    ld e,a
-    ld a,(paper)
     ld d,a
-    ld a,(pen)
-    xor d
-    and 1
-    ld b,0
-    jr nz,.pn
-    ld a,d                      ; pen = paper: nothing to see but paper
-    and 1
-    ld b,a
-    ld e,32
-    jr .go
-.pn:
+    ld a,(cmode)
+    cp 2
+    jr nz,.gen
     ld a,d
+    push hl
+    ld hl,(m_first)
+    inc h
+    dec h
+    jr nz,.rom                  ; (no user-defined ones)
+    cp l
+    jr nc,.genp
+.rom:
+    pop hl
+    ld a,(paper)
+    ld b,a
+    ld a,(pen)
+    xor b
     and 1
-    ld b,a                      ; paper 1: inverted
-.go:
-    ld a,e
+    jr z,.gen
+    ld a,b
+    and 1
+    xor e
+    ld b,a                      ; 1: inverted
+    ld a,d
     jp r_glyph
-;; draw_inv: the cursor -- the shadow's character at C, B inverted
+.genp:
+    pop hl
+.gen:
+    ld a,d
+    ld b,e
+;; draw_gen: A = a character, HL = its cell, B = 1 to swap pen and paper:
+;; its glyph (the lower ROM's, or a user-defined one) in the text pen and
+;; paper, for the mode, into rs_cell, and r_cellw puts it on the screen
+draw_gen:
+    push hl
+    push bc
+    call glyph_get
+    ld a,(pen)
+    call p_SCR_INK_ENCODE
+    ld d,a
+    ld a,(paper)
+    call p_SCR_INK_ENCODE
+    ld e,a
+    pop bc
+    dec b
+    jr nz,.ns
+    ld a,d
+    ld d,e
+    ld e,a
+.ns:
+    ld hl,rs_cell+32            ; the glyph
+    ld bc,rs_cell               ; the bytes
+    ld a,8
+.l:
+    push af
+    ld a,(hl)
+    inc hl
+    push hl
+    ld l,a                      ; L: the glyph's row
+    ld a,(cmode)
+    cp 1
+    jr z,.m1
+    jr c,.m0
+    ld a,l                      ; mode 2: the row is the mask
+    call dg_put
+    jr .nx
+.m1:
+    ld a,l                      ; mode 1: four pixels a byte
+    and #F0
+    ld h,a
+    rrca
+    rrca
+    rrca
+    rrca
+    or h
+    call dg_put
+    ld a,l
+    and #0F
+    ld h,a
+    rlca
+    rlca
+    rlca
+    rlca
+    or h
+    call dg_put
+    jr .nx
+.m0:
+    ld h,4                      ; mode 0: two pixels a byte
+.m0l:
+    xor a
+    sla l
+    jr nc,.p0
+    or #AA
+.p0:
+    sla l
+    jr nc,.p1
+    or #55
+.p1:
+    call dg_put
+    dec h
+    jr nz,.m0l
+.nx:
+    pop hl
+    pop af
+    dec a
+    jr nz,.l
+    pop hl
+    ld a,(ccw)
+    ld b,a
+    jp r_cellw
+;; dg_put: A = a pixel mask -> the pen's bits (D) there, the paper's (E)
+;; elsewhere, into (BC), BC moved on
+dg_put:
+    push hl
+    ld h,a
+    and d
+    ld l,a
+    ld a,h
+    cpl
+    and e
+    or l
+    ld (bc),a
+    inc bc
+    pop hl
+    ret
+;; glyph_get: A = a character -> its eight bytes at rs_cell+32
+glyph_get:
+    ld hl,(m_first)
+    ld e,a
+    ld d,0
+    ex de,hl
+    or a
+    sbc hl,de                   ; the character - the first user-defined
+    jr c,.rom
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    ld de,(m_tab)
+    add hl,de
+    ld de,rs_cell+32
+    ld bc,8
+    ldir
+    ret
+.rom:
+    ld de,rs_cell+32            ; (A: still the character)
+    jp r_romfont
+;; draw_inv: the cursor -- the shadow's character at C, B, pen and paper
+;; swapped
 draw_inv:
     push bc
     call shadow_at
     pop bc
     ld a,(hl)
-    push af
-    call cell_addr
-    pop af
-    ld e,a
-    ld a,(paper)
-    and 1
-    xor 1
-    ld b,a
-    ld a,e
-    jp r_glyph
+    ld e,1
+    jp draw_it
 
 ;; cell_addr: C = column, B = row (physical) -> HL = the cell's address on
 ;; its top pixel line. BC kept.
@@ -1047,6 +1166,24 @@ p_SCR_SET_MODE:
     ld hl,paper
     and (hl)
     ld (hl),a
+    ld a,(cmask)
+    ld hl,g_pen
+    and (hl)
+    ld (hl),a
+    ld a,(cmask)
+    ld hl,g_paper
+    and (hl)
+    ld (hl),a
+    ld a,(cmode)                ; the width in pixels: 160, 320, 640
+    ld hl,160
+    or a
+    jr z,.w
+    add hl,hl
+    dec a
+    jr z,.w
+    add hl,hl
+.w:
+    ld (gp_w),hl
     xor a
     ld (cur_shown),a
     ld a,(rs_rom)
@@ -1243,18 +1380,6 @@ fb_b:       db 0
 fb_r:       db 0
 p_SCR_SET_FLASHING:
 p_SCR_SW_ROLL:
-p_SCR_ACCESS:
-    ret
-p_SCR_DOT_POSITION:
-    ld hl,#C000
-    ld c,#80
-    ld b,1
-    ret
-p_SCR_NEXT_BYTE:
-    inc hl
-    ret
-p_SCR_PREV_BYTE:
-    dec hl
     ret
 
 ;; ---- the keys ----
@@ -1371,53 +1496,631 @@ km_ctrl:
     db #FF,#FF,#12,#14,#07,#06,#02,#16,#FF,#FF,#05,#17,#13,#04,#03,#18
     db #FF,#7E,#FC,#11,#E1,#01,#FE,#1A,#FF,#FF,#FF,#FF,#FF,#FF,#FF,#7F
 
-;; ---- graphics: not yet (the graphics cursor is kept) ----
+;; ---- graphics ----
+;;
+;; The firmware's: logical coordinates, x 0-639 and y 0-399, from the
+;; origin, y up; a pixel is 1, 2 or 4 units wide (mode 2, 1, 0) and 2
+;; high. Plotted and tested here (the pixel's address and mask), written
+;; by the resident part (r_pix, in the ink mode that SCR ACCESS set).
+
 p_GRA_MOVE_ABSOLUTE:
-p_GRA_PLOT_ABSOLUTE:
-p_GRA_LINE_ABSOLUTE:
-    ld (gfx_x),de
-    ld (gfx_y),hl
+    ld (g_x),de
+    ld (g_y),hl
     ret
 p_GRA_MOVE_RELATIVE:
-p_GRA_PLOT_RELATIVE:
-p_GRA_LINE_RELATIVE:
+    call g_rel
+    jr p_GRA_MOVE_ABSOLUTE
+;; g_rel: DE, HL relative to the graphics cursor -> absolute
+g_rel:
     push hl
-    ld hl,(gfx_x)
+    ld hl,(g_x)
     add hl,de
-    ld (gfx_x),hl
+    ex de,hl
     pop hl
-    ld de,(gfx_y)
+    push de
+    ld de,(g_y)
     add hl,de
-    ld (gfx_y),hl
-    ld de,(gfx_x)
+    pop de
     ret
 p_GRA_ASK_CURSOR:
-    ld de,(gfx_x)
-    ld hl,(gfx_y)
+    ld de,(g_x)
+    ld hl,(g_y)
     ret
 p_GRA_SET_ORIGIN:
-    ld (gfx_ox),de
-    ld (gfx_oy),hl
+    ld (g_ox),de
+    ld (g_oy),hl
+    ld hl,0
+    ld (g_x),hl
+    ld (g_y),hl
     ret
 p_GRA_GET_ORIGIN:
-    ld de,(gfx_ox)
-    ld hl,(gfx_oy)
-    ret
-p_GRA_CLEAR_WINDOW:
+    ld de,(g_ox)
+    ld hl,(g_oy)
     ret
 p_GRA_SET_PEN:
-    ld (gfx_pen),a
+    push hl
+    ld hl,cmask
+    and (hl)
+    ld (g_pen),a
+    pop hl
     ret
 p_GRA_GET_PEN:
-    ld a,(gfx_pen)
+    ld a,(g_pen)
     ret
 p_GRA_SET_PAPER:
-    ld (gfx_paper),a
+    push hl
+    ld hl,cmask
+    and (hl)
+    ld (g_paper),a
+    pop hl
     ret
-p_GRA_TEST_ABSOLUTE:
+p_SCR_ACCESS:                   ; A = the ink mode: 0 as it is, 1 XOR,
+    and 3                       ;   2 AND, 3 OR
+    ld (g_acc),a
+    ret
+;; GRA CLEAR WINDOW: the screen to the graphics paper (the text with it),
+;; the graphics cursor at the origin
+p_GRA_CLEAR_WINDOW:
+    push af
+    push bc
+    push de
+    push hl
+    call cur_hide
+    ld hl,shadow
+    ld de,shadow+1
+    ld bc,ROWS*80-1
+    ld (hl),32
+    ldir
+    ld a,(g_paper)
+    call p_SCR_INK_ENCODE
+    ld hl,#C000
+    ld c,26
+.r:
+    ld b,80
+    call r_rowfill
+    ld de,80
+    add hl,de
+    dec c
+    jr nz,.r
+    ld hl,0
+    ld (g_x),hl
+    ld (g_y),hl
+    call cur_show
+    pop hl
+    pop de
+    pop bc
+    pop af
+    ret
+
+p_GRA_PLOT_RELATIVE:
+    call g_rel
+p_GRA_PLOT_ABSOLUTE:
+    ld (g_x),de
+    ld (g_y),hl
+    call g_abs
+    call g_phys
+    ret nc
+    jp g_plot
+;; GRA TEST: -> A = the pen at the point (the cursor moved there)
 p_GRA_TEST_RELATIVE:
-    xor a
+    call g_rel
+p_GRA_TEST_ABSOLUTE:
+    ld (g_x),de
+    ld (g_y),hl
+    call g_abs
+    call g_phys
+    jr c,.on
+    ld a,(g_paper)
     ret
+.on:
+    call g_addr                 ; HL, C: the byte, the mask
+    call r_pixrd
+    and c                       ; this pixel's bits
+    ld b,a
+    ld a,(cmode)
+    cp 1
+    jr c,.m0
+    jr z,.m1
+    ld a,b                      ; mode 2
+    or a
+    ret z
+    ld a,1
+    ret
+.m1:                            ; mode 1: bit 7-p ink bit 0, 3-p bit 1
+    ld a,c
+    and #F0
+    and b
+    ld e,0
+    jr z,.b1
+    inc e
+.b1:
+    ld a,c
+    and #0F
+    and b
+    jr z,.b2
+    set 1,e
+.b2:
+    ld a,e
+    ret
+.m0:                            ; mode 0: ink bits 0-3 at 7, 3, 5, 1 (6, 2,
+    ld a,c                      ;   4, 0 for the right pixel)
+    and #AA
+    ld a,b
+    jr nz,.l0
+    rlca                        ; the right pixel: as the left's
+.l0:
+    ld e,0
+    bit 7,a
+    jr z,.c1
+    set 0,e
+.c1:
+    bit 3,a
+    jr z,.c2
+    set 1,e
+.c2:
+    bit 5,a
+    jr z,.c3
+    set 2,e
+.c3:
+    bit 1,a
+    jr z,.c4
+    set 3,e
+.c4:
+    ld a,e
+    ret
+
+p_GRA_LINE_RELATIVE:
+    call g_rel
+;; GRA LINE: from the cursor to DE, HL, both ends drawn (Bresenham, in
+;; pixels; what is off the screen is left out)
+p_GRA_LINE_ABSOLUTE:
+    push de
+    push hl
+    ld de,(g_x)
+    ld hl,(g_y)
+    call g_abs
+    call g_pix
+    ld (ln_x),de
+    ld (ln_y),hl
+    pop hl
+    pop de
+    ld (g_x),de
+    ld (g_y),hl
+    call g_abs
+    call g_pix
+    ld (ln_x1),de
+    ld (ln_y1),hl
+    ld a,(g_pen)                ; the pen's byte, once
+    call p_SCR_INK_ENCODE
+    ld (g_penb),a
+    ld de,(ln_y)                ; a row: a span of whole bytes
+    or a
+    sbc hl,de
+    jp z,g_hspan
+    ld hl,(ln_x1)               ; dx = |x1 - x|, sx
+    ld de,(ln_x)
+    ld a,1
+    or a
+    sbc hl,de
+    jp p,.xp
+    ld a,-1
+    ex de,hl
+    ld hl,0
+    or a
+    sbc hl,de
+.xp:
+    ld (ln_dx),hl
+    ld (ln_sx),a
+    ld hl,(ln_y1)               ; dy = |y1 - y|, sy
+    ld de,(ln_y)
+    ld a,1
+    or a
+    sbc hl,de
+    jp p,.yp
+    ld a,-1
+    ex de,hl
+    ld hl,0
+    or a
+    sbc hl,de
+.yp:
+    ld (ln_dy),hl
+    ld (ln_sy),a
+    ld hl,(ln_dx)               ; err = dx - dy
+    ld de,(ln_dy)
+    or a
+    sbc hl,de
+    ld (ln_err),hl
+.step:
+    ld de,(ln_x)
+    ld hl,(ln_y)
+    call g_inpix
+    call c,g_plotb
+    ld hl,(ln_x)
+    ld de,(ln_x1)
+    or a
+    sbc hl,de
+    jr nz,.go
+    ld hl,(ln_y)
+    ld de,(ln_y1)
+    or a
+    sbc hl,de
+    ret z                       ; the end
+.go:
+    ld hl,(ln_err)              ; e2 = 2 err
+    add hl,hl
+    push hl
+    ld de,(ln_dy)               ; e2 > -dy, i.e. e2 + dy > 0:
+    or a                        ;   err -= dy, x += sx (ADC: ADD HL
+    adc hl,de                   ;   sets no S or Z)
+    jr z,.nx
+    jp m,.nx
+    ld hl,(ln_err)
+    or a
+    sbc hl,de
+    ld (ln_err),hl
+    ld a,(ln_sx)
+    ld e,a
+    rla
+    sbc a,a
+    ld d,a
+    ld hl,(ln_x)
+    add hl,de
+    ld (ln_x),hl
+.nx:
+    pop hl                      ; e2 < dx: err += dx, y += sy
+    ld de,(ln_dx)
+    or a
+    sbc hl,de
+    jp p,.step
+    ld hl,(ln_err)
+    add hl,de
+    ld (ln_err),hl
+    ld a,(ln_sy)
+    ld e,a
+    rla
+    sbc a,a
+    ld d,a
+    ld hl,(ln_y)
+    add hl,de
+    ld (ln_y),hl
+    jp .step
+
+;; g_abs: DE, HL from the origin -> the screen's logical coordinates
+g_abs:
+    push hl
+    ld hl,(g_ox)
+    add hl,de
+    ex de,hl
+    pop hl
+    push de
+    ld de,(g_oy)
+    add hl,de
+    pop de
+    ret
+;; g_pix: logical DE, HL -> pixels (signed, not clipped): x / the pixel's
+;; width, y / 2
+g_pix:
+    sra h
+    rr l
+    ld a,(cmode)
+    cp 2
+    ret z
+    sra d
+    rr e
+    or a
+    ret nz
+    sra d
+    rr e
+    ret
+;; g_phys: logical DE, HL -> carry and pixels if on the screen
+g_phys:
+    call g_pix
+;; g_inpix: pixels DE, HL -> carry if on the screen. DE, HL kept.
+g_inpix:
+    bit 7,d
+    jr nz,.off
+    bit 7,h
+    jr nz,.off
+    push hl
+    ld bc,200
+    or a
+    sbc hl,bc
+    pop hl
+    ret nc
+    push hl
+    ld hl,(gp_w)                ; the mode's width in pixels
+    ex de,hl
+    or a
+    sbc hl,de
+    add hl,de
+    ex de,hl
+    pop hl
+    ret
+.off:
+    or a
+    ret
+;; g_plot: pixels DE, HL (on the screen) -> plotted in the graphics pen;
+;; g_plotb: in the pen's byte g_penb
+g_plot:
+    ld a,(g_pen)
+    call p_SCR_INK_ENCODE
+    ld (g_penb),a
+g_plotb:
+    call g_addr
+    ld a,(g_penb)
+    ld b,a
+    ld a,(g_acc)
+    jp r_pix
+;; g_hspan: the line is a row, ln_y, from ln_x to ln_x1: clipped, and
+;; written a byte at a time (r_span), the ends masked
+g_hspan:
+    ld hl,(ln_y)
+    bit 7,h
+    ret nz
+    ld de,200
+    or a
+    sbc hl,de
+    ret nc                      ; not on the screen
+    ld hl,(ln_x)                ; from the smaller x
+    ld de,(ln_x1)
+    or a
+    sbc hl,de
+    add hl,de
+    jp m,.ord
+    ex de,hl
+.ord:                           ; HL <= DE
+    bit 7,h
+    jr z,.l0
+    ld hl,0
+.l0:
+    bit 7,d
+    ret nz                      ; all left of the screen
+    push hl
+    ld hl,(gp_w)
+    dec hl
+    or a
+    sbc hl,de
+    jr nc,.r0                   ; DE <= the right edge
+    ld de,(gp_w)
+    dec de
+.r0:
+    pop hl
+    push de
+    ex de,hl
+    ld hl,(gp_w)
+    or a
+    sbc hl,de
+    pop hl
+    ret c                       ; (the left end past the right edge)
+    ret z
+    push hl                     ; (DE: the left end, HL: the right)
+    ld hl,(ln_y)
+    call g_addr                 ; the left end's byte and mask
+    ld (hs_a0),hl
+    ld a,c
+    ld (hs_m0),a
+    pop de
+    ld hl,(ln_y)
+    call g_addr                 ; the right end's
+    ld (hs_a1),hl
+    ld a,c
+    ld (hs_m1),a
+    ld a,(hs_m0)                ; the left byte: its pixel and those right
+    call hs_right               ;   of it
+    ld (hs_m0),a
+    ld a,(hs_m1)                ; the right byte: its pixel and those left
+    call hs_left
+    ld (hs_m1),a
+    ld hl,(hs_a1)               ; bytes: the right's - the left's (in the
+    ld de,(hs_a0)               ;   2 KB ring: a row is at most 80), + 1
+    or a
+    sbc hl,de
+    ld b,l
+    inc b
+    ld a,(hs_m0)
+    ld d,a
+    ld a,(hs_m1)
+    ld e,a
+    ld hl,(hs_a0)
+    ld a,(g_penb)
+    ld c,a
+    ld a,(g_acc)
+    jp r_span
+;; hs_right: A = a pixel's mask -> its pixel's and those right of it in the
+;; byte; hs_left: ... left of it
+hs_right:
+    ld c,a
+    ld e,a
+.l:
+    call hs_last
+    jr z,.d
+    srl c
+    ld a,c
+    or e
+    ld e,a
+    jr .l
+.d:
+    ld a,e
+    ret
+hs_left:
+    ld c,a
+    ld e,a
+.l:
+    call hs_first
+    jr z,.d
+    sla c
+    ld a,c
+    or e
+    ld e,a
+    jr .l
+.d:
+    ld a,e
+    ret
+;; hs_last, hs_first: Z if C is the mode's rightmost, leftmost pixel mask
+hs_last:
+    ld a,(cmode)
+    ld b,#01
+    cp 2
+    jr z,.c
+    ld b,#11
+    dec a
+    jr z,.c
+    ld b,#55
+.c:
+    ld a,c
+    cp b
+    ret
+hs_first:
+    ld a,(cmode)
+    ld b,#80
+    cp 2
+    jr z,.c
+    ld b,#88
+    dec a
+    jr z,.c
+    ld b,#AA
+.c:
+    ld a,c
+    cp b
+    ret
+;; SCR DOT POSITION: DE = a pixel's x, HL = its y (from the bottom, 0-199)
+;; -> HL = its byte, C = its mask, B = pixels in a byte - 1
+p_SCR_DOT_POSITION:
+    call g_addr
+    ld a,(cmode)
+    ld b,7
+    cp 2
+    ret z
+    ld b,3
+    dec a
+    ret z
+    ld b,1
+    ret
+;; g_addr: pixels DE, HL -> HL = the screen byte, C = the pixel's mask. DE
+;; kept.
+g_addr:
+    push de
+    ld a,199
+    sub l                       ; the row from the top
+    ld b,a
+    and 7
+    add a,a
+    add a,a
+    add a,a
+    ld (ga_line),a              ; its pixel line x 8: &800 apart
+    ld a,b
+    and #F8                     ; the character row x 8
+    ld l,a
+    ld h,0
+    add hl,hl                   ; x 16
+    ld b,h
+    ld c,l
+    add hl,hl
+    add hl,hl
+    add hl,bc                   ; x 80
+    push hl
+    ld a,(cmode)                ; the byte along the row, and the mask
+    cp 1
+    jr c,.m0
+    jr z,.m1
+    ld a,e                      ; mode 2: 8 pixels a byte
+    and 7
+    ld b,a
+    ld c,#80
+    srl d
+    rr e
+    jr .sh
+.m1:
+    ld a,e                      ; mode 1: 4
+    and 3
+    ld b,a
+    ld c,#88
+    jr .sh
+.m0:
+    ld a,e                      ; mode 0: 2
+    and 1
+    ld b,a
+    ld c,#AA
+    jr .sh2
+.sh:
+    srl d
+    rr e
+.sh2:
+    srl d
+    rr e
+    inc b
+    dec b
+    jr z,.mk
+.ms:
+    srl c
+    djnz .ms
+.mk:
+    pop hl
+    add hl,de
+    ld de,(scr_off)
+    add hl,de
+    ld a,h
+    and 7
+    ld h,a
+    ld a,(ga_line)
+    or #C0
+    add a,h
+    ld h,a
+    pop de
+    ret
+;; SCR NEXT BYTE, SCR PREV BYTE: HL = a screen byte -> the one beside it on
+;; its pixel line (in its 2 KB)
+p_SCR_NEXT_BYTE:
+    ld a,l
+    add a,1
+    ld l,a
+    ret nc
+    inc h
+    ld a,h
+    and 7
+    ret nz
+    ld a,h
+    sub 8
+    ld h,a
+    ret
+p_SCR_PREV_BYTE:
+    ld a,l
+    sub 1
+    ld l,a
+    ret nc
+    ld a,h
+    and 7
+    jr nz,.n
+    ld a,h
+    add a,8
+    ld h,a
+.n:
+    dec h
+    ret
+
+g_x:        dw 0                ; the graphics cursor, from the origin
+g_y:        dw 0
+g_ox:       dw 0                ; the origin
+g_oy:       dw 0
+g_pen:      db 1
+g_paper:    db 0
+g_acc:      db 0                ; the ink mode (SCR ACCESS)
+g_penb:     db 0                ; the pen's byte, for a line
+hs_a0:      dw 0
+hs_a1:      dw 0
+hs_m0:      db 0
+hs_m1:      db 0
+gp_w:       dw 640              ; the mode's width in pixels
+ga_line:    db 0
+ln_x:       dw 0
+ln_y:       dw 0
+ln_x1:      dw 0
+ln_y1:      dw 0
+ln_dx:      dw 0
+ln_dy:      dw 0
+ln_err:     dw 0
+ln_sx:      db 0
+ln_sy:      db 0
 
 ;; ---- sound: not yet ----
 p_SOUND_QUEUE:
@@ -2349,24 +3052,27 @@ p_EDIT_6128:
     ret
 
 ;; p_init: once, from LISP.64K: the screen in mode 2, cleared; the text
-;; pen 1 on paper 0; the inks as the firmware's (border and ink 0 blue, ink
-;; 1 bright yellow, 2 bright cyan, 3 bright red)
+;; pen 1 on paper 0; the border and the sixteen inks as the firmware sets
+;; them (without its flashing)
 p_init:
     ld a,1
     ld b,a
     ld c,a
     call p_SCR_SET_BORDER
+    ld hl,ink_def
     xor a
+.ink:
+    ld b,(hl)
+    ld c,b
+    inc hl
+    push af
+    push hl
     call p_SCR_SET_INK
-    ld a,1
-    ld bc,24*257
-    call p_SCR_SET_INK
-    ld a,2
-    ld bc,20*257
-    call p_SCR_SET_INK
-    ld a,3
-    ld bc,6*257
-    call p_SCR_SET_INK
+    pop hl
+    pop af
+    inc a
+    cp 16
+    jr nz,.ink
     ld a,1
     ld (pen),a
     xor a
@@ -2374,6 +3080,7 @@ p_init:
     ld a,2
     jp p_SCR_SET_MODE
 
+ink_def:    db 1,24,20,6,26,0,2,8,10,12,14,16,18,22,1,16
 shadow:     defs ROWS*80,32     ; the characters on the screen
 
 page_end:

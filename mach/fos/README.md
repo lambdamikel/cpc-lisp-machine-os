@@ -31,7 +31,16 @@ too), `save`, `compile-file` and loading the `.fas`, `open` and
 a full disc says so ("NAME.EXT not saved: disc full", then Lisp's "cannot
 write the file"). Not on the real machine yet.
 
-Not yet: **graphics and sound** (phase 3), the RAM disc `M:` and far
+**Phase 3a, graphics** (MAME): text in modes 0, 1 and 2 (in mode 2
+FutureOS's PR_2 draws the lower ROM's characters; anything else -- modes
+0 and 1, user-defined characters, other inks -- our own renderer), all
+sixteen inks, `plot`, `draw`, `test`, `move`, the origin, the ink modes
+(XOR...), `clg`, `disc`, `fill-box`, `flood-fill`, the demos (`shapes`,
+`rose`, `koch`, `tree`). A row is written a byte at a time (discs are
+rows: 15 nested discs in mode 1 take 1257 ticks, the firmware 1619); a
+slanted line a pixel at a time (twice the firmware's time).
+
+Not yet: **sound** (phase 3b), the RAM disc `M:` and far
 arrays, a hardware test, `(dir "e:")` (the library's `dir` takes only
 `m:`: it lists the drive `LISP.64K` came from), re-reading a directory
 after a disc is changed.

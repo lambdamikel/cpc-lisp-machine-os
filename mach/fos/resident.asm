@@ -79,6 +79,8 @@ out_open:   db 0                ; the output file: open,
 out_pos:    dw 0                ;   its bytes so far (bank 0's blocks 0-2)
 rs_fname:   db 0,"           "  ; a file's user, name, extension (LADE_N)
 rs_ebuf:    defs 32,0           ; r_eread's
+rs_cell:    defs 40,0           ; a character's bytes for r_cellw (32), its
+                                ;   glyph (8)
 
 ;; fwp: from a trampoline ("call fwp : dw address") with every register
 ;; as the caller left it: the machine page in at &C000, the routine called,
@@ -555,6 +557,175 @@ r_rowcopy:
     ld d,a
     dec c
     jr nz,.line
+    call to_page
+    pop hl
+    pop de
+    pop bc
+    pop af
+    ret
+
+;; r_pix: for the page -- HL = a screen address, C = a pixel's mask in its
+;; byte, B = the pen's byte (every pixel that ink), A = the ink mode (0 as
+;; it is, 1 XOR, 2 AND, 3 OR): the pixel written. All kept.
+r_pix:
+    push af
+    push de
+    call to_main
+    ld e,a
+    ld a,b
+    and c
+    ld d,a                      ; the pen's bits of this pixel
+    ld a,e
+    or a
+    jr nz,.x
+    ld a,c
+    cpl
+    and (hl)
+    or d
+    jr .w
+.x:
+    dec a
+    jr nz,.a
+    ld a,(hl)
+    xor d
+    jr .w
+.a:
+    dec a
+    jr nz,.o
+    ld a,c
+    cpl
+    or d
+    and (hl)
+    jr .w
+.o:
+    ld a,(hl)
+    or d
+.w:
+    ld (hl),a
+    call to_page
+    pop de
+    pop af
+    ret
+;; r_span: for the page -- HL = a screen address, B = bytes (1-80) along
+;; its pixel line, D = the first byte's mask, E = the last's (the ones
+;; between all of theirs; one byte: D and E), C = the pen's byte, A = the
+;; ink mode (as r_pix): written. All kept.
+r_span:
+    push af
+    push bc
+    push de
+    push hl
+    call to_main
+    ld (sp_mode),a
+    dec b
+    jr nz,.many
+    ld a,d
+    and e
+    ld d,a
+.many:
+    inc b
+    ld a,d                      ; this byte's mask
+.l:
+    push de
+    ld e,a
+    ld a,c
+    and e
+    ld d,a                      ; the pen's bits in it
+    ld a,(sp_mode)
+    or a
+    jr nz,.x
+    ld a,e
+    cpl
+    and (hl)
+    or d
+    jr .w
+.x:
+    dec a
+    jr nz,.a
+    ld a,(hl)
+    xor d
+    jr .w
+.a:
+    dec a
+    jr nz,.o
+    ld a,e
+    cpl
+    or d
+    and (hl)
+    jr .w
+.o:
+    ld a,(hl)
+    or d
+.w:
+    ld (hl),a
+    pop de
+    inc l                       ; the next byte, in its 2 KB
+    jr nz,.n
+    inc h
+    ld a,h
+    and 7
+    jr nz,.n
+    ld a,h
+    sub 8
+    ld h,a
+.n:
+    ld a,b
+    cp 2
+    ld a,#FF                    ; between: every pixel
+    jr nz,.mid
+    ld a,e                      ; (the last one next)
+.mid:
+    djnz .l
+    call to_page
+    pop hl
+    pop de
+    pop bc
+    pop af
+    ret
+sp_mode:    db 0
+
+;; r_pixrd: for the page -- HL = a screen address -> A = its byte
+r_pixrd:
+    call to_main
+    ld a,(hl)
+    jp to_page
+
+;; r_cellw: for the page -- HL = a character cell's address on its top
+;; pixel line, B = bytes a line (1, 2, 4): its eight lines from rs_cell.
+;; All kept.
+r_cellw:
+    push af
+    push bc
+    push de
+    push hl
+    call to_main
+    ld de,rs_cell
+    ld c,8
+.l:
+    push hl
+    push bc
+.b:
+    ld a,(de)
+    ld (hl),a
+    inc de
+    inc l
+    jr nz,.n
+    inc h
+    ld a,h
+    and 7
+    jr nz,.n
+    ld a,h
+    sub 8
+    ld h,a
+.n:
+    djnz .b
+    pop bc
+    pop hl
+    ld a,h
+    add a,8
+    ld h,a
+    dec c
+    jr nz,.l
     call to_page
     pop hl
     pop de
