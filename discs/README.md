@@ -1,4 +1,4 @@
-# CPC Lisp 0.98 -- the discs
+# CPC Lisp 0.99 -- the discs
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -12,19 +12,19 @@ the test discs for the real machine. Each disc's test is `HWTEST.LSP`:
 
 | disc | what | build |
 |---|---|---|
-| `cpclisp512.dsk` | **CPC Lisp from disc, for a 512K RAM expansion** (`mach/cpc512`): `RUN"LISP` -- all of it, the compiler too, and a RAM disc `M:` of 399 KB; and its test: the cells, two files open at once, lazy loading, the RAM disc, far arrays (into the expansion's banks 6 and 7), the compiler | 26738 |
-| `cpclisp6128.dsk` | **CPC Lisp from disc, for a plain 6128** (or a CPC with 64 KB more; `mach/cpc6128`): `RUN"LISP` -- everything but the compiler, no RAM disc; and its test, of what it has | 14943 |
-| `cpclispfos.dsk` | **CPC Lisp under FutureOS** (`mach/futureos`), on a 464, 664 or 6128 with a 512K RAM expansion: on FutureOS's desktop, drive A, tag `LISP.64K`, RUN (X); `(reset)` goes back to the desktop. The 512K version and its test (check 5 sized for the smaller RAM disc); `mach/futureos/README.md` has the details | 26078 |
+| `cpclisp512.dsk` | **CPC Lisp from disc, for a 512K RAM expansion** (`mach/cpc512`): `RUN"LISP` -- all of it, the compiler too, and a RAM disc `M:` of 399 KB; and its test: the cells, two files open at once, lazy loading, the RAM disc, far arrays (into the expansion's banks 6 and 7), the compiler | 990 |
+| `cpclisp6128.dsk` | **CPC Lisp from disc, for a plain 6128** (or a CPC with 64 KB more; `mach/cpc6128`): `RUN"LISP` -- everything but the compiler, no RAM disc; and its test, of what it has | 990 |
+| `cpclispfos.dsk` | **CPC Lisp under FutureOS** (`mach/futureos`), on a 464, 664 or 6128 with a 512K RAM expansion: on FutureOS's desktop, drive A, tag `LISP.64K`, RUN (X); `(reset)` goes back to the desktop. The 512K version and its test (check 5 sized for the smaller RAM disc); `mach/futureos/README.md` has the details | 990 |
 | `cpclisp-demo.dsk` | **the demo disc**, for the ROMs (or a disc version): the programs of `examples/` -- `APFEL.LSP`, the Apfelmaennchen: `(load "apfel")`, `(apfel)` (mode 2) | -- |
 | `cpclisp-classics.dsk` | **the classics disc**: ELIZA, symbolic differentiation, the animal game that learns, Lisp in Lisp, Conway's Life, tic-tac-toe by minimax, SICP's Huffman codes (`examples/`) -- `(load "classics")` lists them | -- |
 | `cpclisp-hwtest.dsk` | **the test of the ROMs' use of a RAM expansion** (or a 6128's second 64 KB): two files at once, lazy loading from the drive and from `M:`, the RAM disc, far arrays over its banks, the compiler. Needs the 0.96 ROMs or later (`roms/`) | -- |
 
-| `cpclisp-trs80-model1.dsk` | **CPC Lisp on a TRS-80 Model I** with X-MEM/80 (LDOS 5.3.1, single density): `LISP` at LDOS Ready, and its test, `HWTEST/LSP` -- also `(hwtest-big)`, the RAM disc past 256 KB -- and `APFEL/LSP` (since 2026-11-14, without its comments: in the room of LDOS's KI/DVR, which nothing loads) | 14193 |
-| `cpclisp-trs80-model3.dsk` | **the same for a Model III** (LDOS 5.1.4, double density, JV3), and `APFEL/LSP` (since 2026-11-14: the same images, the disc made again) | 14193 |
-| `cpclisp-trs80-model4.dsk` | **CPC Lisp on a TRS-80 Model 4** with 128 KB, natively (`mach/trs80m4`): LS-DOS 6.3.1's system disc (double density, 40 tracks, JV3) with `LISP` and `HWTEST/LSP` -- boot it, give the date and time, `LISP` | 14431 |
-| `cpclisp-trs80-model4.hfe` | the same disc for a **Gotek** (FlashFloppy) or an **HxC** | 14431 |
+| `cpclisp-trs80-model1.dsk` | **CPC Lisp on a TRS-80 Model I** with X-MEM/80 (LDOS 5.3.1, single density): `LISP` at LDOS Ready, and its test, `HWTEST/LSP` -- also `(hwtest-big)`, the RAM disc past 256 KB -- and `APFEL/LSP` (since 2026-11-14, without its comments: in the room of LDOS's KI/DVR, which nothing loads) | 990 |
+| `cpclisp-trs80-model3.dsk` | **the same for a Model III** (LDOS 5.1.4, double density, JV3), and `APFEL/LSP` (since 2026-11-14: the same images, the disc made again) | 990 |
+| `cpclisp-trs80-model4.dsk` | **CPC Lisp on a TRS-80 Model 4** with 128 KB, natively (`mach/trs80m4`): LS-DOS 6.3.1's system disc (double density, 40 tracks, JV3) with `LISP` and `HWTEST/LSP` -- boot it, give the date and time, `LISP` | 990 |
+| `cpclisp-trs80-model4.hfe` | the same disc for a **Gotek** (FlashFloppy) or an **HxC** | 990 |
 | `cpclisp-trs80-classics-model1.dsk`, `-model3.dsk`, `-model4.dsk`, `-model4.hfe` | **the classics disc for the TRS-80s**: the same programs on an LDOS 5.3.1, LDOS 5.1.4 and LS-DOS 6.3.1 data disc (`tools/trs80/mkclassics.py`); put it in a drive other than the system's: `(load "classics")` | -- |
-| `frehd/cpclisp4` | the same on the **FreHD**'s hard disc: an LS-DOS 6.3.1 system (1.6 MB, Radio Shack hard disc driver; the hard disc is drive :0 only, the floppies :4 and :5) with `LISP` and `HWTEST/LSP`. Copy it to the root of the FreHD's SD card *as it is named* (no extension, as the FreHD's images); its boot menu lists it, ENTER boots it, `LISP` -- no date asked | 14431 |
+| `frehd/cpclisp4` | the same on the **FreHD**'s hard disc: an LS-DOS 6.3.1 system (1.6 MB, Radio Shack hard disc driver; the hard disc is drive :0 only, the floppies :4 and :5) with `LISP` and `HWTEST/LSP`. Copy it to the root of the FreHD's SD card *as it is named* (no extension, as the FreHD's images); its boot menu lists it, ENTER boots it, `LISP` -- no date asked | 990 |
 | `ld4-631.dsk` | **LS-DOS 6.3.1** for the Model 4, its system disc as distributed (Tim Mann's `ld4-631.zip`), which the Model 4 discs are made from -- see below | -- |
 
 Checked on a real CPC 464 with Revaldinho's universal 512K RAM card, on
@@ -86,6 +86,13 @@ discs were striped; Mike: "check out round now". Since 2026-11-14 the
 TRS-80 discs are build 19680 (the Model 4's 19042) and the 512K's 19682,
 since 2026-11-15 10997 (the Model 4's 11294: the function editor's key
 line says SHIFT ->, indent, too; Model I hwtest 8 yes, Model 4 suite 30 ok).
+**0.99** (2026-11-18): every disc build 990 -- the FutureOS version and
+the classics discs are new, and the 512K's and FutureOS's have more
+string space (above; 26078 passed on Mike's 6128, the same but for the
+version). In the emulators: the 464's suite 42 ok, the 6128's file
+tests 6, the 512K 42, the plain 6128 40, the Model 4 35; under FutureOS
+on a 464 and a 6128 `(hwtest)` 7 yes, the demos, `(ed 'tree)`,
+`(load "apfel")`; the Model I's hwtest 8 yes.
 **0.98** (2026-11-15): the 512K's 14340, the plain 6128's 14943, the
 TRS-80's 14193, the Model 4's 14431 -- a new `(ed 'name)` lets the last
 edited text go when string space is short, and the Model I/III have 3/8

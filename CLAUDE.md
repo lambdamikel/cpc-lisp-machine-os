@@ -1,6 +1,6 @@
-# CPC Lisp 0.98 — working notes for Claude
+# CPC Lisp 0.99 — working notes for Claude
 
-*A Lisp machine for the Amstrad CPC.* Version 0.98 since 2026-11-15 (fixes from the real machines), 0.97 from 2026-11-13 (the Model 4), 0.96 from 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
+*A Lisp machine for the Amstrad CPC.* Version 0.99 since 2026-11-18 (FutureOS, string space, the classics), 0.98 from 2026-11-15 (fixes from the real machines), 0.97 from 2026-11-13 (the Model 4), 0.96 from 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
 banner, the ROM headers' version bytes and the documents' titles say so).
 
 A Lisp machine for the Amstrad CPC: **six ROMs** -- an auto-boot core and
@@ -1148,7 +1148,15 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   build 14193 (the 464's suite 37, the 6128's file tests 6, the same
   build by BUILD_ID), the 512K's disc 14340, the 6128's 14943 (512K 37,
   6128 35), the TRS-80 discs 14193 (the Model I's hwtest 8 yes), the
-  Model 4's 14431 (30 ok), the same file names as 0.97's. A new one: refresh `roms/` from one
+  Model 4's 14431 (30 ok), the same file names as 0.97's; `v0.99` (2026-11-18:
+  FutureOS, string space on the 512K/FutureOS, the classics discs) = every
+  build 990 (`BUILD_ID=990` exported through all the suites, so one
+  number everywhere): the ROMs (0.98's but for the version), the disc
+  versions and `cpclispfos.dsk`, the classics discs (CPC and TRS-80,
+  `cpc-lisp-0.99-trs80-classics-model1/3/4`, `.dsk` and `.hfe`), the
+  TRS-80 and Model 4 discs; 464 42 ok, 6128 file tests 6, 512K 42,
+  plain 6128 40, Model 4 35, FutureOS 464/6128 sessions, Model I hwtest
+  8. A new one: refresh `roms/` from one
   tested build, bump the version (banner, ROM headers, document
   titles), tag, `gh release create` with the same files.
 * Commit with the attribution lines the session gives you.

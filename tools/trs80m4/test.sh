@@ -35,7 +35,11 @@ run_one() {
     local n=$1
     mkdir -p "$tmp/$n"
     cp build/trs80m4/lisp-m4.dsk build/trs80m4/lisp-m4.hdv "$tmp/$n/"
-    TRS80M4_BUILD=$tmp/$n tools/trs80m4/run.sh "test/$n.lsp" 2>"$tmp/$n.err" \
+    # classic*: the classics disc in drive 1 (MACH=trs80 tools/build.sh
+    # makes it: tools/trs80/mkclassics.py), as tools/test.sh gives a CPC one
+    local d1=
+    [[ $n == classic* ]] && d1=build/trs80/classics-m4.dsk
+    M4DISC1=$d1 TRS80M4_BUILD=$tmp/$n tools/trs80m4/run.sh "test/$n.lsp" 2>"$tmp/$n.err" \
         > "$tmp/$n.raw"
     # from the first prompt on, ending at the prompt (quit) was typed at --
     # as the CPC harness's transcripts end

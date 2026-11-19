@@ -1,4 +1,4 @@
-# CPC Lisp 0.98
+# CPC Lisp 0.99
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -12,7 +12,7 @@ for the CPC: started from FutureOS's desktop on a 464, 664 or 6128 with a
 ([*Under FutureOS*](#under-futureos), below). **Video:**
 [CPC Lisp on the 6128 under FutureOS](https://youtu.be/s4BsQOroQUc) (5:08).
 
-    CPC Lisp 0.98
+    CPC Lisp 0.99
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -239,7 +239,7 @@ and a RAM disc `M:` of 399 KB in its free blocks -- which also holds
 far arrays (`make-far-array`, `far-ref`) and programs loaded with
 `(load "m:big" :lazy t)`, each function read in when first called.
 
-    CPC Lisp 0.98
+    CPC Lisp 0.99
     A Lisp machine for the Amstrad CPC, 512K
     library ROMs 1 2 3 4
     5521 cells free
@@ -248,13 +248,15 @@ far arrays (`make-far-array`, `far-ref`) and programs loaded with
 KB: everything but the compiler, without a RAM disc, and with about 2400
 cells.
 
-    CPC Lisp 0.98
+    CPC Lisp 0.99
     A Lisp machine for the Amstrad CPC, 128K
     library ROMs 1 2 3 4
     2430 cells free
 
-**The discs are ready in [`discs/`](discs/)** -- `cpclisp512.dsk` and
-`cpclisp6128.dsk`, a test disc for the ROMs' use of a RAM expansion, and
+**The discs are ready in [`discs/`](discs/)**, and with each
+[release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases) --
+`cpclisp512.dsk` and `cpclisp6128.dsk`, `cpclispfos.dsk` for FutureOS
+([below](#under-futureos)), a test disc for the ROMs' use of a RAM expansion, and
 the demo disc `cpclisp-demo.dsk` with the Apfelmaennchen (`(load
 "apfel")`, `(apfel)`), and the classics disc `cpclisp-classics.dsk`:
 ELIZA, symbolic differentiation, the animal game that learns, Lisp in
@@ -315,7 +317,7 @@ the cassette port, floats through the Level II ROM, files through LDOS,
 a RAM disc in X-MEM/80's spare pages, speech through Talker/80, MIDI
 through MIDI/80 -- is in `mach/trs80/`.
 
-    CPC Lisp 0.98
+    CPC Lisp 0.99
     A Lisp machine for the TRS-80
     library ROMs 3 4 5 6
     2315 cells free
@@ -335,7 +337,7 @@ The Model III Talker/80 needs nothing.
 
 **The disc**: ready to boot with each
 [release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases) --
-`cpc-lisp-0.98-trs80-model1` and `-model3`, as `.dsk` for emulators and
+`cpc-lisp-0.99-trs80-model1` and `-model3`, as `.dsk` for emulators and
 `.hfe` for a Gotek (the `.dsk` files are in [`discs/`](discs/) too).
 X-MEM/80 must be in its 16 KB mode (X-MEM/80, not SuperMem) for all of
 the RAM disc. Or build it: `MACH=trs80 tools/build.sh` (rasm and Python 3, as for the
@@ -383,7 +385,7 @@ The **TRS-80 Model 4** with 128 KB runs it natively, in its own mode,
 under LS-DOS 6.3.1 -- no X-MEM/80: the six images in its three 32 KB
 banks.
 
-    CPC Lisp 0.98
+    CPC Lisp 0.99
     A Lisp machine for the TRS-80 Model 4
     library ROMs 2 4 5 6
     1897 cells free
