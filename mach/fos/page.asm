@@ -17,9 +17,10 @@
 ;; editor's copy cursor reads; the cursor is the character under it drawn
 ;; inverted.
 
-    include "jumps.asm"
+    include "firmware.asm"      ; the names (and jumps.asm)
     include "memmap.asm"
     include "resident.inc"      ; the resident part's labels (post-build.sh)
+    include "fos.asm"
 
 ROWS        equ 25
 
@@ -1432,25 +1433,574 @@ p_SOUND_AMPL_ENVELOPE:
 p_SOUND_TONE_ENVELOPE:
     ret
 
-;; ---- files: not yet (FutureOS's, next) ----
+;; ---- files: through FutureOS ----
+;;
+;; A name is "[d:]name[.ext]", d a FutureOS drive A-M; without one, the
+;; drive LISP.64K came from. Its directory must be one FutureOS has read
+;; (buffered: TURBO_A..M) -- the drive LISP.64K was tagged on, or any other
+;; tagged on the desktop before. A file is read whole into bank 6's blocks
+;; 0-2 by LADE_N (at most 48 KB), its length from the directory's extents;
+;; the resident part's FILE_GETC reads it from there.
+
+;; CAS IN OPEN: B = the name's length, HL = the name (DE, a buffer, not
+;; used) -> carry if the file is open
 p_CAS_IN_OPEN:
+    push ix
+    call f_name
+    jr nc,.no
+    call f_find                 ; HL = its records
+    jr nc,.no
+    ld de,FILE_MAXREC+1
+    or a
+    sbc hl,de
+    add hl,de
+    jr nc,.no                   ; too long
+    add hl,hl                   ; bytes: 128 x records
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    ld (in_len),hl
+    ld a,3                      ; into the expansion, bank 6's block 0
+    ld (REG08_4),a
+    ld hl,#4000
+    ld (REG16_3),hl
+    ld hl,#7F00+IN_CFG0
+    ld (AKT_RAM),hl
+    ld a,(f_drive)
+    or #80                      ; any header's addresses not used
+    ld de,rs_fname
+    ld hl,LADE_N
+    call r_fos
+    inc a
+    jr nz,.no
+    ld hl,0
+    ld (in_pos),hl
+    ld a,1
+    ld (in_open),a
+    pop ix
+    scf
+    ret
+.no:
+    pop ix
+    xor a
+    ld (in_open),a
+    ld a,#0E
+    or a
+    ret
+
+;; f_name: B = a name's length, HL = the name -> rs_fname (user 0, the name
+;; and extension upper case, blank-filled), f_drive; carry if it is one
+f_name:
+    ld a,(rs_drive)
+    ld (f_drive),a
+    ld a,b
+    cp 2
+    jr c,.nod
+    inc hl
+    ld a,(hl)
+    dec hl
+    cp ":"
+    jr nz,.nod
+    ld a,(hl)
+    and #DF
+    sub "A"
+    cp 13
+    ret nc                      ; no such drive
+    ld (f_drive),a
+    inc hl
+    inc hl
+    dec b
+    dec b
+.nod:
+    push hl
+    ld hl,rs_fname
+    ld (hl),0
+    inc hl
+    ld c,11
+.bl:
+    ld (hl),32
+    inc hl
+    dec c
+    jr nz,.bl
+    pop hl
+    ld de,rs_fname+1
+    ld c,8                      ; the name, up to 8
+    ld a,b
+    or a
+    ret z                       ; (no carry: empty)
+.n:
+    ld a,(hl)
+    inc hl
+    cp "."
+    jr z,.ext
+    call f_up
+    ld (de),a
+    inc de
+    dec c
+    jr z,.skip
+    djnz .n
+    scf
+    ret
+.skip:                          ; past 8: up to the dot
+    dec b
+    scf
+    ret z
+    ld a,(hl)
+    inc hl
+    cp "."
+    jr nz,.skip
+.ext:
+    dec b
+    scf
+    ret z
+    ld de,rs_fname+9
+    ld c,3
+.e:
+    ld a,(hl)
+    inc hl
+    call f_up
+    ld (de),a
+    inc de
+    dec c
+    scf
+    ret z
+    djnz .e
+    scf
+    ret
+f_up:
+    cp "a"
+    ret c
+    cp "z"+1
+    ret nc
+    sub 32
+    ret
+
+;; f_dir: f_drive's directory, as FutureOS buffers it -> f_cfg, its block;
+;; HL its first entry; B its entries (32 bytes each); carry if it was read
+f_dir:
+    ld a,(f_drive)
+    add a,a
+    add a,a
+    add a,a
+    add a,TURBO_A and #FF
+    ld l,a
+    ld h,TURBO_A >> 8
+    bit 0,(hl)
+    ret z                       ; (no carry)
+    inc hl
+    ld a,(hl)
+    ld (f_cfg),a
+    inc hl
+    ld d,(hl)                   ; its page
+    inc hl
+    ld a,(hl)                   ; its pages: 8 entries each
+    add a,a
+    add a,a
+    add a,a
+    ld b,a
+    ld h,d
+    ld l,0
+    scf
+    ret
+
+;; f_find: rs_fname on f_drive -> HL = its records (128 bytes); carry if it
+;; is there. The length is the last extent's: (EX + 32 S2) x 128 + RC.
+f_find:
+    call f_dir
+    ret nc
+    ld de,0
+    ld (f_rec),de
+    xor a
+    ld (f_hit),a
+.e:
+    push bc
+    push hl
+    ld a,(f_cfg)
+    ld b,16
+    call r_eread
+    call f_same
+    jr nz,.next
+    ld a,1
+    ld (f_hit),a
+    call f_recs
+    ld de,(f_rec)
+    or a
+    sbc hl,de
+    add hl,de
+    jr c,.next
+    ld (f_rec),hl
+.next:
+    pop hl
+    ld de,32
+    add hl,de
+    pop bc
+    djnz .e
+    ld hl,(f_rec)
+    ld a,(f_hit)
+    rra
+    ret
+;; f_same: Z if rs_ebuf's entry is rs_fname's (attribute bits aside)
+f_same:
+    ld hl,rs_ebuf
+    ld de,rs_fname
+    ld a,(de)
+    cp (hl)
+    ret nz
+    ld b,11
+.c:
+    inc hl
+    inc de
+    ld a,(hl)
+    and #7F
+    ld c,a
+    ld a,(de)
+    cp c
+    ret nz
+    djnz .c
+    ret
+;; f_recs: rs_ebuf's entry -> HL = the records up to its end, (EX + 32 S2)
+;; x 128 + RC (&FFFF if that is more)
+f_recs:
+    ld a,(rs_ebuf+14)           ; S2
+    ld l,a
+    ld h,0
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    ld a,(rs_ebuf+12)           ; EX
+    and #1F
+    ld e,a
+    ld d,0
+    add hl,de                   ; the extent's number
+    ld a,h
+    cp 2
+    jr nc,.big
+    xor a                       ; x 128
+    srl h
+    rr l
+    rra
+    ld h,l
+    ld l,a
+    ld a,(rs_ebuf+15)           ; RC
+    ld e,a
+    add hl,de
+    ret nc
+.big:
+    ld hl,#FFFF
+    ret
+
+;; CAS CATALOG: the directory of the drive LISP.64K came from, sorted, two
+;; names a line as AMSDOS shows them, each with its size in KB
+p_CAS_CATALOG:
+    push ix
+    ld a,(rs_drive)
+    ld (f_drive),a
+    call f_dir
+    jp nc,.none
+    xor a
+    ld (cat_n),a
+.e:
+    push bc
+    push hl
+    ld a,(f_cfg)
+    ld b,16
+    call r_eread
+    ld a,(rs_ebuf)
+    or a
+    jr nz,.next                 ; another user's, or &E5: free
+    call cat_add
+.next:
+    pop hl
+    ld de,32
+    add hl,de
+    pop bc
+    djnz .e
+    call cat_sort
+    ld hl,cat_head
+    call cat_puts
+    ld a,(f_drive)
+    add a,"A"
+    call TXT_OUTPUT
+    ld hl,cat_head2
+    call cat_puts
+    ld a,(cat_n)
+    or a
+    jr z,.done
+    ld b,a
+    ld hl,cat_tab
+    ld c,0                      ; the column
+.p:
+    push bc
+    push hl
+    ld b,8
+    call cat_put
+    ld a,"."
+    call TXT_OUTPUT
+    ld b,3
+    call cat_put
+    ld e,(hl)                   ; records -> KB, rounded up
+    inc hl
+    ld d,(hl)
+    ex de,hl
+    ld de,7
+    add hl,de
+    srl h
+    rr l
+    srl h
+    rr l
+    srl h
+    rr l
+    call cat_num
+    ld a,"K"
+    call TXT_OUTPUT
+    pop hl
+    ld de,13
+    add hl,de
+    pop bc
+    ld a,c
+    xor 1
+    ld c,a
+    ld a,32
+    jr nz,.sp
+    ld a,13
+    call TXT_OUTPUT
+    ld a,10
+.sp:
+    call TXT_OUTPUT
+    ld a,c
+    or a
+    jr z,.nsp
+    ld a,32
+    call TXT_OUTPUT
+    ld a,32
+    call TXT_OUTPUT
+.nsp:
+    djnz .p
+    ld a,c
+    or a
+    jr z,.done
+    ld a,13
+    call TXT_OUTPUT
+    ld a,10
+    call TXT_OUTPUT
+.done:
+    pop ix
+    scf
+    ret
+.none:
+    ld hl,cat_nodir
+    call cat_puts
+    pop ix
+    or a
+    ret
+cat_head:   db 13,10,"Drive ",0
+cat_head2:  db ": user  0",13,10,13,10,0
+cat_nodir:  db "No directory read for this drive",13,10,0
+;; cat_add: rs_ebuf's entry into cat_tab, or its records into the one there
+cat_add:
+    ld a,(cat_n)
+    ld b,a
+    ld hl,cat_tab
+    or a
+    jr z,.new
+.f:
+    push bc
+    push hl
+    ld de,rs_ebuf+1
+    ld b,11
+.c:
+    ld a,(de)
+    and #7F
+    cp (hl)
+    jr nz,.ne
+    inc hl
+    inc de
+    djnz .c
+    call f_recs                 ; the same file: the larger end
+    ex de,hl
+    pop hl
+    push hl
+    ld bc,11
+    add hl,bc
+    ld c,(hl)
+    inc hl
+    ld b,(hl)
+    ex de,hl
+    or a
+    sbc hl,bc
+    add hl,bc
+    jr c,.ne2
+    ex de,hl
+    ld (hl),d
+    dec hl
+    ld (hl),e
+.ne2:
+    pop hl
+    pop bc
+    ret
+.ne:
+    pop hl
+    ld de,13
+    add hl,de
+    pop bc
+    djnz .f
+.new:
+    ld a,(cat_n)
+    cp CAT_MAX
+    ret nc
+    inc a
+    ld (cat_n),a
+    ld de,rs_ebuf+1
+    ex de,hl
+    ld b,11
+.cp:
+    ld a,(hl)
+    and #7F
+    ld (de),a
+    inc hl
+    inc de
+    djnz .cp
+    push de
+    call f_recs
+    pop de
+    ex de,hl
+    ld (hl),e
+    inc hl
+    ld (hl),d
+    ret
+;; cat_sort: cat_tab by name (an insertion sort: some 64 names)
+cat_sort:
+    ld a,(cat_n)
+    cp 2
+    ret c
+    ld b,a
+    dec b
+    ld hl,cat_tab+13
+.o:
+    push bc
+    push hl
+.i:
+    push hl
+    ld de,-13
+    add hl,de                   ; the one before
+    pop de                      ; DE: this one
+    ld bc,cat_tab
+    or a
+    sbc hl,bc
+    add hl,bc
+    jr c,.in                    ; (before the first)
+    push hl
+    push de
+    ld b,11
+.cm:
+    ld a,(de)
+    cp (hl)
+    jr c,.sw                    ; this one is less: swap
+    jr nz,.ok
+    inc hl
+    inc de
+    djnz .cm
+.ok:
+    pop de
+    pop hl
+.in:
+    pop hl
+    ld de,13
+    add hl,de
+    pop bc
+    djnz .o
+    ret
+.sw:
+    pop de
+    pop hl
+    push hl
+    ld b,13
+.x:
+    ld a,(de)
+    ld c,(hl)
+    ld (hl),a
+    ld a,c
+    ld (de),a
+    inc hl
+    inc de
+    djnz .x
+    pop hl                      ; on with the one before
+    jr .i
+;; cat_put: B characters at HL (HL moved on)
+cat_put:
+    ld a,(hl)
+    inc hl
+    call TXT_OUTPUT
+    djnz cat_put
+    ret
+;; cat_puts: the text at HL, to a 0
+cat_puts:
+    ld a,(hl)
+    or a
+    ret z
+    inc hl
+    call TXT_OUTPUT
+    jr cat_puts
+;; cat_num: HL (0-9999) right-aligned in four places
+cat_num:
+    ld b,0                      ; not started
+    ld de,1000
+    call .d
+    ld de,100
+    call .d
+    ld de,10
+    call .d
+    ld a,l
+    add a,"0"
+    jp TXT_OUTPUT
+.d:
+    ld a,"0"-1
+.l:
+    inc a
+    or a
+    sbc hl,de
+    jr nc,.l
+    add hl,de
+    cp "0"
+    jr nz,.out
+    inc b
+    dec b
+    jr nz,.out
+    ld a,32
+    jp TXT_OUTPUT
+.out:
+    ld b,1
+    jp TXT_OUTPUT
+CAT_MAX     equ 128
+cat_n:      db 0
+cat_tab:    defs CAT_MAX*13,0   ; the name (11), the records (2)
+f_drive:    db 0
+f_cfg:      db 0
+f_rec:      dw 0
+f_hit:      db 0
+
+;; the output file: not yet
 p_CAS_OUT_OPEN:
     ld a,#0E
     or a
     ret
-p_CAS_IN_CHAR:
+p_CAS_IN_CHAR:                  ; (the resident part's FILE_GETC)
     ld a,#1A
     or a
     ret
 p_CAS_IN_CLOSE:
 p_CAS_IN_ABANDON:
+    xor a
+    ld (in_open),a
 p_CAS_OUT_CLOSE:
 p_CAS_OUT_ABANDON:
 p_CAS_OUT_CHAR:
     scf
-    ret
-p_CAS_CATALOG:
-    or a
     ret
 
 ;; ---- the rest ----

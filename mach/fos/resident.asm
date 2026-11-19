@@ -59,7 +59,9 @@ rs_rom:     db #8E              ; the gate array's mode and ROM byte now:
                                 ;   &8C + mode, both ROMs off
 rs_roma:    dw 0                ; FutureOS's ROMs A, B, D: number, &DF
 rs_romb:    dw 0
+rs_romc:    dw 0
 rs_romd:    dw 0
+rs_drive:   db 0                ; the drive LISP.64K came from (0-12: A-M)
 ticks:      dw 0,0              ; 1/300 s since the start
 kb_div:     db 6                ; interrupts to the next keyboard scan
 kb_mat:     defs 10,#FF         ; the matrix, a byte a row, 0 = down
@@ -69,6 +71,11 @@ kb_rep:     db 0                ; scans to its next repeat
 kb_put:     db 0                ; the queue: kb_buf, 16 keys of two bytes
 kb_get:     db 0                ;   (the key's number; bit 0 SHIFT, 1 CTRL)
 kb_buf:     defs 32,0
+in_open:    db 0                ; the input file: open,
+in_pos:     dw 0                ;   where, of
+in_len:     dw 0                ;   how many bytes (bank 6's blocks 0-2)
+rs_fname:   db 0,"           "  ; a file's user, name, extension (LADE_N)
+rs_ebuf:    defs 32,0           ; r_eread's
 
 ;; fwp: from a trampoline ("call fwp : dw address") with every register
 ;; as the caller left it: the machine page in at &C000, the routine called,
@@ -121,6 +128,12 @@ to_cfg:
     pop bc
     pop af
     ret
+;; to_xb: the buffers' block at &4000 (XB_CFG), the screen at &C000
+to_xb:
+    push af
+    push bc
+    ld a,XB_CFG
+    jr to_cfg
 ;; set_cfg: configuration A, and rs_now. B, C lost.
 set_cfg:
     ld (rs_now),a
@@ -677,27 +690,154 @@ fm_fail:                        ; (an FM_JB entry the lower ROM had none for)
     or a
     ret
 
-;; The function editor's renderer (frcode.asm): with the screen's RAM in.
+;; The function editor's renderer (frcode.asm): with the screen's RAM in,
+;; and its font copy in the buffers' block (XBUF: no string space lent).
 r_vidinit:
-    call to_main
+    call to_xb
+    ld de,XB_FONT
     call VID_INIT
     jp to_lisp
 r_vidchar:
-    call to_main
+    call to_xb
     call VID_CHAR
     jp to_lisp
 
-;; No RAM disc yet: the files are the machine page's (CAS routines).
+;; r_eread: for the page -- A = a configuration (C4-C7 + 8 x bank, or C0),
+;; HL = an address in it, B = bytes (1-32): copied to rs_ebuf. All kept.
+r_eread:
+    push af
+    push bc
+    push de
+    push hl
+    push bc
+    call set_cfg
+    pop bc
+    ld c,b
+    ld b,0
+    ld de,rs_ebuf
+    ldir
+    call to_page
+    pop hl
+    pop de
+    pop bc
+    pop af
+    ret
+
+;; r_fos: for the page -- HL = a function in FutureOS's ROM C, A and DE for
+;; it (and FutureOS's variables, set by the page) -> its A. The main RAM
+;; in, ROM C, the interrupts off; FutureOS told the screen's mode (RAMCHAR:
+;; its loading sets the gate array from it). &8000-&8FFF -- the top of the
+;; heap, Lisp's stack -- waits in the buffers' block meanwhile: FutureOS
+;; may use it as a sector buffer; the call runs on a stack of its own here.
+;; BC, DE, HL, IX, IY and the alternate registers lost.
+r_fos:
+    di
+    ld (fos_sp),sp
+    ld sp,fos_stk
+    ld (fos_call+1),hl
+    ld (fos_a),a
+    push de
+    ld bc,#7F00+XB_CFG
+    out (c),c
+    ld hl,#8000
+    ld de,XB_HI
+    ld bc,#1000
+    ldir
+    ld bc,#7FC0
+    out (c),c
+    ld a,#C0
+    ld (rs_now),a
+    pop de
+    ld a,(rs_rom)
+    ld (fos_rom),a
+    ld (RAMCHAR),a
+    ld bc,(rs_romc)
+    out (c),c                   ; FutureOS's ROM C,
+    and #F7
+    ld b,#7F
+    out (c),a                   ;   the upper ROM in
+    ld a,(fos_a)
+fos_call:
+    call 0
+    ld (fos_a),a
+    di
+    ld a,(fos_rom)
+    ld b,#7F
+    out (c),a                   ; the ROMs as they were
+    ld bc,#7F00+XB_CFG
+    out (c),c
+    ld hl,XB_HI
+    ld de,#8000
+    ld bc,#1000
+    ldir
+    ld sp,(fos_sp)
+    call to_page
+    ld a,(fos_a)
+    ei
+    ret
+fos_sp:     dw 0
+fos_a:      db 0
+fos_rom:    db 0
+            defs 128,0
+fos_stk:
+
+;; The input file (no RAM disc yet): the whole file is in bank 6's blocks
+;; 0-2 (LADE_N, the page's CAS IN OPEN), read from there a byte at a time,
+;; to its length or its first &1A. The output file: the page's routines.
 r_xfer:
     ret
 r_fgetc:
-    jp CAS_IN_CHAR
+    ld a,(in_open)
+    or a
+    ret z                       ; (no carry: nothing open)
+    push bc
+    push hl
+    ld hl,(in_pos)
+    ld bc,(in_len)
+    ld a,l
+    cp c
+    jr nz,.go
+    ld a,h
+    cp b
+    jr z,.end
+.go:
+    ld a,h                      ; which block
+    rlca
+    rlca
+    and 3
+    add a,IN_CFG0
+    call set_cfg
+    ld a,h
+    and #3F
+    or #40
+    ld h,a
+    ld a,(hl)
+    call to_lisp
+    cp #1A
+    jr z,.end
+    ld hl,(in_pos)
+    inc hl
+    ld (in_pos),hl
+    pop hl
+    pop bc
+    scf
+    ret
+.end:
+    ld hl,(in_len)
+    ld (in_pos),hl
+    pop hl
+    pop bc
+    ld a,#1A
+    or a
+    ret
 r_fputc:
     jp CAS_OUT_CHAR
 r_ficlose:
-    jp CAS_IN_CLOSE
 r_fiabandon:
-    jp CAS_IN_ABANDON
+    xor a
+    ld (in_open),a
+    scf
+    ret
 r_foclose:
     jp CAS_OUT_CLOSE
 r_foabandon:

@@ -39,6 +39,16 @@ fin:
     ld (rs_roma),hl
     ld hl,(lr_romb)
     ld (rs_romb),hl
+    ld hl,(lr_romc)
+    ld (rs_romc),hl
+    ld a,(lr_drv)
+    ld (rs_drive),a
+    ld hl,RS_RD                 ; the RAM disc's state: none (M: refuses)
+    ld b,16
+.rd:
+    ld (hl),0
+    inc hl
+    djnz .rd
     ld hl,(lr_romd)
     ld (rs_romd),hl
     ld bc,#7F00+PAGE_CFG        ; FutureOS's restarts, kept in the page
@@ -165,7 +175,9 @@ fm_build:
 
 lr_roma:    dw 0
 lr_romb:    dw 0
+lr_romc:    dw 0
 lr_romd:    dw 0
+lr_drv:     db 0
     assert $ <= #8F00
 
     org #9000
@@ -174,10 +186,13 @@ fos_start:
     ld (lr_roma),hl
     ld hl,(FOS_ROMNUM_B)
     ld (lr_romb),hl
+    ld hl,(FOS_ROMNUM_C)
+    ld (lr_romc),hl
     ld hl,(FOS_ROMNUM_D)
     ld (lr_romd),hl
     ld a,(REG_PC+1)             ; the drive LISP.64K came from
     ld (lr_drive),a
+    ld (lr_drv),a
     ld hl,#8000                 ; the resident part and the finisher out of
     ld de,PARK                  ;   the way: a load may write past the
     ld bc,#1000                 ;   file's end, a sector at a time
