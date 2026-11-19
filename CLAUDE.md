@@ -445,7 +445,8 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     map the block -- the screen stays at &C000 in C4-C7), and
     MACH_BLOCKS is a quarter on the 512K and FutureOS (7.7 KB of
     strings, ~5500 cells; after hwtest and eight demos 3.9 KB left,
-    was 1.4). Making far arrays is slow
+    was 1.4). Build 26078 passed on Mike's 6128 under FutureOS
+    (2026-11-18: "works now"). Making far arrays is slow
     on the real machine (each byte through rd_putc and a bank switch:
     test 5's 390 KB took minutes); a native 256-byte fill would help.
   * **The RAM disc's errors give the file buffer back** (fl_release

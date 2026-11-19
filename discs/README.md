@@ -51,9 +51,11 @@ smaller for it), and string space is a quarter of the heap -- 7.7 KB at
 start, some 5500 cells. After `(hwtest)` and the demos, a `load` and
 `(ed 'tree)` had failed for want of it. In MAME: the 512K suite, and
 under FutureOS on a 6128 `(hwtest)` 7 yes, eight demos (3.9 KB left),
-`(ed 'tree)`, `(load "apfel")`. On Mike's 6128, build 23879 (the buffer
-alone) made `(load "apfel")` work after the demos; 26078 is not yet
-tried there. The builds below are the ones that passed on the machines.
+`(ed 'tree)`, `(load "apfel")`. On Mike's 6128 under FutureOS, build
+23879 (the buffer alone) made `(load "apfel")` work after the demos, and
+**26078 passed there** (2026-11-18, Mike: "works now"): hwtest, demos,
+then `(ed 'tree)` and `(load "apfel")`. The 512K disc's 26738 is the
+same code, tried in MAME only.
 
 `cpclispfos.dsk` build 4236 passed on Mike's 6128 under FutureOS (2026-11-17):
 `(hwtest)` 7 yes, `(rose)`, the demos and `(reset)` back to the

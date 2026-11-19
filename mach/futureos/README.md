@@ -295,8 +295,9 @@ What did not work, on the way:
   at start, 3.9 KB after hwtest and eight demos (MAME), where
   `(ed 'tree)` and `(load "apfel")` work. On Mike's 6128 the first half
   of it (build 23879, the buffer) made `(load "apfel")` work after the
-  demos; `(ed 'tree)` still said "out of string space" there, which
-  build 26078 fixes in MAME.
+  demos; `(ed 'tree)` still said "out of string space" there. Build
+  26078 passed there (2026-11-18): hwtest, the demos, then `(ed 'tree)`
+  and `(load "apfel")`.
 
 ## Testing in MAME
 
