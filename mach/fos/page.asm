@@ -1708,7 +1708,7 @@ p_CAS_CATALOG:
     push bc
     push hl
     ld a,(f_cfg)
-    ld b,16
+    ld b,32
     call r_eread
     ld a,(rs_ebuf)
     or a
@@ -1984,11 +1984,270 @@ f_cfg:      db 0
 f_rec:      dw 0
 f_hit:      db 0
 
-;; the output file: not yet
+;; CAS OUT OPEN: B = the name's length, HL = the name -> carry if open:
+;; written to bank 0's blocks 0-2 (the resident part's FILE_PUTC), saved
+;; when it is closed
 p_CAS_OUT_OPEN:
+    push ix
+    call f_name
+    jr nc,.no
+    call f_dir                  ; (its directory must have been read)
+    jr nc,.no
+    ld hl,rs_fname
+    ld de,out_name
+    ld bc,12
+    ldir
+    ld a,(f_drive)
+    ld (out_drive),a
+    call f_era                  ; an old one of the name gone now, before
+    ld hl,0                     ;   anything is in bank 0's blocks (EWEG
+    ld (out_pos),hl             ;   leaves directory data in free blocks)
+    ld a,1
+    ld (out_open),a
+    pop ix
+    scf
+    ret
+.no:
+    pop ix
     ld a,#0E
     or a
     ret
+p_CAS_OUT_ABANDON:
+    xor a
+    ld (out_open),a
+    scf
+    ret
+;; CAS OUT CLOSE: the file saved through FutureOS -- its last record padded
+;; with &1A, an old one of the name deleted (EWEG), the new one written
+;; (TEISI, from the short-time buffers: bank 0's blocks 0-2 are the first),
+;; the directory written back (SIDIR) -> carry if all went well
+p_CAS_OUT_CLOSE:
+    ld a,(out_open)
+    or a
+    scf
+    ret z
+    push ix
+    call f_save
+    call nc,f_saymsg            ; why not, as AMSDOS says it
+    push af
+    xor a
+    ld (out_open),a
+    ld bc,#FA7E                 ; the motors off
+    out (c),a
+    pop af
+    pop ix
+    ret
+f_save:
+.pad:
+    ld hl,(out_pos)             ; to a whole record, at least one
+    ld a,l
+    and #7F
+    jr nz,.p1
+    ld a,h
+    or l
+    jr nz,.padded
+.p1:
+    ld a,#1A
+    call r_fputc
+    jr c,.pad
+.padded:
+    ld hl,(out_pos)             ; records: the bytes / 128
+    ld a,l
+    rla
+    ld a,h
+    rla
+    ld l,a
+    ld a,0
+    rla
+    ld h,a
+    push hl
+    dec hl                      ; the last extent's: 1-128
+    ld a,l
+    and #7F
+    inc a
+    ld (IDE_32_39),a
+    xor a
+    ld (IDE_40_47),a            ; (S1: none, as CP/M 2.2 and AMSDOS)
+    pop hl
+    ld a,(out_drive)            ; blocks: 1 KB, or 4 KB on a Vortex disc
+    ld (f_drive),a
+    push hl
+    call f_vortex               ; (HL lost)
+    pop hl
+    ld de,7
+    ld b,3
+    jr nz,.bs
+    ld de,31
+    ld b,5
+.bs:
+    add hl,de
+.sh:
+    srl h
+    rr l
+    djnz .sh
+    ld (REG_BC1),hl
+    ld hl,XRAM_C4               ; bank 0's blocks 0-2 must be free to
+    ld b,3                      ;   FutureOS (free, or short-time buffers)
+.x:
+    ld a,(hl)
+    cp #01
+    jr z,.xok
+    cp #09
+    ld a,5                      ; ("no room in the expansion")
+    jr nz,.err
+.xok:
+    inc hl
+    djnz .x
+    ld bc,#FA7E                 ; the motor on
+    ld a,#FF
+    out (c),a
+    call out_reg8
+    call chg_off
+    ld a,1                      ; (it writes in &0000-&3FFF)
+    ld (fos_low),a
+    ld a,(out_drive)
+    ld hl,TEISI
+    call r_fos
+    push af
+    call chg_on
+    pop af
+    cp #FF
+    jr nz,.err                  ; an error, 0-6, or &F0
+    ld hl,SIDIR
+    call r_fosb
+    scf
+    ret
+.err:
+    or a                        ; (no carry; A the code)
+    ret
+;; chg_off: every drive's "directory changed" bit (3 of its tagging byte)
+;; kept in chg_mask and cleared: TEISI sorts a changed directory first, in
+;; the first free expansion block -- where the file is (from &2C00 on: the
+;; file came out wrong past 11 KB, MAME 2026-11-19). chg_on: put back, the
+;; output file's drive's set (TEISI changed it; SIDIR writes it back).
+chg_off:
+    ld hl,TURBO_A
+    ld de,chg_mask
+    ld b,13
+.l:
+    ld a,(hl)
+    and 8
+    ld (de),a
+    res 3,(hl)
+    inc de
+    ld a,l
+    add a,8
+    ld l,a
+    djnz .l
+    ret
+chg_on:
+    ld hl,TURBO_A
+    ld de,chg_mask
+    ld b,13
+.l:
+    ld a,(de)
+    or (hl)
+    ld (hl),a
+    inc de
+    ld a,l
+    add a,8
+    ld l,a
+    djnz .l
+    ld a,(out_drive)
+    ld (f_drive),a
+    add a,a
+    add a,a
+    add a,a
+    add a,TURBO_A and #FF
+    ld l,a
+    ld h,TURBO_A >> 8
+    set 3,(hl)
+    ret
+chg_mask:   defs 13,0
+;; out_reg8: REG16_8 = the output file's user, name, extension
+out_reg8:
+    ld hl,out_name
+    ld de,REG16_8
+    ld bc,12
+    ldir
+    ret
+;; f_era: the output file's name deleted on its drive, in the buffered
+;; directory (EWEG; it says changed). All lost.
+f_era:
+    call out_reg8
+    ld a,(out_drive)
+    ld (REG08_1),a
+    ld hl,EWEG
+    jp r_fos
+;; f_vortex: f_drive's disc -> NZ if Vortex (its tagging byte: data 11..,
+;; system 01.., IBM 001., Vortex 0001...: TEISI's own test)
+f_vortex:
+    ld a,(f_drive)
+    add a,a
+    add a,a
+    add a,a
+    add a,TURBO_A and #FF
+    ld l,a
+    ld h,TURBO_A >> 8
+    ld a,(hl)
+    and #F0
+    cp #10
+    ret
+;; f_saymsg: A = TEISI's error code (0-6, &F0): "NAME.EXT not saved: why".
+;; Carry clear after.
+f_saymsg:
+    push af
+    ld hl,out_name+1
+    ld b,8
+    call cat_put
+    ld a,"."
+    call TXT_OUTPUT
+    ld b,3
+    call cat_put
+    ld hl,sv_m
+    call cat_puts
+    pop af
+    cp 7
+    jr c,.k
+    ld a,7
+.k:
+    ld hl,sv_why
+.f:
+    or a
+    jr z,.p
+.s:
+    bit 7,(hl)
+    inc hl
+    jr z,.s
+    dec a
+    jr .f
+.p:
+    ld a,(hl)
+    inc hl
+    push af
+    and #7F
+    call TXT_OUTPUT
+    pop af
+    rla
+    jr nc,.p
+    ld a,13
+    call TXT_OUTPUT
+    ld a,10
+    call TXT_OUTPUT
+    or a
+    ret
+sv_m:       db " not saved: ",0
+sv_why:     db "no directory rea","d"+#80
+            db "the drive is not tagge","d"+#80
+            db "it is empt","y"+#80
+            db "disc ful","l"+#80
+            db "directory ful","l"+#80
+            db "no room in the expansio","n"+#80
+            db "drive not read","y"+#80
+            db "too lon","g"+#80
+out_name:   defs 12,0
+out_drive:  db 0
+
 p_CAS_IN_CHAR:                  ; (the resident part's FILE_GETC)
     ld a,#1A
     or a
@@ -1997,17 +2256,88 @@ p_CAS_IN_CLOSE:
 p_CAS_IN_ABANDON:
     xor a
     ld (in_open),a
-p_CAS_OUT_CLOSE:
-p_CAS_OUT_ABANDON:
-p_CAS_OUT_CHAR:
     scf
     ret
+p_CAS_OUT_CHAR:                 ; (the resident part's FILE_PUTC)
+    jp r_fputc
 
-;; ---- the rest ----
+;; |ERA, for delete-file (mach/cpc512/ramdisc.asm finds it with KL FIND
+;; COMMAND and calls it with KL FAR PCHL, as the disc ROM's): KL FIND
+;; COMMAND answers for "ERA" alone, KL FAR PCHL runs ours for its address.
 p_KL_FIND_COMMAND:
+    ld a,(hl)
+    cp "E"
+    jr nz,.no
+    inc hl
+    ld a,(hl)
+    cp "R"
+    jr nz,.no
+    inc hl
+    ld a,(hl)
+    cp "A"+#80
+    jr nz,.no
+    ld hl,era_mark
+    ld c,0
+    scf
+    ret
+.no:
     or a
     ret
 p_KL_FAR_PCHL:
+    push de
+    ld de,era_mark
+    or a
+    sbc hl,de
+    pop de
+    ret nz
+;; era: IX = |ERA's parameters, one: a string descriptor (length, address)
+;; -> the file deleted through FutureOS (EWEG, SIDIR), or "not found"
+era_mark:
+    ld l,(ix+0)
+    ld h,(ix+1)                 ; the descriptor
+    ld b,(hl)
+    inc hl
+    ld a,(hl)
+    inc hl
+    ld h,(hl)
+    ld l,a
+    push hl
+    push bc
+    call f_name
+    jr nc,.nf
+    call f_find
+    jr nc,.nf
+    ld hl,rs_fname
+    ld de,out_name
+    ld bc,12
+    ldir
+    ld a,(f_drive)
+    ld (out_drive),a
+    call f_era
+    ld bc,#FA7E
+    ld a,#FF
+    out (c),a
+    ld hl,SIDIR
+    call r_fosb
+    ld bc,#FA7E
+    xor a
+    out (c),a
+    pop bc
+    pop hl
+    ret
+.nf:
+    pop bc
+    pop hl
+.p:
+    ld a,(hl)
+    inc hl
+    call TXT_OUTPUT
+    djnz .p
+    ld hl,era_nf
+    jp cat_puts
+era_nf:     db " not found",13,10,0
+
+;; ---- the rest ----
 p_none:
     ret
 ;; EDIT (the firmware's line editor, used only without the library): an

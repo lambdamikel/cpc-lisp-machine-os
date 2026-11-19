@@ -797,7 +797,22 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   TXT OUTPUT's character: every character came out as 0); a global
   label between a routine and its `.local` moves the local's scope;
   rasm takes no local labels starting with a digit. Its README has the
-  rest.
+  rest. **Phase 2, files through FutureOS** (2026-11-19, MAME 464 and
+  6128: load, lazy, save, compile-file, streams both ways, delete-file,
+  dir): LADE_N into the expansion to read; TEISI (+ EWEG at the open,
+  SIDIR after) to write, from FutureOS's short-time buffers. What it
+  took: Lisp's blocks marked &11 in XRAM (FESB makes every free block a
+  short-time buffer, &09, and TEISI scribbled into ours -- the return
+  went astray), the output in the first free blocks (bank 0's 0-2),
+  &0000-&3FFF kept aside for TEISI (it writes there), the "directory
+  changed" bits cleared for the call (it sorts a changed directory in
+  the first free block: the file went wrong past 11 KB -- that one was
+  in fact our own block count, clobbered by f_vortex's HL), IM 1 and
+  &0038 put back after every FutureOS call (TEISI left IM 2: PC ran
+  wild), FutureOS's own stack for its calls. Variables found in ROM C:
+  &B8C4 blocks, &BBCC/&BBCD the last extent's RC and S1 (G_BLK), REG16_8
+  &B8F4 the name, REG08_1 &B8DD the drive. repl.lua prints PC and SP
+  on a timeout.
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,

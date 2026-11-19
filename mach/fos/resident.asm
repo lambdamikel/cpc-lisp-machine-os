@@ -62,6 +62,7 @@ rs_romb:    dw 0
 rs_romc:    dw 0
 rs_romd:    dw 0
 rs_drive:   db 0                ; the drive LISP.64K came from (0-12: A-M)
+rs_fossp:   dw 0                ; FutureOS's stack when it started LISP.64K
 ticks:      dw 0,0              ; 1/300 s since the start
 kb_div:     db 6                ; interrupts to the next keyboard scan
 kb_mat:     defs 10,#FF         ; the matrix, a byte a row, 0 = down
@@ -74,6 +75,8 @@ kb_buf:     defs 32,0
 in_open:    db 0                ; the input file: open,
 in_pos:     dw 0                ;   where, of
 in_len:     dw 0                ;   how many bytes (bank 6's blocks 0-2)
+out_open:   db 0                ; the output file: open,
+out_pos:    dw 0                ;   its bytes so far (bank 0's blocks 0-2)
 rs_fname:   db 0,"           "  ; a file's user, name, extension (LADE_N)
 rs_ebuf:    defs 32,0           ; r_eread's
 
@@ -591,6 +594,10 @@ r_reset:
     ld de,#0000
     ld bc,#0100
     ldir
+    ld hl,FOS_KEEPX             ; and its XRAM marks
+    ld de,XRAM_C4
+    ld bc,32
+    ldir
     call to_main
     ld a,#86                    ; mode 2, the upper ROM in, the lower out
     call rom_set
@@ -728,12 +735,26 @@ r_eread:
 ;; in, ROM C, the interrupts off; FutureOS told the screen's mode (RAMCHAR:
 ;; its loading sets the gate array from it). &8000-&8FFF -- the top of the
 ;; heap, Lisp's stack -- waits in the buffers' block meanwhile: FutureOS
-;; may use it as a sector buffer; the call runs on a stack of its own here.
-;; BC, DE, HL, IX, IY and the alternate registers lost.
+;; may use it as a sector buffer; the call runs on FutureOS's own stack,
+;; where LISP.64K found it (TEISI's calls go deep).
+;; With fos_low set, for TEISI, &0000-&3FFF -- Lisp's symbols and cells --
+;; waits in a block of its own too (LOW_CFG): TEISI writes there (MAME,
+;; 2026-11-19). Our interrupt (IM 1, &0038) is put back after: FutureOS's
+;; functions may leave its own. BC, DE, HL, IX, IY and the alternate
+;; registers lost. r_fosb: the same in FutureOS's ROM B.
+r_fosb:
+    push hl
+    ld hl,(rs_romb)
+    jr r_fos_rom
 r_fos:
+    push hl
+    ld hl,(rs_romc)
+r_fos_rom:
+    ld (fos_romw),hl
+    pop hl
     di
     ld (fos_sp),sp
-    ld sp,fos_stk
+    ld sp,(rs_fossp)
     ld (fos_call+1),hl
     ld (fos_a),a
     push de
@@ -743,6 +764,16 @@ r_fos:
     ld de,XB_HI
     ld bc,#1000
     ldir
+    ld a,(fos_low)
+    or a
+    jr z,.nolow
+    ld bc,#7F00+LOW_CFG
+    out (c),c
+    ld hl,#0000
+    ld de,#4000
+    ld bc,#4000
+    ldir
+.nolow:
     ld bc,#7FC0
     out (c),c
     ld a,#C0
@@ -751,16 +782,16 @@ r_fos:
     ld a,(rs_rom)
     ld (fos_rom),a
     ld (RAMCHAR),a
-    ld bc,(rs_romc)
-    out (c),c                   ; FutureOS's ROM C,
+    ld bc,(fos_romw)
+    out (c),c                   ; FutureOS's ROM C (or B),
     and #F7
     ld b,#7F
     out (c),a                   ;   the upper ROM in
     ld a,(fos_a)
 fos_call:
     call 0
-    ld (fos_a),a
     di
+    ld (fos_a),a
     ld a,(fos_rom)
     ld b,#7F
     out (c),a                   ; the ROMs as they were
@@ -770,16 +801,33 @@ fos_call:
     ld de,#8000
     ld bc,#1000
     ldir
+    ld a,(fos_low)
+    or a
+    jr z,.nolow2
+    ld bc,#7F00+LOW_CFG
+    out (c),c
+    ld hl,#4000
+    ld de,#0000
+    ld bc,#4000
+    ldir
+    xor a
+    ld (fos_low),a
+.nolow2:
     ld sp,(fos_sp)
+    im 1
+    ld a,#C3
+    ld (#0038),a
+    ld hl,r_int
+    ld (#0039),hl
     call to_page
     ld a,(fos_a)
     ei
     ret
 fos_sp:     dw 0
+fos_romw:   dw 0
+fos_low:    db 0                ; 1: keep &0000-&3FFF too, for this call
 fos_a:      db 0
 fos_rom:    db 0
-            defs 128,0
-fos_stk:
 
 ;; The input file (no RAM disc yet): the whole file is in bank 6's blocks
 ;; 0-2 (LADE_N, the page's CAS IN OPEN), read from there a byte at a time,
@@ -830,8 +878,52 @@ r_fgetc:
     ld a,#1A
     or a
     ret
+;; FILE_PUTC: A into the output file, in bank 0's blocks 0-2 (where
+;; FutureOS's TEISI writes it from, the page's CAS OUT CLOSE) -> carry if
+;; there was room. The configuration that was in, back. All kept.
 r_fputc:
-    jp CAS_OUT_CHAR
+    push bc
+    push hl
+    push af
+    ld a,(out_open)
+    or a
+    jr z,.no
+    ld hl,(out_pos)
+    ld a,h
+    cp #C0
+    jr nc,.no                   ; 48 KB: full
+    ld a,(rs_now)
+    ld (fp_now),a
+    ld a,h
+    rlca
+    rlca
+    and 3
+    add a,OUT_CFG0
+    call set_cfg
+    ld a,h
+    and #3F
+    or #40
+    ld h,a
+    pop af
+    push af
+    ld (hl),a
+    ld a,(fp_now)
+    call set_cfg
+    ld hl,(out_pos)
+    inc hl
+    ld (out_pos),hl
+    pop af
+    pop hl
+    pop bc
+    scf
+    ret
+.no:
+    pop af
+    pop hl
+    pop bc
+    or a
+    ret
+fp_now:     db 0
 r_ficlose:
 r_fiabandon:
     xor a

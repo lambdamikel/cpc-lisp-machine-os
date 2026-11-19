@@ -29,11 +29,17 @@ AKT_RAM     equ #B84C           ; an E-RAM block to load into, &7Fxx
 TURBO_A     equ #B858           ; 8 bytes a medium, A-M: +0 tagged (bit 0),
                                 ;   +1 the block its directory is buffered
                                 ;   in, +2 its page there, +3 its pages
+REG_BC1     equ #B8C4           ; TEISI: the file's blocks (low byte)
 REG_PC      equ #B8DA           ; +1: the medium the last file came from
+REG08_1     equ #B8DD           ; EWEG: the drive
 REG08_4     equ #B8E0           ; LADE_N: the type of loading (2: the main
 REG16_3     equ #B8EA           ;   RAM) and the address, for a file whose
                                 ;   header is not used
+REG16_8     equ #B8F4           ; TEISI, EWEG: user, name, extension (12)
 XRAM_C4     equ #B9D0           ; 32 bytes: what each E-RAM block holds
+IDE_32_39   equ #BBCC           ; TEISI: the last extent's records (RC), and
+IDE_40_47   equ #BBCD           ;   the last record's bytes (S1; G_BLK sets
+                                ;   both, ROM C &FBD5)
 
 ;; ROM A: text
 TERM_2      equ #D48C           ; HL = a string ending in 0, control codes
@@ -47,6 +53,16 @@ LADE_N      equ #FD5C           ; A = the medium (0-14: A-O; + &80: the
                                 ;   its directory must have been read. A =
                                 ;   &FF: loaded; 0, 1, 2: no directory read,
                                 ;   that one not read, no such file
+
+TEISI       equ #FD56           ; A = a drive (0-7): the file in REG16_8 written
+                                ;   from the short-time buffers (the XRAM's
+                                ;   &09 blocks, in order -- FESB marks every
+                                ;   free one so first); A = &FF: written
+EWEG        equ #FD7A           ; REG08_1, REG16_8: deleted in the buffered
+                                ;   directory (marked changed)
+
+;; ROM B: the directories
+SIDIR       equ #FDE8           ; every changed directory written back
 
 ;; ROM D: back to the desktop
 KLICK       equ #FE9A           ; the icons kept (only the lower part used)

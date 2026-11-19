@@ -15,16 +15,71 @@ runs beside it, using FutureOS's own functions where it has them:
 
 ## State (2026-11-19)
 
-Phase 1 runs in MAME on a 464 and a 6128 (`tools/fos/run.sh`): the REPL,
-the line editor, the function editor, floats, ESC, scrolling, `(room)`,
-`(time)`, `(reset)` back to the desktop. Not yet: **files** (phase 2,
-through FutureOS), **graphics and sound** (phase 3), the RAM disc and far
-arrays, a hardware test. **Passed on Mike's 6128** the same day (build
-30098, `cpclispfos-n.dsk` in the LambdaSpeak card's drive, FutureOS's drive
-E; FutureOS from the card's slots, Revaldinho's card in configuration
-0): the banner, sums and floats, scrolling, a wrapped line, the history,
-the function editor, ESC, `(room)`, `(reset)` to the desktop -- "all
+**Phase 1** -- the REPL, the line editor, the function editor, floats,
+ESC, scrolling, `(room)`, `(time)`, `(reset)` back to the desktop --
+runs in MAME on a 464 and a 6128 and **passed on Mike's 6128** the same
+day (build 30098, `cpclispfos-n.dsk` in the LambdaSpeak card's drive,
+FutureOS's drive E; FutureOS from the card's slots, Revaldinho's card in
+configuration 0): the banner, sums and floats, scrolling, a wrapped
+line, the history, the function editor, ESC, `(room)`, `(reset)` -- "all
 works, and much snappier".
+
+**Phase 2, files through FutureOS**, runs in MAME on both: `load` (lazy
+too), `save`, `compile-file` and loading the `.fas`, `open` and
+`with-open-file` both ways, two files at once, `probe-file`,
+`delete-file`, `(dir)`; files up to 48 KB (34 KB tried: three extents);
+a full disc says so ("NAME.EXT not saved: disc full", then Lisp's "cannot
+write the file"). Not on the real machine yet.
+
+Not yet: **graphics and sound** (phase 3), the RAM disc `M:` and far
+arrays, a hardware test, `(dir "e:")` (the library's `dir` takes only
+`m:`: it lists the drive `LISP.64K` came from), re-reading a directory
+after a disc is changed.
+
+## Files
+
+A name is `[d:]name[.ext]`, `d` a FutureOS drive A-M; without one, the
+drive `LISP.64K` came from. FutureOS must have **read that drive's
+directory** -- tagging `LISP.64K` did that for its own drive; for
+another, tag it on the desktop before starting Lisp. Lisp reads
+FutureOS's buffered directories, so a disc changed while Lisp runs is
+not seen yet.
+
+* **Reading**: the file is loaded whole by **LADE_N** into the
+  expansion (bank 6's blocks 0-2, at most 48 KB), its length from the
+  directory's extents ((EX + 32 S2) x 128 + RC records); FILE_GETC (the
+  resident part) reads it from there, to that length or the first &1A.
+* **Writing**: FILE_PUTC collects it in bank 0's blocks 0-2; closing
+  pads the last record with &1A and calls **TEISI**, FutureOS's "save a
+  file from the short-time buffers", then **SIDIR** to write the
+  directory back. An old file of the name goes when it is opened
+  (**EWEG**, in the buffered directory).
+* **`delete-file`** finds `|ERA` as on a CPC (KL FIND COMMAND, KL FAR
+  PCHL): the page answers with EWEG and SIDIR.
+
+What TEISI needed, found by reading FutureOS's ROM C (TFM's label file is
+not here) and in MAME:
+
+* It writes from the **short-time buffers**: the expansion blocks whose
+  XRAM mark (&B9D0, one byte a block) is &09, in XRAM order -- and first
+  it calls FESB, which marks every *free* block so (&01 and &09 alike;
+  anything else stays). So `LISP.64K` marks Lisp's own blocks &11 (in
+  use by a program) -- the images, the page, its buffers -- and leaves
+  the output file's, bank 0's blocks 0-2, free: the first in XRAM order.
+  `(reset)` puts FutureOS's marks back. Without the marks TEISI wrote
+  into the buffers' block and the return went astray.
+* It writes in **&0000-&3FFF**, Lisp's symbols and cells: the gate keeps
+  them in a block of its own for that call (bank 7's block 0).
+* Its count of **blocks** is &B8C4, the last extent's **records**
+  &BBCC and the last record's **bytes** &BBCD (G_BLK's, ROM C &FBD5,
+  sets them so); the name at REG16_8 (&B8F4).
+* A directory marked **changed** (bit 3 of its drive's tagging byte,
+  which EWEG sets) is sorted in the first free block first: the bits are
+  cleared for the call and put back after.
+* FutureOS's functions may leave **its IM 2** (or its RET at &0038):
+  the gate puts our IM 1 and &0038 back after each, and runs them on
+  FutureOS's own stack (where `LISP.64K` found it), with &8000-&8FFF
+  (Lisp's stack) kept aside: loads over 16 KB may use it.
 
 ## How it is arranged
 

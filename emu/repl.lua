@@ -214,6 +214,9 @@ local function finish(why)
       io.stderr:write(string.format("%04X: %s\n", row, table.concat(t, " ")))
     end
   end
+  if why == "TIMEOUT" then
+    io.stderr:write(string.format("repl.lua: PC=%04X SP=%04X\n", CPU.state["PC"].value, CPU.state["SP"].value))
+  end
   io.stderr:write("repl.lua: " .. why .. " after " .. F .. " frames\n")
   manager.machine:exit()
 end

@@ -43,6 +43,8 @@ fin:
     ld (rs_romc),hl
     ld a,(lr_drv)
     ld (rs_drive),a
+    ld hl,(lr_sp)
+    ld (rs_fossp),hl
     ld hl,RS_RD                 ; the RAM disc's state: none (M: refuses)
     ld b,16
 .rd:
@@ -57,8 +59,25 @@ fin:
     ld de,FOS_KEEP0
     ld bc,#0100
     ldir
+    ld hl,XRAM_C4               ; and its XRAM marks
+    ld de,FOS_KEEPX
+    ld bc,32
+    ldir
     ld bc,#7FC0
     out (c),c
+    ld hl,lr_mine               ; ours marked in use by a program (&11):
+.mk:                            ;   FutureOS's FESB makes every free block a
+    ld a,(hl)                   ;   short-time buffer, which TEISI uses
+    inc hl
+    cp #FF
+    jr z,.mkd
+    add a,XRAM_C4 and #FF
+    ld e,a
+    ld d,XRAM_C4 >> 8
+    ld a,#11
+    ld (de),a
+    jr .mk
+.mkd:
     ld hl,#0000                 ; ours: RETs, &0000 the way back, &0038
     ld (hl),#C9                 ;   the interrupt
     ld de,#0001
@@ -173,15 +192,22 @@ fm_build:
     out (c),c
     ret
 
+;; the blocks Lisp keeps, as XRAM indices (4 x bank + block): the images
+;; (block 3 of banks 0-2, 4-6), the page (bank 7's 3), the buffers' block
+;; (7's 1), the input file's (6's 0-2), the low RAM's keeping (7's 0); not
+;; the output file's (0's 0-2: TEISI writes from there)
+lr_mine:    db 3,7,11,19,23,27,31,29,24,25,26,28,#FF
 lr_roma:    dw 0
 lr_romb:    dw 0
 lr_romc:    dw 0
 lr_romd:    dw 0
 lr_drv:     db 0
+lr_sp:      dw 0
     assert $ <= #8F00
 
     org #9000
 fos_start:
+    ld (lr_sp),sp               ; FutureOS's stack, for its functions later
     ld hl,(FOS_ROMNUM_A)        ; FutureOS's ROMs, from its API page
     ld (lr_roma),hl
     ld hl,(FOS_ROMNUM_B)
