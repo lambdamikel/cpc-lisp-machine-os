@@ -7,9 +7,9 @@
 ;;
 ;; Each routine keeps the contract of the firmware routine it stands for
 ;; (The Amstrad CPC Firmware Guide; mach/README.md says what Lisp relies
-;; on). So far: the text screen in mode 2 -- characters drawn by FutureOS's
-;; PR_2 --, the keys, the screen's mode and inks, the time. Graphics, sound
-;; and files are stubs that do nothing (or fail) for now.
+;; on): the text screen -- in mode 2 characters drawn by FutureOS's PR_2
+;; --, the keys and the keyboard's scan, the screen's mode and inks,
+;; graphics, sound, files through FutureOS.
 ;;
 ;; The text screen: 80 by 25 (mode 2) in the firmware's layout at &C000,
 ;; scrolled by the CRTC's start address (scr_off), as the firmware does; a
@@ -23,11 +23,13 @@
     include "fos.asm"
 
 ROWS        equ 25
+KB_DELAY    equ 30              ; key repeat: after 30 scans (0.6 s),
+KB_RATE     equ 2               ;   then every 2 (as the firmware's)
 
     org #C000
     include "pagetab.inc"       ; the firmware's names, in mkfw.py's order
     jp p_init                   ; LISP.64K's finisher calls it once
-    jp snd_tick                 ; the interrupt, 100 times a second
+    jp p_tick                   ; the interrupt, 100 times a second
 
 ;; ---- the state ----
 cmode:      db 2                ; the screen mode
@@ -1384,6 +1386,151 @@ p_SCR_SW_ROLL:
     ret
 
 ;; ---- the keys ----
+
+;; p_tick: from the resident part's interrupt, 100 times a second, with the
+;; page mapped in (AF, BC, DE, HL saved there): the keyboard every other
+;; time (50 Hz), the sound every time.
+p_tick:
+    ld hl,kb_div
+    dec (hl)
+    jr nz,.snd
+    ld (hl),2
+    call kb_scan
+.snd:
+    jp snd_tick
+kb_div:     db 2
+
+;; kb_scan: the matrix through the PSG's port A (register 14), each row
+;; selected on the PPI's port C; each key newly down queued, and the last
+;; one repeated while it is held.
+kb_scan:
+    ld bc,#F40E
+    out (c),c                   ; PSG register 14
+    ld bc,#F6C0
+    out (c),c                   ; latched
+    ld bc,#F600
+    out (c),c
+    ld bc,#F792
+    out (c),c                   ; PPI port A in
+    ld hl,kb_new
+    ld d,#40
+.row:
+    ld b,#F6
+    out (c),d                   ; the row, PSG read
+    ld b,#F4
+    in a,(c)
+    ld (hl),a
+    inc hl
+    inc d
+    ld a,d
+    cp #4A
+    jr nz,.row
+    ld bc,#F782
+    out (c),c                   ; PPI port A out again
+    ld bc,#F600
+    out (c),c
+    ld hl,kb_mat
+    ld de,kb_new
+    ld b,0                      ; the first key of the row
+.cmp:
+    ld a,(de)
+    ld c,(hl)                   ; the old row
+    ld (hl),a                   ; the new one kept
+    cpl                         ; down now: 1
+    and c                       ;   and up before
+    jr z,.next
+    push hl
+    push de
+    push bc
+    ld d,a
+    ld e,b
+.bit:
+    srl d
+    jr nc,.nb
+    ld a,e
+    push de
+    call kb_push                ; (BC, HL lost)
+    pop de
+.nb:
+    inc e
+    ld a,d
+    or a
+    jr nz,.bit
+    pop bc
+    pop de
+    pop hl
+.next:
+    inc hl
+    inc de
+    ld a,b
+    add a,8
+    ld b,a
+    cp 80
+    jr nz,.cmp
+    ld a,(kb_last)              ; the repeat
+    cp #FF
+    ret z
+    call r_testkey
+    jr z,.gone
+    ld hl,kb_rep
+    dec (hl)
+    ret nz
+    ld (hl),KB_RATE
+    ld a,(kb_last)
+    jr kb_queue
+.gone:
+    ld a,#FF
+    ld (kb_last),a
+    ret
+;; kb_push: A = a key newly down -> queued, and it repeats from now on
+;; (SHIFT and CTRL are not keys of their own)
+kb_push:
+    cp 21
+    ret z
+    cp 23
+    ret z
+    ld (kb_last),a
+    ld c,a
+    ld a,KB_DELAY
+    ld (kb_rep),a
+    ld a,c
+;; kb_queue: A = a key -> into the queue with SHIFT (bit 0) and CTRL (bit
+;; 1) as they are now; dropped if it is full. BC, HL lost.
+kb_queue:
+    ld c,a
+    ld a,(kb_mat+2)             ; row 2: SHIFT bit 5, CTRL bit 7
+    cpl
+    ld b,0
+    bit 5,a
+    jr z,.s
+    set 0,b
+.s:
+    bit 7,a
+    jr z,.c
+    set 1,b
+.c:
+    ld a,(kb_put)
+    ld l,a
+    add a,2
+    and 31
+    ld h,a
+    ld a,(kb_get)
+    cp h
+    ret z                       ; full
+    ld a,h
+    ld (kb_put),a
+    ld a,l
+    ld hl,kb_buf
+    add a,l
+    ld l,a
+    adc a,h
+    sub l
+    ld h,a
+    ld (hl),c
+    inc hl
+    ld (hl),b
+    ret
+
 
 ;; KM READ CHAR: -> carry and A = a key's character, or no carry if none is
 ;; waiting. The firmware's translation tables: plain, SHIFT, CTRL.

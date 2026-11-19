@@ -46,7 +46,9 @@ fa_xfer:
     add a,a
     add a,a
     or c                        ; the 16 KB unit
-    call fa_cfg
+    ifndef FOSN
+    call fa_cfg                 ; (mach/fos: RS_XFER takes the unit itself)
+    endif
     ld (FX_PAGE),a
     ld hl,#4000
     or a
@@ -91,6 +93,7 @@ fa_xfer:
     ld (FA_OFF+2),a
     jr .l
 
+    ifndef FOSN
 ;; fa_cfg: A = a 16 KB unit of the disc -> A = the configuration showing
 ;; it at &4000: units 0-17 are blocks 0-2 of banks 0-5, then the four
 ;; blocks of bank 6, of bank 7. BC lost.
@@ -123,6 +126,7 @@ fa_cfg:
     or b
     or #C4
     ret
+    endif
     else
     ld hl,fa_m_nodisc           ; (a plain 6128: its banks hold the code)
     ld de,UNBOUND

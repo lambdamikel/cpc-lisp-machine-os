@@ -823,9 +823,26 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   then RET NZ returns with carry set when A was lower (every save
   "succeeded"); a helper that loads HL clobbers a count kept there (the
   file's blocks came out 11); a comment line holding "label:" fools a
-  count of labels. Not yet: the RAM disc and far arrays, hwtest, `(dir
-  "e:")` (part 0 is full), re-reading a changed disc's directory; the
-  resident part has ~150 bytes left.
+  count of labels. **Phase 4** (2026-11-19, MAME 464 and 6128): M: and
+  far arrays -- the 512K's ramdisc.asm and far.asm, in blocks 0-2 of
+  banks 1, 2, 4, 5 where XRAM says free (&01/&09): LISP.64K lists their
+  configurations in rs_units, marks them &11, and RD_NBANKS is their
+  count; RS_XFER takes a unit, not a configuration (`ifdef FOSN` skips
+  rd_cfg/fa_cfg: part 0 gained 47 bytes; the 512K's images byte for byte
+  the same, BUILD_ID=77). 191 KB; M: outlasts (reset) and LISP.64K
+  again (hwtest2). The resident part's room came from moving kb_scan
+  into the page (p_tick, the interrupt's every third tick: the sound,
+  the keys every other time); ~110 bytes left. **RAMCHAR (&B847) is
+  FutureOS's ROM byte for its own text**: r_fos writes ours (lower ROM
+  out) there for each call, and after a save and `(reset)` the desktop's
+  dialogs read their glyphs from the RAM at &3800 -- Lisp's cells --
+  garbled (since phase 2); `(reset)` puts it back (rs_ramchar) and
+  FutureOS's RAM copy of the font too. The island puts &A000-&BFFF back
+  whole: it never had this. `mach/fos/hwtest.lsp` (32000-element far
+  arrays for check 5) is the native disc's. A wait loop of `pgrep -f
+  NAME` matches its own shell's command line: start runs with `&` and
+  `wait`. Not yet: `(dir "e:")` (part 0 is full), re-reading a changed
+  disc's directory, tone envelopes and rendezvous.
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,

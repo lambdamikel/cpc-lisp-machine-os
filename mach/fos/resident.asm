@@ -30,8 +30,6 @@ PR_2I       equ #D064           ;   ... inverted
 S80X25      equ #D60E           ; ROM A: the CRTC as the firmware's (80 x 25)
 S64X32      equ #D5A8           ; ROM A: FutureOS's own (64 x 32)
 FOS_COLS    equ #FE0B           ; ROM B: FutureOS's border and inks 0-3
-KB_DELAY    equ 30              ; key repeat: after 30 scans (0.6 s),
-KB_RATE     equ 2               ;   then every 2 (as the firmware's)
 
     org RESIDENT
     jp r_bank
@@ -64,8 +62,8 @@ rs_romc:    dw 0
 rs_romd:    dw 0
 rs_drive:   db 0                ; the drive LISP.64K came from (0-12: A-M)
 rs_fossp:   dw 0                ; FutureOS's stack when it started LISP.64K
+rs_ramchar: db #82              ; FutureOS's RAMCHAR then
 ticks:      dw 0,0              ; 1/300 s since the start
-kb_div:     db 6                ; interrupts to the next keyboard scan
 kb_mat:     defs 10,#FF         ; the matrix, a byte a row, 0 = down
 kb_new:     defs 10,#FF
 kb_last:    db #FF              ; the key that repeats, or &FF
@@ -268,8 +266,9 @@ r_testkey:
     ret
 
 ;; r_int: the interrupt, 300 times a second (&0038: jp r_int). The tick;
-;; every sixth, the keyboard; every third, the sound (the page's snd_tick,
-;; with the page mapped in and what was in put back after).
+;; every third, the page's p_tick -- the sound, and every other time the
+;; keyboard (kb_scan, page.asm) -- with the page mapped in and what was in
+;; put back after.
 r_int:
     push af
     push bc
@@ -287,12 +286,6 @@ r_int:
     inc hl
     inc (hl)
 .t:
-    ld hl,kb_div
-    dec (hl)
-    jr nz,.snd
-    ld (hl),6
-    call kb_scan
-.snd:
     ld hl,sn_div
     dec (hl)
     jr nz,.out
@@ -301,7 +294,7 @@ r_int:
     push af
     ld a,PAGE_CFG
     call set_cfg
-    call #C000+3*NFW+3          ; (snd_tick)
+    call #C000+3*NFW+3          ; (p_tick: the sound, the keyboard)
     pop af
     call set_cfg
 .out:
@@ -312,137 +305,6 @@ r_int:
     ei
     ret
 sn_div:     db 3
-
-;; kb_scan: the matrix through the PSG's port A (register 14), each row
-;; selected on the PPI's port C; each key newly down queued, and the last
-;; one repeated while it is held.
-kb_scan:
-    ld bc,#F40E
-    out (c),c                   ; PSG register 14
-    ld bc,#F6C0
-    out (c),c                   ; latched
-    ld bc,#F600
-    out (c),c
-    ld bc,#F792
-    out (c),c                   ; PPI port A in
-    ld hl,kb_new
-    ld d,#40
-.row:
-    ld b,#F6
-    out (c),d                   ; the row, PSG read
-    ld b,#F4
-    in a,(c)
-    ld (hl),a
-    inc hl
-    inc d
-    ld a,d
-    cp #4A
-    jr nz,.row
-    ld bc,#F782
-    out (c),c                   ; PPI port A out again
-    ld bc,#F600
-    out (c),c
-    ld hl,kb_mat
-    ld de,kb_new
-    ld b,0                      ; the first key of the row
-.cmp:
-    ld a,(de)
-    ld c,(hl)                   ; the old row
-    ld (hl),a                   ; the new one kept
-    cpl                         ; down now: 1
-    and c                       ;   and up before
-    jr z,.next
-    push hl
-    push de
-    push bc
-    ld d,a
-    ld e,b
-.bit:
-    srl d
-    jr nc,.nb
-    ld a,e
-    push de
-    call kb_push                ; (BC, HL lost)
-    pop de
-.nb:
-    inc e
-    ld a,d
-    or a
-    jr nz,.bit
-    pop bc
-    pop de
-    pop hl
-.next:
-    inc hl
-    inc de
-    ld a,b
-    add a,8
-    ld b,a
-    cp 80
-    jr nz,.cmp
-    ld a,(kb_last)              ; the repeat
-    cp #FF
-    ret z
-    call r_testkey
-    jr z,.gone
-    ld hl,kb_rep
-    dec (hl)
-    ret nz
-    ld (hl),KB_RATE
-    ld a,(kb_last)
-    jr kb_queue
-.gone:
-    ld a,#FF
-    ld (kb_last),a
-    ret
-;; kb_push: A = a key newly down -> queued, and it repeats from now on
-;; (SHIFT and CTRL are not keys of their own)
-kb_push:
-    cp 21
-    ret z
-    cp 23
-    ret z
-    ld (kb_last),a
-    ld c,a
-    ld a,KB_DELAY
-    ld (kb_rep),a
-    ld a,c
-;; kb_queue: A = a key -> into the queue with SHIFT (bit 0) and CTRL (bit
-;; 1) as they are now; dropped if it is full. BC, HL lost.
-kb_queue:
-    ld c,a
-    ld a,(kb_mat+2)             ; row 2: SHIFT bit 5, CTRL bit 7
-    cpl
-    ld b,0
-    bit 5,a
-    jr z,.s
-    set 0,b
-.s:
-    bit 7,a
-    jr z,.c
-    set 1,b
-.c:
-    ld a,(kb_put)
-    ld l,a
-    add a,2
-    and 31
-    ld h,a
-    ld a,(kb_get)
-    cp h
-    ret z                       ; full
-    ld a,h
-    ld (kb_put),a
-    ld a,l
-    ld hl,kb_buf
-    add a,l
-    ld l,a
-    adc a,h
-    sub l
-    ld h,a
-    ld (hl),c
-    inc hl
-    ld (hl),b
-    ret
 
 ;; r_glyph: for the page -- A = a character, HL = its cell on the top pixel
 ;; line (&C000-&C7FF), B = 0 normal, 1 inverted: drawn in mode 2 by
@@ -769,10 +631,10 @@ r_romfont:
     ret
 
 ;; The way back to FutureOS's desktop (SYS_RESET, (reset)): FutureOS's
-;; restarts back from the page (where LISP.64K kept them), its screen --
-;; 64 by 32 (S64X32, ROM A), at &C000, its colours (ROM B's table) --
-;; mode 2 with the upper ROM in, IM 2 with I = &BD, and TUR_D, which draws
-;; the desktop afresh.
+;; restarts and XRAM marks back from the page (where LISP.64K kept them),
+;; its RAMCHAR and its font copy at &3800, its screen -- 64 by 32 (S64X32,
+;; ROM A), at &C000, its colours (ROM B's table) -- mode 2 with the upper
+;; ROM in, IM 2 with I = &BD, and TUR_D, which draws the desktop afresh.
 r_reset:
     di
     call to_page
@@ -785,6 +647,16 @@ r_reset:
     ld bc,32
     ldir
     call to_main
+    ld a,(rs_ramchar)           ; FutureOS's ROM byte for its text (r_fos
+    ld (RAMCHAR),a              ;   gives it ours, lower ROM out: after a
+                                ;   file call its dialogs read the glyphs
+                                ;   from the RAM at &3800, Lisp's cells)
+    ld a,#82                    ; and its copy of the lower ROM's font
+    call rom_set                ;   there, again: the ROM read, the RAM
+    ld hl,#3800                 ;   under it written
+    ld de,#3800
+    ld bc,#0800
+    ldir
     ld a,#86                    ; mode 2, the upper ROM in, the lower out
     call rom_set
     ld bc,(rs_roma)
@@ -1015,12 +887,100 @@ fos_low:    db 0                ; 1: keep &0000-&3FFF too, for this call
 fos_a:      db 0
 fos_rom:    db 0
 
-;; The input file (no RAM disc yet): the whole file is in bank 6's blocks
-;; 0-2 (LADE_N, the page's CAS IN OPEN), read from there a byte at a time,
-;; to its length or its first &1A. The output file: the page's routines.
+;; RS_XFER: A = a unit of the RAM disc (0 to RD_NBANKS - 1: rs_units
+;; has its configuration, a 16 KB block at &4000), carry set if HL is the
+;; block's side, clear if DE is; BC bytes from HL to DE. The other side is
+;; the main RAM, and may be at &4000-&7FFF too (a file's buffer, low in
+;; block space): so each piece goes through rx_buf, read in the one
+;; configuration and written in the other. The Lisp's configuration after.
 r_xfer:
+    push hl
+    push af                     ; (the direction: carry)
+    ld hl,rs_units
+    add a,l
+    ld l,a
+    adc a,h
+    sub l
+    ld h,a
+    ld a,(hl)
+    ld (rx_src),a
+    ld (rx_dst),a
+    pop af
+    ld a,(rs_cfg)
+    jr c,.tomain
+    ld (rx_src),a               ; from the main RAM to the block
+    jr .go
+.tomain:
+    ld (rx_dst),a               ; from the block to the main RAM
+.go:
+    pop hl
+.l:
+    ld a,b
+    or c
+    jp z,to_lisp
+    push bc                     ; what is left
+    ld a,b
+    or a
+    jr nz,.full
+    ld a,c
+    cp RX_LEN
+    jr c,.part
+.full:
+    ld bc,RX_LEN
+.part:
+    push de
+    ld de,rx_buf
+    ld a,(rx_src)
+    call rx_out
+    pop de
+    push hl
+    ld hl,rx_buf
+    ld a,(rx_dst)
+    call rx_out
+    pop hl
+    ex (sp),hl                  ; HL = what was left, the source's place kept
+    or a
+    sbc hl,bc
+    ld b,h
+    ld c,l
+    pop hl
+    jr .l
+;; rx_out: configuration A, then BC bytes from HL to DE (HL, DE moved on)
+rx_out:
+    push bc
+    call set_cfg
+    pop bc
+    push bc
+    ldir
+    pop bc
     ret
+RX_LEN      equ 64
+rx_buf      equ rs_ebuf         ; (rs_ebuf and rs_cell, 72 bytes: neither
+    assert rs_cell == rs_ebuf+32 ;   is in use meanwhile)
+rx_src:     db 0
+rx_dst:     db 0
+rs_units:   defs 12,0           ; the RAM disc's blocks' configurations, in
+                                ;   order (LISP.64K: those of banks 1, 2, 4
+                                ;   and 5 FutureOS had free)
+
+;; The file routines: for a file on M: the RAM disc's (in the library,
+;; ramdisc.asm, called in its bank -- RD_IN, RD_OUT say one is open, the
+;; library's buffer, RD_BANK and its routines are in RS_RD), for any other
+;; FutureOS's: the input file is all in bank 6's blocks 0-2 (LADE_N, the
+;; page's CAS IN OPEN), read from there a byte at a time to its length or
+;; its first &1A; the output file goes into bank 0's blocks 0-2 and the
+;; page's CAS OUT CLOSE writes it.
 r_fgetc:
+    ld a,(RD_IN)
+    or a
+    jr z,.fos
+    push de
+    push hl
+    push ix
+    ld ix,(RD_IBUF)
+    ld hl,(RD_VGETC)
+    jp rd_call
+.fos:
     ld a,(in_open)
     or a
     ret z                       ; (no carry: nothing open)
@@ -1064,10 +1024,22 @@ r_fgetc:
     ld a,#1A
     or a
     ret
-;; FILE_PUTC: A into the output file, in bank 0's blocks 0-2 (where
-;; FutureOS's TEISI writes it from, the page's CAS OUT CLOSE) -> carry if
-;; there was room. The configuration that was in, back. All kept.
+;; FILE_PUTC: A into the output file -> carry if there was room. The
+;; configuration that was in, back. All kept.
 r_fputc:
+    push af
+    ld a,(RD_OUT)
+    or a
+    jr z,.fos
+    pop af
+    push de
+    push hl
+    push ix
+    ld ix,(RD_OBUF)
+    ld hl,(RD_VPUTC)
+    jp rd_call
+.fos:
+    pop af
     push bc
     push hl
     push af
@@ -1114,12 +1086,60 @@ r_ficlose:
 r_fiabandon:
     xor a
     ld (in_open),a
+    ld (RD_IN),a
     scf
     ret
 r_foclose:
-    jp CAS_OUT_CLOSE
+    ld a,(RD_OUT)
+    or a
+    jp z,CAS_OUT_CLOSE
+    xor a
+    ld (RD_OUT),a
+    push de
+    push hl
+    push ix
+    ld ix,(RD_OBUF)
+    ld hl,(RD_VCLOSE)
+    jr rd_call                  ; its entry and the header written
 r_foabandon:
-    jp CAS_OUT_ABANDON
+    ld a,(RD_OUT)
+    or a
+    jp z,CAS_OUT_ABANDON
+    xor a
+    ld (RD_OUT),a               ; forgotten: the space past the files is
+    scf                         ;   free again
+    ret
+
+;; rd_call: rd_far, then IX, HL, DE back from the stack
+rd_call:
+    call rd_far
+    pop ix
+    pop hl
+    pop de
+    ret
+;; rd_far: HL = a routine of the RAM disc's, in RD_BANK; A and IX for it ->
+;; its A and flags, in the caller's bank again. BC, DE kept.
+rd_far:
+    ld (rf_go+1),hl
+    ld (rf_a),a
+    push bc
+    ld a,(rs_cur)
+    ld (rf_bank),a
+    ld a,(RD_BANK)
+    ld c,a
+    call r_bank
+    ld a,(rf_a)
+rf_go:
+    call 0
+    push af
+    ld a,(rf_bank)
+    ld c,a
+    call r_bank
+    pop af
+    pop bc
+    ret
+rf_a:       db 0
+rf_bank:    db 0
 
     include "frcode.asm"
 

@@ -45,7 +45,9 @@ fin:
     ld (rs_drive),a
     ld hl,(lr_sp)
     ld (rs_fossp),hl
-    ld hl,RS_RD                 ; the RAM disc's state: none (M: refuses)
+    ld a,(RAMCHAR)
+    ld (rs_ramchar),a
+    ld hl,RS_RD                 ; the RAM disc's state: no file open
     ld b,16
 .rd:
     ld (hl),0
@@ -78,6 +80,41 @@ fin:
     ld (de),a
     jr .mk
 .mkd:
+    ld hl,lr_units              ; the RAM disc, M:: those of its blocks
+    ld de,rs_units              ;   FutureOS has free (or as short-time
+    ld c,0                      ;   buffers), in order, marked in use too
+.un:
+    ld a,(hl)
+    inc hl
+    cp #FF
+    jr z,.und
+    push hl
+    ld b,a
+    add a,XRAM_C4 and #FF
+    ld l,a
+    ld h,XRAM_C4 >> 8
+    ld a,(hl)
+    and #F7
+    cp 1
+    jr nz,.unx
+    ld (hl),#11
+    ld a,b                      ; its configuration: &C4 + 8 x bank + block
+    and #1C
+    add a,a
+    ld l,a
+    ld a,b
+    and 3
+    or l
+    or #C4
+    ld (de),a
+    inc de
+    inc c
+.unx:
+    pop hl
+    jr .un
+.und:
+    ld a,c
+    ld (RD_NBANKS),a            ; (its units, for ramdisc.asm's rd_ready)
     ld hl,#0000                 ; ours: RETs, &0000 the way back, &0038
     ld (hl),#C9                 ;   the interrupt
     ld de,#0001
@@ -197,6 +234,10 @@ fm_build:
 ;; (7's 1), the input file's (6's 0-2), the low RAM's keeping (7's 0); not
 ;; the output file's (0's 0-2: TEISI writes from there)
 lr_mine:    db 3,7,11,19,23,27,31,29,24,25,26,28,#FF
+;; the RAM disc's: blocks 0-2 of banks 1, 2, 4 and 5 (bank 3 is the base
+;; RAM's shadow on Revaldinho's card in configuration 8), where free
+lr_units:   db 4,5,6,8,9,10,16,17,18,20,21,22,#FF
+    assert XRAM_C4+31 < (XRAM_C4 and #FF00)+256
 lr_roma:    dw 0
 lr_romb:    dw 0
 lr_romc:    dw 0

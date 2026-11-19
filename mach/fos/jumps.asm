@@ -10,7 +10,7 @@ RS_RAMWR        equ RESIDENT+9  ; HL, A -> the byte written to the main RAM
 RS_RESET        equ RESIDENT+12 ; back to FutureOS's desktop
 RS_VIDINIT      equ RESIDENT+15 ; the function editor's renderer (frcode.asm)
 RS_VIDCHAR      equ RESIDENT+18
-RS_XFER         equ RESIDENT+21 ; the RAM disc's copying (not yet)
+RS_XFER         equ RESIDENT+21 ; the RAM disc's copying: A = its unit
 RS_FGETC        equ RESIDENT+24 ; FILE_GETC
 RS_FPUTC        equ RESIDENT+27 ; FILE_PUTC
 RS_FICLOSE      equ RESIDENT+30 ; FILE_ICLOSE

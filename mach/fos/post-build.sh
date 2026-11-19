@@ -37,5 +37,5 @@ for k in 0 1 2 3 4 5 6; do
 done
 cp examples/apfel.lsp "$OUT/APFEL.LSP"
 ( cd "$OUT" && "$IDSK" cpclispfos-n.dsk -i APFEL.LSP -t 0 >/dev/null 2>&1 )
-cp mach/futureos/hwtest.lsp "$OUT/HWTEST.LSP"
+cp mach/fos/hwtest.lsp "$OUT/HWTEST.LSP"
 ( cd "$OUT" && "$IDSK" cpclispfos-n.dsk -i HWTEST.LSP -t 0 >/dev/null 2>&1 )

@@ -105,7 +105,9 @@ rd_xfer:
     add a,a
     add a,a
     or c                        ; the 16 KB unit
-    call rd_cfg
+    ifndef FOSN
+    call rd_cfg                 ; (mach/fos: RS_XFER takes the unit itself)
+    endif
     ld (rx_page),a
     ld hl,#4000
     or a
@@ -182,6 +184,7 @@ rd_32:
     ld bc,32
     jp rd_xfer
 
+    ifndef FOSN
 ;; rd_cfg: A = a 16 KB unit of the disc -> A = the configuration that
 ;; shows it at &4000: units 0-17 are blocks 0-2 of banks 0-5 (block 3 has
 ;; the code), then the four blocks of bank 6, of bank 7. BC lost.
@@ -214,11 +217,16 @@ rd_cfg:
     or b
     or #C4
     ret
+    endif
 
 ;; rd_ready: the capacity from the banks; the header read -> rd_end; the
 ;; disc made empty if it has none
 rd_ready:
     ld a,(RD_NBANKS)            ; units: 18, and 4 a bank past six
+    ifdef FOSN
+    or a                        ; (mach/fos: the units themselves, those
+    jr z,.noram                 ;   LISP.64K found free)
+    else
     sub 6
     jr c,.noram                 ; (a plain 6128: its banks hold the code)
     add a,a
@@ -228,6 +236,7 @@ rd_ready:
     sub XB_UNITS                ; the top unit, bank 7's block 3, holds the
     endif                       ;   disc files' buffers -- under FutureOS
                                 ;   its RAM, and the one below the buffers
+    endif
     ld b,a
     srl a
     srl a

@@ -48,10 +48,20 @@ the page's `snd_tick`, 100 times a second from the interrupt. `sound`,
 by logging the AY's register writes (`LISP_AYLOG=file`, emu/repl.lua):
 the periods, volumes, noise and mixer as asked.
 
-Not yet: the RAM disc `M:` and far
-arrays, a hardware test, `(dir "e:")` (the library's `dir` takes only
-`m:`: it lists the drive `LISP.64K` came from), re-reading a directory
-after a disc is changed.
+**Phase 4, the RAM disc `M:` and far arrays** (MAME, both machines):
+the 512K version's, in the expansion's blocks 0-2 of banks 1, 2, 4 and
+5 -- 191 KB, those FutureOS has free when `LISP.64K` starts (it marks
+them in use by a program while Lisp runs; `(reset)` gives them back).
+test/discram and test/discfar come out as on the 512K but for the sizes.
+`M:` outlasts `(reset)` and a new start of `LISP.64K` unless the desktop
+used those blocks meanwhile (a copy may). The disc's own test is
+`HWTEST.LSP` (`mach/fos/hwtest.lsp`): `(load "hwtest")`, `(hwtest)` --
+7 yes in MAME on both -- and after `(reset)` and `LISP.64K` again,
+`(load "hwtest")`, `(hwtest2)`: 2 yes.
+
+Not yet: `(dir "e:")` (the library's `dir` takes only `m:`: it lists
+the drive `LISP.64K` came from), re-reading a directory after a disc is
+changed, tone envelopes and rendezvous in the sound.
 
 ## Files
 
@@ -111,15 +121,19 @@ not here) and in MAME:
   calls (82 names, `tools/fos/mkfw.py`), with the firmware's contract:
   the text screen (control codes, windows, hardware scrolling, the
   cursor, a copy of the characters for the copy cursor), the keys (the
-  firmware's translation tables), the screen's mode and inks; graphics,
-  sound and files are stubs so far.
+  firmware's translation tables, the keyboard's scan), the screen's mode
+  and inks, graphics, sound, files through FutureOS.
 * **The resident part** (`resident.asm`, &9000-&9AFF) is what must be in
   the main RAM: a trampoline per firmware name into the page, the bank
-  switch, the interrupt -- a 300 Hz tick and the keyboard's matrix every
-  sixth --, drawing a character with **FutureOS's PR_2** (ROM A, the
-  lower ROM's font), filling and copying the screen's rows, the maths
-  call, and the way back to FutureOS (its restarts, its 64 x 32 screen
-  and colours, IM 2, TUR_D).
+  switch, the interrupt -- a 300 Hz tick, and every third the page's
+  `p_tick`: the sound, the keyboard's matrix every other time --,
+  drawing a character with **FutureOS's PR_2** (ROM A, the lower ROM's
+  font), what else writes the screen, the maths call, the files' bytes
+  (FILE_GETC, FILE_PUTC: M:'s in the library's bank, through `rd_far`),
+  the RAM disc's copying (RS_XFER: a unit's block at &4000, the other
+  side through a 64-byte buffer), and the way back to FutureOS (its
+  restarts, XRAM marks and RAMCHAR, its font copy at &3800, its 64 x 32
+  screen and colours, IM 2, TUR_D). About 110 bytes are left.
 * **Floats**: FutureOS has none; the lower ROM's maths package is called
   at its real addresses (read from the lower ROM's own jumpblock table:
   &08AC on a 464, &08DE on a 6128), with the lower ROM in and the
