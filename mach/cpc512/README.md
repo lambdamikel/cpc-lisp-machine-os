@@ -7,7 +7,7 @@ and no LambdaSpeak card needed.
     CPC Lisp 0.98
     A Lisp machine for the Amstrad CPC, 512K
     library ROMs 1 2 3 4
-    6054 cells free
+    5521 cells free
 
 ## What it needs
 
@@ -91,11 +91,18 @@ switched in, and puts the Lisp's bank back after:
   &4000 for each call of the disc ROM that uses a file's buffer (`fwx`:
   the opens, the characters, the closes, CAS CATALOG). An input file's
   2 KB is at &4000 there, an output file's at &4800, the catalogue's 4 KB
-  (VDOS 2.0 fills 4 KB) at &5000. So a file open on a disc takes no
-  string space -- on the ROM version and the plain 6128 it takes 2 KB,
-  and string space is the disc versions' tight resource: 5.3 KB at
-  start, and every library function's first use costs its symbols'
-  names there for good.
+  (VDOS 2.0 fills 4 KB) at &5000, and the function editor's copy of the
+  font (768 bytes) at &6000, mapped in while it draws. So a file open on
+  a disc, and the editor's font, take no string space -- on the ROM
+  version and the plain 6128 they do.
+
+String space is the disc versions' tight resource: every library
+function's first use costs its symbols' names there for good, while the
+cells come back when the library's functions are dropped. So here block
+space is a quarter of the heap (`MACH_BLOCKS`, `mmacros.asm`; the ROM
+version's is 11/64): 7.7 KB of string space at start and some 5500
+cells, where it was 5.3 KB and 6050 until 2026-11-18. After `(hwtest)`
+and eight demos 3.9 KB are left.
 
 The Lisp registers no firmware events, so no Lisp code runs at interrupt
 time, when its bank might not be in. BASIC's `RUN` of a binary file

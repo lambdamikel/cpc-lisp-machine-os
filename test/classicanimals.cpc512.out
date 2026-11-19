@@ -24,6 +24,6 @@ NIL
 LISP> *animals*
 ("Does it bark?" "a dog" "a cat")
 LISP> (room)
-5666 cells, 313 symbols, 4550 string bytes free
+5066 cells, 313 symbols, 7028 string bytes free
 NIL
 LISP> 

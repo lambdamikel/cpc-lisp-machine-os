@@ -819,7 +819,9 @@ strings, vectors, floats, symbols' names: 5.5-5.8 KB -- between them and
 the stack; `(room)` says what is free. A file open takes 2 KB of the
 string space while it is open (two files, 4 KB) -- but not from disc
 with a 512K expansion or under FutureOS: there a disc file's buffer is
-in the expansion, and one on `M:` takes 512 bytes.
+in the expansion, and one on `M:` takes 512 bytes. Those two versions
+also give string space a quarter of the heap: some 5500 cells and 7.7 KB
+of strings at the start.
 The garbage collector runs when cells run out. Functions written in Lisp
 in the library ROMs are read from ROM the first time they are called and
 then use cells like your own; the names cost nothing until then. When

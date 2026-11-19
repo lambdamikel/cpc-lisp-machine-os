@@ -22,4 +22,5 @@ XBUF            equ 1           ; the disc files' buffers: bank 7's block 2 at
 XB_UNITS        equ 2           ;   &4000 (C6 + 8 * 7), the RAM disc's unit
 XB_IN           equ #4000       ;   below FutureOS's, given up too
 XB_OUT          equ #4800       ;   (resident.asm): an input file's 2 KB, an
-XB_CAT          equ #5000       ;   output file's, 4 KB for CAS CATALOG
+XB_CAT          equ #5000       ;   output file's, 4 KB for CAS CATALOG,
+XB_FONT         equ #6000       ;   the function editor's font copy (768)

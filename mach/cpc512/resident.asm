@@ -113,12 +113,22 @@ to_lisp:
     push bc
     push af
     ld a,(rs_cfg)
+to_cfg:                         ; (configuration A; AF and BC kept on the stack)
     ld b,#7F
     ld c,a
     out (c),c
     pop af
     pop bc
     ret
+    ifdef XBUF
+;; to_xb: the disc files' buffers' block at &4000 (RD_XBCFG); the screen's
+;; RAM at &C000 as in C0. All kept.
+to_xb:
+    push bc
+    push af
+    ld a,(RD_XBCFG)
+    jr to_cfg
+    endif
 
 ;; SYS_BANK: C = a bank -> it at &C000, C = the one before. AF, B lost.
 r_bank:
@@ -192,12 +202,23 @@ r_catalog:
     dw CAS_CATALOG
     endif
 
+;; The function editor's renderer (frcode.asm). With XBUF its font copy is
+;; in the disc files' buffers' block: that block in at &4000 while it draws.
 r_vidinit:
+    ifdef XBUF
+    call to_xb
+    ld de,XB_FONT
+    else
     call to_main
+    endif
     call VID_INIT
     jp to_lisp
 r_vidchar:
+    ifdef XBUF
+    call to_xb
+    else
     call to_main
+    endif
     call VID_CHAR
     jp to_lisp
 

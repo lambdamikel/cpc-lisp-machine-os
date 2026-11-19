@@ -437,7 +437,15 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     The RAM disc is 399 KB free (FutureOS 319: bank 7's block 2 too); the
     loader's buffer went to &9800 (the resident part outgrew &8000-&87FF
     with it), FutureOS's resident part to &A100. The ROMs and the plain
-    6128 came out byte for byte the same (BUILD_ID=77). Making far arrays is slow
+    6128 came out byte for byte the same (BUILD_ID=77). On Mike's 6128
+    that made `(load "apfel")` work, but `(ed 'tree)` still ran out:
+    the editor lends its 768-byte font copy and half of what is free
+    (fe_reserve: about 2 KB needed). So the font went to XB_FONT (&6000
+    in the same block; VID_FONTSIZE 0 with XBUF, r_vidinit/r_vidchar
+    map the block -- the screen stays at &C000 in C4-C7), and
+    MACH_BLOCKS is a quarter on the 512K and FutureOS (7.7 KB of
+    strings, ~5500 cells; after hwtest and eight demos 3.9 KB left,
+    was 1.4). Making far arrays is slow
     on the real machine (each byte through rd_putc and a bank switch:
     test 5's 390 KB took minutes); a native 256-byte fill would help.
   * **The RAM disc's errors give the file buffer back** (fl_release

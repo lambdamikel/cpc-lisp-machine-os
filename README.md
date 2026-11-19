@@ -242,7 +242,7 @@ far arrays (`make-far-array`, `far-ref`) and programs loaded with
     CPC Lisp 0.98
     A Lisp machine for the Amstrad CPC, 512K
     library ROMs 1 2 3 4
-    6054 cells free
+    5521 cells free
 
 **On a plain 6128** (or a CPC with 64 KB more), five images fill the 128
 KB: everything but the compiler, without a RAM disc, and with about 2400

@@ -49,6 +49,6 @@ Q . . . . .
 4 solutions
 4
 LISP> (room)
-5159 cells, 305 symbols, 4830 string bytes free
+4559 cells, 305 symbols, 7308 string bytes free
 NIL
 LISP> 

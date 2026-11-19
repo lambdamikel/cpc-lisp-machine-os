@@ -11,7 +11,7 @@ that evening. **Video:** [CPC LISP running on the CPC 6128 with FutureOS -- Vort
     CPC Lisp 0.98
     A Lisp machine for the Amstrad CPC, 512K
     library ROMs 1 2 3 4
-    6105 cells free
+    5497 cells free
 
 Nothing of FutureOS is in this repository. TFM's ROMs, discs and
 documents are free for non-commercial use from futureos.de.
@@ -288,11 +288,15 @@ What did not work, on the way:
   forever, waiting for a seek the card's controller never saw. Two times
   in three. Open, on the card's side; data-format discs on E load.
 * **The jumbled screen**: fixed (above).
-* After `(hwtest)` and a few demos **string space ran out** for loading
-  a file: a disc file took 2 KB of it. Since 2026-11-18 its buffer is in
-  the expansion (bank 7's block 2): after hwtest and eight demos, with
-  1440 bytes left, `(load "apfel")` worked in MAME. String space still
-  shrinks as library functions are first used (their names stay).
+* After `(hwtest)` and a few demos **string space ran out**: a disc
+  file took 2 KB of it, the function editor 768 bytes for its font and
+  half of what was left. Since 2026-11-18 both live in the expansion
+  (bank 7's block 2), and string space is a quarter of the heap: 7.7 KB
+  at start, 3.9 KB after hwtest and eight demos (MAME), where
+  `(ed 'tree)` and `(load "apfel")` work. On Mike's 6128 the first half
+  of it (build 23879, the buffer) made `(load "apfel")` work after the
+  demos; `(ed 'tree)` still said "out of string space" there, which
+  build 26078 fixes in MAME.
 
 ## Testing in MAME
 

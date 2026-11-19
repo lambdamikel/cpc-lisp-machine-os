@@ -30,11 +30,16 @@ FR_OFF    equ LIBSCR+229        ; the hardware scroll offset (2)
 FR_FONT   equ LIBSCR+231        ; the font copy, characters 32-127 (2)
 FR_P      equ LIBSCR+233        ; paper for this character: VID_PAPER, or xor FR_X
 VID_COLS   equ LIBSCR+234        ; columns on the screen: 20, 40, 80
+    ifdef XBUF                  ; (the font copy is in the disc files'
+VID_FONTSIZE equ 0              ;   buffers' block, XB_FONT: no string
+    else                        ;   space for it -- resident.asm)
 VID_FONTSIZE equ 96*8
+    endif
 VID_ROWS   equ 25                ; rows on the screen
 
-;; VID_INIT: DE = VID_FONTSIZE bytes for the font. Reads the mode, the inks
-;; and where the screen is.
+;; VID_INIT: DE = 768 bytes for the font (with XBUF, XB_FONT in the disc
+;; files' buffers' block, mapped in by r_vidinit and r_vidchar). Reads the
+;; mode, the inks and where the screen is.
 VID_INIT:
     ld (FR_FONT),de
     call SCR_GET_MODE

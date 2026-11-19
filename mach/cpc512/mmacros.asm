@@ -38,24 +38,16 @@ macro MACH_INIT
 mend
 
 ;; MACH_BLOCKS: HL = the bytes for cells and blocks -> HL = block space's
-;; share (DE lost). On the CPC 11/64: room for two 2 KB file buffers.
+;; share (DE lost). A quarter here (the ROM version's 11/64 left room for
+;; two 2 KB file buffers): a disc file's buffer is in the expansion, and
+;; string space ran out long before the cells -- they come back when the
+;; library's functions are dropped, symbols' names never (Mike's 6128,
+;; 2026-11-18: (ed 'tree) after hwtest and some demos).
 macro MACH_BLOCKS
     srl h
     rr l
     srl h
-    rr l
-    srl h
-    rr l                        ; an eighth,
-    ld d,h
-    ld e,l
-    srl d
-    rr e
-    srl d
-    rr e
-    add hl,de                   ;   a 32nd
-    srl d
-    rr e
-    add hl,de                   ;   and a 64th: for blocks
+    rr l                        ; a quarter, for blocks
 mend
 
 ;; FM routine: call a maths routine, an FP_ name (machine.asm). A, BC, DE
