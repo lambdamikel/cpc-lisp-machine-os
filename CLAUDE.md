@@ -753,6 +753,30 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   LISP.64K from E with the old images from A crashed into BASIC after
   LISP5.IMG (the resident part had moved from &A120 to &A100). Check
   every copy of a disc on the stick (md5) before he tests.
+* **The images through FutureOS** (2026-11-19, the first step of TFM's
+  request -- FutureOS's own loading, files and text output; Mike: "using
+  its own disc routines, fast output"): LISP.64K's stub calls LADE_N
+  (ROM C &FD5C, a file by name from a medium, whose directory must have
+  been read -- tagging LISP.64K did that) for each image, with the medium
+  LISP.64K came from (REG_PC+1, &B8DB, set by FutureOS's LADEN), load
+  type 2 into the main RAM at &4000 (the AMSDOS header goes to &BC00),
+  then an LDIR into the bank's block 3 at &C000 (C1 + 8 x bank).
+  `fos_loaded` tells the loader to skip its CAS loading; if any image
+  fails, all come through AMSDOS from A as before. LISP.64K's first 4 KB
+  waits in the save block meanwhile (FOS_KEEP: a load may write past the
+  file a sector at a time), and the motors go off after (&FA7E: nothing
+  stops them once FutureOS is off). TFM's label file (#EQU-API.ENG) is
+  not here: the variables were read from LADE_N's code -- REG08_4 &B8E0,
+  REG16_3 &B8EA, REG08_1 &B8DD, TURBO_A &B858 (8 bytes a medium: +0 bit 0
+  its directory read, +1 the E-RAM block it is buffered in, +2 its page
+  there, +3 its pages), &B96D = &FF when no directory was read. Drive A's
+  directory is buffered in &FE at &7800 (bank 7's block 2, the XBUF
+  block: free again once Lisp runs). MAME: tools/futureos/run.sh tags
+  LISP.64K with the cursor keys (3 down, 4 right, 4 down from where the
+  pointer starts: the third file) and COPY, then X -- FutureOS's own
+  loading of LISP.64K is tested now; `FOS_DIR=0` the old RAM start and
+  the AMSDOS fallback. repl.lua has `!dump N LO-HI`. For the next step:
+  SICHRE (save) writes &8000-&9FFF and &B000-&BFFF and saves whole KB.
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,

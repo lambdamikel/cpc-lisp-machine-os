@@ -8,9 +8,15 @@
 # MAME's ROM box with FutureOS's four ROMs renumbered 1-4 (FOS_ROMS, by
 # default ~/claude/cpc/futureos/mame-1234: tools/futureos/fosroms.py SRC
 # OUT 1 2 3 4 -- they are TFM's, never in this repository). emu/repl.lua
-# types |OS at BASIC's EDIT; on the desktop LISP.64K is put at &8000 and
-# started from the RUN menu (X, 3: a RAM application at &9000, block
-# &C0); then the file's lines are typed when Lisp asks for them.
+# types |OS at BASIC's EDIT; on the desktop it reads drive A's directory
+# (SPACE, A, D), moves the pointer onto LISP.64K (the third file, after
+# APFEL.LSP and HWTEST.LSP), tags it (COPY) and runs it (X), as a user
+# does: FutureOS loads LISP.64K, and LISP.64K the images through FutureOS
+# (LADE_N) from that drive. Then the file's lines are typed when Lisp
+# asks for them. FOS_DIR=0 starts LISP.64K without a directory read
+# instead -- put at &8000 and started from the RUN menu (X, 3: a RAM
+# application at &9000, block &C0): the images come through the disc ROM
+# (AMSDOS) then, LISP.64K's fallback.
 set -e
 cd "$(dirname "$0")/../.."
 FRAMES=30000 SHOT= M=464
@@ -34,10 +40,18 @@ trap 'rm -rf "$tmp"' EXIT
 cp "$B/cpclispfos.dsk" "$tmp/disc.dsk"
 {
     echo '|OS'
-    echo "!poke 700 8000 $(realpath "$B/LISP64K.BIN")"
-    printf '%s\n' '!press 63 30' '!press 57 60' \
-        '!press 33 60' '!press 32 20' '!press 32 20' '!press 32 20' '!press 18 20' \
-        '!press 62 60' '!press 32 20' '!press 18 20'
+    if [ "${FOS_DIR:-1}" = 0 ]; then
+        echo "!poke 700 8000 $(realpath "$B/LISP64K.BIN")"
+        printf '%s\n' '!press 63 30' '!press 57 60' \
+            '!press 33 60' '!press 32 20' '!press 32 20' '!press 32 20' '!press 18 20' \
+            '!press 62 60' '!press 32 20' '!press 18 20'
+    else
+        printf '%s\n' '!press 47 700' '!press 69 30' '!press 61 30' \
+            '!press 2 200' '!press 2 10' '!press 2 10' \
+            '!press 1 10' '!press 1 10' '!press 1 10' '!press 1 10' \
+            '!press 2 10' '!press 2 10' '!press 2 10' '!press 2 10' \
+            '!press 9 20' '!press 63 30'
+    fi
     cat "$IN"
 } > "$tmp/in.lsp"
 # the 464 with a DDI-1 and the ROM box behind it; the 6128 with its own

@@ -22,6 +22,7 @@
 
     org #9000                   ; (FutureOS never touches &9000-&9FFF; the
 fos_start:                      ;   stub must stay out of &4000-&7FFF)
+    call fos_load               ; the images, through FutureOS if it can
     di
     ld bc,(FOS_ROMNUM_D)        ; a FutureOS ROM is in when a program starts
     push bc
@@ -104,6 +105,85 @@ fw_body_end:
 crtc_fw:
     db 1,#28, 2,#2E, 6,#19, 7,#1E   ; R1, R2, R6, R7 as the firmware's
 crtc_fw_end:                        ;   reset sets them
+
+;; fos_load: the six images through FutureOS's own loader, LADE_N, from
+;; the medium LISP.64K came from (REG_PC+1, which FutureOS's loading of
+;; it set): each into the main RAM at &4000 -- load type 2, which takes
+;; its AMSDOS header off -- then copied into its bank's block 3, mapped at
+;; &C000 (C1 + 8 x bank; banks 0-2 and 4-6, as map_bank's). fos_loaded
+;; then tells the loader; if FutureOS could not load one (no directory
+;; read, no such file there), it stays 0 and the loader reads them all
+;; through the disc ROM from drive A, as before. Meanwhile LISP.64K's
+;; first 4 KB, the loader, waits in the save block: a load into the main
+;; RAM may write past the file's end, a sector at a time.
+fos_load:
+    ld hl,#8000
+    ld de,FOS_KEEP
+    call fos_4k
+    xor a
+.img:
+    ld (fos_k),a
+    add a,"0"
+    ld (fos_name+5),a
+    ld a,2
+    ld (REG08_4),a
+    ld hl,#4000
+    ld (REG16_3),hl
+    ld a,(REG_PC+1)
+    or #80                      ; the header's addresses not used
+    ld de,fos_name
+    ld hl,LADE_N
+    call ROM_C
+    inc a                       ; &FF: loaded
+    jr nz,.back
+    ld a,(fos_k)                ; its bank's block 3 at &C000
+    cp 3
+    ccf
+    adc a,0
+    add a,a
+    add a,a
+    add a,a
+    or #C1
+    ld hl,#4000
+    ld de,#C000
+    ld bc,#4000
+    call fos_xfer
+    ld a,(fos_k)
+    inc a
+    cp 6
+    jr c,.img
+    ld (fos_loaded),a           ; (non-zero)
+.back:
+    ld bc,#FA7E                 ; the drive motors off: LADE_N started them,
+    xor a                       ;   and FutureOS, which would stop them, is
+    out (c),a                   ;   off from here on
+    ld hl,FOS_KEEP              ; the loader back
+    ld de,#8000
+fos_4k:
+    ld bc,#1000
+    ld a,FOS_SAVE_CFG
+;; fos_xfer: map configuration A, copy BC bytes from HL to DE, the main
+;; RAM back (C0) -- with the interrupts off meanwhile, FutureOS's, if on.
+fos_xfer:
+    push bc
+    ld b,#7F
+    ld c,a
+    ld a,i                      ; P/V: the interrupts were on
+    di
+    out (c),c
+    pop bc
+    push af
+    ldir
+    ld bc,#7FC0
+    out (c),c
+    pop af
+    ret po
+    ei
+    ret
+fos_k:      db 0
+fos_loaded: db 0                ; the loader reads it (loader512.asm)
+fos_name:   db 0,"LISP0   IMG"  ; user, name, extension: in one page
+    assert (fos_name and #FF) <= #F4
 
 fos_island:
     call start                  ; the 512K loader: back only if it failed

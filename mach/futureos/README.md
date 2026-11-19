@@ -84,9 +84,10 @@ Put `cpclispfos.dsk` where the machine's drive A reads it:
   CPC off with the card's USB unplugged): keep the USB in. On a 464 the
   card's drive is drive A with Parados as ROM 7 -- type `|DDI1,4` at
   BASIC if the card is in its Vortex setup. On a 6128 the card's drive is
-  FutureOS's drive E: `LISP.64K` may be started from there, but the
-  images are read through AMSDOS, which knows only A and B, so the disc
-  must be in drive A as well.
+  FutureOS's drive E: `LISP.64K` loads the images from there too,
+  through FutureOS (since 2026-11-19). Lisp's own files -- `load`,
+  `save`, `(dir)` -- still go through AMSDOS, which knows only A and B:
+  for those the disc must be in drive A as well.
 * **A real disc**: write the .dsk with any CPC disc tool.
 
 ## Starting it
@@ -98,8 +99,9 @@ On FutureOS's desktop:
     LISP.64K        tag it: the pointer on it, COPY
     X               RUN
 
-The screen turns blue: "CPC Lisp for the 512K expansion: loading
-LISP0.IMG ... LISP5.IMG", the banner, `LISP>`. To check the machine:
+The screen turns blue: "CPC Lisp for the 512K expansion: loading",
+"LISP0.IMG-LISP5.IMG through FutureOS", the banner, `LISP>`. To check
+the machine:
 
     (load "hwtest")
     (hwtest)        seven checks, each yes or NO; check 5 takes minutes
@@ -113,7 +115,9 @@ said on the blue screen, and a key then goes back to the desktop:
 * `No 512K expansion found ... Banks of 64K that answer: n (of 8).` --
   fewer than six banks answer (a shadow mode where it should not be, a
   smaller expansion);
-* `Cannot load it: is the CPC Lisp disc in?` -- no `LISP0.IMG` in drive A.
+* `Cannot load it: is the CPC Lisp disc in?` -- FutureOS did not find
+  the images on the drive `LISP.64K` came from, and the disc ROM found
+  no `LISP0.IMG` in drive A either.
 
 If the lower ROM is none of the three below, `LISP.64K` goes straight
 back to the desktop without a blue screen.
@@ -126,28 +130,38 @@ firmware is still there, in the lower ROM, so Lisp takes the RAM back
 for a while:
 
 1. **FutureOS loads `LISP.64K`** at &8000 and starts it at &9000.
-2. **The stub puts FutureOS aside** in bank 7's block 3, mapped at &4000
+2. **The stub loads the six images through FutureOS** -- its LADE_N,
+   "load a file of defined name from a defined medium" (ROM C) -- from
+   the drive `LISP.64K` came from (FutureOS's REG_PC+1), each into the
+   main RAM at &4000 (load type 2, which takes the AMSDOS header off),
+   then copies it into its bank's block 3, mapped at &C000
+   (configuration &C1 + 8 × bank). Meanwhile `LISP.64K`'s first 4 KB,
+   the loader, waits in bank 7's block 3: a load into the main RAM may
+   write past a file's end, a sector at a time. Then the drive motors
+   off: FutureOS, which would stop them, is off from here on.
+3. **The stub puts FutureOS aside** in bank 7's block 3, mapped at &4000
    (configuration &FF): &A000-&BFFF, &0000-&00FF, the way back
    (`fosback.asm`) and the numbers of FutureOS's ROMs B and D, read from
    its API page (&FF07, &FF13).
-3. **It finds the firmware**: MC START PROGRAM's body in the lower ROM,
+4. **It finds the firmware**: MC START PROGRAM's body in the lower ROM,
    at &060E, &061F or &0609 (below), checked by its first seven bytes.
-4. **It gives the screen the firmware's geometry** (below).
-5. **It jumps into MC START PROGRAM's body** with DE = its next routine,
+5. **It gives the screen the firmware's geometry** (below).
+6. **It jumps into MC START PROGRAM's body** with DE = its next routine,
    as the firmware starts a program: the firmware's RAM is cleared,
    every pack initialised (screen, text, graphics, keys, sound, cassette
    vectors), IM 1, EI -- and then the routine is called. There is no
    ROM walk and no BASIC.
-6. **The 512K version's loader** starts ROM 7 only, through KL INIT
+7. **The 512K version's loader** starts ROM 7 only, through KL INIT
    BACK: the disc ROM. A ROM walk would start FutureOS's four ROMs too,
    whose workspace would take the resident part's room. It checks the
    disc ROM left the resident part room, counts the expansion's banks,
-   reads `LISP0.IMG`-`LISP5.IMG` into them through the disc ROM, puts
-   the resident part at &A100 and starts Lisp.
-7. **Lisp is then the 512K version**: the firmware for text, graphics,
+   puts the resident part at &A100 and starts Lisp. If FutureOS could
+   not load the images (step 2), it reads them through the disc ROM
+   first, from drive A.
+8. **Lisp is then the 512K version**: the firmware for text, graphics,
    sound and keys, the disc ROM for files, the expansion for its code,
    the RAM disc and far arrays.
-8. **`(reset)`** -- the resident part's reset -- maps bank 7's block 3,
+9. **`(reset)`** -- the resident part's reset -- maps bank 7's block 3,
    copies the way back (192 bytes, `FOS_BACK_LEN`) to &8000 and runs it:
    FutureOS's RAM and restarts back over the firmware's, its colours
    (ROM B's table at &FE0B, which its desktop does not set), its screen
@@ -185,7 +199,7 @@ The main RAM while Lisp runs (the 512K version's layout,
 | &0000-&003F | the firmware's restarts (FutureOS's are in the save block) |
 | &0040-&04FF | Lisp's low system area: mark stack, symbol hash table, LIBDEFS, FNBOUND |
 | &0500-&14FF | the symbols, 512 slots of 8 bytes |
-| &1500-&A0FF | the cells, the mark bitmap, block space (strings) and Lisp's machine stack, sized at start -- `LISP.64K` at &8000-&914E is overwritten once it has done its work |
+| &1500-&A0FF | the cells, the mark bitmap, block space (strings) and Lisp's machine stack, sized at start -- `LISP.64K` at &8000-&91D8 is overwritten once it has done its work |
 | &A100-&A6AF | the resident part: bank switching, the RAM disc's transfers, the file routines' dispatch, a trampoline per firmware routine, the reset (`mach/cpc512/resident.asm`) |
 | &A6B0-&ABFF | the disc ROM's workspace (AMSDOS takes &0500 bytes, VDOS 2.0 &052E) |
 | &AC00-&B0FF | Lisp's fixed variables and buffers |
@@ -207,6 +221,7 @@ The expansion:
 | &6000-&60FF | FutureOS's &0000-&00FF |
 | &6100-&61BF | the way back, `fosback.asm`, at most 192 bytes |
 | &61C0, &61C2 | the numbers of ROMs D and B (each with &DF, for `out (c),c`) |
+| &7000-&7FFF | only while FutureOS loads the images: `LISP.64K`'s first 4 KB, the loader |
 
 **Bank 3 is never used.** In its configurations 8 and 12, Revaldinho's
 card makes bank 3 a shadow of the base RAM -- which is how a 464 gets the
@@ -227,11 +242,21 @@ desktop after `(reset)`.
 
 ## The disc ROM and the images
 
-The loader reads the images through the cassette vectors, so through
+**The images come through FutureOS** (since 2026-11-19): `LISP.64K`
+calls LADE_N for each, with the drive FutureOS loaded `LISP.64K` from
+-- A-D, E-H on a Vortex controller, the M4's SD card... whatever
+FutureOS reads, in whatever format it reads there. LADE_N needs that
+drive's directory read, which tagging `LISP.64K` there has done. It
+is several times faster than AMSDOS: in MAME `LISP.64K` reaches the
+banner some 16 s sooner.
+
+If FutureOS cannot load them -- `LISP.64K` started from the RUN menu as
+a RAM program, with no directory read, or the images not on that drive
+-- the loader reads them through the cassette vectors, so through
 whichever ROM 7 KL INIT BACK has just started: CAS IN OPEN, one CAS IN
 DIRECT of the whole 16 KB file into the bank's block 3 mapped at &4000,
-CAS IN CLOSE. Lisp's own files later go the same way. So **the disc must
-be one the disc ROM reads, in drive A**:
+CAS IN CLOSE. **Lisp's own files always go that way** (for now), so for
+them **the disc must be one the disc ROM reads, in drive A**:
 
 * **AMSDOS** -- a 6128's or 664's own (with the internal drive, or a
   Gotek in its place), a 464's DDI-1. Its workspace: &0500 bytes.
@@ -249,9 +274,9 @@ be one the disc ROM reads, in drive A**:
   BASIC's &C9 before it patches &AC01-&AC06 and &BF00 -- &AC00 is Lisp's
   line buffer, which holds only typed text.
 
-FutureOS loads `LISP.64K` with its own disc manager, which drives both
-controllers itself: drives A-D on the internal one at &FB7E, E-H on the
-Vortex controller's at &FBF6.
+FutureOS loads `LISP.64K` and the images with its own disc manager,
+which drives both controllers itself: drives A-D on the internal one at
+&FB7E, E-H on the Vortex controller's at &FBF6.
 
 ## FutureOS while Lisp runs
 
@@ -265,10 +290,11 @@ runs.** For the same reason M: does not survive a trip to the desktop.
 
 ## What was tested where
 
-All on 2026-11-17.
+On 2026-11-17, and where it says so since.
 
 | machine | setup | result |
 |---|---|---|
+| MAME, 464 and 6128, 2026-11-19 | as below; `LISP.64K` tagged on the desktop and run with X, the images loaded through FutureOS (LADE_N) | `(hwtest)` 7 yes, eight demos, `(ed 'tree)` and ESC, `(load "apfel")`, a file read on A while one is written to M:, `(dir)`, `(reset)` to the desktop; started as a RAM program instead (no directory read), the images came through AMSDOS, as before |
 | MAME, 464 | 1.0 firmware, 576K, a DDI-1 (AMSDOS) with `cpclispfos.dsk`, FutureOS's ROMs as 1-4 in the ROM box | `(hwtest)` 7 yes, `(rose)`, `(reset)` to the desktop |
 | MAME, 6128 | 576K, its own drive and AMSDOS, the ROM box | `(hwtest)` 7 yes, the text screen, `(reset)` to the desktop |
 | Mike's 464 | 1.0 firmware; Revaldinho's card, configuration 8; the official FutureOS from the LambdaSpeak card's slots (its 464 firmware, the fast ROM select); `\|DDI1,4`: Parados as ROM 7, `cpclispfos.dsk` in the card's drive as A | `(hwtest)` 7 yes and `(reset)` to the desktop, the screen still jumbled; then with the screen fix (the build before 4236: the same but for the 664's and 6128's lower ROMs) the text, `(rose)` and `(reset)` right |
@@ -308,11 +334,15 @@ What did not work, on the way:
 `cpclispfos.dsk`, MAME's ROM box behind it; `-m 6128` a 6128 with 576K,
 its own drive, and the ROM box. The box holds FutureOS's ROMs renumbered
 1-4 (`tools/futureos/fosroms.py SRC ~/claude/cpc/futureos/mame-1234 1 2 3
-4`, from the installer disc). The run types `|OS`, puts `LISP.64K` at
-&8000 (`!poke`) and starts it from the RUN menu -- X, 3, &9000, &C0 -- so
-**FutureOS's own loading of `LISP.64K` from a disc is not tested in
-MAME**, only on the machines. Then it types the file's lines when Lisp
-asks for them. MAME has no Vortex controller: the Vortex disc is checked
+4`, from the installer disc). The run types `|OS`, reads drive A's
+directory on the desktop (SPACE, A, D), moves the pointer onto
+`LISP.64K` with the cursor keys, tags it (COPY) and runs it (X), as a
+user does -- so FutureOS loads `LISP.64K` from the disc, and `LISP.64K`
+the images through FutureOS. Then it types the file's lines when Lisp
+asks for them. `FOS_DIR=0` starts `LISP.64K` the old way instead: put
+at &8000 (`!poke`) and started from the RUN menu (X, 3, &9000, &C0),
+with no directory read -- which tries the loader's fallback, the images
+through AMSDOS. MAME has no Vortex controller: the Vortex disc is checked
 only by reading it back.
 
 `hello.asm` is a first FutureOS program built here: it prints with
@@ -324,8 +354,9 @@ used.
 * **Respect FutureOS's expansion RAM**: take only the blocks its XRAM
   variables mark free, and mark Lisp's -- then M: and the images could
   survive the desktop, and a second start skip loading.
-* Load the images through FutureOS's own loaders: faster, and from any
-  FutureOS medium.
+* Lisp's own files through FutureOS (`load`, `save`, `(dir)`, streams),
+  from any FutureOS medium: then nothing needs drive A. And its fast
+  text output.
 * A native Lisp, without the island, through FutureOS's text, keyboard
   and file functions -- and Lisp as a task beside others, with TFM's
   description of the task interface.

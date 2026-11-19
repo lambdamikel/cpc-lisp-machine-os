@@ -17,7 +17,9 @@ FOS_SAVE_CFG    equ #FF         ; FutureOS's RAM kept in bank 7's block 3
 FOS_SAVE_BACK   equ #6100       ;   &6000, the way back (fosback.asm) here,
 FOS_BACK_LEN    equ 192         ;   at most this long (the reset copies it),
 FOS_SAVE_ROMD   equ #61C0       ;   ROM D's number, then &DF,
-FOS_SAVE_ROMB   equ #61C2       ;   ROM B's
+FOS_SAVE_ROMB   equ #61C2       ;   ROM B's,
+FOS_KEEP        equ #7000       ;   and while FutureOS loads the images,
+                                ;   LISP.64K's first 4 KB (loader.asm)
 XBUF            equ 1           ; the disc files' buffers: bank 7's block 2 at
 XB_UNITS        equ 2           ;   &4000 (C6 + 8 * 7), the RAM disc's unit
 XB_IN           equ #4000       ;   below FutureOS's, given up too

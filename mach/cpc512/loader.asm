@@ -103,6 +103,15 @@ start:
     cp #5A
     jp nz,.none                 ; the writes went to the main RAM
     ; the images, each into its bank
+    ifdef FUTUREOS
+    ld a,(fos_loaded)           ; LISP.64K had FutureOS load them
+    or a
+    ld hl,m_fos
+    jr z,.cas
+    call puts
+    jr .loaded
+.cas:
+    endif
     ld e,0
 .load:
     ld a,e
@@ -130,6 +139,7 @@ start:
     ld a,e
     cp NIMAGES
     jr c,.load
+.loaded:
     call map_main
     ld a,13
     call TXT_OUTPUT
@@ -216,6 +226,9 @@ puts:
     jr puts
 
 m_hello:  db "CPC Lisp for the 512K expansion: loading",13,10,0
+    ifdef FUTUREOS
+m_fos:    db "LISP0.IMG-LISP5.IMG through FutureOS",0
+    endif
 m_none:   db 13,10,"No 512K expansion found: CPC Lisp needs",13,10
           db "banks 0-5 of a DK'tronics-type expansion.",13,10
           db "Banks of 64K that answer: ",0
