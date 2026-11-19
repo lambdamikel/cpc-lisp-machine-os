@@ -75,6 +75,25 @@ if CARDLOG then
   end)
 end
 
+-- LISP_AYLOG=file: every AY register write (through the PPI: register
+-- selected with port C &C0, written with &80), "reg=value" in hex
+AYLOG = getenv("LISP_AYLOG", nil)
+AY = {}
+if AYLOG then
+  IOS = IOS or CPU.spaces["io"]
+  local porta, reg = 0, 0
+  TAPA = IOS:install_write_tap(0xF400, 0xF4FF, "ppia", function(offset, data, mask)
+    porta = data & 0xFF
+    return data
+  end)
+  TAPC2 = IOS:install_write_tap(0xF600, 0xF6FF, "ppic", function(offset, data, mask)
+    local v = data & 0xC0
+    if v == 0xC0 then reg = porta
+    elseif v == 0x80 then AY[#AY + 1] = string.format("%X=%02X", reg, porta) end
+    return data
+  end)
+end
+
 OUT = {}
 -- LISP_TXTOUT: where TXT OUTPUT is entered (&BB5A, the firmware's; under
 -- FutureOS natively, mach/fos, the resident part's trampoline)
@@ -198,6 +217,11 @@ local function finish(why)
       f:write(string.format("%04X %s %d\n", k & 0xFFFF,
         rom > 0 and ROMS[rom][1] or (k < 0x4000 and "firmware" or "ram"), n))
     end
+    f:close()
+  end
+  if AYLOG then
+    local f = io.open(AYLOG, "w")
+    f:write(table.concat(AY, " "), "\n")
     f:close()
   end
   if CARDLOG then

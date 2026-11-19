@@ -64,7 +64,7 @@ case $M in
     6128) SYS="cpc6128 -ramsize 576K -flop1 $tmp/disc.dsk -exp rom $FOS"; EDIT2=0xBD5E ;;
     *) echo "run: -m 464 or 6128" >&2; exit 2 ;;
 esac
-LISP_IN=$tmp/in.lsp LISP_OUT=$tmp/out LISP_SHOT=$SHOT LISP_FRAMES=$FRAMES LISP_EDIT=$EDIT LISP_EDIT2=$EDIT2 LISP_TXTOUT=$TXTOUT \
+LISP_IN=$tmp/in.lsp LISP_OUT=$tmp/out LISP_SHOT=$SHOT LISP_FRAMES=$FRAMES LISP_EDIT=$EDIT LISP_EDIT2=$EDIT2 LISP_TXTOUT=$TXTOUT LISP_AYLOG=$LISP_AYLOG \
 env -u WAYLAND_DISPLAY GDK_BACKEND=x11 timeout 600 xvfb-run -a \
     /usr/games/mame -rompath $HOME/claude/cpc/mame-roms -video none -sound none -nothrottle \
     -skip_gameinfo $SYS \

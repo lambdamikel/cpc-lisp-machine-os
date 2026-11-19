@@ -40,7 +40,15 @@ sixteen inks, `plot`, `draw`, `test`, `move`, the origin, the ink modes
 rows: 15 nested discs in mode 1 take 1257 ticks, the firmware 1619); a
 slanted line a pixel at a time (twice the firmware's time).
 
-Not yet: **sound** (phase 3b), the RAM disc `M:` and far
+**Phase 3b, sound** (MAME): the firmware's sound manager cut down --
+three channels, a queue of four sounds each, noise, amplitude envelopes
+(`envelope`; no tone envelopes or rendezvous yet) -- played on the AY by
+the page's `snd_tick`, 100 times a second from the interrupt. `sound`,
+`play`, the tunes, `sound-check`, `sound-hold`/`sound-continue`. Checked
+by logging the AY's register writes (`LISP_AYLOG=file`, emu/repl.lua):
+the periods, volumes, noise and mixer as asked.
+
+Not yet: the RAM disc `M:` and far
 arrays, a hardware test, `(dir "e:")` (the library's `dir` takes only
 `m:`: it lists the drive `LISP.64K` came from), re-reading a directory
 after a disc is changed.

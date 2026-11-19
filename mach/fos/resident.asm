@@ -22,6 +22,7 @@
     include "firmware.asm"      ; the names (and jumps.asm)
     include "memmap.asm"
     include "fos.asm"
+    include "nfw.asm"
 
 C_POS       equ #B848           ; FutureOS: PR_2's cursor (ROM A &C9BD;
                                 ;   PR_2, fos.asm: glyph from &3800)
@@ -267,9 +268,12 @@ r_testkey:
     ret
 
 ;; r_int: the interrupt, 300 times a second (&0038: jp r_int). The tick;
-;; every sixth, the keyboard.
+;; every sixth, the keyboard; every third, the sound (the page's snd_tick,
+;; with the page mapped in and what was in put back after).
 r_int:
     push af
+    push bc
+    push de
     push hl
     ld hl,ticks
     inc (hl)
@@ -285,18 +289,29 @@ r_int:
 .t:
     ld hl,kb_div
     dec (hl)
-    jr nz,.out
+    jr nz,.snd
     ld (hl),6
-    push bc
-    push de
     call kb_scan
-    pop de
-    pop bc
+.snd:
+    ld hl,sn_div
+    dec (hl)
+    jr nz,.out
+    ld (hl),3
+    ld a,(rs_now)
+    push af
+    ld a,PAGE_CFG
+    call set_cfg
+    call #C000+3*NFW+3          ; (snd_tick)
+    pop af
+    call set_cfg
 .out:
     pop hl
+    pop de
+    pop bc
     pop af
     ei
     ret
+sn_div:     db 3
 
 ;; kb_scan: the matrix through the PSG's port A (register 14), each row
 ;; selected on the PPI's port C; each key newly down queued, and the last
