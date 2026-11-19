@@ -92,4 +92,5 @@ M_RDCAT         equ JB+4*J_M_RDCAT
 M_DELETE        equ JB+4*J_M_DELETE
 M_FILL          equ JB+4*J_M_FILL
 M_MIDI          equ JB+4*J_M_MIDI
+M_DRIVE         equ JB+4*J_M_DRIVE
 M_NEXTY         equ JB+4*J_M_NEXTY

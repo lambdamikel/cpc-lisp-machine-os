@@ -255,3 +255,5 @@ lf_sound_continue:
     call SOUND_CONTINUE
     jp lnil
 
+
+    include "cd.asm"            ; (cd): the disc drive, here for the room

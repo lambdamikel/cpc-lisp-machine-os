@@ -161,5 +161,7 @@
     dw m_m_fill
     assert $ == MTAB+2*J_M_MIDI
     dw m_m_midi
+    assert $ == MTAB+2*J_M_DRIVE
+    dw m_m_drive
     assert $ == MTAB+2*J_M_NEXTY
     dw m_m_nexty

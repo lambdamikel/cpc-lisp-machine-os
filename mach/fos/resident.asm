@@ -800,7 +800,11 @@ r_eread:
 ;; waits in a block of its own too (LOW_CFG): TEISI writes there (MAME,
 ;; 2026-11-19). Our interrupt (IM 1, &0038) is put back after: FutureOS's
 ;; functions may leave its own. BC, DE, HL, IX, IY and the alternate
-;; registers lost. r_fosb: the same in FutureOS's ROM B.
+;; registers lost. r_fosb, r_fosd: the same in FutureOS's ROM B, ROM D.
+r_fosd:
+    push hl
+    ld hl,(rs_romd)
+    jr r_fos_rom
 r_fosb:
     push hl
     ld hl,(rs_romb)

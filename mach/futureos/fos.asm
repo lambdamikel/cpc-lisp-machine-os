@@ -64,7 +64,11 @@ EWEG        equ #FD7A           ; REG08_1, REG16_8: deleted in the buffered
 ;; ROM B: the directories
 SIDIR       equ #FDE8           ; every changed directory written back
 
-;; ROM D: back to the desktop
+;; ROM D: the directories again, back to the desktop
+GET_DIR     equ #FE7C           ; every tagged drive's directory read and
+                                ;   buffered again (A = 0; 1 none tagged, 2
+                                ;   no room in the expansion, &FF a medium
+                                ;   not there: nothing read)
 KLICK       equ #FE9A           ; the icons kept (only the lower part used)
 TUR_E       equ #FE9D
 TUR_D       equ #FEA0           ; the whole screen redrawn

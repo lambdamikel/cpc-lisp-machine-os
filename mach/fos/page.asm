@@ -2273,13 +2273,32 @@ ln_sy:      db 0
 ;; ---- sound ----
 ;;
 ;; The firmware's sound manager, cut down: three channels (A, B, C: 1, 2,
-;; 4), a queue of four sounds each, amplitude envelopes (15, of up to five
-;; sections: steps, a step's size, the pause after each, in 1/100 s); no
-;; tone envelopes and no rendezvous yet (a sound waiting for one is played
-;; anyway). snd_tick, 100 times a second from the resident part's
-;; interrupt with the page mapped in, plays them on the AY.
+;; 4), a queue of four sounds each, amplitude and tone envelopes (15 each,
+;; of up to five sections: steps, a step's size, the pause after each, in
+;; 1/100 s; a tone section of 240 steps or more sets the period: its low
+;; four bits and the next byte), rendezvous between channels, sounds held
+;; until SOUND RELEASE. Timed as the 464's firmware plays them (MAME, the
+;; AY's writes logged with LISP_AYTIME): an envelope's first step as the
+;; sound starts, then one every pause; without an amplitude envelope the
+;; volume doubled (BASIC's 0-7). No hardware envelopes, no sound events.
+;; snd_tick, 100 times a second from the resident part's interrupt with
+;; the page mapped in, plays them on the AY.
 
 SQN         equ 4               ; sounds a channel's queue holds
+    assert SQN == 4             ; (snd_slot)
+;; a queued sound, 8 bytes: the period (2), noise, the volume (bits 0-3)
+;; and its flags (4-6: rendezvous with A, B, C; 7: held), the duration
+;; (2), the envelopes (bits 0-3 amplitude, 4-7 tone)
+;; an envelope's state, each channel's two (IX):
+ES          equ 8
+ES_ENV      equ 0               ; its number (0: none, or ended)
+ES_SEC      equ 1               ; the next section
+ES_CNT      equ 2               ; steps left in this one
+ES_STP      equ 3               ; a step's size
+ES_PL       equ 4               ; the pause after a step
+ES_PAU      equ 5               ; the pause now
+ES_NSEC     equ 6               ; its sections (bit 7: over again)
+ES_TONE     equ 7               ; 1: a tone envelope
 
 ;; SOUND QUEUE: HL = a sound, nine bytes (channels and flags, amplitude
 ;; envelope, tone envelope, period (2), noise, volume, duration (2)) ->
@@ -2357,10 +2376,46 @@ snd_ix:
     ld d,a
     pop af
     ret
-;; snd_put: HL = a sound, B = a channel with room -> queued (8 bytes: the
-;; period, noise, volume, duration, envelope)
+;; snd_put: HL = a sound, B = a channel with room -> queued. Its flags for
+;; this channel: the rendezvous it asks for and the sound's other channels
+;; (it starts on all at once), held
 snd_put:
     push hl
+    ld a,(hl)
+    ld c,a
+    rrca
+    rrca
+    rrca
+    or c
+    and 7
+    ld e,a
+    call snd_bit
+    cpl
+    and e                       ; (not with itself)
+    ld e,a
+    ld a,c
+    and #40
+    rrca
+    rrca
+    rrca
+    or e
+    add a,a
+    add a,a
+    add a,a
+    add a,a
+    ld (sp_flags),a
+    inc hl
+    ld a,(hl)                   ; the envelopes
+    and 15
+    ld e,a
+    inc hl
+    ld a,(hl)
+    add a,a
+    add a,a
+    add a,a
+    add a,a
+    or e
+    ld (sp_env),a
     ld de,snd_cnt
     call snd_ix
     ld a,(de)
@@ -2371,53 +2426,86 @@ snd_put:
     call snd_ix
     ld a,(de)
     add a,c
-    and SQN-1                   ; the slot: (first + waiting) mod SQN
+    call snd_slot               ; HL = its slot
+    pop de
+    push de
+    push hl
+    ex de,hl
+    ld bc,3
+    add hl,bc
+    ld bc,6                     ; the period, noise, volume, duration
+    ldir
+    ld a,(sp_env)
+    ld (de),a
+    pop hl
+    inc hl
+    inc hl
+    inc hl
+    ld a,(hl)
+    and 15
     ld c,a
-    ld a,b                      ; snd_q + 8 (SQN b + slot)
+    ld a,(sp_flags)
+    or c
+    ld (hl),a
+    pop hl
+    ret
+;; snd_slot: A = a place in a queue (taken mod SQN), B = the channel ->
+;; HL = its 8 bytes. B kept
+snd_slot:
+    and SQN-1
+    ld c,a
+    ld a,b
     add a,a
     add a,a
     add a,c
     add a,a
     add a,a
     add a,a
-    ld e,a
-    ld d,0
-    ld hl,snd_q
+    ld l,a
+    ld h,0
+    ld de,snd_q
     add hl,de
-    ex de,hl
-    pop hl
-    push hl
-    inc hl
-    ld a,(hl)                   ; the envelope
-    inc hl
-    inc hl
-    ld c,(hl)                   ; the period
-    inc hl
-    ld b,(hl)
-    inc hl
-    ex de,hl
-    ld (hl),c
-    inc hl
-    ld (hl),b
-    inc hl
-    ld c,a                      ; (C: the envelope)
-    ld a,(de)                   ; noise
-    inc de
-    ld (hl),a
-    inc hl
-    ld a,(de)                   ; volume
-    inc de
-    ld (hl),a
-    inc hl
-    ld a,(de)                   ; duration
-    inc de
-    ld (hl),a
-    inc hl
+    ret
+;; snd_head: B = a channel -> HL = the first sound waiting in its queue;
+;; Z if there is none. B kept
+snd_head:
+    ld de,snd_cnt
+    call snd_ix
     ld a,(de)
-    ld (hl),a
-    inc hl
-    ld (hl),c
-    pop hl
+    or a
+    ret z
+    ld de,snd_rd
+    call snd_ix
+    ld a,(de)
+    call snd_slot
+    or 1
+    ret
+;; snd_bit: B = a channel -> A = its bit (1, 2, 4). All else kept
+snd_bit:
+    push bc
+    ld a,1
+    inc b
+    jr .t
+.l:
+    add a,a
+.t:
+    djnz .l
+    pop bc
+    ret
+;; snd_durp, snd_perp: B = a channel -> HL = its duration's, its period's
+;; word. DE kept
+snd_durp:
+    ld hl,ch_dur
+    jr snd_w
+snd_perp:
+    ld hl,ch_per
+snd_w:
+    ld a,b
+    add a,a
+    add a,l
+    ld l,a
+    ret nc
+    inc h
     ret
 ;; snd_flush: A = channels: their queues emptied, their sounds stopped
 snd_flush:
@@ -2458,7 +2546,8 @@ snd_flush:
     jr nz,.l
     ret
 ;; SOUND CHECK: A = a channel (1, 2, 4) -> A = its state: free places in
-;; its queue (bits 0-2), playing (bit 7)
+;; its queue (bits 0-2), the first waiting sound's rendezvous with A, B, C
+;; (3-5) and held (6), playing (7)
 p_SOUND_CHECK:
     push bc
     push de
@@ -2471,19 +2560,28 @@ p_SOUND_CHECK:
     jr c,.c
     inc b
 .c:
+    call snd_head
+    ld e,0
+    jr z,.f
+    inc hl
+    inc hl
+    inc hl
+    ld a,(hl)
+    rrca
+    and #78
+    ld e,a
+.f:
+    push de
     ld de,snd_cnt
     call snd_ix
     ld a,(de)
     ld c,a
     ld a,SQN
     sub c
+    pop de
+    or e
     ld c,a
-    ld a,b
-    add a,a
-    ld e,a
-    ld d,0
-    ld hl,ch_dur
-    add hl,de
+    call snd_durp
     ld a,(hl)
     inc hl
     or (hl)
@@ -2526,14 +2624,49 @@ p_SOUND_CONTINUE:
     xor a
     ld (snd_hold),a
     ret
+;; SOUND RELEASE: A = channels -> the sounds held at the heads of their
+;; queues may start
 p_SOUND_RELEASE:
-p_SOUND_TONE_ENVELOPE:
-    ret
-;; SOUND AMPL ENVELOPE: A = an envelope (1-15), HL = its sections' count,
-;; then three bytes a section: kept
-p_SOUND_AMPL_ENVELOPE:
     push bc
     push de
+    push hl
+    di
+    ld c,a
+    ld b,0
+.l:
+    rr c
+    jr nc,.n
+    push bc
+    call snd_head
+    jr z,.e
+    inc hl
+    inc hl
+    inc hl
+    res 7,(hl)
+.e:
+    pop bc
+.n:
+    inc b
+    ld a,b
+    cp 3
+    jr nz,.l
+    ei
+    pop hl
+    pop de
+    pop bc
+    ret
+;; SOUND AMPL ENVELOPE, SOUND TONE ENVELOPE: A = an envelope (1-15), HL =
+;; its sections' count (a tone envelope's bit 7: over again), then three
+;; bytes a section: kept
+p_SOUND_AMPL_ENVELOPE:
+    push de
+    ld de,snd_env
+    jr snd_envput
+p_SOUND_TONE_ENVELOPE:
+    push de
+    ld de,snd_tenv
+snd_envput:
+    push bc
     push hl
     dec a
     and 15
@@ -2543,29 +2676,30 @@ p_SOUND_AMPL_ENVELOPE:
     add a,a
     add a,a
     add a,a
+    add a,e
     ld e,a
-    ld d,0
-    push hl
-    ld hl,snd_env
-    add hl,de
-    ex de,hl
-    pop hl
+    adc a,d
+    sub e
+    ld d,a
     ld bc,16
     ldir
 .no:
     pop hl
-    pop de
     pop bc
+    pop de
     scf
     ret
 
 ;; snd_tick: once every 1/100 s (the interrupt, the page mapped in): each
-;; channel's sound on, its envelope a step on, the next from its queue
-;; when it ends. Every register kept but AF... and IX, IY not used.
+;; channel's sound on, its envelopes a step on, the next from its queue
+;; when it ends. AF, BC, DE, HL saved by the interrupt; IX here.
 snd_tick:
     ld a,(snd_hold)
     or a
     ret nz
+    push ix
+    xor a
+    ld (snd_new),a
     ld b,0
 .ch:
     push bc
@@ -2575,21 +2709,21 @@ snd_tick:
     ld a,b
     cp 3
     jr nz,.ch
+    pop ix
     ret
 ;; snd_chan: B = a channel
 snd_chan:
-    ld a,b
-    add a,a
-    ld e,a
-    ld d,0
-    ld hl,ch_dur
-    add hl,de
+    call snd_bit
+    ld hl,snd_new
+    and (hl)
+    ret nz                      ; started this tick, by a rendezvous
+    call snd_durp
     ld e,(hl)
     inc hl
     ld d,(hl)
     ld a,d
     or e
-    jr z,.next                  ; idle: the next, if one waits
+    jr z,.next                  ; idle: the next, if one may start
     dec de
     ld (hl),d
     dec hl
@@ -2597,14 +2731,77 @@ snd_chan:
     ld a,d
     or e
     jr z,.next
-    jp snd_envstep
-.next:
-    ld de,snd_cnt
+    call snd_esa                ; its envelopes a step on
+    call env_tick
+    jr nc,.tone
+    ld de,ch_amp
     call snd_ix
     ld a,(de)
-    or a
-    jr nz,.take
-    ld de,ch_amp                ; nothing: silent
+    add a,c
+    and 15
+    ld (de),a
+    call snd_amp
+.tone:
+    call snd_est
+    call env_tick
+    ret nc
+    jp snd_tstep
+.next:
+    call snd_head
+    jr z,.quiet
+    inc hl
+    inc hl
+    inc hl
+    ld a,(hl)
+    bit 7,a
+    jr nz,.quiet                ; held, until SOUND RELEASE
+    rrca
+    rrca
+    rrca
+    rrca
+    and 7
+    jp z,snd_take               ; no rendezvous: on
+    ld (sc_r),a
+    call snd_bit
+    ld (sc_me),a
+    push bc                     ; (B: this channel)
+    ld b,0
+    ld a,(sc_r)
+    ld c,a
+.chk:                           ; each partner ready?
+    rr c
+    jr nc,.cn
+    call snd_ready
+    jr nz,.wait
+.cn:
+    inc b
+    ld a,b
+    cp 3
+    jr nz,.chk
+    ld b,0                      ; all of them: they start, and this one
+    ld a,(sc_r)
+    ld c,a
+.go:
+    rr c
+    jr nc,.gn
+    push bc
+    call snd_take
+    pop bc
+    call snd_bit
+    ld hl,snd_new
+    or (hl)
+    ld (hl),a
+.gn:
+    inc b
+    ld a,b
+    cp 3
+    jr nz,.go
+    pop bc
+    jp snd_take
+.wait:
+    pop bc
+.quiet:                         ; nothing: silent
+    ld de,ch_amp
     call snd_ix
     ld a,(de)
     or a
@@ -2615,41 +2812,73 @@ snd_chan:
     add a,8
     ld c,0
     jp ay_w
-.take:
+;; snd_ready: B = a channel, sc_me another's bit -> Z if B is free and its
+;; first waiting sound, not held, waits for that one. BC kept
+snd_ready:
+    push bc
+    call snd_bit
+    ld hl,snd_new
+    and (hl)
+    jr nz,.no
+    call snd_durp
+    ld a,(hl)
+    inc hl
+    or (hl)
+    jr nz,.no                   ; still sounding
+    call snd_head
+    jr z,.no
+    inc hl
+    inc hl
+    inc hl
+    ld a,(hl)
+    bit 7,a
+    jr nz,.no                   ; held
+    rrca
+    rrca
+    rrca
+    rrca
+    and 7
+    ld hl,sc_me
+    and (hl)
+    jr z,.no
+    pop bc
+    xor a
+    ret
+.no:
+    pop bc
+    or 1
+    ret
+;; snd_take: B = a channel: its first waiting sound out of the queue and
+;; on. B kept
+snd_take:
+    call snd_head
+    ret z
+    push hl
+    ld de,snd_cnt
+    call snd_ix
+    ld a,(de)
     dec a
     ld (de),a
     ld de,snd_rd
     call snd_ix
     ld a,(de)
-    ld c,a
     inc a
     and SQN-1
     ld (de),a
-    ld a,b                      ; its slot
-    add a,a
-    add a,a
-    add a,c
-    add a,a
-    add a,a
-    add a,a
-    ld e,a
-    ld d,0
-    ld hl,snd_q
-    add hl,de
+    pop hl
+;; snd_start: B = a channel, HL = a sound's 8 bytes -> on: the mixer, its
+;; volume and period as the envelopes' first steps make them, how long.
+;; B kept
+snd_start:
     ld e,(hl)                   ; the period
     inc hl
     ld d,(hl)
     inc hl
     push hl
-    ld a,b
-    add a,a
-    ld c,e
-    call ay_w                   ; its two registers
-    ld a,b
-    add a,a
-    inc a
-    ld c,d
-    call ay_w
+    call snd_perp
+    ld (hl),e
+    inc hl
+    ld (hl),d
     pop hl
     ld a,d                      ; tone on if there is a period
     or e
@@ -2660,43 +2889,331 @@ snd_chan:
     pop hl
     ld a,(hl)                   ; the volume
     and 15
+    ld (st_vol),a
     inc hl
-    ld de,ch_amp
-    call snd_ix
-    ld (de),a
     ld e,(hl)                   ; the duration
     inc hl
     ld d,(hl)
     inc hl
-    ld a,(hl)                   ; the envelope
-    push de
-    call snd_envset             ; -> HL = its length, if it has one
-    pop de
-    bit 7,d
-    jr z,.d
-    ld de,0                     ; (a count of the envelope: its length)
-.d:
-    ld a,d
-    or e
-    jr nz,.dur
-    ex de,hl
-    ld a,d
-    or e
-    jr nz,.dur
-    ld de,200                   ; none: two seconds
-.dur:
-    ld a,b
+    ld (st_dur),de
+    ld a,(hl)                   ; the envelopes
+    ld (st_env),a
+    ld hl,0
+    ld (st_len),hl
+    call snd_esa
+    ld a,(st_env)
+    and 15
+    jr nz,.ae
+    ld (ix+ES_ENV),a            ; none: the volume doubled (BASIC's 0-7,
+    ld a,(st_vol)               ;   as the firmware does)
     add a,a
-    ld l,a
-    ld h,0
-    push de
-    ld de,ch_dur
-    add hl,de
-    pop de
+    and 15
+    ld (st_vol),a
+    jr .ad
+.ae:
+    push af
+    call env_len
+    ld (st_len),hl
+    pop af
+    ld c,0
+    call env_start
+    jr nc,.ad
+    ld a,(st_vol)
+    add a,c
+    and 15
+    ld (st_vol),a
+.ad:
+    ld de,ch_amp
+    call snd_ix
+    ld a,(st_vol)
+    ld (de),a
+    call snd_amp
+    call snd_est                ; the tone envelope
+    ld a,(st_env)
+    rrca
+    rrca
+    rrca
+    rrca
+    ld c,1
+    call env_start
+    jr nc,.tn
+    call snd_tstep
+    jr .du
+.tn:
+    call snd_perp
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    call snd_per
+.du:
+    ld de,(st_dur)              ; the duration: 0, the amplitude
+    ld a,d                      ;   envelope's (or two seconds); -n, it
+    or e                        ;   n times over
+    jr z,.len
+    bit 7,d
+    jr z,.set
+    xor a
+    sub e
+    ld e,a
+    sbc a,a
+    sub d
+    ld d,a
+    ld hl,(st_len)
+    call mul16
+    ex de,hl
+    call snd_esa
+    set 7,(ix+ES_NSEC)
+    jr .z
+.len:
+    ld de,(st_len)
+.z:
+    ld a,d
+    or e
+    jr nz,.set
+    ld de,200
+.set:
+    call snd_durp
     ld (hl),e
     inc hl
     ld (hl),d
-    jp snd_amp
+    ret
+;; mul16: HL x DE -> HL (its low 16 bits). BC kept
+mul16:
+    push bc
+    ld b,h
+    ld c,l
+    ld hl,0
+    ld a,16
+.l:
+    add hl,hl
+    ex de,hl
+    add hl,hl
+    ex de,hl
+    jr nc,.n
+    add hl,bc
+.n:
+    dec a
+    jr nz,.l
+    pop bc
+    ret
+;; snd_esa, snd_est: B = a channel -> IX = its amplitude, its tone
+;; envelope's state. B kept
+snd_esa:
+    ld ix,es_a
+    jr snd_es
+snd_est:
+    ld ix,es_t
+snd_es:
+    push de
+    ld a,b
+    add a,a
+    add a,a
+    add a,a
+    ld e,a
+    ld d,0
+    add ix,de
+    pop de
+    ret
+;; snd_tstep: B = a channel; A = 0: C = a step's size (signed), A = 1: DE
+;; = a period -> its period that, on the AY. B kept
+snd_tstep:
+    push af
+    call snd_perp
+    pop af
+    or a
+    jr nz,.abs
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    dec hl
+    push hl
+    ld a,c
+    ld l,a
+    rla
+    sbc a,a
+    ld h,a
+    add hl,de
+    ex de,hl
+    pop hl
+.abs:
+    ld a,d
+    and 15
+    ld d,a
+    ld (hl),e
+    inc hl
+    ld (hl),d
+;; snd_per: B = a channel, DE = a period -> on the AY. B kept
+snd_per:
+    ld a,b
+    add a,a
+    ld c,e
+    call ay_w
+    ld a,b
+    add a,a
+    inc a
+    ld c,d
+    jp ay_w
+
+;; env_len: A = an amplitude envelope (1-15) -> HL = its length in 1/100
+;; s: steps x pause (0: 256), each section. B kept
+env_len:
+    dec a
+    add a,a
+    add a,a
+    add a,a
+    add a,a
+    ld e,a
+    ld d,0
+    ld hl,snd_env
+    add hl,de
+    ld a,(hl)                   ; its sections
+    and #7F
+    inc hl
+    ld de,0
+    or a
+    jr z,.e
+    push bc
+    ld b,a
+.s:
+    ld a,(hl)                   ; steps
+    and #7F
+    inc hl
+    inc hl
+    ld c,(hl)                   ; the pause
+    inc hl
+    push hl
+    ld l,c
+    ld h,0
+    inc c
+    dec c
+    jr nz,.p
+    inc h                       ; (0: 256)
+.p:
+    or a
+    jr z,.sn
+.m:
+    ex de,hl
+    add hl,de
+    ex de,hl
+    dec a
+    jr nz,.m
+.sn:
+    pop hl
+    djnz .s
+    pop bc
+.e:
+    ex de,hl
+    ret
+;; env_start: IX = an envelope's state, A = the envelope (bits 0-3; 0:
+;; none), C = 1 for a tone envelope -> its first step, as env_step
+env_start:
+    and 15
+    ld (ix+ES_ENV),a
+    ret z                       ; (no carry)
+    ld (ix+ES_TONE),c
+    call env_addr
+    ld a,(hl)
+    ld (ix+ES_NSEC),a
+    xor a
+    ld (ix+ES_SEC),a
+    ld (ix+ES_CNT),a
+    jr env_step
+;; env_tick: IX = an envelope's state -> its step, as env_step, if one is
+;; due now
+env_tick:
+    ld a,(ix+ES_ENV)
+    or a
+    ret z                       ; (no carry)
+    dec (ix+ES_PAU)
+    ret nz
+;; env_step: IX = an envelope's state -> carry and A = 0, C = a step's
+;; size, or A = 1, DE = a period (a tone section's); no carry: no step (the
+;; envelope is over, or a section without steps pauses)
+env_step:
+    ld a,(ix+ES_CNT)
+    or a
+    jr nz,.step
+    ld a,(ix+ES_NSEC)           ; the next section
+    and #7F
+    ld c,a
+    ld a,(ix+ES_SEC)
+    cp c
+    jr c,.sec
+    bit 7,(ix+ES_NSEC)
+    jr z,.end
+    ld a,c                      ; over again
+    or a
+    jr z,.end
+    xor a
+.sec:
+    ld c,a
+    inc a
+    ld (ix+ES_SEC),a
+    call env_addr               ; its three bytes: HL + 1 + 3 x section
+    inc hl
+    ld a,c
+    add a,a
+    add a,c
+    add a,l
+    ld l,a
+    adc a,h
+    sub l
+    ld h,a
+    ld a,(hl)                   ; steps
+    inc hl
+    ld c,(hl)                   ; a step's size (a period's low byte)
+    inc hl
+    ld e,(hl)                   ; the pause
+    ld (ix+ES_PL),e
+    ld (ix+ES_PAU),e
+    bit 0,(ix+ES_TONE)
+    jr z,.amp
+    cp #F0
+    jr c,.rel
+    and 15                      ; a period: steps' low bits, the byte
+    ld d,a
+    ld e,c
+    xor a
+    ld (ix+ES_CNT),a
+    inc a
+    scf
+    ret
+.amp:
+    and #7F
+.rel:
+    ld (ix+ES_CNT),a
+    ld (ix+ES_STP),c
+    or a
+    ret z                       ; (no steps: its pause only)
+.step:
+    dec (ix+ES_CNT)
+    ld c,(ix+ES_STP)
+    ld a,(ix+ES_PL)
+    ld (ix+ES_PAU),a
+    xor a
+    scf
+    ret
+.end:
+    xor a                       ; over: the volume or period stays
+    ld (ix+ES_ENV),a
+    ret
+;; env_addr: IX = an envelope's state -> HL = the envelope's 16 bytes
+env_addr:
+    ld a,(ix+ES_ENV)
+    dec a
+    add a,a
+    add a,a
+    add a,a
+    add a,a
+    ld l,a
+    ld h,0
+    ld de,snd_env
+    bit 0,(ix+ES_TONE)
+    jr z,.a
+    ld de,snd_tenv
+.a:
+    add hl,de
+    ret
 ;; snd_mix: B = a channel, NZ: its tone on; C = noise (0: off) -> the
 ;; mixer (register 7) and the noise's period (6)
 snd_mix:
@@ -2752,162 +3269,6 @@ snd_mix:
     pop bc
     ret
 mix_bits:   db 1,2,4
-;; snd_envset: A = an envelope (0: none), B = the channel -> its state
-;; set; HL = its length in 1/100 s (0 if none)
-snd_envset:
-    ld de,ch_env
-    call snd_ix
-    and 15
-    ld (de),a
-    ld hl,0
-    ret z
-    ld de,ch_sec
-    call snd_ix
-    xor a
-    ld (de),a                   ; (section 0: loaded at the first step)
-    ld de,ch_cnt
-    call snd_ix
-    ld (de),a
-    ld de,ch_pau
-    call snd_ix
-    ld (de),a
-    call snd_envp               ; HL = the envelope
-    ld c,(hl)                   ; its sections
-    inc hl
-    ld de,0
-    inc c
-    dec c
-    jr z,.e
-.s:
-    ld a,(hl)                   ; steps x (pause + 1)
-    and #7F
-    inc hl
-    inc hl
-    push bc
-    ld b,a
-    ld a,(hl)
-    inc hl
-    inc a
-    ld c,a
-    jr nz,.p
-    ld c,255
-.p:
-    ld a,b
-    or a
-    jr z,.sn
-.m:
-    ld a,e
-    add a,c
-    ld e,a
-    jr nc,.mn
-    inc d
-.mn:
-    djnz .m
-.sn:
-    pop bc
-    dec c
-    jr nz,.s
-.e:
-    ex de,hl
-    ret
-;; snd_envp: B = a channel -> HL = its envelope's sixteen bytes
-snd_envp:
-    ld de,ch_env
-    call snd_ix
-    ld a,(de)
-    dec a
-    add a,a
-    add a,a
-    add a,a
-    add a,a
-    ld e,a
-    ld d,0
-    ld hl,snd_env
-    add hl,de
-    ret
-;; snd_envstep: B = a channel sounding: its envelope a step on, if it has
-;; one
-snd_envstep:
-    ld de,ch_env
-    call snd_ix
-    ld a,(de)
-    or a
-    ret z
-    ld de,ch_pau
-    call snd_ix
-    ld a,(de)
-    or a
-    jr z,.step
-    dec a
-    ld (de),a
-    ret
-.step:
-    ld de,ch_cnt
-    call snd_ix
-    ld a,(de)
-    or a
-    jr nz,.go
-    ld de,ch_sec                ; the next section, if there is one
-    call snd_ix
-    ld a,(de)
-    push af
-    push de
-    call snd_envp
-    pop de
-    pop af
-    cp (hl)
-    ret nc                      ; none: the volume stays
-    ld c,a
-    inc a
-    ld (de),a
-    ld a,c                      ; HL + 1 + 3 x the section
-    add a,a
-    add a,c
-    inc a
-    add a,l
-    ld l,a
-    adc a,h
-    sub l
-    ld h,a
-    ld a,(hl)                   ; steps
-    and #7F
-    ld de,ch_cnt
-    call snd_ix
-    ld (de),a
-    inc hl
-    ld a,(hl)                   ; a step's size
-    ld de,ch_stp
-    call snd_ix
-    ld (de),a
-    inc hl
-    ld a,(hl)                   ; the pause
-    ld de,ch_pl
-    call snd_ix
-    ld (de),a
-    ld de,ch_cnt
-    call snd_ix
-    ld a,(de)
-    or a
-    ret z
-.go:
-    dec a
-    ld (de),a
-    ld de,ch_stp
-    call snd_ix
-    ld a,(de)
-    ld c,a
-    ld de,ch_amp
-    call snd_ix
-    ld a,(de)
-    add a,c
-    and 15
-    ld (de),a
-    ld de,ch_pl
-    call snd_ix
-    ld a,(de)
-    ld de,ch_pau
-    call snd_ix
-    ld (de),a
 ;; snd_amp: B = a channel -> its volume on the AY
 snd_amp:
     ld de,ch_amp
@@ -2939,19 +3300,26 @@ ay_w:
 
 sq_ch:      db 0
 snd_hold:   db 0
+snd_new:    db 0                ; channels started this tick (a rendezvous)
+sc_r:       db 0                ; snd_chan: the rendezvous' other channels,
+sc_me:      db 0                ;   this one's bit
+sp_flags:   db 0                ; snd_put: the flags (bits 4-7),
+sp_env:     db 0                ;   the envelopes
+st_vol:     db 0                ; snd_start: the volume,
+st_env:     db 0                ;   the envelopes,
+st_dur:     dw 0                ;   the duration,
+st_len:     dw 0                ;   the amplitude envelope's length
 snd_mixv:   db #3F              ; the mixer: all off
 snd_cnt:    db 0,0,0            ; sounds waiting, each channel
 snd_rd:     db 0,0,0            ; the first of them
-ch_dur:     dw 0,0,0            ; the sound on: 1/100 s to go
+ch_dur:     dw 0,0,0            ; the sound on: 1/100 s to go,
+ch_per:     dw 0,0,0            ;   its period,
 ch_amp:     db 0,0,0            ;   its volume
-ch_env:     db 0,0,0            ;   its envelope (0: none),
-ch_sec:     db 0,0,0            ;   the next section,
-ch_cnt:     db 0,0,0            ;   steps left in this one,
-ch_stp:     db 0,0,0            ;   a step's size,
-ch_pl:      db 0,0,0            ;   the pause after a step,
-ch_pau:     db 0,0,0            ;   and the pause now
+es_a:       defs 3*ES,0         ; the amplitude envelopes' states
+es_t:       defs 3*ES,0         ; the tone envelopes'
 snd_q:      defs 3*SQN*8,0      ; the queues: 8 bytes a sound
-snd_env:    defs 15*16,0        ; the envelopes
+snd_env:    defs 15*16,0        ; the amplitude envelopes
+snd_tenv:   defs 15*16,0        ; the tone envelopes
 
 ;; ---- files: through FutureOS ----
 ;;
@@ -3098,6 +3466,34 @@ f_up:
     sub 32
     ret
 
+;; f_reread: f_drive tagged, and every tagged drive's directory read and
+;; buffered again by GET_DIR (ROM D), as the desktop's D does: a disc
+;; changed meanwhile is seen, and a drive not read on the desktop is.
+;; Not while a file is being written: GET_DIR takes a free block of the
+;; expansion for the low 16 KB, and bank 0's free blocks hold that file.
+f_reread:
+    ld a,(out_open)
+    or a
+    ret nz
+    ld a,(f_drive)
+    add a,a
+    add a,a
+    add a,a
+    add a,TURBO_A and #FF
+    ld l,a
+    ld h,TURBO_A >> 8
+    bit 1,(hl)
+    ret nz                      ; not connected
+    set 0,(hl)
+    ld a,1                      ; (it sorts in &0000-&3FFF)
+    ld (fos_low),a
+    ld hl,GET_DIR
+    call r_fosd
+    ld bc,#FA7E                 ; the motors off
+    xor a
+    out (c),a
+    ret
+
 ;; f_dir: f_drive's directory, as FutureOS buffers it -> f_cfg, its block;
 ;; HL its first entry; B its entries (32 bytes each); carry if it was read
 f_dir:
@@ -3214,23 +3610,14 @@ f_recs:
     ld hl,#FFFF
     ret
 
-;; CAS CATALOG: A = a drive's letter ((dir "e:"), lib/disc.asm), or 0: the
-;; default drive (RS_DRIVE: LISP.64K's, or (cd)'s) -> its directory, sorted,
-;; two names a line as AMSDOS shows them, each with its size in KB
+;; CAS CATALOG: the directory of the drive a name without one goes to
+;; (RS_DRIVE: LISP.64K's, or (cd)'s, drive.asm), sorted, two names a line
+;; as AMSDOS shows them, each with its size in KB
 p_CAS_CATALOG:
     push ix
-    ld c,a
     ld a,(RS_DRIVE)
-    inc c
-    dec c
-    jr z,.drv
-    ld a,c
-    and #DF
-    sub "A"
-    cp 12                       ; A-L (M: is Lisp's RAM disc)
-    jp nc,.none
-.drv:
     ld (f_drive),a
+    call f_reread
     call f_dir
     jp nc,.none
     xor a

@@ -40,6 +40,7 @@ lib_names:
     include "structs.asm"
     include "seqfn.asm"
     include "card.asm"
+    include "drive.asm"         ; (cd): mach/cpc/drive.asm...
 ;@lisp lazy.lsp
     include "lib2tab.asm"
 

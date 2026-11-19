@@ -36,6 +36,8 @@
 --   !poke N ADDR FILE  write FILE's bytes into memory at hex ADDR (a
 --                  program to start by hand, as under FutureOS)
 --   !dump N LO-HI  RAM from hex LO to HI, as the CPU sees it, on stderr
+--   !disc N K FILE another disc in drive K (MAME's flopK), as a disc
+--                  changed while the program runs
 --
 -- A line is typed only when the ROM is waiting for one, which is known by a
 -- second tap on EDHOOK, which the REPL calls before every line.
@@ -76,8 +78,10 @@ if CARDLOG then
 end
 
 -- LISP_AYLOG=file: every AY register write (through the PPI: register
--- selected with port C &C0, written with &80), "reg=value" in hex
+-- selected with port C &C0, written with &80), "reg=value" in hex;
+-- LISP_AYTIME=1 puts the emulated time before each, in 1/100 s: "t:reg=value"
 AYLOG = getenv("LISP_AYLOG", nil)
+AYTIME = getenv("LISP_AYTIME", nil)
 AY = {}
 if AYLOG then
   IOS = IOS or CPU.spaces["io"]
@@ -89,7 +93,13 @@ if AYLOG then
   TAPC2 = IOS:install_write_tap(0xF600, 0xF6FF, "ppic", function(offset, data, mask)
     local v = data & 0xC0
     if v == 0xC0 then reg = porta
-    elseif v == 0x80 then AY[#AY + 1] = string.format("%X=%02X", reg, porta) end
+    elseif v == 0x80 then
+      if AYTIME then
+        AY[#AY + 1] = string.format("%d:%X=%02X", math.floor(manager.machine.time:as_double() * 100), reg, porta)
+      else
+        AY[#AY + 1] = string.format("%X=%02X", reg, porta)
+      end
+    end
     return data
   end)
 end
@@ -188,6 +198,8 @@ local function directives()
     if d5 then list[#list + 1] = { tonumber(d5), "dump", { tonumber(lo, 16), tonumber(hi, 16) } } end
     local d3 = l:match("^!shot (%d+)")
     if d3 then list[#list + 1] = { tonumber(d3), "shot" } end
+    local d6, drv, df = l:match("^!disc (%d+) (%d+) (.+)$")
+    if d6 then list[#list + 1] = { tonumber(d6), "disc", { "flop" .. drv, df } } end
   end
   return list
 end
@@ -277,6 +289,10 @@ NOTIFY = emu.add_machine_frame_notifier(function()
           local t = {}
           for j = row, math.min(row + 15, a[3][2]) do t[#t + 1] = string.format("%02X", MEM:read_u8(j)) end
           io.stderr:write(string.format("%04X: %s\n", row, table.concat(t, " ")))
+        end
+      elseif a[2] == "disc" then
+        for _, img in pairs(manager.machine.images) do
+          if img.brief_instance_name == a[3][1] then img:load(a[3][2]) end
         end
       elseif a[2] == "shot" and SHOT then
         SHOTS = SHOTS + 1

@@ -604,8 +604,8 @@ ending in CR alone) load as well.
 | `(load "name")` | reads and evaluates every form in it | 1, 2 |
 | `(load "name" :lazy t)` | reads each `defun` only when its function is first called (below); every other form is evaluated | 1, 2 |
 | `(save "name" [symbol...])` | the symbols' definitions, pretty-printed: functions, macros, variables (as `defparameter`); with none named, everything you defined | 1 |
-| `(dir)` | the catalogue. *TRS-80:* every drive's files and their sizes. *On FutureOS itself (mach/fos, in progress):* `(dir "e:")` any drive's whose directory FutureOS has read | 1 |
-| `(cd "e:")` | **On FutureOS itself only** (mach/fos): the drive for names without one (`load`, `save`, `open`, `dir`) -- A to L; T, or NIL for no such drive | 1 |
+| `(dir ["b:"])` | the catalogue of the drive `cd` chose, or of the one named (`"m:"` the RAM disc's); the current drive stays. *TRS-80:* every drive's files and their sizes until `cd` chooses one | 3 |
+| `(cd "b:")` | the drive a name without one goes to from now on -- `load`, `save`, `open`, `dir` -- T, or NIL for no such drive (the disc ROM may say so too, or ask for the disc); `(cd)` that drive, `"A:"`; `(cd nil)` the first one again. CPC: through the disc ROM's `\|DRIVE`, A-P (AMSDOS: A and B). *TRS-80:* A-D, LDOS's `:0`-`:3`; until a `cd`, `(cd)` is NIL and LDOS looks in every drive. *On FutureOS itself:* A-L, whose directory FutureOS has read (tag the drive on the desktop) | 1 |
 | `(delete-file "name")` | through the disc ROM's `\|ERA`. *TRS-80:* LDOS's KILL; on `M:`, the RAM disc's | 1 |
 | `(probe-file "name")` | the name if the file is there, else NIL (the disc ROM says so too) | 3 |
 

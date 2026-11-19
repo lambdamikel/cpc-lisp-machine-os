@@ -129,6 +129,8 @@ V_S3              defs 2
 V_MIDI            defs 1            ; the CPC's LambdaSpeak card is in its MIDI
                                     ;   mode (mach/cpc/card.asm)
 V_FPOS            defs 2            ; reader: characters read from the input file
+V_DRIVE           defs 1            ; the CPC's disc drive, as (cd) chose it
+                                    ;   (mach/cpc/drive.asm): 0 = A, else its letter
 V_END
                   code
     assert V_END <= VARS_END

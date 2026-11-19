@@ -76,10 +76,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   Lisp (`lib/lisp2.lsp`) and the demos (`lib/demo.lsp`): new library code
   goes here or in part 1. **A fifth part is not possible as it is**: an
   LSUBR's or AUTOLOAD's data word keeps the part in two bits (the VM ROM,
-  below, is no part). Space (2026-11-15): core 58 bytes free
-  (TRS-80 94), parts 0-3 212, 114, 519, 409; the VM ROM 568 (512K:
-  part 0 **1**, part 1 151; the plain 6128's part 0 **0**; the TRS-80's
-  part 0 2905). A change to part 0 must give back what it takes
+  below, is no part). Space (2026-11-19, after `cd`): core 58 bytes
+  free (TRS-80 94), parts 0-3 113, 114, 296, 409; the VM ROM 568 (512K
+  and the island: part 0 25, part 1 31; the plain 6128's part 0 21,
+  part 1 406; FutureOS itself 72, 133; the TRS-80's part 0 2926). A change to part 0 must give back what it takes
   there: fe_reserve's size tests compare high bytes (`ld a,h : cp n`,
   the sizes are whole pages) to pay for the drop.
   `src/xrom.asm` explains the arrangement: the core finds
@@ -849,16 +849,48 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   LISP.64K comes back untagged: D, tag, X), Lisp's text **FutureOS's
   colours** (LISP.64K reads ROM B's &FE0B, p_init sets border, inks 0, 1),
   and **`(dir "e:")`, `(cd "e:")`** (Mike: "as long as dir works on any
-  drive"): CAS CATALOG takes A = a letter (0: RS_DRIVE), `cd` (its own
-  `mach/fos/natives.asm`, which includes the 512K's) writes RS_DRIVE =
-  RS_RD+14, a fixed address the library sees; part 0 22 bytes free.
+  drive"; then on every port, below): `cd` writes RS_DRIVE = RS_RD+14,
+  a fixed address the library sees (RS_START, +15, LISP.64K's drive).
   Desktop keys in MAME: SPACE then a letter selects a drive and reads it;
   A alone is RETAG, B alone moves the pointer (bypass); a second drive
   is best added after a `(reset)` (`-upd765:1 3ssdd -flop2` on the
   6128). A one-argument native gets the value in HL, not a pointer to
-  it. Not yet: reading a directory from Lisp (GET_DIR, ROM D &FE7C,
-  needs free expansion RAM), re-reading a changed disc's directory, tone
-  envelopes and rendezvous.
+  it. **The sound, finished** (tone envelopes, rendezvous, hold): checked
+  against the 464's firmware by AY logs with times (`LISP_AYTIME=1`:
+  run the same file on the ROM version and here, reduce each to channel
+  timelines -- the stamps jitter by 1/100 s, the 300 Hz ticks being
+  300.48 Hz). The firmware takes an envelope's first step as
+  the sound starts, doubles the volume when there is no amplitude
+  envelope (8 is silent), and starts rendezvous partners in one tick
+  (snd_new keeps a partner started this tick from stepping twice). The
+  page's envelope state is per channel in IX blocks (snd_tick saves IX:
+  the interrupt does not). **`(dir)` re-reads**: GET_DIR (ROM D &FE7C,
+  r_fosd, fos_low) re-reads every tagged drive's directory, the listed
+  one tagged first -- a swapped disc is seen, an unread drive readable;
+  skipped while an output file is open (it takes a free block for the
+  low 16 KB: bank 0's, the output's). It repacks all directories in
+  block &FE (FutureOS marks no DIR block in XRAM): never read one drive
+  alone with the others untagged. repl.lua's `!disc N K file` changes
+  MAME's flopK.
+* **`cd` and `(dir "b:")` on every disc port** (2026-11-19, Mike: "did
+  you update all ports consistently?"): `(cd "b:")` -> T/NIL, `(cd)` ->
+  "A:" (TRS-80: NIL until one is chosen: LDOS searches every drive),
+  `(cd nil)` the start's again. `dir` is Lisp now (lisp.lsp: `(cd d)`,
+  the native `%dir`, `(cd old)` in an unwind-protect; part 2 paid ~220
+  bytes, part 0 gained ~20). `cd` is each machine's: `mach/$MACH/
+  drive.asm`, which part 1 includes -- CPC: `mach/cpc/cd.asm`, the disc
+  ROM's `|DRIVE` (a template copied to TOKBUF+80 for KL FIND COMMAND /
+  KL FAR PCHL; **AMSDOS returns A = the drive's number, or an error with
+  bit 7 set, &90 "Bad command"** -- carry and Z say nothing), V_DRIVE (a
+  new core variable, cleared at start) remembers it; it is in part 0 on
+  the ROMs (natives.asm includes cd.asm: part 1 had no room) and part 1
+  elsewhere. TRS-80: M_DRIVE (a new machine call, mkjumps.py), the
+  page's `f_ddrv` used by f_spec and FILE_CAT. FutureOS itself:
+  RS_DRIVE. MAME: the 6128 takes a second drive (`-upd765:1 3ssdd
+  -flop2`), the DDI-1 has one (AMSDOS there says "Bad command" for B
+  first, then asks for the disc); a 6128 `(cd "b:")` with no disc gets
+  AMSDOS's Retry/Ignore/Cancel, as `|B` does. Parados and VDOS's
+  `|DRIVE` are untried.
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,

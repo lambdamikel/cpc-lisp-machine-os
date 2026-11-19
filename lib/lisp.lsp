@@ -473,6 +473,15 @@
 (defun probe-file (name)
   (when (car (%catch-errors (%open name nil))) (%close nil) name))
 
+;; (dir [drive]): the catalogue of a drive -- "m:" the RAM disc -- or of
+;; the one a name without a drive goes to, (cd)'s (mach/*/drive.asm)
+(defun dir (&optional drive)
+  (cond ((null drive) (%dir))
+        ((char-equal (char drive 0) #\m) (%dir t))
+        (t (let ((old (cd)))
+             (unless (cd drive) (error "no such drive: ~A" drive))
+             (unwind-protect (%dir) (cd old))))))
+
 ;;; Macros
 
 (defmacro pushnew (item place)

@@ -80,4 +80,5 @@
     call mfar : db 2*J_M_DELETE
     call mfar : db 2*J_M_FILL
     call mfar : db 2*J_M_MIDI
+    call mfar : db 2*J_M_DRIVE
     call mfar : db 2*J_M_NEXTY

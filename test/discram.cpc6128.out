@@ -47,7 +47,7 @@ Error: undefined function CUBE
 LISP> (delete-file "m:nosuch")
 Error: no RAM disc (M: needs a 512K expansion)
 LISP> (dir "x:")
-Error: bad file name: "x:"
+Error: no such drive: x:
 LISP> (save "m:abcdefghijklm" 'sq)
 Error: nothing to save for SQ
 LISP> (save "m:bad" 'sq 'car)

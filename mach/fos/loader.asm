@@ -52,8 +52,9 @@ fin:
     ld (hl),0
     inc hl
     djnz .rd
-    ld a,(lr_drv)               ; (after: RS_DRIVE is in RS_RD's last two)
-    ld (RS_DRIVE),a
+    ld a,(lr_drv)               ; (after: RS_DRIVE and RS_START are RS_RD's
+    ld (RS_DRIVE),a             ;   last two)
+    ld (RS_START),a
     ld hl,(lr_romd)
     ld (rs_romd),hl
     ld bc,#7F00+PAGE_CFG        ; FutureOS's restarts, kept in the page

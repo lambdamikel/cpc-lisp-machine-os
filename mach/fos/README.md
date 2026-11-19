@@ -41,12 +41,23 @@ rows: 15 nested discs in mode 1 take 1257 ticks, the firmware 1619); a
 slanted line a pixel at a time (twice the firmware's time).
 
 **Phase 3b, sound** (MAME): the firmware's sound manager cut down --
-three channels, a queue of four sounds each, noise, amplitude envelopes
-(`envelope`; no tone envelopes or rendezvous yet) -- played on the AY by
-the page's `snd_tick`, 100 times a second from the interrupt. `sound`,
-`play`, the tunes, `sound-check`, `sound-hold`/`sound-continue`. Checked
-by logging the AY's register writes (`LISP_AYLOG=file`, emu/repl.lua):
-the periods, volumes, noise and mixer as asked.
+three channels, a queue of four sounds each, noise, amplitude and tone
+envelopes (`envelope`, `tone-envelope`, repeating and absolute sections
+too), rendezvous between channels (a sound on several starts on all at
+once), sounds held until `release` -- played on the AY by the page's
+`snd_tick`, 100 times a second from the interrupt. `sound`, `play`, the
+tunes, `sound-check`, `sound-hold`/`sound-continue`. **Timed as the
+firmware plays them**: the AY's register writes logged with their times
+(`LISP_AYLOG=file LISP_AYTIME=1`, emu/repl.lua; `tools/aytimes.py`) on the ROM version (the
+464's own firmware) and here, and compared channel by channel -- the
+same to within 1/100 s (the interrupts run at 300.48 Hz, so the stamps
+jitter by one). What the firmware does, measured so: an envelope's
+first step as the sound starts, then one every pause (0: 256); without
+an amplitude envelope the volume is doubled (BASIC's 0-7: 8 is silent);
+a duration of 0 is the amplitude envelope's length (or two seconds), a
+negative one that many times over, the volume carrying on; a repeating
+tone envelope carries the period on; a tone section of 240 steps or
+more sets the period (its low four bits and the next byte).
 
 **Phase 4, the RAM disc `M:` and far arrays** (MAME, both machines):
 the 512K version's, in the expansion's blocks 0-2 of banks 1, 2, 4 and
@@ -73,25 +84,29 @@ forgot them), so to start Lisp again, D, tag `LISP.64K`, X -- or tag
 another drive first (SPACE and its letter). **Any drive**: `(dir "e:")`
 lists a drive's files, `(cd "e:")` makes it the drive for names without
 one (`load`, `save`, `open`, `dir`; T, or NIL for no such drive) -- A to
-L, M: being Lisp's RAM disc. FutureOS must have read that drive's
-directory (tag it on the desktop: SPACE and its letter); else "No
-directory read for this drive". In MAME with a second disc in drive B
+L, M: being Lisp's RAM disc; `(cd)` says which, `(cd nil)` goes back to
+`LISP.64K`'s (as on every port since: `drive.asm`, RS_DRIVE and
+RS_START). `(dir)` reads a drive's directory (below), so after `(dir
+"b:")` B's files load and save even if the desktop never read it. In MAME with a second disc in drive B
 (read after a `(reset)`): `dir`, `cd`, `load`, `save`, `delete-file` on
 B, and `(load "b:bar")` from A.
 
-Not yet: reading a directory from Lisp (GET_DIR, ROM D: it would want
-expansion RAM the RAM disc has now), re-reading one after a disc is
-changed, tone envelopes and rendezvous in the sound.
+Every part of the plan is done; what is left is the real machine (the
+files, graphics, sound and RAM disc have run in MAME only).
 
 ## Files
 
 A name is `[d:]name[.ext]`, `d` a FutureOS drive A-L (`m:` is Lisp's
 RAM disc); without one, the drive `LISP.64K` came from, or the one
-`(cd "d:")` chose. FutureOS must have **read that drive's
-directory** -- tagging `LISP.64K` did that for its own drive; for
-another, tag it on the desktop before starting Lisp. Lisp reads
-FutureOS's buffered directories, so a disc changed while Lisp runs is
-not seen yet.
+`(cd "d:")` chose. Lisp reads FutureOS's **buffered directories**: the
+drive `LISP.64K` came from, those tagged on the desktop -- and **`(dir)`
+reads them again** (GET_DIR, ROM D, as the desktop's D: every tagged
+drive's, the one listed tagged too), so after changing a disc, or for a
+drive not read on the desktop, `(dir "b:")` first. Not while a file is
+being written (GET_DIR takes a free block of the expansion for the low
+16 KB, and bank 0's free blocks hold that file): then the buffered one
+is listed. MAME: a disc changed while Lisp runs (repl.lua's `!disc N K
+file`) was seen, read, written.
 
 * **Reading**: the file is loaded whole by **LADE_N** into the
   expansion (bank 6's blocks 0-2, at most 48 KB), its length from the

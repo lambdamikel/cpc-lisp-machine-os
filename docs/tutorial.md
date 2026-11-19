@@ -96,8 +96,10 @@ is done, BREAK leaves the function as it was.
 variables -- pretty-printed, to `WORK.LSP` (a name without a `.` gets
 `.LSP`); `(save "work" 'square)` writes just those named. `load` reads a
 file back. This goes through the disc ROM -- AMSDOS or Parados -- so it
-works with any drive the CPC has. *On a TRS-80* it goes through LDOS: the
-file is `WORK/LSP`, and `(dir)` lists every drive.
+works with any drive the CPC has: `"b:work"` names a file on drive B,
+`(cd "b:")` makes B the drive for every name without one, and `(dir
+"b:")` lists B's files. *On a TRS-80* it goes through LDOS: the file is
+`WORK/LSP`, and `(dir)` lists every drive (until `cd` chooses one).
 
 A program too big for the cells can be loaded with `(load "big" :lazy
 t)`: each function is read from the file only when it is first called,

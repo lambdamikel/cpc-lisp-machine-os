@@ -21,7 +21,8 @@ fs_buf      equ FNAMEBUF        ; a name as LS-DOS has it, ending in 13:
 ;; f_spec: HL = a CPC name, B = its length -> fs_buf, LDOS's name
 f_spec:
     ld de,fs_buf
-    ld c,0                      ; the drive's digit, if there is one
+    ld a,(f_ddrv)               ; the drive's digit, if there is one: the
+    ld c,a                      ;   name's, else (cd)'s (M_DRIVE)
     ld a,b
     cp 3
     jr c,.name
@@ -227,6 +228,9 @@ f_close:
 ;; extension, [20] the records.
 m_file_cat:
     ld (fc_buf),de
+    ld a,(f_ddrv)               ; (cd)'s drive alone, if it chose one
+    or a
+    jr nz,.drive
     ld a,'0'
 .drive:
     ld (fc_drv),a
@@ -279,11 +283,40 @@ m_file_cat:
     ld a,SV_CLOSE
     call f_svc
 .next:
+    ld a,(f_ddrv)
+    or a
+    ret nz
     ld a,(fc_drv)
     inc a
     cp '4'
     jr c,.drive
     ret
+
+;; M_DRIVE ((cd), drive.asm): A = a drive's letter, A-D -> the drive a name
+;; without one goes to, and (dir) lists (carry; no carry: no such drive);
+;; A = 0: none -- LDOS looks in every drive, (dir) lists them all; A = &FF
+;; -> A = that drive's letter, or 0
+m_m_drive:
+    inc a
+    jr z,.ask
+    dec a
+    jr z,.set
+    and #DF
+    sub 'A'
+    cp 4
+    ret nc
+    add a,'0'
+.set:
+    ld (f_ddrv),a
+    scf
+    ret
+.ask:
+    ld a,(f_ddrv)
+    or a
+    ret z
+    add a,'A'-'0'
+    ret
+f_ddrv:     db 0                ; the drive's digit, '0'-'3', or 0: none
 
 ;; fc_read: the next record of DIR/SYS -> Z if there was one
 fc_read:
