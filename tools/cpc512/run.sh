@@ -35,6 +35,14 @@ EDIT=0x$(awk '$1 == "EDHOOK" { sub("#", "", $2); print $2 }' "$B/lisp.sym")
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 cp "$B/$DSK" "$tmp/disc.dsk"
+# CPC512_EXTRA="file...": more files on the disc, upper-cased (the
+# classic* tests' example programs, tools/cpc512/test.sh)
+IDSK=${IDSK:-$HOME/claude/midi80/toolchain/idsk/iDSK}
+for f in ${CPC512_EXTRA:-}; do
+    b=$(basename "$f" | tr a-z A-Z)
+    cp "$f" "$tmp/$b"
+    ( cd "$tmp" && "$IDSK" disc.dsk -i "$b" -t 0 >/dev/null 2>&1 )
+done
 case $MACH in
     464)  DEV="cpc464 -ramsize $RAM -exp ddi1 -flop $tmp/disc.dsk"; EDIT2=0xBD3A ;;
     6128) DEV="cpc6128 -ramsize $RAM -flop1 $tmp/disc.dsk"; EDIT2=0xBD5E ;;

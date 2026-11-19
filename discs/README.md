@@ -12,9 +12,9 @@ the test discs for the real machine. Each disc's test is `HWTEST.LSP`:
 
 | disc | what | build |
 |---|---|---|
-| `cpclisp512.dsk` | **CPC Lisp from disc, for a 512K RAM expansion** (`mach/cpc512`): `RUN"LISP` -- all of it, the compiler too, and a RAM disc `M:` of 415 KB; and its test: the cells, two files open at once, lazy loading, the RAM disc, far arrays (into the expansion's banks 6 and 7), the compiler | 14340 |
+| `cpclisp512.dsk` | **CPC Lisp from disc, for a 512K RAM expansion** (`mach/cpc512`): `RUN"LISP` -- all of it, the compiler too, and a RAM disc `M:` of 399 KB; and its test: the cells, two files open at once, lazy loading, the RAM disc, far arrays (into the expansion's banks 6 and 7), the compiler | 24633 |
 | `cpclisp6128.dsk` | **CPC Lisp from disc, for a plain 6128** (or a CPC with 64 KB more; `mach/cpc6128`): `RUN"LISP` -- everything but the compiler, no RAM disc; and its test, of what it has | 14943 |
-| `cpclispfos.dsk` | **CPC Lisp under FutureOS** (`mach/futureos`), on a 464, 664 or 6128 with a 512K RAM expansion: on FutureOS's desktop, drive A, tag `LISP.64K`, RUN (X); `(reset)` goes back to the desktop. The 512K version and its test (check 5 sized for the smaller RAM disc); `mach/futureos/README.md` has the details | 4236 |
+| `cpclispfos.dsk` | **CPC Lisp under FutureOS** (`mach/futureos`), on a 464, 664 or 6128 with a 512K RAM expansion: on FutureOS's desktop, drive A, tag `LISP.64K`, RUN (X); `(reset)` goes back to the desktop. The 512K version and its test (check 5 sized for the smaller RAM disc); `mach/futureos/README.md` has the details | 23879 |
 | `cpclisp-demo.dsk` | **the demo disc**, for the ROMs (or a disc version): the programs of `examples/` -- `APFEL.LSP`, the Apfelmaennchen: `(load "apfel")`, `(apfel)` (mode 2) | -- |
 | `cpclisp-classics.dsk` | **the classics disc**: ELIZA, symbolic differentiation, the animal game that learns, Lisp in Lisp, Conway's Life, tic-tac-toe by minimax, SICP's Huffman codes (`examples/`) -- `(load "classics")` lists them | -- |
 | `cpclisp-hwtest.dsk` | **the test of the ROMs' use of a RAM expansion** (or a 6128's second 64 KB): two files at once, lazy loading from the drive and from `M:`, the RAM disc, far arrays over its banks, the compiler. Needs the 0.96 ROMs or later (`roms/`) | -- |
@@ -44,7 +44,15 @@ and after `(quit)` and `LISP` `(hwtest2)` 2 yes, with all 367 KB of the
 RAM disc. For an HxC or a Gotek:
 `hxcfe -finput:cpclisp-trs80-model3.dsk -conv:HXC_HFE -foutput:x.hfe`.
 
-`cpclispfos.dsk` passed on Mike's 6128 under FutureOS (2026-11-17):
+**Since 2026-11-18** `cpclisp512.dsk` (24633) and `cpclispfos.dsk`
+(23879) keep a disc file's 2 KB buffer in the expansion, not in string
+space -- after `(hwtest)` and the demos a `load` failed for want of it --
+and their RAM disc is 16 KB smaller for it. In MAME: the 512K suite, and
+under FutureOS on a 464 and a 6128 `(hwtest)` 7 yes, eight demos, then
+`(load "apfel")` with 1440 bytes of string space left. Not yet on the
+real machines; the builds below are the ones that were.
+
+`cpclispfos.dsk` build 4236 passed on Mike's 6128 under FutureOS (2026-11-17):
 `(hwtest)` 7 yes, `(rose)`, the demos and `(reset)` back to the
 desktop -- FutureOS from the LambdaSpeak card's slots (the card on its
 664/6128 firmware), Revaldinho's card in configuration 0, the disc on the

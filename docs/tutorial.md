@@ -107,7 +107,7 @@ Keep the disc in the drive while it runs.
 A 6128, or a CPC with a RAM expansion, also has a **RAM disc**, `M:`:
 `(save "m:work")`, `(load "m:work")`, `(dir "m:")`. It is fast and survives
 a reset, but not switching off. *On a TRS-80* `M:` is in X-MEM/80's spare
-pages, 367 KB; from disc with a 512K expansion, in the expansion, 415 KB.
+pages, 367 KB; from disc with a 512K expansion, in the expansion, 399 KB.
 
 Data too big for the cells can go on the RAM disc as a **far array**:
 

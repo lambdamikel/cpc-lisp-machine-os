@@ -1,7 +1,7 @@
 LISP> (dir "m:")
 
 Drive M: (RAM)
-415K free
+399K free
 NIL
 LISP> (defun sq (x) (* x x))
 SQ
@@ -17,7 +17,7 @@ LISP> (dir "m:")
 
 Drive M: (RAM)
 ONE.LSP       1K    TWO.LSP       1K
-414K free
+398K free
 NIL
 LISP> (fmakunbound 'sq)
 SQ
@@ -39,7 +39,7 @@ LISP> (dir "m:")
 
 Drive M: (RAM)
 ONE.LSP       1K    TWO.LSP       1K
-414K free
+398K free
 NIL
 LISP> (fmakunbound 'cube)
 CUBE
@@ -76,7 +76,7 @@ LISP> (dir "m:")
 Drive M: (RAM)
 ONE.LSP       1K    B1.LSP        43K
 B2.LSP        43K   
-330K free
+314K free
 NIL
 LISP> (delete-file "m:b1")
 T
@@ -94,7 +94,7 @@ LISP> (dir "m:")
 
 Drive M: (RAM)
 ONE.LSP       1K    
-414K free
+398K free
 NIL
 LISP> (save "disc" 'sq)
 (SQ)

@@ -112,24 +112,32 @@
     assert $ == FWJB+5*55
     call fwc : dw #BC59           ; SCR_ACCESS
     assert $ == FWJB+5*56
+    ifdef XBUF
+    jp r_fiopen : db 0,0            ; CAS_IN_OPEN
+    else
     call fwc : dw #BC77           ; CAS_IN_OPEN
+    endif
     assert $ == FWJB+5*57
-    call fwc : dw #BC7A           ; CAS_IN_CLOSE
+    call fwx : dw #BC7A           ; CAS_IN_CLOSE
     assert $ == FWJB+5*58
-    call fwc : dw #BC7D           ; CAS_IN_ABANDON
+    call fwx : dw #BC7D           ; CAS_IN_ABANDON
     assert $ == FWJB+5*59
-    call fwc : dw #BC80           ; CAS_IN_CHAR
+    call fwx : dw #BC80           ; CAS_IN_CHAR
     assert $ == FWJB+5*60
+    ifdef XBUF
+    jp r_foopen : db 0,0            ; CAS_OUT_OPEN
+    else
     call fwc : dw #BC8C           ; CAS_OUT_OPEN
+    endif
     assert $ == FWJB+5*61
-    call fwc : dw #BC8F           ; CAS_OUT_CLOSE
+    call fwx : dw #BC8F           ; CAS_OUT_CLOSE
     assert $ == FWJB+5*62
-    call fwc : dw #BC92           ; CAS_OUT_ABANDON
+    call fwx : dw #BC92           ; CAS_OUT_ABANDON
     assert $ == FWJB+5*63
-    call fwc : dw #BC95           ; CAS_OUT_CHAR
+    call fwx : dw #BC95           ; CAS_OUT_CHAR
     assert $ == FWJB+5*64
-    ifdef FUTUREOS
-    jp r_catalog : db 0,0            ; CAS_CATALOG (mach/futureos)
+    ifdef XBUF
+    jp r_catalog : db 0,0            ; CAS_CATALOG
     else
     call fwc : dw #BC9B           ; CAS_CATALOG
     endif

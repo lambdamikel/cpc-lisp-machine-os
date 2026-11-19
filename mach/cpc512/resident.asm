@@ -59,8 +59,26 @@ rs_cfg:     db #C1              ;   and its configuration (C1 + 8 * bank)
 
 ;; fwc: from a trampoline -- the routine's address after the call -- with
 ;; every register as the caller left it; back to the caller with every
-;; register as the routine left it.
+;; register as the routine left it. fwx: the same with the disc files'
+;; buffers mapped in at &4000 for the call (configuration RD_XBCFG, which
+;; the loader sets), for the disc ROM's routines that use them -- so a file
+;; open on a disc takes no string space (the main RAM's &4000-&7FFF is
+;; not needed meanwhile: the name is in TOKBUF, the stack above &8000).
+    ifdef XBUF
+fwx:
+    push af
+    ld a,(RD_XBCFG)
+    jr fw_go
 fwc:
+    push af
+    ld a,#C0
+fw_go:
+    ld (fw_cfg+1),a
+    pop af
+    else
+fwc:
+fwx:
+    endif
     ex (sp),hl                  ; HL -> the address; the caller's HL on top
     push af
     ld a,(hl)
@@ -70,7 +88,15 @@ fwc:
     ld (fw_call+2),a
     pop af
     pop hl                      ; (the caller's return on top again)
+    ifdef XBUF
+    push bc
+fw_cfg:
+    ld bc,#7FC0                 ; (C0 or RD_XBCFG)
+    out (c),c
+    pop bc
+    else
     call to_main
+    endif
 fw_call:
     call 0
     jp to_lisp
@@ -147,17 +173,23 @@ r_reset:
     rst 0
     endif
 
-    ifdef FUTUREOS
-;; r_catalog: CAS CATALOG (its trampoline, under FutureOS -- fwtab.inc)
-;; with 4 KB in bank 7's block 3 at &4000 (FOS_SAVE_CAT, mach/futureos):
-;; VDOS 2.0's catalogue fills 4 KB, the Lisp's file buffer is 2 KB (DE,
-;; not used). The screen at &C000 and the Lisp's stack, above &8000, stay.
+    ifdef XBUF
+;; CAS IN OPEN, CAS OUT OPEN and CAS CATALOG (their trampolines -- fwtab.inc)
+;; with a buffer in the block RD_XBCFG maps at &4000: an input file's 2 KB,
+;; an output file's, and 4 KB for the catalogue, which VDOS 2.0 fills. DE,
+;; the library's buffer, is not used: the library lends none (disc.asm).
+r_fiopen:
+    ld de,XB_IN
+    call fwx
+    dw CAS_IN_OPEN
+r_foopen:
+    ld de,XB_OUT
+    call fwx
+    dw CAS_OUT_OPEN
 r_catalog:
-    ld bc,#7F00+FOS_SAVE_CFG
-    out (c),c
-    ld de,FOS_SAVE_CAT
-    call CAS_CATALOG
-    jp to_lisp
+    ld de,XB_CAT
+    call fwx
+    dw CAS_CATALOG
     endif
 
 r_vidinit:
@@ -267,7 +299,7 @@ r_fgetc:
     pop de
     ret
 .fw:
-    call fwc
+    call fwx
     dw CAS_IN_CHAR
 r_fputc:
     push af
@@ -287,7 +319,7 @@ r_fputc:
     ret
 .fw:
     pop af
-    call fwc
+    call fwx
     dw CAS_OUT_CHAR
 r_ficlose:
     ld a,(RD_IN)
@@ -298,7 +330,7 @@ r_ficlose:
     scf
     ret
 .fw:
-    call fwc
+    call fwx
     dw CAS_IN_CLOSE
 r_fiabandon:
     ld a,(RD_IN)
@@ -309,7 +341,7 @@ r_fiabandon:
     scf
     ret
 .fw:
-    call fwc
+    call fwx
     dw CAS_IN_ABANDON
 r_foclose:
     ld a,(RD_OUT)
@@ -328,7 +360,7 @@ r_foclose:
     pop de
     ret
 .fw:
-    call fwc
+    call fwx
     dw CAS_OUT_CLOSE
 r_foabandon:
     ld a,(RD_OUT)
@@ -339,7 +371,7 @@ r_foabandon:
     scf                         ;   free again
     ret
 .fw:
-    call fwc
+    call fwx
     dw CAS_OUT_ABANDON
 
 ;; rd_far: HL = a routine of the RAM disc's, in RD_BANK; A and IX for it ->
@@ -371,22 +403,22 @@ rf_bank:    db 0
 r_xfer:
     ret
 r_fgetc:
-    call fwc
+    call fwx
     dw CAS_IN_CHAR
 r_fputc:
-    call fwc
+    call fwx
     dw CAS_OUT_CHAR
 r_ficlose:
-    call fwc
+    call fwx
     dw CAS_IN_CLOSE
 r_fiabandon:
-    call fwc
+    call fwx
     dw CAS_IN_ABANDON
 r_foclose:
-    call fwc
+    call fwx
     dw CAS_OUT_CLOSE
 r_foabandon:
-    call fwc
+    call fwx
     dw CAS_OUT_ABANDON
     endif
 

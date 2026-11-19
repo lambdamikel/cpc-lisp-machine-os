@@ -143,7 +143,7 @@ for a while:
    whose workspace would take the resident part's room. It checks the
    disc ROM left the resident part room, counts the expansion's banks,
    reads `LISP0.IMG`-`LISP5.IMG` into them through the disc ROM, puts
-   the resident part at &A120 and starts Lisp.
+   the resident part at &A100 and starts Lisp.
 7. **Lisp is then the 512K version**: the firmware for text, graphics,
    sound and keys, the disc ROM for files, the expansion for its code,
    the RAM disc and far arrays.
@@ -185,8 +185,8 @@ The main RAM while Lisp runs (the 512K version's layout,
 | &0000-&003F | the firmware's restarts (FutureOS's are in the save block) |
 | &0040-&04FF | Lisp's low system area: mark stack, symbol hash table, LIBDEFS, FNBOUND |
 | &0500-&14FF | the symbols, 512 slots of 8 bytes |
-| &1500-&A11F | the cells, the mark bitmap, block space (strings) and Lisp's machine stack, sized at start -- `LISP.64K` at &8000-&914E is overwritten once it has done its work |
-| &A120-&A6AF | the resident part: bank switching, the RAM disc's transfers, the file routines' dispatch, a trampoline per firmware routine, the reset (`mach/cpc512/resident.asm`) |
+| &1500-&A0FF | the cells, the mark bitmap, block space (strings) and Lisp's machine stack, sized at start -- `LISP.64K` at &8000-&914E is overwritten once it has done its work |
+| &A100-&A6AF | the resident part: bank switching, the RAM disc's transfers, the file routines' dispatch, a trampoline per firmware routine, the reset (`mach/cpc512/resident.asm`) |
 | &A6B0-&ABFF | the disc ROM's workspace (AMSDOS takes &0500 bytes, VDOS 2.0 &052E) |
 | &AC00-&B0FF | Lisp's fixed variables and buffers |
 | &B100-&BFFF | the firmware's RAM and jumpblocks |
@@ -197,7 +197,8 @@ The expansion:
 | | |
 |---|---|
 | banks 0, 1, 2, 4, 5, 6, block 3 | the six images, one each (`BANK_CFGS`: bank 3 skipped) |
-| blocks 0-2 of banks 0-2 and 4-7 | the RAM disc M:, 336 KB (its banks 3-6 are banks 4-7: `RS_XFER` translates) |
+| blocks 0-2 of banks 0-2 and 4-6, blocks 0-1 of bank 7 | the RAM disc M:, 320 KB (its banks 3-6 are banks 4-7: `RS_XFER` translates) |
+| bank 7, block 2 | the disc files' buffers, at &4000 when mapped (configuration &FE) for each call of the disc ROM that uses one: an input file's 2 KB at &4000, an output file's at &4800, CAS CATALOG's 4 KB at &5000 -- so a file open on a disc takes no string space |
 | bank 7, block 3 | **the save block**, at &4000 when mapped (configuration &FF): |
 
 | in the save block | |
@@ -206,7 +207,6 @@ The expansion:
 | &6000-&60FF | FutureOS's &0000-&00FF |
 | &6100-&61BF | the way back, `fosback.asm`, at most 192 bytes |
 | &61C0, &61C2 | the numbers of ROMs D and B (each with &DF, for `out (c),c`) |
-| &7000-&7FFF | CAS CATALOG's buffer for VDOS (below) |
 
 **Bank 3 is never used.** In its configurations 8 and 12, Revaldinho's
 card makes bank 3 a shadow of the base RAM -- which is how a 464 gets the
@@ -243,9 +243,9 @@ be one the disc ROM reads, in drive A**:
   one (below). Its workspace, &052E bytes, is why the resident part ends
   at &A6B0: at &A6F0, as in the 512K version, it said "Too many ROMs".
   VDOS 2.0 also assumes BASIC's RAM: its catalogue fills 4 KB where Lisp
-  lends 2 KB, so CAS CATALOG's trampoline is `r_catalog`, which hands it
-  4 KB in the save block (`tools/cpc512/mkfw.py`), and `(dir)` lends no
-  string space; and it zeroes &AC01, where its 50 Hz ticker waits for
+  lent 2 KB, so CAS CATALOG's trampoline is `r_catalog`, which hands it
+  4 KB in the buffers' block (`tools/cpc512/mkfw.py`), and `(dir)` lends
+  no string space; and it zeroes &AC01, where its 50 Hz ticker waits for
   BASIC's &C9 before it patches &AC01-&AC06 and &BF00 -- &AC00 is Lisp's
   line buffer, which holds only typed text.
 
@@ -288,8 +288,11 @@ What did not work, on the way:
   forever, waiting for a seek the card's controller never saw. Two times
   in three. Open, on the card's side; data-format discs on E load.
 * **The jumbled screen**: fixed (above).
-* After a few demos **string space runs out**, as on the other disc
-  versions.
+* After `(hwtest)` and a few demos **string space ran out** for loading
+  a file: a disc file took 2 KB of it. Since 2026-11-18 its buffer is in
+  the expansion (bank 7's block 2): after hwtest and eight demos, with
+  1440 bytes left, `(load "apfel")` worked in MAME. String space still
+  shrinks as library functions are first used (their names stay).
 
 ## Testing in MAME
 

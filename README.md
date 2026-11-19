@@ -235,7 +235,7 @@ AMSDOS or Parados -- `RUN"LISP` -- in two versions:
 **With a 512K RAM expansion** that banks the DK'tronics way --
 Revaldinho's universal RAM cards, the DK'tronics 512K, an X-MEM's RAM --
 the six images run in the expansion: all of CPC Lisp, the compiler too,
-and a RAM disc `M:` of 415 KB in its free blocks -- which also holds
+and a RAM disc `M:` of 399 KB in its free blocks -- which also holds
 far arrays (`make-far-array`, `far-ref`) and programs loaded with
 `(load "m:big" :lazy t)`, each function read in when first called.
 
@@ -292,6 +292,13 @@ on Mike's 464 and 6128 on 2026-11-17 -- `(hwtest)` 7 yes, the graphics,
 the demos, the way back. [`mach/futureos/README.md`](mach/futureos/README.md)
 has what it needs, building, how it works, the memory, and what was
 tested where.
+
+`LISP.64K` may also be started from another FutureOS drive -- on the
+6128 in the video, from E, the LambdaSpeak card's Vortex emulation --
+but the six images, and Lisp's own `load` and `save`, still go through
+the firmware's disc ROM: AMSDOS on a 6128, which knows only drives A and
+B. So drive A needs the disc too. Loading through FutureOS's own
+routines, from any of its drives, is the next step.
 
 <a href="https://youtu.be/s4BsQOroQUc"><img src="https://img.youtube.com/vi/s4BsQOroQUc/maxresdefault.jpg" width="400" alt="CPC Lisp under FutureOS on the CPC 6128"></a>
 

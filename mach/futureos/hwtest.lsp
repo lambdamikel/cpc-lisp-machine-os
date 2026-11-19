@@ -3,9 +3,9 @@
 ;;;   (load "hwtest")  then  (hwtest)     each check says yes or NO
 ;;;
 ;;; mach/cpc512/hwtest.lsp's, but the far arrays of check 5 are 50000
-;;; elements, not 65000: under FutureOS the RAM disc is 336 KB (bank 3
-;;; is the base RAM's shadow on Revaldinho's card, and bank 7's block 3
-;;; keeps FutureOS's RAM). (hwtest2), what a reset leaves, is not for
+;;; elements, not 65000: under FutureOS the RAM disc is 320 KB (bank 3
+;;; is the base RAM's shadow on Revaldinho's card, bank 7's block 3
+;;; keeps FutureOS's RAM, block 2 the disc files' buffers). (hwtest2), what a reset leaves, is not for
 ;;; FutureOS: (reset) goes back to its desktop, which may use the
 ;;; expansion's blocks before Lisp runs again. (hwtest) writes LZ.LSP, NOTES.LSP and
 ;;; COPY.LSP to drive A, and on M: WORK.LSP, COPY.LSP and T.FAR.

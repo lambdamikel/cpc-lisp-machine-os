@@ -20,7 +20,9 @@ LBANKS           equ 7          ; banks 0-6: 0-2 and 4-7 (map_bank)
     else
 LBANKS           equ 8
     endif
-BUF              equ #8800      ; AMSDOS's 2 KB, while a file is read
+BUF              equ #9800      ; AMSDOS's 2 KB, while a file is read: above
+                                ;   this file and FutureOS's stub (&9000),
+                                ;   below the resident part
 
     org #8000
 start:
@@ -146,6 +148,16 @@ start:
     djnz .clr
     ld a,(nbanks)
     ld (RD_NBANKS),a
+    ifdef XBUF
+    ld hl,xb_cfgs-6             ; the disc files' buffers' block (6-8 banks)
+    add a,l
+    ld l,a
+    adc a,h
+    sub l
+    ld h,a
+    ld a,(hl)
+    ld (RD_XBCFG),a
+    endif
     ; the ROMs off: the code at &C000 and the low tables are RAM
     call KL_U_ROM_DISABLE
     call KL_L_ROM_DISABLE
@@ -217,6 +229,14 @@ m_rom:    db "Too many ROMs: their workspace is where CPC Lisp's",13,10
     endif
 saved:    defs 8,0               ; each bank's byte under the mark
 nbanks:   db 0
+    ifdef XBUF
+xb_cfgs:                         ; with 6, 7, 8 banks: the RAM disc's top unit
+    ifdef FUTUREOS               ;   (ramdisc.asm, rd_cfg) -- under FutureOS
+    db #FE,#FE,#FE               ;   always bank 7's block 2, under its RAM
+    else
+    db #EE,#F7,#FF               ;   bank 5's block 2, 6's block 3, 7's
+    endif
+    endif
 n_img:    db "LISP0.IMG"
 n_end:    db 0
 
@@ -224,3 +244,4 @@ res_bin:
     incbin "resident.bin"
 res_end:
     assert res_end < BUF
+    assert BUF+#800 <= RESIDENT

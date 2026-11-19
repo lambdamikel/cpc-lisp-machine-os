@@ -32,6 +32,8 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 for n in "${names[@]}"; do
     ( if [[ $n == card* ]]; then export LISP_CARDLOG=$tmp/$n.card; fi
+      # classic*: the example programs on the disc too, as tools/test.sh
+      if [[ $n == classic* ]]; then export CPC512_EXTRA="$(ls examples/*.lsp)"; fi
       tools/cpc512/run.sh -m "$MACH" -f 400000 "test/$n.lsp" 2>"$tmp/$n.err" \
         | sed -n '/^LISP> /,$p' > "$tmp/$n.got"
       if [ -n "${LISP_CARDLOG:-}" ]; then

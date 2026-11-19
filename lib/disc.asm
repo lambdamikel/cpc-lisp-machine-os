@@ -73,11 +73,16 @@ fl_ext:
 ;; open already (one each way): the second buffer goes below the first,
 ;; and both are given back when neither is open (fl_release). fl_lend_f:
 ;; the same for opening the file named in TOKBUF (fl_name) -- 512 bytes
-;; if it is on M:. (M:'s delete-file moves files through a whole 2 KB.)
+;; if it is on M:, none for a disc file where the machine has buffers of
+;; its own (XBUF: the 512K CPC's and FutureOS's, in the expansion; DE is
+;; then not used). (M:'s delete-file moves files through a whole 2 KB.)
 fl_lend_f:
     ld bc,512                   ; a file on M: needs only 320 bytes (the
     call RDISC_IS               ;   RAM disc's state, 256 of its bytes):
     jr z,fl_lend.sz             ;   two files, one on M:, fit in less
+    ifdef XBUF
+    ret
+    endif
 fl_lend:
     ld bc,FL_BUF
 .sz:
@@ -479,9 +484,9 @@ lf_dir:
     ld hl,fl_m_name
     jp lib_error
 .disc:
-    ifdef FUTUREOS              ; (mach/futureos: CAS CATALOG has 4 KB of
-    call FILE_CAT               ;   its own there, as VDOS wants -- no
-    else                        ;   string space lent)
+    ifdef XBUF                ; (the 512K CPC, FutureOS: CAS CATALOG has
+    call FILE_CAT               ;   4 KB of its own in the expansion, as
+    else                        ;   VDOS wants -- no string space lent)
     call fl_lend
     call FILE_CAT
     call fl_release

@@ -424,9 +424,20 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     (ed), ESC, (say), and COMPILE undefined, as it should be.
   * **String space is the tight resource** on the disc versions (5.3 KB
     at boot on the 512K): every library function's first use costs its
-    symbols' names there, and a file open on a disc 2 KB of it. A file
-    on M: is lent 512 bytes now (`fl_lend_f`, for load, save and
-    %open; the RAM disc uses 320), not 2 KB. Making far arrays is slow
+    symbols' names there for good. A file on M: is lent 512 bytes
+    (`fl_lend_f`, for load, save and %open; the RAM disc uses 320), and
+    **since 2026-11-18 a disc file nothing** on the 512K and under
+    FutureOS (`XBUF`, variant.asm): its 2 KB is in the RAM disc's top
+    unit (the loader picks it by the banks found, `xb_cfgs` ->
+    `RD_XBCFG`), mapped at &4000 for each disc ROM call that uses it --
+    `fwx` in resident.asm, the opens and CAS CATALOG `r_fiopen`,
+    `r_foopen`, `r_catalog` (input &4000, output &4800, catalogue 4 KB at
+    &5000). Mike's 6128 under FutureOS ran out for a load after hwtest
+    and a few demos (MAME: 1440 bytes left; `(load "apfel")` works now).
+    The RAM disc is 399 KB free (FutureOS 319: bank 7's block 2 too); the
+    loader's buffer went to &9800 (the resident part outgrew &8000-&87FF
+    with it), FutureOS's resident part to &A100. The ROMs and the plain
+    6128 came out byte for byte the same (BUILD_ID=77). Making far arrays is slow
     on the real machine (each byte through rd_putc and a bank switch:
     test 5's 390 KB took minutes); a native 256-byte fill would help.
   * **The RAM disc's errors give the file buffer back** (fl_release
@@ -673,7 +684,8 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   `ifdef FUTUREOS` there (the 512K builds byte for byte the same,
   BUILD_ID=77): bank 3 is skipped (Revaldinho's configuration 8 makes it
   the base RAM's shadow) in BANK_CFGS, the loader's map_bank and
-  RS_XFER; the RAM disc gives up its top unit (bank 7's block 3): 336
+  RS_XFER; the RAM disc gives up its top unit (bank 7's block 3) and,
+  since 2026-11-18, the one below for the disc files' buffers: 320
   KB, so its own hwtest.lsp sizes check 5 at 50000. MAME
   (`tools/futureos/run.sh`, FutureOS's ROMs renumbered 1-4 in
   ~/claude/cpc/futureos/mame-1234): hwtest 7 yes, no bank-3
@@ -695,7 +707,8 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   bytes at &060E; the 1.1/6128 ROM has that body at &061F, the 664's at
   &0609 -- not done yet: under 1.1 X just stays on the desktop), and
   **VDOS 2.0 takes &052E bytes of workspace** (AMSDOS &0500): "Too many
-  ROMs" at &A6F0, so FutureOS's resident part is &A120-&A6AF
+  ROMs" at &A6F0, so FutureOS's resident part is &A120-&A6AF (&A100
+  since 2026-11-18)
   (RESIDENT_END in its variant.asm, `ifndef` in jumps.asm). MAME never
   ran VDOS (no Vortex controller); its ROM: ~/claude/cpc/roms/CPC SYSTEM
   ROMS/Vortex20.zip, the card's port patch lambdaspeak4's vdos_fbf6.py.

@@ -414,7 +414,7 @@ compiled code (`docs/design.md` describes both)
         through the card (2026-11-12); MIDI/80 not tried yet
 12. [x] **CPC Lisp from disc** (Mike, 2026-11-12): with a **512K
         expansion** (`mach/cpc512`: the six images in the expansion's
-        banks, the compiler, a RAM disc of 415 KB) and on a **plain
+        banks, the compiler, a RAM disc of 399 KB) and on a **plain
         6128** (`mach/cpc6128`: no compiler, no RAM disc); both checked
         on the real 464 with Revaldinho's 512K card in DIP configuration
         4 (`HWTEST.LSP` on their discs, all yes)
@@ -437,10 +437,15 @@ compiled code (`docs/design.md` describes both)
           `handler-case`) -- a full disc -- leaves the output file marked
           open until toplevel, so every later `open` in the same form
           fails; save's and putc's error paths could abandon it first
+    - [x] More string space on the 512K version and under FutureOS
+          (2026-11-18): a disc file's 2 KB buffer is in the expansion,
+          not in string space (the RAM disc gives up 16 KB for it)
     - [ ] Maybe: a faster fill for `make-far-array` (each byte goes
           through the RAM disc's putc: 390 KB took minutes); the 512K
           card's shadow modes (skip the missing bank 3); far arrays
-          beyond 65535 elements; more string space on the disc versions
+          beyond 65535 elements; more string space still -- symbols'
+          names stay for good once read (a symbol nothing refers to,
+          with no value, function or plist, could go)
 14. [ ] **The TRS-80 Model 4, native** (Mike, 2026-11-12: next, before the
         Spectrum). Mike's machine: a Model 4 (not 4P/4D), 128 KB, LS-DOS
         6.3.1, a FreHD, Ian Mavric's "Improved Grafyx" board.

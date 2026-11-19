@@ -48,8 +48,8 @@ what that version has.
 
 ## The RAM disc
 
-Drive `M:` is in the expansion's free blocks: 415 KB free with a 512K
-expansion's eight banks (287 KB if only six answer) -- `(save
+Drive `M:` is in the expansion's free blocks: 399 KB free with a 512K
+expansion's eight banks (271 KB if only six answer) -- `(save
 "m:work")`, `(load "m:work")`, `(dir "m:")`, `(delete-file "m:work")`,
 streams, an input and an output file at once. 31 files. It keeps its
 files through a reset and a new `RUN"LISP` (the loader writes only the
@@ -85,7 +85,17 @@ switched in, and puts the Lisp's bank back after:
   a buffer of its own, for a file's buffer may be at &4000-&7FFF too), and
   the file routines (`FILE_GETC`...), which call the RAM disc's code in its
   bank for a file on `M:` (`ramdisc.asm`, the TRS-80's RAM disc made for
-  the CPC's banks).
+  the CPC's banks);
+* **the disc files' buffers**: the RAM disc's top unit (bank 7's block 3
+  with eight banks; the loader picks it, `RD_XBCFG`) is mapped in at
+  &4000 for each call of the disc ROM that uses a file's buffer (`fwx`:
+  the opens, the characters, the closes, CAS CATALOG). An input file's
+  2 KB is at &4000 there, an output file's at &4800, the catalogue's 4 KB
+  (VDOS 2.0 fills 4 KB) at &5000. So a file open on a disc takes no
+  string space -- on the ROM version and the plain 6128 it takes 2 KB,
+  and string space is the disc versions' tight resource: 5.3 KB at
+  start, and every library function's first use costs its symbols'
+  names there for good.
 
 The Lisp registers no firmware events, so no Lisp code runs at interrupt
 time, when its bank might not be in. BASIC's `RUN` of a binary file

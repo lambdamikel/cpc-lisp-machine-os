@@ -43,3 +43,5 @@ RD_VPUTC        equ RS_RD+9
 RD_VCLOSE       equ RS_RD+11
 RD_NBANKS       equ RS_RD+13    ; the expansion's banks (6-8)
 RD_STATELEN     equ 14
+RD_XBCFG        equ RS_RD+14    ; XBUF: the disc files' buffers' block, its
+                                ;   configuration (C4-C7 + 8 * bank: loader)

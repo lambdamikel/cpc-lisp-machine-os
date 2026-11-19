@@ -49,7 +49,7 @@ LISP> (dir "m:")
 Drive M: (RAM)
 TABLE.FAR     2K    BYTES.FAR     40K
 CHARS.FAR     1K    
-373K free
+357K free
 NIL
 LISP> (save "m:other")
 (C B A)
@@ -76,6 +76,6 @@ LISP> (dir "m:")
 Drive M: (RAM)
 HUGE.FAR      127K  BYTES.FAR     40K
 CHARS.FAR     1K    OTHER.LSP     1K
-248K free
+232K free
 NIL
 LISP> 

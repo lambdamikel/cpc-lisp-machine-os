@@ -1,0 +1,79 @@
+LISP> (load "tictac")
+T
+LISP> (tictac)
+You are X, I am O.
+ 1 | 2 | 3 
+---+---+---
+ 4 | 5 | 6 
+---+---+---
+ 7 | 8 | 9 
+Your square? 1
+I take 5.
+ X | 2 | 3 
+---+---+---
+ 4 | O | 6 
+---+---+---
+ 7 | 8 | 9 
+Your square? 9
+I take 2.
+ X | O | 3 
+---+---+---
+ 4 | O | 6 
+---+---+---
+ 7 | 8 | X 
+Your square? 3
+I take 8.
+ X | O | X 
+---+---+---
+ 4 | O | 6 
+---+---+---
+ 7 | O | X 
+I win.
+NIL
+LISP> (tictac)
+You are X, I am O.
+ 1 | 2 | 3 
+---+---+---
+ 4 | 5 | 6 
+---+---+---
+ 7 | 8 | 9 
+Your square? 5
+I take 1.
+ O | 2 | 3 
+---+---+---
+ 4 | X | 6 
+---+---+---
+ 7 | 8 | 9 
+Your square? 2
+I take 8.
+ O | X | 3 
+---+---+---
+ 4 | X | 6 
+---+---+---
+ 7 | O | 9 
+Your square? 7
+I take 3.
+ O | X | O 
+---+---+---
+ 4 | X | 6 
+---+---+---
+ X | O | 9 
+Your square? 6
+I take 4.
+ O | X | O 
+---+---+---
+ O | X | X 
+---+---+---
+ X | O | 9 
+Your square? 9
+ O | X | O 
+---+---+---
+ O | X | X 
+---+---+---
+ X | O | X 
+A draw.
+NIL
+LISP> (room)
+1457 cells, 293 symbols, 4566 string bytes free
+NIL
+LISP> 

@@ -658,7 +658,7 @@ more at its next call, as the library's own functions are. So:
 reset, not a power-off. On a 464 without a RAM expansion, `M:` says there
 is none. (On a TRS-80, `M:` is in X-MEM/80: see *On a TRS-80*. From disc
 with a 512K expansion, it is in the expansion's free blocks: 31 files,
-415 KB.) Far arrays (*Vectors*) are files here too.
+399 KB; under FutureOS 319 KB.) Far arrays (*Vectors*) are files here too.
 
 ## The text screen
 
@@ -817,7 +817,9 @@ About 6660 cells of four bytes (conses and objects) on a 464, 6400 on a
 6128 (its disc ROM takes some RAM), 512 symbols, and string space --
 strings, vectors, floats, symbols' names: 5.5-5.8 KB -- between them and
 the stack; `(room)` says what is free. A file open takes 2 KB of the
-string space while it is open (two files, 4 KB).
+string space while it is open (two files, 4 KB) -- but not from disc
+with a 512K expansion or under FutureOS: there a disc file's buffer is
+in the expansion, and one on `M:` takes 512 bytes.
 The garbage collector runs when cells run out. Functions written in Lisp
 in the library ROMs are read from ROM the first time they are called and
 then use cells like your own; the names cost nothing until then. When

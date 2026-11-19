@@ -224,9 +224,10 @@ rd_ready:
     add a,a
     add a,a
     add a,18
-    ifdef FUTUREOS
-    dec a                       ; the top unit, bank 7's block 3, keeps
-    endif                       ;   FutureOS's RAM (mach/futureos)
+    ifdef XBUF
+    sub XB_UNITS                ; the top unit, bank 7's block 3, holds the
+    endif                       ;   disc files' buffers -- under FutureOS
+                                ;   its RAM, and the one below the buffers
     ld b,a
     srl a
     srl a

@@ -17,9 +17,15 @@ here = os.path.dirname(os.path.abspath(__file__))
 root = os.path.join(here, '..', '..')
 src = open(os.path.join(root, 'mach', 'cpc', 'firmware.asm')).read().splitlines()
 DIRECT = re.compile(r'^(M_|FIRM_464_PROBE$|KL_ROM_WALK$|KL_L_ROM_ENABLE$|KL_ROM_RESTORE$|KL_ROM_SELECT$|KL_CURR_SELECTION$)')
-# under FutureOS (mach/futureos) these trampolines are the resident part's
-# own routines: CAS CATALOG gets a 4 KB buffer, as VDOS 2.0 wants
-OWN = {'CAS_CATALOG': 'r_catalog'}
+# With the disc files' buffers in an expansion block (XBUF, the 512K
+# CPC's and FutureOS's variant.asm) these trampolines are the resident
+# part's own routines -- the opens and CAS CATALOG hand the disc ROM a
+# buffer there -- and these go through fwx, which maps that block in at
+# &4000 for the call. Without (the plain 6128) fwx is fwc.
+OWN = {'CAS_IN_OPEN': 'r_fiopen', 'CAS_OUT_OPEN': 'r_foopen',
+       'CAS_CATALOG': 'r_catalog'}
+XB = {'CAS_IN_CLOSE', 'CAS_IN_ABANDON', 'CAS_IN_CHAR',
+      'CAS_OUT_CLOSE', 'CAS_OUT_ABANDON', 'CAS_OUT_CHAR'}
 out, real, tab, k = [], [], [], 0
 head = (";; CPC Lisp -- the 512K CPC's firmware names (made by tools/cpc512/mkfw.py\n"
         ";; from mach/cpc/firmware.asm: do not edit). A routine's name is its\n"
@@ -35,10 +41,12 @@ for line in src:
     if DIRECT.match(name):
         out.append(line); continue
     out.append('%s%sequ FWJB+5*%d%s' % (name, sp, k, rest))
-    if name in OWN:     # under FutureOS a routine of the resident part's
-        tab.append('    assert $ == FWJB+5*%d\n    ifdef FUTUREOS\n    jp %s : db 0,0'
-                   '            ; %s (mach/futureos)\n    else\n    call fwc : dw %s           ; %s\n'
+    if name in OWN:     # with XBUF a routine of the resident part's
+        tab.append('    assert $ == FWJB+5*%d\n    ifdef XBUF\n    jp %s : db 0,0'
+                   '            ; %s\n    else\n    call fwc : dw %s           ; %s\n'
                    '    endif' % (k, OWN[name], name, addr, name))
+    elif name in XB:
+        tab.append('    assert $ == FWJB+5*%d\n    call fwx : dw %s           ; %s' % (k, addr, name))
     else:
         tab.append('    assert $ == FWJB+5*%d\n    call fwc : dw %s           ; %s' % (k, addr, name))
     k += 1

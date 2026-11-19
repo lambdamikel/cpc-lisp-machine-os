@@ -17,7 +17,8 @@
 ;; are checked at each.
 
     include "fos.asm"
-    include "loader512.asm"     ; at &8000-&87FF, its buffer &8800-&8FFF
+    include "loader512.asm"     ; at &8000-&8FFF, its buffer &9800-&9FFF
+    assert $ <= #9000
 
     org #9000                   ; (FutureOS never touches &9000-&9FFF; the
 fos_start:                      ;   stub must stay out of &4000-&7FFF)
@@ -116,3 +117,5 @@ fos_fail:
     jp #8000
 
     include "fosback.asm"
+
+    assert $ <= BUF              ; (the 512K loader's buffer, &9800)
