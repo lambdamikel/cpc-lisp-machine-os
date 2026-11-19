@@ -841,8 +841,24 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   whole: it never had this. `mach/fos/hwtest.lsp` (32000-element far
   arrays for check 5) is the native disc's. A wait loop of `pgrep -f
   NAME` matches its own shell's command line: start runs with `&` and
-  `wait`. Not yet: `(dir "e:")` (part 0 is full), re-reading a changed
-  disc's directory, tone envelopes and rendezvous.
+  `wait`. **The desktop** (2026-11-19, Mike: "does it run in a future os
+  window?"): TFM's guides (~/claude/cpc/futureos/progman) -- no
+  windows; icons above, the file window below; a program that keeps the
+  icons returns with KLICK, a full-screen one (Lisp) with TUR_D/TUR_E.
+  `(reset)` uses **TUR_E** now (drives stay tagged, directories read;
+  LISP.64K comes back untagged: D, tag, X), Lisp's text **FutureOS's
+  colours** (LISP.64K reads ROM B's &FE0B, p_init sets border, inks 0, 1),
+  and **`(dir "e:")`, `(cd "e:")`** (Mike: "as long as dir works on any
+  drive"): CAS CATALOG takes A = a letter (0: RS_DRIVE), `cd` (its own
+  `mach/fos/natives.asm`, which includes the 512K's) writes RS_DRIVE =
+  RS_RD+14, a fixed address the library sees; part 0 22 bytes free.
+  Desktop keys in MAME: SPACE then a letter selects a drive and reads it;
+  A alone is RETAG, B alone moves the pointer (bypass); a second drive
+  is best added after a `(reset)` (`-upd765:1 3ssdd -flop2` on the
+  6128). A one-argument native gets the value in HL, not a pointer to
+  it. Not yet: reading a directory from Lisp (GET_DIR, ROM D &FE7C,
+  needs free expansion RAM), re-reading a changed disc's directory, tone
+  envelopes and rendezvous.
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,

@@ -22,6 +22,7 @@
 NIMG        equ 7
 PARK        equ #6000           ; LISP.64K's first 4 KB while the images load
 S80X25      equ #D60E           ; ROM A
+FOS_COLS    equ #FE0B           ; ROM B: FutureOS's border and inks 0-3
 
     org #8000
 lr_res:
@@ -41,8 +42,6 @@ fin:
     ld (rs_romb),hl
     ld hl,(lr_romc)
     ld (rs_romc),hl
-    ld a,(lr_drv)
-    ld (rs_drive),a
     ld hl,(lr_sp)
     ld (rs_fossp),hl
     ld a,(RAMCHAR)
@@ -53,6 +52,8 @@ fin:
     ld (hl),0
     inc hl
     djnz .rd
+    ld a,(lr_drv)               ; (after: RS_DRIVE is in RS_RD's last two)
+    ld (RS_DRIVE),a
     ld hl,(lr_romd)
     ld (rs_romd),hl
     ld bc,#7F00+PAGE_CFG        ; FutureOS's restarts, kept in the page
@@ -134,6 +135,12 @@ fin:
     ld bc,#7F86                 ; (mode 2, the upper ROM in)
     out (c),c
     call S80X25
+    ld bc,(lr_romb)             ; FutureOS's colours: its border, inks 0
+    out (c),c                   ;   and 1, for the page (p_init: Lisp's
+    ld hl,FOS_COLS              ;   text in them)
+    ld de,lr_cols
+    ld bc,3
+    ldir
     ld a,#8E                    ; both ROMs out from now on
     ld (rs_rom),a
     ld b,#7F
@@ -143,6 +150,7 @@ fin:
     ld b,#7F
     ld c,a
     out (c),c
+    ld hl,lr_cols
     call #C000+3*NFW            ; (p_init)
     xor a                       ; the core, bank 0
     ld (rs_cur),a
@@ -244,6 +252,7 @@ lr_romc:    dw 0
 lr_romd:    dw 0
 lr_drv:     db 0
 lr_sp:      dw 0
+lr_cols:    defs 3,0            ; FutureOS's border, inks 0 and 1
     assert $ <= #8F00
 
     org #9000

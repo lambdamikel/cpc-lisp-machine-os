@@ -36,3 +36,5 @@ RD_VPUTC        equ RS_RD+9
 RD_VCLOSE       equ RS_RD+11
 RD_NBANKS       equ RS_RD+13
 RD_STATELEN     equ 14
+;; the drive for a name without one (0-11: A-L): LISP.64K's, or (cd)'s
+RS_DRIVE        equ RS_RD+14

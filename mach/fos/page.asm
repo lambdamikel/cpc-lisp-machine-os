@@ -3014,7 +3014,7 @@ p_CAS_IN_OPEN:
 ;; f_name: B = a name's length, HL = the name -> rs_fname (user 0, the name
 ;; and extension upper case, blank-filled), f_drive; carry if it is one
 f_name:
-    ld a,(rs_drive)
+    ld a,(RS_DRIVE)
     ld (f_drive),a
     ld a,b
     cp 2
@@ -3214,11 +3214,22 @@ f_recs:
     ld hl,#FFFF
     ret
 
-;; CAS CATALOG: the directory of the drive LISP.64K came from, sorted, two
-;; names a line as AMSDOS shows them, each with its size in KB
+;; CAS CATALOG: A = a drive's letter ((dir "e:"), lib/disc.asm), or 0: the
+;; default drive (RS_DRIVE: LISP.64K's, or (cd)'s) -> its directory, sorted,
+;; two names a line as AMSDOS shows them, each with its size in KB
 p_CAS_CATALOG:
     push ix
-    ld a,(rs_drive)
+    ld c,a
+    ld a,(RS_DRIVE)
+    inc c
+    dec c
+    jr z,.drv
+    ld a,c
+    and #DF
+    sub "A"
+    cp 12                       ; A-L (M: is Lisp's RAM disc)
+    jp nc,.none
+.drv:
     ld (f_drive),a
     call f_dir
     jp nc,.none
@@ -3868,10 +3879,12 @@ p_EDIT_6128:
     scf
     ret
 
-;; p_init: once, from LISP.64K: the screen in mode 2, cleared; the text
-;; pen 1 on paper 0; the border and the sixteen inks as the firmware sets
-;; them (without its flashing)
+;; p_init: once, from LISP.64K: HL = FutureOS's border, inks 0 and 1 (the
+;; gate array's values) -> the screen in mode 2, cleared; the text pen 1
+;; on paper 0 in FutureOS's colours; inks 2-15 as the firmware sets them
+;; (without its flashing)
 p_init:
+    push hl
     ld a,1
     ld b,a
     ld c,a
@@ -3890,12 +3903,34 @@ p_init:
     inc a
     cp 16
     jr nz,.ink
+    pop hl
+    ld c,16
+    call .hw
+    ld c,0
+    call .hw
+    inc c
+    call .hw
     ld a,1
     ld (pen),a
     xor a
     ld (paper),a
     ld a,2
     jp p_SCR_SET_MODE
+.hw:                            ; C = an ink (16 the border), (HL) its
+    ld a,(hl)                   ;   colour, the gate array's -> set; HL
+    inc hl                      ;   moved on
+    and #1F
+    push hl
+    ld hl,inks
+    ld b,0
+    add hl,bc
+    ld (hl),a
+    ld b,#7F
+    out (c),c
+    or #40
+    out (c),a
+    pop hl
+    ret
 
 ink_def:    db 1,24,20,6,26,0,2,8,10,12,14,16,18,22,1,16
 shadow:     defs ROWS*80,32     ; the characters on the screen

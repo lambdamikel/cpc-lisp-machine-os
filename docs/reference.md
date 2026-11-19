@@ -604,7 +604,8 @@ ending in CR alone) load as well.
 | `(load "name")` | reads and evaluates every form in it | 1, 2 |
 | `(load "name" :lazy t)` | reads each `defun` only when its function is first called (below); every other form is evaluated | 1, 2 |
 | `(save "name" [symbol...])` | the symbols' definitions, pretty-printed: functions, macros, variables (as `defparameter`); with none named, everything you defined | 1 |
-| `(dir)` | the catalogue. *TRS-80:* every drive's files and their sizes | 1 |
+| `(dir)` | the catalogue. *TRS-80:* every drive's files and their sizes. *On FutureOS itself (mach/fos, in progress):* `(dir "e:")` any drive's whose directory FutureOS has read | 1 |
+| `(cd "e:")` | **On FutureOS itself only** (mach/fos): the drive for names without one (`load`, `save`, `open`, `dir`) -- A to L; T, or NIL for no such drive | 1 |
 | `(delete-file "name")` | through the disc ROM's `\|ERA`. *TRS-80:* LDOS's KILL; on `M:`, the RAM disc's | 1 |
 | `(probe-file "name")` | the name if the file is there, else NIL (the disc ROM says so too) | 3 |
 

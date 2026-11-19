@@ -60,7 +60,6 @@ rs_roma:    dw 0                ; FutureOS's ROMs A, B, D: number, &DF
 rs_romb:    dw 0
 rs_romc:    dw 0
 rs_romd:    dw 0
-rs_drive:   db 0                ; the drive LISP.64K came from (0-12: A-M)
 rs_fossp:   dw 0                ; FutureOS's stack when it started LISP.64K
 rs_ramchar: db #82              ; FutureOS's RAMCHAR then
 ticks:      dw 0,0              ; 1/300 s since the start
@@ -634,7 +633,9 @@ r_romfont:
 ;; restarts and XRAM marks back from the page (where LISP.64K kept them),
 ;; its RAMCHAR and its font copy at &3800, its screen -- 64 by 32 (S64X32,
 ;; ROM A), at &C000, its colours (ROM B's table) -- mode 2 with the upper
-;; ROM in, IM 2 with I = &BD, and TUR_D, which draws the desktop afresh.
+;; ROM in, IM 2 with I = &BD, and TUR_E, which draws the desktop afresh
+;; and keeps the directories FutureOS has read and the drives tagged (TUR_D
+;; would forget them: every disc file went through FutureOS, so they hold).
 r_reset:
     di
     call to_page
@@ -692,7 +693,7 @@ r_reset:
     ld a,#BD
     ld i,a
     ld sp,#C000
-    jp TUR_D
+    jp TUR_E
 
 ;; RS_FM: IX = a routine's entry in FM_JB (fp.asm); A, BC, DE, HL for it
 ;; -> what it leaves in them, and its flags. The lower ROM in, the

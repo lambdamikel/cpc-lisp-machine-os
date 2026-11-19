@@ -461,7 +461,7 @@ fl_is_user:
     ret
 
 ;; (dir ["m:"]): the catalogue, as the disc ROM prints it, or the RAM
-;; disc's -> NIL
+;; disc's -> NIL. On FutureOS itself (mach/fos) any drive's: (dir "e:").
 ;@ DIR 0 1 lf_dir
 lf_dir:
     ld a,b
@@ -477,13 +477,23 @@ lf_dir:
     or #20
     cp "m"
     pop de
+    ifdef FOSN
+    jr nz,.drive                ; (A: the drive's letter, for CAS CATALOG)
+    else
     jr nz,.bad
+    endif
     call RDISC_CAT
     jp lnil
+    ifndef FOSN
 .bad:
     ld hl,fl_m_name
     jp lib_error
+    endif
 .disc:
+    ifdef FOSN
+    xor a                       ; (the default drive)
+.drive:
+    endif
     ifdef XBUF                ; (the 512K CPC, FutureOS: CAS CATALOG has
     call FILE_CAT               ;   4 KB of its own in the expansion, as
     else                        ;   VDOS wants -- no string space lent)

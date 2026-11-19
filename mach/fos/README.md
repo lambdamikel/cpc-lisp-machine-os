@@ -59,14 +59,35 @@ used those blocks meanwhile (a copy may). The disc's own test is
 7 yes in MAME on both -- and after `(reset)` and `LISP.64K` again,
 `(load "hwtest")`, `(hwtest2)`: 2 yes.
 
-Not yet: `(dir "e:")` (the library's `dir` takes only `m:`: it lists
-the drive `LISP.64K` came from), re-reading a directory after a disc is
+**Fitting in with the desktop** (2026-11-19, after TFM's guides, "How
+to create an Application for FutureOS" and "Programmieren unter
+FutureOS in Assembler"): Lisp is a full-screen program, as the guides
+describe them -- FutureOS has no overlapping windows; its desktop is the
+icons above and the file window below, and a program that leaves the
+icons alone goes back with KLICK, one that takes the screen with TUR_D
+or TUR_E. Lisp's text is in **FutureOS's colours** now (its border and
+inks 0 and 1, ROM B's table at &FE0B, read by `LISP.64K`; inks 2-15 stay
+the firmware's, for the demos), and `(reset)` goes back through
+**TUR_E**: the drives stay tagged and their directories read (TUR_D
+forgot them), so to start Lisp again, D, tag `LISP.64K`, X -- or tag
+another drive first (SPACE and its letter). **Any drive**: `(dir "e:")`
+lists a drive's files, `(cd "e:")` makes it the drive for names without
+one (`load`, `save`, `open`, `dir`; T, or NIL for no such drive) -- A to
+L, M: being Lisp's RAM disc. FutureOS must have read that drive's
+directory (tag it on the desktop: SPACE and its letter); else "No
+directory read for this drive". In MAME with a second disc in drive B
+(read after a `(reset)`): `dir`, `cd`, `load`, `save`, `delete-file` on
+B, and `(load "b:bar")` from A.
+
+Not yet: reading a directory from Lisp (GET_DIR, ROM D: it would want
+expansion RAM the RAM disc has now), re-reading one after a disc is
 changed, tone envelopes and rendezvous in the sound.
 
 ## Files
 
-A name is `[d:]name[.ext]`, `d` a FutureOS drive A-M; without one, the
-drive `LISP.64K` came from. FutureOS must have **read that drive's
+A name is `[d:]name[.ext]`, `d` a FutureOS drive A-L (`m:` is Lisp's
+RAM disc); without one, the drive `LISP.64K` came from, or the one
+`(cd "d:")` chose. FutureOS must have **read that drive's
 directory** -- tagging `LISP.64K` did that for its own drive; for
 another, tag it on the desktop before starting Lisp. Lisp reads
 FutureOS's buffered directories, so a disc changed while Lisp runs is
@@ -133,7 +154,7 @@ not here) and in MAME:
   the RAM disc's copying (RS_XFER: a unit's block at &4000, the other
   side through a 64-byte buffer), and the way back to FutureOS (its
   restarts, XRAM marks and RAMCHAR, its font copy at &3800, its 64 x 32
-  screen and colours, IM 2, TUR_D). About 110 bytes are left.
+  screen and colours, IM 2, TUR_E). About 110 bytes are left.
 * **Floats**: FutureOS has none; the lower ROM's maths package is called
   at its real addresses (read from the lower ROM's own jumpblock table:
   &08AC on a 464, &08DE on a 6128), with the lower ROM in and the
