@@ -790,7 +790,9 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   floats from the lower ROM at real addresses (its jumpblock table, found
   by the copy code "00 BB 01 CF n"; FutureOS has no floats), the maths'
   RAM swapped (a restore would lose FP_ANGLE). Phase 1 runs in MAME on
-  the 464 and 6128; files (phase 2), graphics and sound (3) to come.
+  the 464 and 6128, and **passed on Mike's 6128** (build 30098, from the
+  card's drive E: "all works, and much snappier"); files (phase 2),
+  graphics and sound (3) to come.
   Lessons: the cursor routines must keep every register (cur_hide ate
   TXT OUTPUT's character: every character came out as 0); a global
   label between a routine and its `.local` moves the local's scope;

@@ -19,7 +19,12 @@ Phase 1 runs in MAME on a 464 and a 6128 (`tools/fos/run.sh`): the REPL,
 the line editor, the function editor, floats, ESC, scrolling, `(room)`,
 `(time)`, `(reset)` back to the desktop. Not yet: **files** (phase 2,
 through FutureOS), **graphics and sound** (phase 3), the RAM disc and far
-arrays, a hardware test. Not tried on a real CPC yet.
+arrays, a hardware test. **Passed on Mike's 6128** the same day (build
+30098, `cpclispfos-n.dsk` in the LambdaSpeak card's drive, FutureOS's drive
+E; FutureOS from the card's slots, Revaldinho's card in configuration
+0): the banner, sums and floats, scrolling, a wrapped line, the history,
+the function editor, ESC, `(room)`, `(reset)` to the desktop -- "all
+works, and much snappier".
 
 ## How it is arranged
 
