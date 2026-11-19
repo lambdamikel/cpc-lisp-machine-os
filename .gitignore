@@ -2,3 +2,5 @@ build/
 *.sna
 *.mfi
 __pycache__/
+pocket/build/
+pocket/pocket
