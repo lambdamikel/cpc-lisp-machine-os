@@ -738,7 +738,12 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   drive fixed it (it had also lost its disc to a power cut, USB out
   with the 6128 off).
   Mike's Gotek stick mounts at /media/mike/D831-1ECE (FlashFloppy,
-  alphabetical; CPCLISPFOS.dsk on it).
+  alphabetical). **Copy Lisp discs into its `LSAI/` folder** (Mike,
+  2026-11-18), where his CPCLISPFOS.dsk is: on 2026-11-18 a new copy at
+  the root left the Gotek serving the old one from LSAI/ -- the new
+  LISP.64K from E with the old images from A crashed into BASIC after
+  LISP5.IMG (the resident part had moved from &A120 to &A100). Check
+  every copy of a disc on the stick (md5) before he tests.
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,
