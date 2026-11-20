@@ -103,6 +103,14 @@ back until that day's fix, on every machine.) The desktop shows each
 drive's buffered directory, so listing a drive there touches nothing --
 and Mike's Gotek shows no activity when it is read.
 
+**Open: the third start.** On Mike's 6128 the third start of `LISP.64K`
+since power-on, from the card's drive E with `(reset)` before each,
+failed twice with "unexpected end of text" (once "unbound variable"
+with a garbled name): the library's text gone bad. A power cycle clears
+it, and the card delivered every byte. MAME does not show it -- six
+starts in a row, from one drive or with A and B tagged, all clean, and
+FutureOS's memory marks and drive table the same at every start.
+
 ## Files
 
 A name is `[d:]name[.ext]`, `d` a FutureOS drive A-L (`m:` is Lisp's

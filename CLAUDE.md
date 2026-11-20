@@ -803,6 +803,24 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   as `#(` and puts HDR_STRUCT on the vector (24 bytes of the core;
   test/discstruct). Before suspecting the card's drive, read it back
   (`dskloader.py --get 0`, `amsdosdisk.py`): the file was perfect.
+  **Open (2026-11-19, evening): the third start fails** on Mike's 6128
+  -- LISP.64K from E, `(reset)` between: the third start since power-on
+  said "unexpected end of text" (once "unbound variable <R..>": library
+  text gone bad), twice in a row; a power cycle clears it. The card
+  served every byte (its counters: no starved reads, nothing cut short).
+  Not in MAME: six starts with `(reset)` between on the 6128, one drive
+  or A and B tagged, all clean; XRAM marks and TURBO_A..TURBO_X the same
+  at every start; FutureOS's &A000-&BFFF differs between starts only at
+  &BA5B (ROM D &F019, at every RUN: it spoils OK_ATE, the OK icon's
+  checksum -- harmless). Left: drive E itself, FutureOS's XROM (slot 2,
+  ROM 6; MAME has none), the real RAM card. Asked Mike: does a start
+  from A fail the third time too, and is the error at the banner?
+  Offered: LISP.64K checksums each image after copying it into its bank
+  and says which is bad. The card's own drive work was in flux that
+  night (the card session's fos-seek-wait branch, not merged). MAME's
+  restart after `(reset)` (TUR_E keeps A tagged): `!press 61 300` (D),
+  then down x3, right x4, down x4, COPY, X as in tools/fos/run.sh; a
+  second drive: `-upd765:1 3ssdd -flop2 b.dsk`, SPACE B on the desktop.
   Lessons: the cursor routines must keep every register (cur_hide ate
   TXT OUTPUT's character: every character came out as 0); a global
   label between a routine and its `.local` moves the local's scope;
