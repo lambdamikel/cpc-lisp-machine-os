@@ -803,24 +803,24 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   as `#(` and puts HDR_STRUCT on the vector (24 bytes of the core;
   test/discstruct). Before suspecting the card's drive, read it back
   (`dskloader.py --get 0`, `amsdosdisk.py`): the file was perfect.
-  **Open (2026-11-19, evening): the third start fails** on Mike's 6128
-  -- LISP.64K from E, `(reset)` between: the third start since power-on
-  said "unexpected end of text" (once "unbound variable <R..>": library
-  text gone bad), twice in a row; a power cycle clears it. The card
-  served every byte (its counters: no starved reads, nothing cut short).
-  Not in MAME: six starts with `(reset)` between on the 6128, one drive
-  or A and B tagged, all clean; XRAM marks and TURBO_A..TURBO_X the same
-  at every start; FutureOS's &A000-&BFFF differs between starts only at
-  &BA5B (ROM D &F019, at every RUN: it spoils OK_ATE, the OK icon's
-  checksum -- harmless). Left: drive E itself, FutureOS's XROM (slot 2,
-  ROM 6; MAME has none), the real RAM card. Asked Mike: does a start
-  from A fail the third time too, and is the error at the banner?
-  Offered: LISP.64K checksums each image after copying it into its bank
-  and says which is bad. The card's own drive work was in flux that
-  night (the card session's fos-seek-wait branch, not merged). MAME's
-  restart after `(reset)` (TUR_E keeps A tagged): `!press 61 300` (D),
-  then down x3, right x4, down x4, COPY, X as in tools/fos/run.sh; a
-  second drive: `-upd765:1 3ssdd -flop2 b.dsk`, SPACE B on the desktop.
+  **"The third start fails" was the card** (2026-11-19 evening, Mike's
+  6128: LISP.64K from E, `(reset)` between, "unexpected end of text" --
+  library text gone bad; a power cycle cleared it). The card's status
+  FIFO stood empty for ~100 ns when the drive's status changed; a
+  FutureOS read in that gap got &00, and ROM B's sector loop (&FEF0,
+  `jp (hl)`) went to &FE00 -> &EF7F, giving the sector up -- while
+  LADE_N still said loaded (A = &FF), so an image came in short. Fixed
+  in lambdaspeak4 40b0fc3 (main, 2026-11-20): three starts with
+  `(reset)` between passed, 1.27 MB read from E, nothing starved. MAME's
+  FDC never answers &00 inside a sector, so six clean starts there said
+  nothing. Lesson: LISP.64K trusts LADE_N's &FF -- a short image shows
+  only as broken library text later (a checksum per image in the stub
+  would say which; offered, not built). FutureOS's &A000-&BFFF differs
+  between starts only at &BA5B (ROM D &F019, at every RUN: it spoils
+  OK_ATE, the OK icon's checksum -- harmless). MAME's restart after
+  `(reset)` (TUR_E keeps A tagged): `!press 61 300` (D), then down x3,
+  right x4, down x4, COPY, X as in tools/fos/run.sh; a second drive:
+  `-upd765:1 3ssdd -flop2 b.dsk`, SPACE B on the desktop.
   Lessons: the cursor routines must keep every register (cur_hide ate
   TXT OUTPUT's character: every character came out as 0); a global
   label between a routine and its `.local` moves the local's scope;
@@ -1041,6 +1041,17 @@ fixed it (the drive is PSRAM: lost at power-off; store it in a free slot,
   lost when the card loses power). Under FutureOS it passed on
   2026-11-17 (mach/futureos); the ROM Lisp from the card's slots is
   untried on it.
+* **The 464 set up for FutureOS** (2026-11-20, the card session):
+  Revaldinho's card in configuration 8 (ON OFF OFF OFF), the card's 464
+  build (lambdaspeak4 40b0fc3) with FOS A = ROM 1, B 3, C 4, D 5, TOOL
+  6, LS AI 2, Parados 7, VDOS (for &FBF6) silent until `|VORTEX,7`. The
+  card's drive at &FB7E is FutureOS's drive A; `|VORTEX,7`, `|OS`, SPACE
+  E for drive E; `|DDI1,4` goes back. **If the card hangs, don't press
+  its reset button**: its hang recorder restarts it within ~3 s and
+  console `x` shows what it caught (the button wipes it). Back to the
+  6128: flash the 6128 build first, reload drive E from
+  ~/claude/cpc/card-backup/drive-e-before-464-2026-11-20.dsk, restore
+  the FutureOS ROM numbers (the card session's notes).
 * The 664 is untried.
 
 Mike tests on the real machines. Tell him exactly what to type, and what he

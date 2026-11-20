@@ -103,13 +103,12 @@ back until that day's fix, on every machine.) The desktop shows each
 drive's buffered directory, so listing a drive there touches nothing --
 and Mike's Gotek shows no activity when it is read.
 
-**Open: the third start.** On Mike's 6128 the third start of `LISP.64K`
-since power-on, from the card's drive E with `(reset)` before each,
-failed twice with "unexpected end of text" (once "unbound variable"
-with a garbled name): the library's text gone bad. A power cycle clears
-it, and the card delivered every byte. MAME does not show it -- six
-starts in a row, from one drive or with A and B tagged, all clean, and
-FutureOS's memory marks and drive table the same at every start.
+**The third start that failed** (Mike's 6128, 2026-11-19: from the
+card's drive E with `(reset)` before each, "unexpected end of text")
+was the card: a status read in mid-sector now and then got &00, and
+FutureOS's sector loop gave that sector up while `LADE_N` still said
+the file loaded -- an image came in short. Fixed in the card's
+firmware (lambdaspeak4 40b0fc3); three starts with `(reset)` passed.
 
 ## Files
 
