@@ -91,8 +91,17 @@ RS_START). `(dir)` reads a drive's directory (below), so after `(dir
 (read after a `(reset)`): `dir`, `cd`, `load`, `save`, `delete-file` on
 B, and `(load "b:bar")` from A.
 
-Every part of the plan is done; what is left is the real machine (the
-files, graphics, sound and RAM disc have run in MAME only).
+Every part of the plan is done, and **all of it passed on Mike's 6128**
+(2026-11-19; FutureOS from the LambdaSpeak 4 card's slots, Revaldinho's
+card in configuration 0, the disc on the card's drive E and on the
+Gotek, drive A): FutureOS's colours, hwtest 7 yes, `(rose)`, `(tune)`,
+`(say)`, `save` and `load` on E -- FutureOS's first writes to the card's
+Vortex drive -- and on A, `(cd "a:")`, `(dir "a:")`, `(reset)` back to
+the desktop and `(hwtest2)` after it. (A `(save)` of everything after
+hwtest wrote its far array as `#S(...)`, which the reader could not read
+back until that day's fix, on every machine.) The desktop shows each
+drive's buffered directory, so listing a drive there touches nothing --
+and Mike's Gotek shows no activity when it is read.
 
 ## Files
 

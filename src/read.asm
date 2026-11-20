@@ -545,13 +545,28 @@ read_hash:
     cp "|"
     jr z,.comment
     and #DF
+    cp "S"
+    jr z,.struct
     cp "X"
     ld c,16
     jp z,read_radix
     cp "B"
     ld c,2
     jp z,read_radix
+.syntax:
     ERR m_syntax
+.struct:                        ; #S(type elements...): a structure, as
+    call getc                   ;   the printer shows one -- a vector by
+    cp "("                      ;   another header (save writes them)
+    jr nz,.syntax
+    call read_list
+    call list_to_vector
+    dec hl
+    dec hl
+    ld (hl),HDR_STRUCT and #FF
+    inc hl
+    inc hl
+    ret
 .comment:
     call getc
     or a

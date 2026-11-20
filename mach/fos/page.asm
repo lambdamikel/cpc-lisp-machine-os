@@ -4097,7 +4097,7 @@ f_era:
     ld (REG08_1),a
     ld hl,EWEG
     jp r_fos
-;; f_vortex: f_drive's disc -> NZ if Vortex (its tagging byte: data 11..,
+;; f_vortex: f_drive's disc -> Z if Vortex (its tagging byte: data 11..,
 ;; system 01.., IBM 001., Vortex 0001...: TEISI's own test)
 f_vortex:
     ld a,(f_drive)

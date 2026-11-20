@@ -321,10 +321,13 @@ static obj read_obj(instream *in)
             return list2(S_FUNCTION, read_obj(in));
         if (d == '\\')
             return read_char_lit(in);
-        if (d == '(') {
+        int st = (d == 's' || d == 'S');    /* #S(type elements...): a structure */
+        if (st && in_getc(in) != '(')
+            lisp_error0("syntax error");
+        if (d == '(' || st) {
             obj l = read_list(in, ')');
             int n = lisp_length(l);
-            obj v = make_blob(T_VECTOR, (size_t)n * 4);
+            obj v = make_blob(st ? T_STRUCT : T_VECTOR, (size_t)n * 4);
             for (int i = 0; i < n; i++, l = cdr(l))
                 vec_elts(v)[i] = car(l);
             return v;

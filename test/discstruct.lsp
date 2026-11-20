@@ -1,0 +1,13 @@
+(defstruct pt x y)
+(defvar *p* (make-pt :x 1 :y 2))
+(defvar *ps* (list (make-pt :x 3 :y 4) #(5 6)))
+(save "pt" '*p* '*ps*)
+(makunbound '*p*)
+(makunbound '*ps*)
+(load "pt")
+(pt-y *p*)
+*ps*
+(pt-x (car *ps*))
+(read-from-string "#s(pt 7 8)")
+(pt-p (read-from-string "#S(PT 7 8)"))
+(read-from-string "#S7")

@@ -129,10 +129,11 @@ The reader is Common Lisp's, mostly:
 | `'x`, `` `x ``, `,x`, `,@x` | quote, backquote, unquote, splice |
 | `#'f` | `(function f)` |
 | `#(1 2 3)` | a vector |
+| `#S(POINT 1 2)` | a structure, as it prints: the type, then the slots in order. So `save` can write a variable holding one, and `load` gets it back. A hash table comes back too, but one keyed by symbols cannot find them again: a symbol's hash is where it lives, which changes from session to session |
 | `; ...`, `#| ... |#` | comments |
 | `\|hello world\|`, `a\ b` | symbols with characters taken as they are: between bars, or one after `\`. `prin1` writes such a name in bars, `princ` without |
 
-Not read: `#S(...)` (printed, not read back), `#.`, `#+`. A symbol named
+Not read: `#.`, `#+`. A symbol named
 like a float (`\|1.5\|`) is printed without bars.
 
 **Typing `~`**: the CPC keyboard has no tilde. **CTRL + 2** types it --

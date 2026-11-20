@@ -792,7 +792,17 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   RAM swapped (a restore would lose FP_ANGLE). Phase 1 runs in MAME on
   the 464 and 6128, and **passed on Mike's 6128** (build 30098, from the
   card's drive E: "all works, and much snappier"); files (phase 2),
-  graphics and sound (3) to come.
+  graphics and sound (3) to come. **All four phases passed on Mike's
+  6128** (2026-11-19, from the card's drive E and the Gotek's A; this
+  session uploaded the drive, with the card session's OK): hwtest 7 yes, rose, tune, say, save/load on E (the
+  card's Vortex drive's first FutureOS writes) and on A, cd, dir,
+  (reset), hwtest2. Mike's Gotek shows no access activity -- he thought
+  A was never read; it was. **`(save)` with no names after hwtest wrote
+  `'#S(FAR-ARRAY ...)`** (hwtest's *HW-A*), and the reader had no `#S`:
+  "syntax error" at load, on every machine -- `read_hash` reads `#S(`
+  as `#(` and puts HDR_STRUCT on the vector (24 bytes of the core;
+  test/discstruct). Before suspecting the card's drive, read it back
+  (`dskloader.py --get 0`, `amsdosdisk.py`): the file was perfect.
   Lessons: the cursor routines must keep every register (cur_hide ate
   TXT OUTPUT's character: every character came out as 0); a global
   label between a routine and its `.local` moves the local's scope;
