@@ -894,7 +894,11 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
 * **Pocket Lisp** (`pocket/`, 2026-11-19; Mike: "pocket lisp ... a
   board with microcontroller and oled and keys", then colour and a
   bigger screen, the RP2350 chosen; the proposal is a private artifact,
-  https://claude.ai/artifact/GC2g3BDfHjAXfrAT23j4xd): CPC Lisp's design
+  https://claude.ai/artifact/GC2g3BDfHjAXfrAT23j4xd; the module, Mike
+  2026-11-19: "the RP2350b with 8 MB ... waveshare it is" -- a Waveshare
+  Core2350B as LambdaSpeak 4's, he has two spares; no USB socket or
+  buttons, a perfboard carrier first; PSRAM CS GP47, its LED GP39 --
+  the plain Pico 2 he ordered is the Talker/80's): CPC Lisp's design
   in C on 32-bit words, step 1 on Linux. Objects are 32-bit heap offsets
   (fixnums 31 bits, low bit 1; cons ...000, typed cell ...010, symbol
   ...100, char/marker ...0110/...1110), the GC CPC Lisp's (the C stack

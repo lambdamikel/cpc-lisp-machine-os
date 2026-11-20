@@ -68,5 +68,13 @@ The tests' disc is a directory; `POCKET_DISC_K=178` and
 "free" lines compare. `(room)`'s figures are compared blanked: they
 depend on what the C stack holds (it is scanned conservatively).
 
-Next: the RP2350 (step 2 of the plan): a Pico Plus 2, the 4" ST7796S
-screen, a keyboard.
+Next: the RP2350B (step 2 of the plan) on a **Waveshare Core2350B** --
+LambdaSpeak 4's module: 16 MB flash, 8 MB PSRAM (chip select GP47; the
+heap, M: and far arrays live there), the module's LED on GP39. It has no
+USB socket and no buttons: a perfboard carrier with four 2 x 8 sockets
+(its pin rows are on the 0.1" grid), a USB breakout, RUN and BOOTSEL.
+Then the 4" ST7796S screen and a keyboard. A first pin map is in the
+proposal: LCD on SPI1 (GP10 SCK, 11 MOSI, 13 CS, 14 DC, 15 reset, 16
+backlight), microSD on SPI0 (GP2-5), keys rows GP17-21 and columns
+GP26-35, sound PWM on GP22, I2C0 GP0/1, UART1 GP8/9 (MIDI), the battery
+on GP40.
