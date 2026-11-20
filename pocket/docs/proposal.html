@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pocket Lisp</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: one reading column (about 70ch) with wide figures; a spec-sheet feel, amber as the one accent; the screen mock-up in the CPC's own default inks */
+:root {
+  --bg: #f6f7f4;
+  --surface: #ecefea;
+  --fg: #1c2320;
+  --muted: #56615b;
+  --rule: #d3d9d3;
+  --accent: #a35f00;
+  --accent-soft: #f3e2c6;
+  --lcd-paper: #000080;   /* CPC colour 1, blue: ink 0 */
+  --lcd-pen: #ffff00;     /* 24, bright yellow: ink 1 */
+  --lcd-cyan: #00ffff;    /* 20, bright cyan: ink 2 */
+  --lcd-red: #ff0000;     /* 6, bright red: ink 3 */
+  --lcd-bezel: #1b1f1d;
+  --key: #ffffff;
+  --key-edge: #c3cbc4;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-head: "IBM Plex Sans Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121614; --surface: #1a201d; --fg: #e2e7e3; --muted: #9aa69f; --rule: #2c3530;
+    --accent: #f0a63a; --accent-soft: #3a2c16;    --key: #222a26; --key-edge: #3a4540; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121614; --surface: #1a201d; --fg: #e2e7e3; --muted: #9aa69f; --rule: #2c3530;
+  --accent: #f0a63a; --accent-soft: #3a2c16;  --key: #222a26; --key-edge: #3a4540; color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--fg);
+  font: 16px/1.6 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 72px;
+}
+main { max-width: 760px; margin: 0 auto; display: grid; gap: 40px; }
+section { display: grid; gap: 14px; min-width: 0; }
+h1, h2, h3 { font-family: var(--font-head); font-weight: 600; line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: 2.6rem; letter-spacing: -0.01em; }
+h2 { font-size: 1.6rem; padding-top: 12px; border-top: 1px solid var(--rule); }
+h3 { font-size: 1.15rem; margin-top: 6px; }
+p, ul, ol { margin: 0; max-width: 68ch; }
+ul, ol { padding-left: 1.3em; display: grid; gap: 6px; }
+.eyebrow { font: 500 0.78rem/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 1.15rem; color: var(--fg); }
+.meta { color: var(--muted); font-size: 0.92rem; }
+code, .mono { font-family: var(--font-mono); font-size: 0.9em; }
+a { color: var(--accent); }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* the screen: a 480 x 320 colour LCD, 60 x 40 characters of 8 x 8 */
+.device { display: grid; gap: 10px; justify-items: start; min-width: 0; max-width: 100%; }
+.bezel { background: var(--lcd-bezel); padding: 10px; border-radius: 10px; max-width: 100%; overflow-x: auto; }
+.lcd { background: var(--lcd-paper); width: 60ch; font: 500 12px/1.3 var(--font-mono); }
+.lcd pre { margin: 0; padding: 8px 10px 0; color: var(--lcd-pen); white-space: pre; font: inherit; }
+.lcd canvas { display: block; width: 100%; height: 150px; }
+.caption { font: 0.82rem/1.4 var(--font-mono); color: var(--muted); }
+
+/* keyboard sketch */
+.kbd-wrap { overflow-x: auto; max-width: 100%; }
+.kbd { display: grid; grid-template-columns: repeat(10, 46px); gap: 6px; padding: 12px; background: var(--surface); border-radius: 8px; width: max-content; }
+.k { height: 40px; display: grid; place-items: center; background: var(--key); border: 1px solid var(--key-edge); border-radius: 5px; font: 500 0.82rem/1 var(--font-mono); color: var(--fg); }
+.k.lisp { background: var(--accent-soft); border-color: var(--accent); color: var(--fg); font-weight: 600; }
+.k.w2 { grid-column: span 2; }
+.k.w4 { grid-column: span 4; }
+
+/* tables */
+.table-wrap { overflow-x: auto; max-width: 100%; }
+table { border-collapse: collapse; width: 100%; font-size: 0.94rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 0.78rem/1.2 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+td.num { font-variant-numeric: tabular-nums; font-family: var(--font-mono); white-space: nowrap; }
+
+.pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.pick > div { background: var(--surface); border-radius: 8px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.pick .tag { font: 500 0.72rem/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.pick h3 { margin: 0; }
+.pick p { font-size: 0.94rem; }
+
+ol.phases { list-style: none; padding: 0; gap: 14px; counter-reset: ph; }
+ol.phases > li { counter-increment: ph; display: grid; grid-template-columns: 2.4rem 1fr; gap: 4px 12px; }
+ol.phases > li::before { content: counter(ph); grid-row: span 2; font: 600 1.4rem/1.2 var(--font-head); color: var(--accent); }
+ol.phases strong { font-weight: 600; }
+
+.mermaid-wrap { overflow-x: auto; max-width: 100%; background: var(--surface); border-radius: 8px; padding: 12px; }
+pre.mermaid { margin: 0; background: transparent; }
+
+.note { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; color: var(--fg); }
+@media (max-width: 480px) { h1 { font-size: 2rem; } h2 { font-size: 1.35rem; } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<main>
+  <header style="display:grid; gap:12px">
+    <div class="eyebrow">Proposal · draft 3 · 2026-11-19</div>
+    <h1>Pocket Lisp</h1>
+    <p class="lede">A Lisp computer for the pocket: a microcontroller, a color screen and a real keyboard, running CPC Lisp's dialect on a 32-bit core. It is in the spirit of the Microtronic Phoenix, but with a modern MCU, and it switches on to where you left off.</p>
+    <p class="meta">For Mike. Covers the hardware architecture, the software core, and a way to get there that proves each step before the next.</p>
+  </header>
+
+  <section>
+    <h2>What it should be</h2>
+    <ul>
+      <li><strong>The same Lisp as on the CPC.</strong> Common Lisp syntax, closures, <code>format</code>, <code>loop</code>, structures, the function editor and the compiler. A program written for CPC Lisp should run unchanged.</li>
+      <li><strong>Room to work.</strong> Tens of thousands of cells instead of 5,000, and numbers that don't overflow at 16,383.</li>
+      <li><strong>Instant on.</strong> Switch it off in the middle of a session; switch it on and your definitions are still there, like the Sharp and Casio pocket computers.</li>
+      <li><strong>Color and a big screen.</strong> 480 × 320 pixels, 60 × 40 characters in the CPC's own 8 × 8 font, sixteen inks. It starts in the CPC's colors, yellow on blue.</li>
+      <li><strong>A keyboard made for Lisp.</strong> Parentheses, Eval and completion on their own keys.</li>
+      <li><strong>Hackable hardware.</strong> An expansion header for speech, MIDI and whatever comes next, like the Phoenix and the LambdaSpeak cards.</li>
+    </ul>
+    <div class="device">
+      <div class="bezel">
+        <div class="lcd" role="img" aria-label="The REPL on the 480 by 320 color screen, yellow on blue, with a rose drawn below in yellow, cyan and red">
+<pre>Pocket Lisp 0.1                            31,232 cells free
+LISP&gt; (defun fact (n) (if (&lt; n 2) 1 (* n (fact (1- n)))))
+FACT
+LISP&gt; (fact 12)
+479001600
+LISP&gt; (rose)</pre>
+          <canvas id="rose"></canvas>
+        </div>
+      </div>
+      <div class="caption">A mock-up of the top of the 480 × 320 screen: the CPC's default inks (blue paper; yellow, cyan and red pens) and its <code>(rose)</code> demo. 12! is past the CPC's fixnums and well inside 30 bits.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Others have done this</h2>
+    <p>David Johnson-Davies' <strong>uLisp</strong> runs on most of the chips below, and his <strong>Lisp Badge</strong> is a pocket Lisp computer with its own keyboard and display. Pocket Lisp stands apart in four ways:</p>
+    <ul>
+      <li>a much fuller Common Lisp: <code>format</code> with all its directives, the extended <code>loop</code>, <code>defstruct</code>, multiple values, <code>handler-case</code>, string streams;</li>
+      <li>a bytecode compiler, written in Lisp;</li>
+      <li>the full-screen function editor and the pretty-printer;</li>
+      <li>CPC compatibility, down to the sound: <code>sound</code>, envelopes and <code>play</code> as the CPC firmware times them.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Hardware</h2>
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+  subgraph MCU["RP2350B (Waveshare Core2350B)"]
+    C0["Core 0<br/>Lisp"]
+    C1["Core 1<br/>screen, keys, sound, USB"]
+    SRAM["520 KB SRAM<br/>heap"]
+    PSRAM["8 MB PSRAM<br/>big heap, RAM disc"]
+    FLASH["16 MB flash<br/>firmware, saved image"]
+  end
+  KEYS["Keyboard<br/>5 × 10 matrix, PIO scan"] --> C1
+  C1 --> LCD["Color IPS LCD 4″<br/>480 × 320, SPI"]
+  C1 --> AUDIO["Sound<br/>PWM or I²S amp"]
+  C0 --- SD["microSD<br/>FAT files"]
+  C1 --- USB["USB-C<br/>REPL, file drive"]
+  C0 --- EXP["Expansion header<br/>I²C, SPI, UART: MIDI, speech"]
+  BAT["LiPo + charger<br/>soft power key"] --> MCU
+</pre>
+    </div>
+
+    <h3>Microcontroller</h3>
+    <div class="pick">
+      <div>
+        <span class="tag">Chosen</span>
+        <h3>RP2350B · Waveshare Core2350B</h3>
+        <p>Two Cortex-M33 cores at 150 MHz, 520 KB SRAM, single-precision floats in hardware and a coprocessor for doubles. PIO handles the keyboard, display and sound, and you know it from LambdaSpeak 4. The module is LambdaSpeak 4's: an RP2350B with 48 GPIO, 16 MB flash and <strong>8 MB PSRAM</strong> (chip select on GP47). You have two spares, so nothing needs buying for the MCU. Cheap and low on power.</p>
+        <p>The module has no USB socket and no buttons. It needs a carrier: see below.</p>
+      </div>
+      <div>
+        <span class="tag">For a 5–7″ screen, or WiFi</span>
+        <h3>ESP32-S3</h3>
+        <p>512 KB SRAM plus 8 MB PSRAM, two cores at 240 MHz. Its RGB LCD interface drives 800 × 480 panels with the picture in PSRAM; ready-made boards with 4.3″ to 7″ screens exist. WiFi and Bluetooth for a network REPL or file sync. It draws more power and is less predictable in timing.</p>
+      </div>
+      <div>
+        <span class="tag">If speed matters</span>
+        <h3>Teensy 4.1 · STM32H7</h3>
+        <p>Cortex-M7 at 480 to 600 MHz, 1 MB RAM. The fastest option, but dearer, hungrier, and more work to lay out.</p>
+      </div>
+    </div>
+
+    <h3>The rest</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Part</th><th>Proposal</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Carrier</td><td>A perfboard: four 2 × 8 sockets, a USB breakout, RUN and BOOTSEL buttons</td><td>The module's four 2 × 8 pin rows are on the 0.1″ grid, so it plugs into sockets on plain perfboard. USB D−, D+, VBUS and GND go to a USB-C breakout. RUN to GND resets; BOOTSEL to GND, held during a reset, starts the boot ROM. A blank module shows up as the RP2350 drive by itself. This is how LambdaSpeak 4's rev 3 starts. A PCB comes later.</td></tr>
+          <tr><td>Display</td><td>4″ IPS LCD, 480 × 320, 16-bit color, SPI (ST7796S)</td><td>60 × 40 characters in the CPC's 8 × 8 font, or 80 × 40 in a 6 × 8 one. Sixteen inks from 65,536 colors, the CPC's 27 to begin with. The controller holds the picture and scrolls in hardware. The device stays pocket-sized: about 10 × 7 cm of screen.</td></tr>
+          <tr><td>Larger</td><td>5″ or 7″ IPS, 800 × 480, RGB interface</td><td>100 × 60 characters. Needs the ESP32-S3: the RP2350 has no room for an 800 × 480 picture. Phone-sized, with less battery life.</td></tr>
+          <tr><td>Smaller</td><td>2.8–3.2″ IPS, 320 × 240 (ILI9341)</td><td>40 × 30 characters: the CPC's mode 1 width, with five more lines.</td></tr>
+          <tr><td>Desk</td><td>DVI out through the RP2350's HSTX, 640 × 480</td><td>An optional second screen at home: a monitor shows 80 × 60 characters.</td></tr>
+          <tr><td>Graphics</td><td>The CPC's 640 × 400 coordinates, scaled to the panel</td><td>The demos (<code>rose</code>, <code>koch</code>, <code>tree</code>, <code>shapes</code>) run unchanged on any of these panels, as they do on the Model 4's 640 × 240.</td></tr>
+          <tr><td>Keyboard</td><td>About 50 tactile keys in a 5 × 10 matrix, scanned by PIO</td><td>Full QWERTY, with the Lisp keys below. A BlackBerry-style I²C keyboard module is the quick alternative.</td></tr>
+          <tr><td>Storage</td><td>microSD (FAT) for files; internal flash for the saved image</td><td>Files move to and from a PC; the image survives power-off.</td></tr>
+          <tr><td>Sound</td><td>An AY-3-8910 emulated on core 1, out through PWM or an I²S amplifier</td><td>CPC programs keep their music: <code>sound</code> and envelopes behave as on the CPC (timed against its firmware, as the FutureOS port now is).</td></tr>
+          <tr><td>USB</td><td>USB-C: serial REPL and a USB drive for files</td><td>Type at it from a PC, copy files without opening it.</td></tr>
+          <tr><td>Power</td><td>1000–2000 mAh LiPo, charger IC, fuel gauge, soft power key</td><td>Days in your pocket. Off means dormant with the image saved.</td></tr>
+          <tr><td>Expansion</td><td>A header with I²C, SPI, a UART and some GPIO</td><td>MIDI out is one UART at 31,250 baud. Your speech and MIDI boards plug in.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Text on the 4″ screen</h3>
+    <p>The panel's picture is about 84 × 56 mm, a pixel 0.17 mm. Every mode has all sixteen inks; the mode only picks the font.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Mode</th><th>Font</th><th>Columns × lines</th><th>A character</th><th>Like the CPC's</th></tr></thead>
+        <tbody>
+          <tr><td><code>(mode 0)</code></td><td>8 × 16, the CPC's font doubled in height</td><td class="num">60 × 20</td><td class="num">1.4 × 2.8 mm</td><td>Big and easy to read</td></tr>
+          <tr><td><code>(mode 1)</code>, the start</td><td>8 × 8, the CPC's own</td><td class="num">60 × 40</td><td class="num">1.4 × 1.4 mm</td><td>Mode 1 is 40 × 25</td></tr>
+          <tr><td><code>(mode 2)</code></td><td>6 × 8</td><td class="num">80 × 40</td><td class="num">1.0 × 1.4 mm</td><td>Mode 2's 80 columns, 15 more lines</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>A first pin map</h3>
+    <p>For the Core2350B. Check it against the panel's breakout before wiring.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Part</th><th>Pins</th></tr></thead>
+        <tbody>
+          <tr><td>LCD, on SPI1</td><td>SCK GP10, MOSI GP11, CS GP13, DC GP14, RESET GP15, backlight GP16 (PWM)</td></tr>
+          <tr><td>microSD, on SPI0</td><td>SCK GP2, MOSI GP3, MISO GP4, CS GP5</td></tr>
+          <tr><td>Keyboard, 5 × 10</td><td>Rows GP17–GP21, columns GP26–GP35</td></tr>
+          <tr><td>Sound</td><td>PWM on GP22, through an RC filter to a small amplifier</td></tr>
+          <tr><td>Expansion</td><td>I²C0 SDA GP0 and SCL GP1; UART1 TX GP8 (MIDI out) and RX GP9</td></tr>
+          <tr><td>Battery</td><td>GP40 (ADC 0), through a 1:2 divider</td></tr>
+          <tr><td>Taken</td><td>GP47: the PSRAM's chip select. GP39: the module's own LED, used as a busy light.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Keys for Lisp</h3>
+    <div class="kbd-wrap" aria-label="A sketch of the keyboard's bottom rows">
+      <div class="kbd">
+        <div class="k">Q</div><div class="k">W</div><div class="k">E</div><div class="k">R</div><div class="k">T</div><div class="k">Y</div><div class="k">U</div><div class="k">I</div><div class="k">O</div><div class="k">P</div>
+        <div class="k">A</div><div class="k">S</div><div class="k">D</div><div class="k">F</div><div class="k">G</div><div class="k">H</div><div class="k">J</div><div class="k">K</div><div class="k">L</div><div class="k">DEL</div>
+        <div class="k">⇧</div><div class="k">Z</div><div class="k">X</div><div class="k">C</div><div class="k">V</div><div class="k">B</div><div class="k">N</div><div class="k">M</div><div class="k">'</div><div class="k">↑</div>
+        <div class="k">FN</div><div class="k lisp">(</div><div class="k lisp">)</div><div class="k w4">SPACE</div><div class="k lisp">TAB</div><div class="k">←</div><div class="k">↓</div>
+        <div class="k">ESC</div><div class="k lisp w2">EVAL</div><div class="k lisp">ED</div><div class="k">"</div><div class="k">#</div><div class="k">-</div><div class="k">*</div><div class="k">→</div><div class="k">⏻</div>
+      </div>
+    </div>
+    <ul>
+      <li><strong>( and )</strong> without Shift. A typed <code>)</code> shows its <code>(</code>, as the CPC line editor does.</li>
+      <li><strong>TAB</strong> completes a symbol's name from what is defined, and indents in the editor.</li>
+      <li><strong>EVAL</strong> evaluates the line. <strong>ED</strong> opens the function editor on the symbol under the cursor.</li>
+      <li>The function editor becomes a <strong>structure editor</strong>: the cursor keys move by whole expressions, so little needs typing.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>The software core</h2>
+    <p>The core is a <strong>new implementation in C of the design CPC Lisp already has</strong> (<code>docs/design.md</code>, <code>docs/internals.md</code>), widened to 32 bits. It is not a port of the Z80 code: that is about 30,000 lines written for 64 KB and bank switching. Running those Z80 images in an emulated Z80 would work from day one and is worth a weekend as a test of the hardware, but it keeps the 64 KB, the 15-bit numbers and the string-space squeeze.</p>
+
+    <h3>What carries over unchanged</h3>
+    <ul>
+      <li><strong>All the Lisp-defined library</strong>: <code>lisp.lsp</code>, <code>lisp2.lsp</code>, <code>loop.lsp</code>, <code>lazy.lsp</code>, <code>farray.lsp</code>, the demos. About 72 KB of text that becomes part of the image.</li>
+      <li><strong>The compiler</strong> (<code>compiler.lsp</code>, 779 lines). The C VM takes the same bytecode, so the compiler doesn't change, and <code>tools/bootstrap.py</code> can still compile it at build time.</li>
+      <li><strong>The regression tests</strong> (<code>test/*.lsp</code>, 43 of them) and their expected transcripts. A host build on Linux runs them in seconds, before there is any board.</li>
+      <li><strong>The machine interface</strong> (<code>mach/README.md</code>: <code>CON_</code>, <code>KEY_</code>, <code>VID_</code>, <code>GFX_</code>, <code>SND_</code>, <code>FILE_</code>) becomes a C header, implemented once for the host and once for the board.</li>
+    </ul>
+
+    <h3>What is written anew</h3>
+    <ul>
+      <li>The core: reader, printer, eval with tail calls, special forms, GC. About 130 functions.</li>
+      <li>The 220 library natives (strings, <code>format</code>, the editors, files, graphics, sound) and the bytecode machine's 85 operations.</li>
+    </ul>
+
+    <h3>Objects</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Word, 32 bits</th><th>CPC Lisp, 16 bits</th><th>Pocket Lisp</th></tr></thead>
+        <tbody>
+          <tr><td>Fixnum</td><td>15 bits: −16,384 … 16,383</td><td>30 bits: ±536 million; then bignums (later) or a float, as now</td></tr>
+          <tr><td>Cons</td><td>4-byte cell</td><td>8-byte cell, the same tag scheme in the low bits</td></tr>
+          <tr><td>Float</td><td>The firmware's 5-byte real, about 9 digits</td><td>An IEEE double, boxed: 15–16 digits</td></tr>
+          <tr><td>Symbols</td><td>512 slots</td><td>A growing table in the heap</td></tr>
+          <tr><td>Strings, vectors</td><td>Compacted block space (11/64 of the heap)</td><td>The same block space, sized to taste</td></tr>
+          <tr><td>Characters</td><td>Immediates</td><td>Immediates, 21-bit code points (Latin-1 to begin with)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The GC stays mark-and-sweep with an iterative mark stack. It still scans the C stack conservatively, which keeps the natives simple: a native may hold Lisp values in its locals.</p>
+
+    <h3>Memory, on the RP2350</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Region</th><th>Size</th><th>Holds</th></tr></thead>
+        <tbody>
+          <tr><td>Firmware, C stack, buffers</td><td class="num">≈ 96 KB</td><td>Code runs from flash through the cache; the key queue and sound.</td></tr>
+          <tr><td>Screen copy</td><td class="num">75 KB</td><td>480 × 320 at 4 bits a pixel (an ink each): for <code>test</code>, and to redraw the panel when an ink's color changes.</td></tr>
+          <tr><td>Heap in SRAM</td><td class="num">≈ 330 KB</td><td>About 31,000 cells of 8 bytes and 82 KB of strings (a quarter, as on the 512K version). Fast.</td></tr>
+          <tr><td>PSRAM</td><td class="num">8 MB</td><td>The RAM disc <code>M:</code>, far arrays and a heap extension for big programs. Slower, behind the cache. The SRAM alone could not hold these.</td></tr>
+          <tr><td>Flash</td><td class="num">16 MB</td><td>The firmware, the library image, and the saved session (the heap, restored at power-on).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Speed, as an estimate to check: <code>(fib 24)</code> takes about six minutes interpreted on a CPC (from <code>(fib 17)</code>'s 13 seconds, 29 times the calls). A C interpreter on a 150 MHz Cortex-M33 should do it in about a second. Measured on a PC so far: <code>(fib 25)</code> in 30 ms interpreted, 23 ms compiled. The benchmarks in <code>docs/benchmarks.md</code> (fib, tak, deriv) will say on the board.</p>
+  </section>
+
+  <section>
+    <h2>Getting there</h2>
+    <ol class="phases">
+      <li><strong>The core on Linux.</strong><span><em>Done.</em> The C core in <code>pocket/</code> runs the Lisp text unchanged and passes all 36 tests that need no CPC keys or screen.</span></li>
+      <li><strong>On a Core2350B on its carrier.</strong><span>The same core on the RP2350B, with the heap and <code>M:</code> in PSRAM and a USB serial REPL. Then the 4″ screen and a borrowed keyboard. Measure the benchmarks.</span></li>
+      <li><strong>The pocket parts.</strong><span>The keyboard matrix, the editor and structure editor on the screen, color graphics, files on microSD, the saved image, sound through the emulated AY.</span></li>
+      <li><strong>The compiler.</strong><span><em>Done on Linux.</em> The bytecode VM in C, the compiler as it is: <code>disassemble</code> and <code>compile-file</code> give the CPC's bytes exactly. Next, <code>compile-file</code> on the device.</span></li>
+      <li><strong>A board and a case.</strong><span>A PCB with the module, keys, OLED, battery and header; a printed case.</span></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Decisions for you</h2>
+    <ul>
+      <li><strong>Screen size:</strong> decided: the 4″ 480 × 320 with the RP2350.</li>
+      <li><strong>The module:</strong> decided: the Waveshare Core2350B, with 8 MB PSRAM.</li>
+      <li><strong>Text modes:</strong> the three sizes above as <code>(mode 0)</code>, <code>(mode 1)</code>, <code>(mode 2)</code>, with 60 × 40 at the start?</li>
+      <li><strong>Keyboard:</strong> your own key matrix, or a ready-made BlackBerry-style module to start with?</li>
+      <li><strong>Where it lives:</strong> decided: <code>pocket/</code> in the CPC Lisp repository, sharing its Lisp text and tests.</li>
+    </ul>
+  </section>
+</main>
+<script>
+// The CPC's (rose) demo in the mock-up: r = cos 5θ, a petal in each pen
+(function () {
+  var c = document.getElementById("rose");
+  if (!c || !c.getContext) return;
+  function draw() {
+    var box = c.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    c.width = Math.round(box.width * dpr);
+    c.height = Math.round(box.height * dpr);
+    var g = c.getContext("2d");
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var css = getComputedStyle(document.documentElement);
+    var pens = ["--lcd-pen", "--lcd-cyan", "--lcd-red"].map(function (t) { return css.getPropertyValue(t).trim(); });
+    var cx = box.width / 2, cy = box.height / 2, R = Math.min(box.width, box.height) * 0.46;
+    g.lineWidth = 1.5;
+    for (var k = 0; k < 5; k++) {
+      g.strokeStyle = pens[k % 3];
+      g.beginPath();
+      for (var i = 0; i <= 60; i++) {
+        var t = (k - 0.5 + i / 60) * Math.PI / 5;
+        var r = R * Math.cos(5 * t);
+        var x = cx + r * Math.cos(t), y = cy - r * Math.sin(t);
+        if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+      }
+      g.stroke();
+    }
+  }
+  draw();
+  window.addEventListener("resize", draw);
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({ startOnLoad: true,
+  theme: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "default" });
+</script>
+</body>
+</html>

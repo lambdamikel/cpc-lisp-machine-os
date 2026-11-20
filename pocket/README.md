@@ -43,6 +43,9 @@ line editor do, and the tests' `!esc` (ESC while a line runs) and `!type`
 CPC's 40 columns. `pocket/test.skip` lists the tests that need the CPC's
 screen and keys.
 
+The proposal (the hardware, the software core, the plan):
+[docs/proposal.html](docs/proposal.html) -- [read it rendered](https://htmlpreview.github.io/?https://github.com/lambdamikel/cpc-lisp-machine-os/blob/main/pocket/docs/proposal.html).
+
 ## State (2026-11-19)
 
 All 36 tests pass (the other 7 need the CPC's keys and screen): the
