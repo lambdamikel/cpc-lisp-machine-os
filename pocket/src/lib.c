@@ -351,6 +351,7 @@ void init_seq(void);
 void init_format(void);
 void init_stubs(void);
 void init_loop(void);
+void init_vm(void);
 
 void init_lib(void)
 {
@@ -383,4 +384,5 @@ void init_lib(void)
     init_format();
     init_stubs();
     init_loop();
+    init_vm();
 }

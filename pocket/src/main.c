@@ -225,7 +225,7 @@ void load_library(const char *dir)
 {
     static const char *files[] = {
         "lisp.lsp", "lazy.lsp", "loop.lsp", "lisp2.lsp", "farray.lsp",
-        "demo.lsp", NULL
+        "demo.lsp", "compiler.lsp", NULL
     };
     for (int i = 0; files[i]; i++)
         load_lib_file(dir, files[i]);

@@ -891,6 +891,30 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   first, then asks for the disc); a 6128 `(cd "b:")` with no disc gets
   AMSDOS's Retry/Ignore/Cancel, as `|B` does. Parados and VDOS's
   `|DRIVE` are untried.
+* **Pocket Lisp** (`pocket/`, 2026-11-19; Mike: "pocket lisp ... a
+  board with microcontroller and oled and keys", then colour and a
+  bigger screen, the RP2350 chosen; the proposal is a private artifact,
+  https://claude.ai/artifact/GC2g3BDfHjAXfrAT23j4xd): CPC Lisp's design
+  in C on 32-bit words, step 1 on Linux. Objects are 32-bit heap offsets
+  (fixnums 31 bits, low bit 1; cons ...000, typed cell ...010, symbol
+  ...100, char/marker ...0110/...1110), the GC CPC Lisp's (the C stack
+  scanned conservatively after a setjmp; block space compacted), the
+  library's Lisp text unchanged, the natives anew in C, the compiler
+  `lib/compiler.lsp` run interpreted with `src/vm.c` -- CPC Lisp's 85
+  operations and frame (byte offsets halved): `disassemble` and
+  compile-file's hex come out byte for byte the CPC's. `pocket/tools/
+  test.sh` runs test/*.lsp against test/NAME.pocket.out where Pocket
+  Lisp rightly differs (31-bit integers, doubles printed shortest,
+  :POCKET, save in definition order, 4-byte far elements): 36 of 36. In
+  batch mode it plays the CPC harness: every typed line with a blank
+  before it, the reader's continuation lines echoed two in, a beep at an
+  unmatched ), !esc (break, uncatchable as on the CPC) and !type (keys
+  for read-char) from a read-ahead of the input. Lessons: making the
+  "out of memory" message needs memory (made at start); a local named
+  `syms` shadowed the symbol table; a slice by `s.index` of a name that
+  also appears in a declaration duplicated a file (look before
+  slicing); `(room)` varies by a few cells run to run (conservative
+  scan) -- compared blanked.
 * **The classics disc** (Mike, 2026-11-17: "another disk of demo
   programs ... ELIZA or symbolic differentiation"): `examples/eliza.lsp`
   (Norvig's PAIP rules, answers rotated in turn -- deterministic tests,

@@ -71,6 +71,6 @@ LISP> (huffman-song)
 36 symbols, 84 bits -- at 3 bits a symbol 108
 T
 LISP> (room)
-1038658 cells, 32023 symbols, 4178796 string bytes free
+# cells, # symbols, # string bytes free
 NIL
 LISP> 

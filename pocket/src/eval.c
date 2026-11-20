@@ -18,6 +18,7 @@ typedef struct frame {
     int depth;
     obj value;                  /* what is handed to it */
     sink *out;                  /* the output when it was made */
+    int vsp;                    /* the VM's stack then */
     jmp_buf jb;
 } frame;
 static frame *frames;
@@ -26,6 +27,10 @@ static int depth;
 #define MAX_DEPTH 20000
 obj tail_form, tail_env;
 extern obj S_EXPANDED;
+int vm_depth(void);
+void vm_reset(int to);
+void vm_mark_roots(void (*mark)(obj));
+obj vm_call(obj fn, int argc, obj *argv);
 obj mv_vals[64];
 int mv_count;
 
@@ -36,6 +41,7 @@ void mark_extra_roots(void (*mark)(obj))
     mark(tail_env);
     for (int i = 0; i < 64; i++)
         mark(mv_vals[i]);
+    vm_mark_roots(mark);
     for (frame *f = frames; f; f = f->prev) {
         mark(f->tag);
         mark(f->cleanup);
@@ -76,13 +82,14 @@ static void __attribute__((noreturn)) unwind_to(frame *f, obj value)
     depth = f->depth;
     f->value = value;
     out = f->out;
+    vm_reset(f->vsp);
     longjmp(f->jb, 1);
 }
 
 #define PUSH_FRAME(fr, k, t) do { (fr).prev = frames; (fr).kind = (k); \
     (fr).tag = (t); (fr).cleanup = NIL; (fr).env = NIL; \
     (fr).specials = specials; (fr).depth = depth; (fr).value = NIL; \
-    (fr).out = out; frames = &(fr); } while (0)
+    (fr).out = out; (fr).vsp = vm_depth(); frames = &(fr); } while (0)
 
 /* ---- errors ---- */
 
@@ -454,6 +461,8 @@ obj apply(obj fn, int argc, obj *argv)
     }
     if (istype(fn, T_CLOSURE))
         return apply_closure(fn, args_to_list(argc, argv));
+    if (istype(fn, T_CODE))
+        return vm_call(fn, argc, argv);
     lisp_error("not a function:", fn);
 }
 
@@ -588,6 +597,10 @@ loop:
             const builtin *b = &builtins[DATA(fn)];
             check_args(fn, b, n);
             v = ((subr_fn)b->fn)(n, argv);
+            goto done;
+        }
+        if (istype(fn, T_CODE)) {
+            v = vm_call(fn, n, argv);
             goto done;
         }
         lisp_error("not a function:", op);
@@ -1257,6 +1270,9 @@ int toplevel_run(void (*fn)(void *), void *arg)
 
 obj bind_lambda_list(obj params, obj args, obj env) { return bind(params, args, env); }
 obj setq_var(obj s, obj v, obj env) { set_var(s, v, env); return v; }
+obj specials_now(void) { return specials; }
+void unbind_specials_to(obj saved) { unbind_to(saved); }
+void bind_special_pub(obj sym, obj val) { bind_special(sym, val); }
 obj closure_apply_list(obj fn, obj args) { return apply_closure(fn, args); }
 obj make_closure_pub(obj lambda, obj env) { return make_closure(lambda, env); }
 obj fn_lookup_pub(obj sym, obj env) { return fn_lookup(sym, env); }

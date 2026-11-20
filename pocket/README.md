@@ -45,14 +45,28 @@ screen and keys.
 
 ## State (2026-11-19)
 
-34 of the 36 tests pass (the other 7 need the CPC's keys and screen):
-the language, lists, sequences, strings, format, the pretty printer,
+All 36 tests pass (the other 7 need the CPC's keys and screen): the
+language, lists, sequences, strings, format, the pretty printer,
 structures, hash tables, values, errors and unwinding, loop, string and
 file streams, files on the disc and on the RAM disc M: (kept in memory,
 PSRAM on the device; far arrays there), lazy loading, the classics
-(ELIZA, the animals, tic-tac-toe...), the demos. The two left are the
-compiler's: they wait for the bytecode machine in C. Then the RP2350.
+(ELIZA, the animals, tic-tac-toe...), the demos, and **the compiler**:
+`compile`, `compile-file`, `disassemble`.
+
+**The compiler** is CPC Lisp's `lib/compiler.lsp`, unchanged, run as
+library text (the CPC needs it bootstrapped into a ROM; here the cells
+are plenty), and `src/vm.c` is CPC Lisp's bytecode machine
+(`lib/vm.asm`): the same 85 operations, the same frame -- the Z80's
+byte offsets halved, a place a 32-bit word -- so the code is byte for
+byte the CPC's (`disassemble` shows the same listing, compile-file
+writes the same hex). Compiled tail calls take the caller's frame.
+(fib 25): 30 ms interpreted, 23 ms compiled on a PC -- the interpreter
+is quick here; the machine has room to be made faster.
 
 The tests' disc is a directory; `POCKET_DISC_K=178` and
 `POCKET_RAMDISC_K=400` give it and M: the CPC's sizes, so `dir`'s
-"free" lines compare.
+"free" lines compare. `(room)`'s figures are compared blanked: they
+depend on what the C stack holds (it is scanned conservatively).
+
+Next: the RP2350 (step 2 of the plan): a Pico Plus 2, the 4" ST7796S
+screen, a keyboard.

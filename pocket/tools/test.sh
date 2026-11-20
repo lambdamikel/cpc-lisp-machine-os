@@ -23,6 +23,9 @@ if [ $# -gt 0 ]; then names=("$@"); else
     names=(); for f in test/*.lsp; do names+=("$(basename "$f" .lsp)"); done
 fi
 pass=0 fail=0 skipped=0 failed=()
+# (room)'s figures depend on the machine, and here on what the C stack
+# happens to hold (it is scanned conservatively): compared without them
+ROOM='s/^[0-9]+ cells, [0-9]+ symbols, [0-9]+ string bytes free$/# cells, # symbols, # string bytes free/'
 for n in "${names[@]}"; do
     if [ $# -eq 0 ] && grep -qx "$n" pocket/test.skip 2>/dev/null; then
         skipped=$((skipped + 1)); continue
@@ -33,17 +36,17 @@ for n in "${names[@]}"; do
         for f in examples/*.lsp; do cp "$f" "$tmp/disc/$(basename "$f" | tr a-z A-Z)"; done
     fi
     ( cd "$tmp/disc" && grep -v '^!press\|^!shot\|^!dump\|^!poke\|^!disc' "$ROOT/test/$n.lsp" \
-        | POCKET_COLS=40 POCKET_DISC_K=178 POCKET_RAMDISC_K=400 timeout 120 "$P" -l "$ROOT/lib" 2>"$tmp/err" ) | sed -n '/^LISP> /,$p' > "$tmp/got"
+        | POCKET_COLS=40 POCKET_DISC_K=178 POCKET_RAMDISC_K=400 timeout 120 "$P" -l "$ROOT/lib" 2>"$tmp/err" ) | sed -n '/^LISP> /,$p' | sed -E "$ROOM" > "$tmp/got"
     exp=test/$n.out                     # (no generic one: the 512K's, the
     [ -f "$exp" ] || exp=test/$n.cpc512.out   #   nearest of the CPC's)
     [ -f "test/$n.pocket.out" ] && exp=test/$n.pocket.out
     if [ -n "$UPDATE" ]; then
-        if [ "$exp" = "test/$n.out" ] && cmp -s "$exp" "$tmp/got"; then
+        if [ "$exp" = "test/$n.out" ] && cmp -s <(sed -E "$ROOM" "$exp") "$tmp/got"; then
             echo "ok      $n"
         else
             cp "$tmp/got" "test/$n.pocket.out"; echo "wrote test/$n.pocket.out"
         fi
-    elif diff -u "$exp" "$tmp/got" > "$tmp/diff"; then
+    elif diff -u <(sed -E "$ROOM" "$exp") "$tmp/got" > "$tmp/diff"; then
         echo "ok      $n"; pass=$((pass + 1))
     else
         echo "FAIL    $n"; fail=$((fail + 1)); failed+=("$n")
