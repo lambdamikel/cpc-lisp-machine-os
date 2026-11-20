@@ -1,0 +1,29 @@
+LISP> (load "animals")
+T
+LISP> (animals)
+
+ZOO     .LSP not found
+Think of an animal.
+Is it a cat? (y or n) n
+I give up. What is it? a dog
+Give me a question that tells a dog from a cat: Does it bark?
+For a dog, is the answer yes? (y or n) y
+Another? (y or n) n
+What I know is saved, as ZOO.
+NIL
+LISP> (setq *animals* nil)
+NIL
+LISP> (animals)
+Think of an animal.
+Does it bark? (y or n) y
+Is it a dog? (y or n) y
+I knew it!
+Another? (y or n) n
+What I know is saved, as ZOO.
+NIL
+LISP> *animals*
+("Does it bark?" "a dog" "a cat")
+LISP> (room)
+1039984 cells, 32070 symbols, 4180276 string bytes free
+NIL
+LISP> 

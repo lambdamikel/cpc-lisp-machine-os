@@ -78,6 +78,7 @@ typedef struct {
     obj fn;                     /* UNBOUND if none */
     obj plist;
     uint32_t flags;
+    uint32_t defseq;            /* when it was last defined (save's order) */
 } symbol;
 #define SF_SPECIAL  1
 #define SF_CONST    2

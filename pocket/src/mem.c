@@ -57,12 +57,20 @@ void gc_root(obj *p)
     roots[nroots++] = p;
 }
 
+obj oom_message;                /* made at the start: none could be made then */
+extern void drop_lazy(void);
+extern void lisp_error_msg(obj msg) __attribute__((noreturn));
+
 static uint32_t take_cell(void)
 {
     if (!free_list) {
         gc();
-        if (!free_list)
-            lisp_error0("out of memory");
+        if (!free_list) {
+            drop_lazy();            /* lazily loaded functions back to their stubs */
+            gc();
+            if (!free_list)
+                lisp_error_msg(oom_message);
+        }
     }
     uint32_t i = free_list;
     free_list = cells[2 * i + 1];
@@ -329,3 +337,4 @@ uint32_t cells_free(void)
 }
 
 uint32_t blocks_free(void) { return (blk_size - blk_top) * 4; }
+uint32_t symbols_free(void) { return max_syms - nsyms; }

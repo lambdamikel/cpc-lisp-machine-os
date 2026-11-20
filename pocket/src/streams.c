@@ -13,6 +13,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/statvfs.h>
 
 extern int loading_library;
 void sink_set_tag(sink *s, obj t);
@@ -21,6 +22,7 @@ int syms_flags_userdef(obj s);
 void put_to_screen(sink *s, int c);
 obj get_prop(obj s, obj ind, obj dflt);
 
+void init_far(void);
 static obj S_STRING_OUTPUT_STREAM, S_STRING_INPUT_STREAM, S_FILE_STREAM,
     S_KW_INPUT, S_KW_OUTPUT, S_DEFUN, S_DEFMACRO, S_DEFPARAMETER;
 
@@ -36,11 +38,15 @@ static int fin_open;
 
 typedef struct { sink s; sink *prev; obj stream; } streamsink;
 
+static void ram_putc(int c);
+
 static void put_to_file(sink *s, int c)
 {
     (void)s;
     if (fout)
         fputc(c, fout);
+    else
+        ram_putc(c);
 }
 
 static obj struct_kind(obj s)
@@ -316,6 +322,8 @@ static obj f_unread_char(int c, obj *a)
         return NIL;
     }
     in_unget(src.in);
+    if (src.kind == 2 && src.in->pos < src.in->len)
+        src.in->buf[src.in->pos] = (char)charval(a[0]);
     return NIL;
 }
 
@@ -491,33 +499,106 @@ static obj f_pprint(int c, obj *a)
 
 /* ---- files ---- */
 
+/* the RAM disc M:: files in memory (PSRAM on the device), kept in the
+ * order they were made -- as the 512K CPC's (mach/cpc512/ramdisc.asm) */
+typedef struct { char name[13]; uint8_t *data; size_t len; } ramfile;
+static ramfile ram[63];
+static int nram;
+static uint8_t *ram_out;                /* the output file, while open on M: */
+static size_t ram_out_len, ram_out_cap;
+static char ram_out_name[13];
+static int ram_out_open;
+
+static long ram_cap_k(void)
+{
+    const char *e = getenv("POCKET_RAMDISC_K");
+    return e ? atol(e) : 4096;
+}
+
+/* used: the 1 KB directory and the files packed after it */
+static long ram_used_k(void)
+{
+    size_t bytes = 1024;
+    for (int i = 0; i < nram; i++)
+        bytes += ram[i].len;
+    return (long)((bytes + 1023) / 1024);
+}
+
+static int ram_find(const char *nm)
+{
+    for (int i = 0; i < nram; i++)
+        if (!strcmp(ram[i].name, nm))
+            return i;
+    return -1;
+}
+
+static void ram_delete_at(int i)
+{
+    free(ram[i].data);
+    memmove(&ram[i], &ram[i + 1], (size_t)(nram - i - 1) * sizeof(ramfile));
+    nram--;
+}
+
 /* a CPC name -> the file's name here: upper case, .LSP if it has no
- * extension, a drive letter dropped (M: is the directory M) */
-static void file_name(obj name, char *buf, size_t sz)
+ * extension, a drive letter dropped; *is_ram for M:, whose names must be
+ * 8.3 */
+static void file_name_ram(obj name, char *buf, size_t sz, int *is_ram)
 {
     name = string_designator(name);
     uint32_t n = str_len(name);
     const char *s = str_chars(name);
     char tmp[256];
     size_t k = 0;
+    *is_ram = 0;
     if (n >= 2 && s[1] == ':') {
-        if (s[0] == 'm' || s[0] == 'M') {
-            mkdir("M", 0777);
-            k = (size_t)snprintf(tmp, sizeof tmp, "M/");
-        }
+        if (s[0] == 'm' || s[0] == 'M')
+            *is_ram = 1;
         s += 2;
         n -= 2;
     }
-    int dot = 0;
+    int dot = -1;
     for (uint32_t i = 0; i < n && k < sizeof tmp - 5; i++) {
         char ch = s[i];
-        if (ch == '.') dot = 1;
+        if (ch == '.' && dot < 0) dot = (int)k;
         tmp[k++] = (char)toupper((uint8_t)ch);
     }
     tmp[k] = 0;
     if (n == 0)
         lisp_error("bad file name:", name);
-    snprintf(buf, sz, "%s%s", tmp, dot ? "" : ".LSP");
+    if (*is_ram) {
+        int nl = dot < 0 ? (int)k : dot;
+        int el = dot < 0 ? 3 : (int)k - dot - 1;
+        if (nl == 0 || nl > 8 || el > 3)
+            lisp_error("bad file name:", name);
+    }
+    snprintf(buf, sz, "%s%s", tmp, dot >= 0 ? "" : ".LSP");
+}
+
+static void file_name(obj name, char *buf, size_t sz)
+{
+    int r;
+    file_name_ram(name, buf, sz, &r);
+}
+
+/* "NAME    .EXT not found", as the disc ROM says it */
+static void amsdos_name(const char *path, char *out8_3)
+{
+    const char *base = strrchr(path, '/');
+    base = base ? base + 1 : path;
+    const char *dot = strchr(base, '.');
+    int nl = dot ? (int)(dot - base) : (int)strlen(base);
+    snprintf(out8_3, 16, "%-8.*s.%-3s", nl > 8 ? 8 : nl, base, dot ? dot + 1 : "");
+}
+
+static void amsdos_not_found(const char *path)
+{
+    char nm[16];
+    amsdos_name(path, nm);
+    fresh_line();
+    newline();
+    putstr(nm);
+    putstr(" not found");
+    newline();
 }
 
 static void open_input(obj name)
@@ -525,10 +606,21 @@ static void open_input(obj name)
     if (fin_open)
         lisp_error("a file is open that way already:", name);
     char path[300];
-    file_name(name, path, sizeof path);
+    int is_ram;
+    file_name_ram(name, path, sizeof path, &is_ram);
+    if (is_ram) {
+        int i = ram_find(path);
+        if (i < 0)
+            lisp_error("cannot open", name);
+        in_init(&fin, (const char *)ram[i].data, ram[i].len);
+        fin_open = 1;
+        return;
+    }
     FILE *f = fopen(path, "rb");
-    if (!f)
+    if (!f) {
+        amsdos_not_found(path);
         lisp_error("cannot open", name);
+    }
     char *buf = NULL;
     size_t n = 0, cap = 0, got;
     char chunk[4096];
@@ -551,31 +643,88 @@ static void close_input(void)
     }
 }
 
+static int output_open(void) { return fout != NULL || ram_out_open; }
+
+static void ram_putc(int c)
+{
+    if (ram_out_len == ram_out_cap) {
+        ram_out_cap = ram_out_cap ? ram_out_cap * 2 : 1024;
+        ram_out = realloc(ram_out, ram_out_cap);
+    }
+    ram_out[ram_out_len++] = (uint8_t)c;
+}
+
 static void open_output(obj name)
 {
-    if (fout)
+    if (output_open())
         lisp_error("a file is open that way already:", name);
     char path[300];
-    file_name(name, path, sizeof path);
+    int is_ram;
+    file_name_ram(name, path, sizeof path, &is_ram);
+    if (is_ram) {
+        snprintf(ram_out_name, sizeof ram_out_name, "%s", path);
+        ram_out_len = 0;
+        ram_out_open = 1;
+        fout_col = 0;
+        return;
+    }
     fout = fopen(path, "wb");
     if (!fout)
         lisp_error("cannot open", name);
     fout_col = 0;
 }
 
-static void close_output(void)
+/* closed: on M: the file made (in its old place if the name was there);
+ * one that does not fit is dropped -> 0 */
+static int close_output(void)
+{
+    if (fout) {
+        fclose(fout);
+        fout = NULL;
+        return 1;
+    }
+    if (!ram_out_open)
+        return 1;
+    ram_out_open = 0;
+    int i = ram_find(ram_out_name);
+    size_t bytes = 1024 + ram_out_len;
+    for (int k = 0; k < nram; k++)
+        if (k != i)
+            bytes += ram[k].len;
+    if ((long)((bytes + 1023) / 1024) > ram_cap_k() || (i < 0 && nram >= 63)) {
+        if (i >= 0)
+            ram_delete_at(i);
+        return 0;
+    }
+    uint8_t *data = malloc(ram_out_len ? ram_out_len : 1);
+    memcpy(data, ram_out, ram_out_len);
+    if (i >= 0) {
+        free(ram[i].data);
+        ram[i].data = data;
+        ram[i].len = ram_out_len;
+    } else {
+        snprintf(ram[nram].name, sizeof ram[nram].name, "%s", ram_out_name);
+        ram[nram].data = data;
+        ram[nram].len = ram_out_len;
+        nram++;
+    }
+    return 1;
+}
+
+static void abandon_output(void)
 {
     if (fout) {
         fclose(fout);
         fout = NULL;
     }
+    ram_out_open = 0;
 }
 
 /* toplevel: files left open by an error are abandoned */
 void abandon_files(void)
 {
     close_input();
-    close_output();
+    abandon_output();
 }
 
 static obj f_open(int c, obj *a)
@@ -588,24 +737,31 @@ static obj f_open(int c, obj *a)
 static obj f_close(int c, obj *a)
 {
     (void)c;
-    if (a[0] != NIL) close_output(); else close_input();
+    if (a[0] != NIL)
+        return bool_obj(close_output());
+    close_input();
     return S_T;
 }
 
+/* (%file-pos): the characters read from the input file, NIL if none is
+ * open; (%file-skip n): on to character n (forward only) */
 static obj f_file_pos(int c, obj *a)
 {
     (void)c; (void)a;
-    return mkfix(fin_open ? (int32_t)fin.pos : 0);
+    return fin_open ? mkfix((int32_t)fin.pos) : NIL;
 }
 
 static obj f_file_skip(int c, obj *a)
 {
     (void)c;
     int32_t n = check_int(a[0]);
-    if (fin_open) {
-        size_t to = fin.pos + (size_t)n;
-        fin.pos = to > fin.len ? fin.len : to;
+    if (!fin_open || n < 0 || (size_t)n < fin.pos)
+        return NIL;                     /* forward only */
+    if ((size_t)n > fin.len) {
+        fin.pos = fin.len;              /* past the end: there, and NIL */
+        return NIL;
     }
+    fin.pos = (size_t)n;
     return S_T;
 }
 
@@ -662,15 +818,27 @@ static obj f_save(int c, obj *a)
             saved_syms = cons(s, saved_syms);
         }
     } else {
-        for (uint32_t i = nsyms; i-- > 1;) {
-            obj s = mksym(i);
-            if ((syms_flags_userdef(s)) && has_def(s))
-                saved_syms = cons(s, saved_syms);
+        /* the user's definitions, in the order they were made */
+        uint32_t last = 0xFFFFFFFFu;
+        for (;;) {
+            uint32_t best = 0, bi = 0;
+            for (uint32_t i = 1; i < nsyms; i++) {
+                obj s = mksym(i);
+                uint32_t q = SYM(s)->defseq;
+                if (syms_flags_userdef(s) && has_def(s) && q < last && q > best) {
+                    best = q;
+                    bi = i;
+                }
+            }
+            if (!bi)
+                break;
+            saved_syms = cons(mksym(bi), saved_syms);
+            last = best;
         }
         if (saved_syms == NIL)
             lisp_error0("nothing to save");
     }
-    if (fout)
+    if (output_open())
         lisp_error("a file is open that way already:", a[0]);
     open_output(a[0]);
     streamsink ss = {{put_to_file, 0, NULL}, out, NIL};
@@ -685,7 +853,8 @@ static obj f_save(int c, obj *a)
         newline();
     }
     out = ss.prev;
-    close_output();
+    if (!close_output())
+        lisp_error0("cannot write the file");
     return saved_syms;
 }
 
@@ -695,13 +864,17 @@ static obj f_delete_file(int c, obj *a)
 {
     (void)c;
     char path[300];
-    file_name(a[0], path, sizeof path);
-    if (remove(path) != 0) {
-        fresh_line();
-        princ(string_designator(a[0]));
-        putstr(" not found");
-        newline();
+    int is_ram;
+    file_name_ram(a[0], path, sizeof path, &is_ram);
+    if (is_ram) {
+        int i = ram_find(path);
+        if (i < 0)
+            lisp_error("no such file:", a[0]);
+        ram_delete_at(i);
+        return S_T;
     }
+    if (remove(path) != 0)
+        amsdos_not_found(path);
     return S_T;
 }
 
@@ -710,14 +883,46 @@ static int cmp_names(const void *x, const void *y)
     return strcmp(*(char *const *)x, *(char *const *)y);
 }
 
-/* (%dir [m]): the files and their sizes, two to a line */
+/* (%dir [m]): the files and their sizes, two to a line, and what is
+ * free -- laid out as AMSDOS does. POCKET_DISC_K sets a disc's size (the
+ * tests: a CPC data disc, 178 K); else the free space is the medium's. */
+/* the RAM disc's catalogue, as the 512K CPC's: in the order made */
+static obj ram_dir(void)
+{
+    fresh_line();
+    newline();
+    putstr("Drive M: (RAM)");
+    newline();
+    for (int i = 0; i < nram; i++) {
+        char field[40];
+        snprintf(field, sizeof field, "%-14s%ldK", ram[i].name, (long)((ram[i].len + 1023) / 1024));
+        putstr(field);
+        if (i % 2 == 0) {
+            for (int k = (int)strlen(field); k < 20; k++)
+                putch(' ');
+            if (i + 1 == nram)
+                newline();
+        } else
+            newline();
+    }
+    char line[32];
+    snprintf(line, sizeof line, "%ldK free", ram_cap_k() - ram_used_k());
+    putstr(line);
+    newline();
+    return NIL;
+}
+
 static obj f_dir(int c, obj *a)
 {
-    const char *dirname = (c > 0 && a[0] != NIL) ? "M" : ".";
+    int ram = c > 0 && a[0] != NIL;
+    if (ram)
+        return ram_dir();
+    const char *dirname = ram ? "M" : ".";
     DIR *d = opendir(dirname);
     char *names[1024];
-    long sizes[1024];
+    long ks[1024];
     int n = 0;
+    long used = 0;
     if (d) {
         struct dirent *e;
         while ((e = readdir(d)) && n < 1024) {
@@ -729,31 +934,49 @@ static obj f_dir(int c, obj *a)
             if (stat(path, &st) || !S_ISREG(st.st_mode))
                 continue;
             names[n] = strdup(e->d_name);
-            sizes[n] = (long)st.st_size;
+            ks[n] = st.st_size ? (long)((st.st_size + 1023) / 1024) : 0;
+            used += ks[n];
             n++;
         }
         closedir(d);
     }
-    qsort(names, n, sizeof(char *), cmp_names);
+    /* sorted by name, the sizes with them */
+    for (int i2 = 1; i2 < n; i2++)
+        for (int j2 = i2; j2 > 0 && strcmp(names[j2 - 1], names[j2]) > 0; j2--) {
+            char *t = names[j2]; names[j2] = names[j2 - 1]; names[j2 - 1] = t;
+            long k = ks[j2]; ks[j2] = ks[j2 - 1]; ks[j2 - 1] = k;
+        }
     fresh_line();
-    putstr(c > 0 && a[0] != NIL ? "\nDrive M:\n\n" : "\nDrive A:\n\n");
-    for (int i = 0; i < n; i++) {
-        char nm[16] = "", ext[8] = "";
-        char *dot = strchr(names[i], '.');
-        if (dot) {
-            snprintf(nm, sizeof nm, "%.*s", (int)(dot - names[i]), names[i]);
-            snprintf(ext, sizeof ext, "%s", dot + 1);
-        } else
-            snprintf(nm, sizeof nm, "%s", names[i]);
-        char line[64];
-        long k = (sizes[i] + 1023) / 1024;
-        snprintf(line, sizeof line, "%-8s.%-3s %3ldK", nm, ext, k);
+    newline();
+    putstr(ram ? "Drive M: user  0" : "Drive A: user  0");
+    newline();
+    newline();
+    for (int i2 = 0; i2 < n; i2++) {
+        char nm[16], line[48];
+        amsdos_name(names[i2], nm);
+        snprintf(line, sizeof line, "%s%4ldK", nm, ks[i2]);
         putstr(line);
-        putstr(i % 2 ? "\n" : "   ");
-        free(names[i]);
+        if (i2 % 2 == 0 && i2 + 1 < n)
+            putstr("   ");
+        else
+            newline();
+        free(names[i2]);
     }
-    if (n % 2)
+    if (n)
         newline();
+    long free_k;
+    const char *dk = getenv("POCKET_DISC_K");
+    if (dk)
+        free_k = atol(dk) - used;
+    else {
+        struct statvfs vs;
+        free_k = statvfs(dirname, &vs) == 0 ? (long)(vs.f_bavail * vs.f_frsize / 1024) : 0;
+    }
+    char line[32];
+    snprintf(line, sizeof line, "%ldK free", free_k);
+    putstr(line);
+    newline();
+    newline();
     return NIL;
 }
 
@@ -797,4 +1020,124 @@ void init_lib2(void)
     defsubr("DELETE-FILE", f_delete_file, 1, 1);
     defsubr("%DIR", f_dir, 0, 1);
     defsubr("CD", f_cd, 0, 1);
+    init_far();
+}
+
+/* ---- far arrays: files NAME.FAR on M: -- "F", the element type (0 T: an
+ * object's word, 4 bytes; 1 (unsigned-byte 8), 2 character: a byte), the
+ * elements -- read and written in place (CPC Lisp's lib/farray.asm) ---- */
+
+static obj S_FAR_ARRAY;
+
+static int far_esize(int type) { return type == 0 ? 4 : 1; }
+
+/* the far array a's file on M: -> its index; its type in *type */
+static int far_file(obj a, int *type)
+{
+    if (!isstruct(a) || vec_elts(a)[0] != S_FAR_ARRAY)
+        lisp_error("not the structure it should be:", a);
+    char path[300];
+    int is_ram;
+    file_name_ram(vec_elts(a)[1], path, sizeof path, &is_ram);
+    int i = ram_find(path);
+    if (i < 0 || ram[i].len < 2 || ram[i].data[0] != 'F')
+        lisp_error("no such far array:", a);
+    *type = ram[i].data[1];
+    return i;
+}
+
+static uint32_t far_index(int f, int type, obj idx)
+{
+    uint32_t n = (uint32_t)((ram[f].len - 2) / far_esize(type));
+    if (!isfix(idx) || fixval(idx) < 0 || (uint32_t)fixval(idx) >= n)
+        lisp_error("index out of range", idx);
+    return (uint32_t)fixval(idx);
+}
+
+static obj f_far_ref(int c, obj *a)
+{
+    (void)c;
+    int type;
+    int f = far_file(a[0], &type);
+    uint32_t i = far_index(f, type, a[1]);
+    uint8_t *p = ram[f].data + 2 + i * far_esize(type);
+    if (type == 1)
+        return mkfix(*p);
+    if (type == 2)
+        return mkchar(*p);
+    obj o;
+    memcpy(&o, p, 4);
+    return o;
+}
+
+static obj f_far_set(int c, obj *a)
+{
+    (void)c;
+    int type;
+    int f = far_file(a[0], &type);
+    uint32_t i = far_index(f, type, a[1]);
+    obj v = a[2];
+    uint8_t *p = ram[f].data + 2 + i * far_esize(type);
+    if (type == 1) {
+        if (!isfix(v) || fixval(v) < 0 || fixval(v) > 255)
+            lisp_error("a far array cannot hold:", v);
+        *p = (uint8_t)fixval(v);
+    } else if (type == 2) {
+        if (!ischar(v))
+            lisp_error("a far array cannot hold:", v);
+        *p = (uint8_t)charval(v);
+    } else {
+        if (!(isfix(v) || ischar(v) || v == NIL || v == S_T))
+            lisp_error("a far array cannot hold:", v);
+        memcpy(p, &v, 4);
+    }
+    return v;
+}
+
+static obj f_far_length(int c, obj *a)
+{
+    (void)c;
+    int type;
+    int f = far_file(a[0], &type);
+    return mkfix((int32_t)((ram[f].len - 2) / far_esize(type)));
+}
+
+static obj f_far_open(int c, obj *a)
+{
+    (void)c;
+    char path[300];
+    int is_ram;
+    file_name_ram(a[0], path, sizeof path, &is_ram);
+    int i = ram_find(path);
+    if (i < 0 || ram[i].len < 2 || ram[i].data[0] != 'F')
+        return NIL;
+    return mkfix(ram[i].data[1]);
+}
+
+/* (%far-fill n type): into the file open for output, a far array's header
+ * and n elements of 0 -> T */
+static obj f_far_fill(int c, obj *a)
+{
+    (void)c;
+    int32_t n = check_int(a[0]);
+    int type = check_int(a[1]);
+    if (!ram_out_open)
+        lisp_error0("cannot write the file");
+    ram_putc('F');
+    ram_putc(type);
+    long bytes = (long)n * far_esize(type);
+    long room = (ram_cap_k() - ram_used_k()) * 1024L + 1024;
+    for (long k = 0; k < bytes && (long)ram_out_len < room; k++)
+        ram_putc(0);
+    return S_T;
+}
+
+void init_far(void)
+{
+    S_FAR_ARRAY = intern_cstr("FAR-ARRAY");
+    defsubr("FAR-REF", f_far_ref, 2, 2);
+    defsubr("%FAR-SET", f_far_set, 3, 3);
+    defsubr("FAR-LENGTH", f_far_length, 1, 1);
+    defsubr("%FAR-OPEN", f_far_open, 1, 1);
+    defsubr("%FAR-FILL", f_far_fill, 2, 2);
 }

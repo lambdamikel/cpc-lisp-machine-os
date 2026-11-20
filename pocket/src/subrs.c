@@ -551,6 +551,8 @@ obj setf_place(obj place, obj v, obj env)
         SYM(s)->fn = v;
         SYM(s)->flags |= SF_USERDEF;
         SYM(s)->flags &= ~SF_LIBDEF;
+        extern void mark_def_seq(obj name);
+        mark_def_seq(s);
         return v;
     }
     if (IS("SYMBOL-PLIST")) {

@@ -336,19 +336,21 @@ static obj f_room(int c, obj *a)
 {
     (void)c; (void)a;
     gc();
+    extern uint32_t symbols_free(void);
     char buf[96];
-    snprintf(buf, sizeof buf, "%u cells free, %u bytes of strings free",
-             cells_free_after_gc, blocks_free());
+    snprintf(buf, sizeof buf, "%u cells, %u symbols, %u string bytes free",
+             cells_free_after_gc, symbols_free(), blocks_free());
     fresh_line();
     putstr(buf);
     newline();
-    return mkfix(cells_free_after_gc);
+    return NIL;
 }
 
 void init_lib2(void);
 void init_seq(void);
 void init_format(void);
 void init_stubs(void);
+void init_loop(void);
 
 void init_lib(void)
 {
@@ -380,4 +382,5 @@ void init_lib(void)
     init_seq();
     init_format();
     init_stubs();
+    init_loop();
 }

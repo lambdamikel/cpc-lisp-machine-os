@@ -132,6 +132,31 @@ void lisp_error0(const char *msg)
     lisp_raise(mkstr(msg), NIL);
 }
 
+void lisp_error_msg(obj msg)
+{
+    lisp_raise(msg, NIL);
+}
+
+/* drop_lazy: when the cells run out, every function read lazily from its
+ * file (%LAZY: (stub file . position)) goes back to its stub, to be read
+ * again when next called -- as CPC Lisp's lib/short.asm does */
+void drop_lazy(void)
+{
+    obj ind = find_symbol("%LAZY", 5);
+    if (ind == UNBOUND)
+        return;
+    for (uint32_t i = 1; i < nsyms; i++) {
+        obj s = mksym(i);
+        for (obj p = SYM(s)->plist; iscons(p) && iscons(cdr(p)); p = cdr(cdr(p)))
+            if (car(p) == ind) {
+                obj e = car(cdr(p));
+                if (iscons(e) && SYM(s)->fn != car(e) && (SYM(s)->flags & SF_LIBDEF))
+                    SYM(s)->fn = car(e);
+                break;
+            }
+    }
+}
+
 void lisp_signal(obj condition)
 {
     lisp_raise(condition, NIL);
@@ -928,8 +953,13 @@ static obj sf_labels(obj args, obj env) { return sf_flet_common(args, env, 1); }
 
 extern int loading_library;
 
+static uint32_t def_counter;
+
+void mark_def_seq(obj name) { SYM(name)->defseq = ++def_counter; }
+
 static void mark_def(obj name)
 {
+    mark_def_seq(name);
     if (loading_library) {
         SYM(name)->flags |= SF_LIBDEF;
         SYM(name)->flags &= ~SF_USERDEF;

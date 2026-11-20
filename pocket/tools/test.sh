@@ -28,12 +28,14 @@ for n in "${names[@]}"; do
         skipped=$((skipped + 1)); continue
     fi
     tmp=$(mktemp -d)
+    mkdir "$tmp/disc"
     if [[ $n == classic* ]]; then
-        for f in examples/*.lsp; do cp "$f" "$tmp/$(basename "$f" | tr a-z A-Z)"; done
+        for f in examples/*.lsp; do cp "$f" "$tmp/disc/$(basename "$f" | tr a-z A-Z)"; done
     fi
-    ( cd "$tmp" && grep -v '^!press\|^!shot\|^!dump\|^!poke\|^!disc' "$ROOT/test/$n.lsp" \
-        | POCKET_COLS=40 timeout 120 "$P" -l "$ROOT/lib" 2>"$tmp/err" ) | sed -n '/^LISP> /,$p' > "$tmp/got"
-    exp=test/$n.out
+    ( cd "$tmp/disc" && grep -v '^!press\|^!shot\|^!dump\|^!poke\|^!disc' "$ROOT/test/$n.lsp" \
+        | POCKET_COLS=40 POCKET_DISC_K=178 POCKET_RAMDISC_K=400 timeout 120 "$P" -l "$ROOT/lib" 2>"$tmp/err" ) | sed -n '/^LISP> /,$p' > "$tmp/got"
+    exp=test/$n.out                     # (no generic one: the 512K's, the
+    [ -f "$exp" ] || exp=test/$n.cpc512.out   #   nearest of the CPC's)
     [ -f "test/$n.pocket.out" ] && exp=test/$n.pocket.out
     if [ -n "$UPDATE" ]; then
         if [ "$exp" = "test/$n.out" ] && cmp -s "$exp" "$tmp/got"; then

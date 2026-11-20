@@ -348,6 +348,9 @@ int main(int argc, char **argv)
         read_all_lines();
     mem_init(8u << 20, 4u << 20, 32768);
     init_builtins();
+    extern obj oom_message;
+    oom_message = mkstr("out of memory");
+    gc_root(&oom_message);
     load_library(libdir);
     gc();
     printf("Pocket Lisp 0.1\n");

@@ -45,6 +45,14 @@ screen and keys.
 
 ## State (2026-11-19)
 
-21 of the 36 tests pass. To come: the extended `loop` (`%loop-expand`),
-files and the RAM disc for the `disc*` tests, the classics, the demos,
-the bytecode machine for the compiler; then the RP2350.
+34 of the 36 tests pass (the other 7 need the CPC's keys and screen):
+the language, lists, sequences, strings, format, the pretty printer,
+structures, hash tables, values, errors and unwinding, loop, string and
+file streams, files on the disc and on the RAM disc M: (kept in memory,
+PSRAM on the device; far arrays there), lazy loading, the classics
+(ELIZA, the animals, tic-tac-toe...), the demos. The two left are the
+compiler's: they wait for the bytecode machine in C. Then the RP2350.
+
+The tests' disc is a directory; `POCKET_DISC_K=178` and
+`POCKET_RAMDISC_K=400` give it and M: the CPC's sizes, so `dir`'s
+"free" lines compare.
