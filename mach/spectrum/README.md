@@ -1,9 +1,10 @@
 # CPC Lisp on the ZX Spectrum 128K with a DivMMC
 
-*Runs in ZEsarUX (a +2A, a DivMMC with esxDOS 0.8.5); not tried on a real
-Spectrum yet.* The same Lisp as on the CPC -- the six images are built
+*Runs in ZEsarUX (a +2A, a DivMMC with the real esxDOS 0.8.5, started
+from its NMI browser as below; a 128 too); not tried on a real Spectrum
+yet.* The same Lisp as on the CPC -- the six images are built
 from the same sources, the compiler included -- on a ZX Spectrum +2A,
-+2B or +3 (or a 128 or grey +2: the loader tells them apart, untried) with
++2B or +3 (or a 128 or grey +2: the loader tells them apart) with
 a **DivMMC** (or a compatible interface) that has **128 KB of RAM** and
 runs **esxDOS**.
 
@@ -16,20 +17,25 @@ runs **esxDOS**.
                                      #   print the transcript
     tools/spectrum/test.sh           # the regression tests
 
-Copy what is in `build/spectrum/sd/` to the SD card: `LISP.TAP`,
-`HWTEST.LSP` and the examples (`APFEL.LSP`, the classics). Lisp's files are
-esxDOS's current folder's: keep them together.
+Copy what is in `build/spectrum/sd/` to the SD card, at its root or into a
+folder of its own (`LISP`, say): `LISP.TAP`, `HWTEST.LSP` and the examples
+(`APFEL.LSP`, the classics). Lisp's files are esxDOS's current folder's --
+the one LISP.TAP was started from: keep them together.
 
-To start it, load `LISP.TAP` as a tape: **press the DivMMC's NMI button,
-choose `LISP.TAP`** (esxDOS mounts it and loads it), or in 128 BASIC type
-`.tapein lisp.tap` and then `LOAD ""`. Not from 48 BASIC: it locks the
-128K's paging, and the loader says so. The loader says, too, if there is no
+To start it: esxDOS starts the Spectrum in 48 BASIC ("(C) 1982 Amstrad");
+**press the DivMMC's NMI button, move the cursor onto `LISP.TAP`** (the
+cursor keys, or 6 and 7; ENTER goes into a folder) **and press ENTER**:
+esxDOS loads it as a tape. That 48 BASIC leaves the 128K's paging free;
+the +2A menu's "48 BASIC" locks it, and the loader then says so (start
+from 128 BASIC or the menu's Loader then: NMI, `I` on `LISP.TAP` to put the
+tape in, SPACE, and the Loader). The loader says, too, if there is no
 DivMMC, or less than 128 KB on it. It loads in a few seconds from the SD
 card; the same tape played on a real cassette would take some ten minutes,
 and work the same (the DivMMC is needed either way: its RAM holds the
 machine's routines).
 
-`(quit)` or `(reset)` start the Spectrum afresh, into its menu.
+`(quit)` or `(reset)` start the Spectrum afresh: esxDOS starts again, in
+48 BASIC, and the NMI browser opens in the folder it was in.
 
 ## How it is arranged
 
@@ -144,6 +150,8 @@ compiler, a file on the SD card, lazy loading from it and from `M:`, two
 files open at once, the RAM disc, far arrays over five of its pages, the
 ROM's calculator, the colour pens. Then `(quit)`, load `LISP.TAP` again,
 `(load "hwtest")`, `(hwtest2)`: that the RAM disc kept its files.
+`tools/spectrum/esxtest.sh` does all that in ZEsarUX with the real esxDOS
+(below).
 
 ## In ZEsarUX
 
@@ -158,3 +166,13 @@ KEY_READ reads as if typed; everything printed goes to ZEsarUX's debug
 byte file (its debug ports, which the machine page looks for at the
 start): the transcript. `-S shot.png` draws the screen's memory into a
 picture at the end.
+
+That is ZEsarUX's own stand-in for esxDOS's calls. **The real esxDOS**:
+`-M card.mmc` gives the DivMMC an SD card image -- `tools/spectrum/mkmmc.py
+card.mmc folder...` makes one, FAT16, from folders -- and `-B "steps"`
+boots as a user does (waits, NMI, keys: `Spectrum.steps` in zx.py).
+`tools/spectrum/esxtest.sh` puts esxDOS 0.8.5's SYS, BIN and TMP (from its
+distribution at esxdos.org, `ESXDOS_DIR`: not ours, never in this repo) and
+the SD card's files in a folder LISP on a card, loads LISP.TAP by the NMI
+browser, runs `(hwtest)`, `(quit)` -- a real reset there -- loads it
+again and runs `(hwtest2)`.

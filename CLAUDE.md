@@ -978,6 +978,21 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     zesarux_index_menu.idx into its working folder: never run it from the
     repo's root. Run it only by its full path or tools/spectrum (the
     allow rules: no `cd ... &&` in front).
+  * **The real esxDOS** (2026-11-21): `zx.py -M card.mmc -B steps` runs
+    esxDOS 0.8.5 itself (`tools/spectrum/mkmmc.py` makes a FAT16 card;
+    its SYS/BIN/TMP in ~/claude/spectrum/esxdos/card, from esxdos.org:
+    not ours) -- `tools/spectrum/esxtest.sh`. ZEsarUX's handler serves
+    RST 8 in no time; the real one runs. What it showed: esxDOS starts
+    a +2A in **48 BASIC with the paging free and &1FFD's bit 2 set**
+    (the loader's old test took that for a 128); the NMI browser's ENTER
+    on a TAP loads it (cursor keys or 6/7, each key let go: at ten times
+    the speed a key held 60 ms repeats), from a folder too (it becomes
+    the current one, and the browser opens there after a reset); esxDOS
+    keeps the interrupts off inside its calls (a breakpoint flag around
+    RST 8 and one on IM2VEC); **M_QUIT dropped CONMEM from code in the
+    page** -- the next fetch was the ROM's: a hang. Its OUT and RST 0
+    run from LINEBUF now. In the test, `!ppoke c_echo 00` before
+    `(quit)` makes it the machine's reset, `!steps` loads again.
 * **Pocket Lisp** (`pocket/`, 2026-11-19; Mike: "pocket lisp ... a
   board with microcontroller and oled and keys", then colour and a
   bigger screen, the RP2350 chosen; the proposal is a private artifact,

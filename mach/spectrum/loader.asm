@@ -28,9 +28,11 @@ start:
     ld hl,m_hello
     call ld_print
     ; the paging: banks 1 and 3 at &C000 must differ (48 BASIC locks it)
-    ld a,(BANK_M)
-    ld (ret_7ffd),a
+    ld a,(BANK_M)               ; (BASIC's USR runs in 48 BASIC's ROM:
+    or PG_7FFD                  ;   whatever its variables say, so
+    ld (ret_7ffd),a             ;   esxDOS's 48 BASIC leaves them 0)
     ld a,(BANK678)
+    or PG_1FFD
     ld (ret_1ffd),a
     di
     ld bc,P_7FFD
@@ -48,22 +50,26 @@ start:
     cp #A5
     ld hl,m_locked
     jp nz,ld_fail
-    ; which machine: with &7FFD's bit 4 set, a 128 shows 48 BASIC; a +2A
-    ; its ROM 1 until &1FFD's bit 2 is set too
+    ; which machine: with &7FFD's bit 4 set (it is) and &1FFD's bit 2, a
+    ; +2A shows 48 BASIC; a 128 takes the write to &1FFD for one to &7FFD
+    ; (bit 4 clear: its ROM 0), and shows 48 BASIC as &7FFD's bit 4 is set
+    ; again. (Its ROM 1 says nothing: esxDOS starts a +2A in 48 BASIC
+    ; with &1FFD's bit 2 set already.)
     xor a
     ld (model),a
-    call is48
-    jr z,.got
     ld a,PG_1FFD
     ld bc,P_1FFD
     out (c),a
     call is48
+    jr z,.plus                  ; a +2A
+    ld a,1
+    ld (model),a                ; a 128 (ld_fail then leaves &1FFD alone)
+    ld a,PG_7FFD+1
+    ld b,P_7FFD >> 8
+    out (c),a
+    call is48
     ld hl,m_rom
     jp nz,ld_fail
-    jr .plus
-.got:
-    ld a,1
-    ld (model),a                ; a 128
 .plus:
     ; a DivMMC with 128 KB of RAM: page 14 is RAM, and not page 6 again
     ; (on a 64 KB one it is); the bytes there put back after

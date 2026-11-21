@@ -10,7 +10,10 @@ paging and esxDOS's calls served from a folder (-d; a fresh one if not
 given), and its debug ports. Once its menu is up, the six images go into
 their banks, the machine pages into the DivMMC's RAM and the resident part
 at &5D00, all through ZRCP, and the CPU is sent to RS_BOOT -- the loader's
-work done by hand (the real loader is tested on its own).
+work done by hand (the real loader is tested on its own: -T LISP.TAP
+through the +2A's Loader and ZEsarUX's tape traps; or -M card.mmc -B
+steps, the real esxDOS on an SD card image (mkmmc.py), LISP.TAP from its
+NMI browser by a user's steps -- esxtest.sh).
 
 The file's lines are typed one at a time, each when the Lisp asks for one:
 a breakpoint at EDHOOK (the REPL calls it before every line) makes ZEsarUX
@@ -25,6 +28,11 @@ starting with ! are the CPC harness's actions (emu/repl.lua), N frames (of
     !type N text   text given to the keys ({ENTER} is a return)
     !esc N         BREAK
     !press K N     the CPC's key K: its code given to the keys, if it has one
+    !steps S       a user's steps (-B's), at once after the line before:
+                   after a (quit), loading LISP.TAP again with -M
+    !ppoke SYM HEX bytes into machine page A at its symbol, before the next
+                   line: "!ppoke c_echo 00" makes (quit) reset the machine,
+                   as on a real one, not end ZEsarUX
 
 Everything the Lisp prints goes to ZEsarUX's debug byte file: the transcript,
 CR LF made LF. After the last line, the next prompt ends it. Exit status 0;
@@ -91,7 +99,7 @@ def actions(lines, i):
 
 
 class Spectrum:
-    def __init__(self, build, sd, speed, log, tape=None):
+    def __init__(self, build, sd, speed, log, tape=None, mmc=None):
         self.build = build
         self.port = free_port()
         self.trans = os.path.join(log, "transcript.bin")
@@ -103,9 +111,10 @@ class Spectrum:
              "--nowelcomemessage", "--quickexit",
              "--enable-remoteprotocol", "--remoteprotocol-port", str(self.port),
              "--hardware-debug-ports", "--hardware-debug-ports-byte-file", self.trans,
-             "--enable-divmmc-paging", "--divmmc-rom", os.path.join(ZDIR, "esxmmc085.rom"),
-             "--enable-esxdos-handler", "--esxdos-root-dir", sd,
-             "--emulatorspeed", str(speed)]
+             "--divmmc-rom", os.path.join(ZDIR, "esxmmc085.rom")]
+            + (["--enable-divmmc", "--enable-mmc", "--mmc-file", mmc] if mmc else
+               ["--enable-divmmc-paging", "--enable-esxdos-handler", "--esxdos-root-dir", sd])
+            + ["--emulatorspeed", str(speed)]
             + (["--tape", tape] if tape else [])
             + os.environ.get("ZX_ARGS", "").split(),
             stdout=self.out, stderr=subprocess.STDOUT, cwd=log)
@@ -120,6 +129,42 @@ class Spectrum:
         z = self.z
         time.sleep(0.5)
         z.cmd("send-keys-ascii 100 13")
+        z.cmd("enable-breakpoints")
+        z.cmd("set-breakpoint 1 PC=%XH" % self.lisp["EDHOOK"])
+        z.cmd("set-breakpointaction 1 write %d 1" % self.res["RS_HOOK"])
+
+    def steps(self, steps):
+        """a user's steps at the machine, ;-separated: "w S" waits S
+        seconds, "nmi" presses the DivMMC's NMI button, "k C..." gives the
+        keys these characters (decimal codes), each held "kt MS" ms (60;
+        at ten times the speed, a key held long repeats), "e K" a key event (ZRCP's
+        send-keys-event: K, pressed then released), "shot F" a screenshot,
+        "z CMD" any ZRCP command (its answer to stderr)"""
+        kt = 60
+        for st in steps.split(";"):
+            st = st.strip()
+            if not st:
+                continue
+            op, _, arg = st.partition(" ")
+            if op == "w":
+                time.sleep(float(arg))
+            elif op == "nmi":
+                self.z.cmd("generate-nmi")
+            elif op == "kt":
+                kt = int(arg)
+            elif op == "k":
+                self.z.cmd("send-keys-ascii %d %s" % (kt, arg))
+            elif op == "e":
+                self.z.cmd("send-keys-event %s 1" % arg)
+                time.sleep(0.06)
+                self.z.cmd("send-keys-event %s 0" % arg)
+            elif op == "shot":
+                shot(self, os.path.abspath(arg))
+            elif op == "z":
+                sys.stderr.write(self.z.cmd(arg))
+
+    def hook(self):
+        z = self.z
         z.cmd("enable-breakpoints")
         z.cmd("set-breakpoint 1 PC=%XH" % self.lisp["EDHOOK"])
         z.cmd("set-breakpointaction 1 write %d 1" % self.res["RS_HOOK"])
@@ -242,11 +287,17 @@ def run(args):
     sd = args.sd or os.path.join(log, "sd")
     os.makedirs(sd, exist_ok=True)
     tape = os.path.abspath(args.tape) if args.tape else None
-    zx = Spectrum(os.path.abspath(args.build), os.path.abspath(sd), args.speed, log, tape)
+    mmc = os.path.abspath(args.mmc) if args.mmc else None
+    zx = Spectrum(os.path.abspath(args.build), os.path.abspath(sd), args.speed, log, tape, mmc)
     why = "done"
     try:
         deadline = time.time() + args.timeout
-        if tape:
+        if args.steps is not None:
+            zx.hook()                   # first: the Lisp may start at once
+            zx.steps(args.steps)
+            while os.path.getsize(zx.trans) == 0 and time.time() < deadline:
+                time.sleep(0.05)
+        elif tape:
             zx.boot_tape()
             # RS_HOOK is BASIC's RAM until the Lisp starts (rs_boot clears
             # it): it counts once the banner is in the transcript
@@ -281,6 +332,9 @@ def run(args):
                 break
             if hooked:
                 while i < len(lines) and lines[i].startswith("!"):
+                    m = re.match(r"^!ppoke (\S+) ([0-9A-Fa-f]+)$", lines[i])
+                    if m:
+                        zx.ppoke(zx.page[m.group(1).upper()], bytes.fromhex(m.group(2)))
                     i += 1
                 if i >= len(lines):
                     done_at = time.time() + 0.2
@@ -293,16 +347,31 @@ def run(args):
                     t += n
                     todo.append((t, text))
                 i += 1
+                if i < len(lines) and lines[i].startswith("!steps "):
+                    # RS_HOOK is BASIC's RAM until the Lisp starts again:
+                    # it counts once the new banner is in the transcript
+                    size = os.path.getsize(zx.trans)
+                    zx.steps(lines[i][7:])
+                    while os.path.getsize(zx.trans) == size and time.time() < deadline:
+                        time.sleep(0.05)
+                    time.sleep(0.2)
             else:
                 time.sleep(0.005)
         if args.shot:
             shot(zx, os.path.abspath(args.shot))
+        for pk in args.peek or []:
+            a, _, n = pk.partition(":")
+            sys.stderr.write("zx.py: &%s: %s\n" % (a, zx.peek(int(a, 16), int(n or 1)).hex(" ")))
     finally:
         if why == "TIMEOUT":
             try:
                 sys.stderr.write("zx.py: TIMEOUT; the screen:\n" + zx.screen() + "\n")
                 r = zx.z.cmd("get-registers")
                 sys.stderr.write("zx.py: " + r.strip() + "\n")
+                sys.stderr.write("zx.py: RS_HOOK %d, PA_LEN %d, breakpoints: %s\n" % (
+                    zx.peek(zx.res["RS_HOOK"])[0], zx.ppeek(zx.page["PA_LEN"])[0],
+                    " ".join(l for l in zx.z.cmd("get-breakpoints").split("\n")
+                             if "Enabled" in l or "1:" in l)[:300]))
             except Exception as e:
                 sys.stderr.write("zx.py: TIMEOUT (%s)\n" % e)
         zx.close()
@@ -327,6 +396,12 @@ def main():
     ap.add_argument("-S", "--shot", help="a screenshot at the end (.png)")
     ap.add_argument("-T", "--tape", help="load from this tape (LISP.TAP) as the machine would,"
                     " not through ZRCP")
+    ap.add_argument("-M", "--mmc", help="an SD card image (mkmmc.py) for the real esxDOS,"
+                    " not ZEsarUX's handler of its calls")
+    ap.add_argument("-B", "--steps", help="boot by a user's steps (Spectrum.steps) and wait"
+                    " for the banner, not through ZRCP")
+    ap.add_argument("-P", "--peek", action="append",
+                    help="HEX[:N]: N bytes of memory there, shown at the end")
     ap.add_argument("file")
     run(ap.parse_args())
 

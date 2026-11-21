@@ -2038,8 +2038,9 @@ m_m_edit:
     ret
 
 ;; M_QUIT: in ZEsarUX (the tests), out of the emulator; on the machine, a
-;; reset into its menu (the ROMs as at power-up; the DivMMC maps esxDOS in
-;; at &0000 and starts it)
+;; reset: the ROMs as at power-up, the DivMMC's page out and RST 0 (the
+;; DivMMC maps esxDOS in at &0000, which starts again). The last two run
+;; from main RAM: this page goes with the OUT.
 m_m_quit:
     ld a,(c_echo)
     or a
@@ -2052,6 +2053,10 @@ m_m_quit:
     out (c),a
 .reset:
     di
+    ld hl,#E3D3                 ; OUT (P_DIVMMC),A
+    ld (LINEBUF),hl
+    ld a,#C7                    ; RST 0
+    ld (LINEBUF+2),a
     xor a
     ld bc,P_7FFD
     out (c),a
@@ -2061,8 +2066,8 @@ m_m_quit:
     ld b,P_1FFD >> 8
     out (c),a
 .r128:
-    out (P_DIVMMC),a
-    rst 0
+    jp LINEBUF
+    assert P_DIVMMC == #E3
 
 ;; M_MIDI: A = a byte -> out of the 128K's MIDI socket: bit 2 of the
 ;; AY's port A (register 14), a start bit, eight from the bottom, a stop

@@ -532,6 +532,14 @@ compiled code (`docs/design.md` describes both)
     - [x] The suite in ZEsarUX: 43 ok (`test/*.spectrum.out` where the
           Spectrum differs: memory, AMSDOS's messages, the CPC's own
           natives); `(hwtest)` 10 yes
+    - [x] With the real esxDOS 0.8.5 in ZEsarUX (`tools/spectrum/
+          esxtest.sh`, an SD card image by `mkmmc.py`): LISP.TAP from the
+          NMI browser (ENTER, from esxDOS's 48 BASIC), from a folder,
+          `(hwtest)` 10 yes, `(quit)` a real reset, `(hwtest2)` 2 yes; no
+          interrupt inside an esxDOS call (breakpoints). It found
+          `(quit)` hanging (the page dropped under its own code) and the
+          loader taking the +2A for a 128 under esxDOS; a 128 in ZEsarUX:
+          `(hwtest)` 10 yes
     - [ ] **On Mike's +2A**: `LISP.TAP` from the SD card (the NMI
           browser), `(hwtest)`, the keys, the sound, the colours; and
           which DivMMC and esxDOS it has (the loader wants 128 KB on it)
