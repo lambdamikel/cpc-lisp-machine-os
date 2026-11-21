@@ -23,3 +23,25 @@ lf_ink_mode:
 ;@ TONE-ENVELOPE 4 16 lf_envelope
 lf_envelope:
     jp lnil
+
+;; (peek address) -> the byte there, as the core sees memory: the 48 BASIC
+;; ROM below &4000, the screen from &4000, and at &C000 library part 0's
+;; bank (the one running this)
+;@ PEEK 1 1 lf_peek
+lf_peek:
+    call lint_hl
+    ld l,(hl)
+    ld h,0
+    add hl,hl
+    inc hl
+    ret
+
+;; (poke address byte) -> the byte. Below &4000 it goes nowhere (the ROM).
+;@ POKE 2 2 lf_poke
+lf_poke:
+    call lint_hl
+    push de
+    call lint_de
+    ld (hl),e
+    pop hl
+    ret

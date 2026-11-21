@@ -23,10 +23,13 @@ RS_BANK     equ RESIDENT+20     ; the bank at &C000 (0-5)
 RS_FRAMES   equ RESIDENT+21     ; 4 bytes: 1/300 s since the start
 RS_HOOK     equ RESIDENT+25     ; the test harness's: ZEsarUX sets it at
                                 ;   EDHOOK (a breakpoint's action)
+RS_MODEL    equ RESIDENT+26     ; 0: a +2A, +2B or +3; 1: a 128 or a grey
+                                ;   +2 (no port &1FFD) -- the loader's
 JB          equ #5E80           ; the jumpblock, four bytes an entry
 MTAB        equ #2100           ; machine page A's table, a word an entry
 P_INIT      equ #2000           ; page A: its start (rs_boot calls it),
 P_TICK      equ #2003           ;   the interrupt's work
+FILE_BUFSIZE equ 32+256         ; a file's buffer: its state, 256 bytes of it
 
 J_CON_PUTC       equ 0
 J_CON_WRCH       equ 1

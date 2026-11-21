@@ -15,58 +15,15 @@ b_init:
     ret
 
 ;; ---------------------------------------------------------------------------
-;; FILES (not yet)
+;; FILES: files.asm, the RAM disc rdisc.asm
 
-b_file_iopen:
-b_file_oopen:
-b_file_getc:
-b_file_putc:
-b_m_rdin:
-b_m_rdout:
-b_m_delete:
-    or a
-    ret
-b_file_iclose:
-b_file_iabandon:
-b_file_oclose:
-b_file_oabandon:
-b_m_drive:
-    scf
-    ret
-b_file_cat:
-b_m_rdcat:
-    ret
+    include "files.asm"
+    include "rdisc.asm"
 
 ;; ---------------------------------------------------------------------------
-;; FLOATS (not yet)
+;; FLOATS: fpzx.asm
 
-b_fp_move:
-b_fp_int2r:
-b_fp_bin2r:
-b_fp_r2int:
-b_fp_r2bin:
-b_fp_fix:
-b_fp_int:
-b_fp_exp10:
-b_fp_add:
-b_fp_rsub:
-b_fp_mul:
-b_fp_div:
-b_fp_cmp:
-b_fp_neg:
-b_fp_sgn:
-b_fp_angle:
-b_fp_pi:
-b_fp_sqr:
-b_fp_pow:
-b_fp_log:
-b_fp_exp:
-b_fp_sin:
-b_fp_cos:
-b_fp_tan:
-b_fp_atn:
-    or a
-    ret
+    include "fpzx.asm"
 
 page_b_end:
     print "machine page B: ",page_b_end-#2000," bytes"

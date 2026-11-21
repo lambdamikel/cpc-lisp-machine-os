@@ -13,8 +13,9 @@
 ;; the DivMMC in by itself (its TR-DOS trap), and it would stay in after
 ;; the page went out. Each page keeps data there (&3B00-&3FFF).
 ;;
-;; THE SCREEN is the Spectrum's, 256 by 192, in 42 columns of six pixels
-;; and 24 rows (a font of our own, font.inc: 5 by 7 in 6 by 8), one colour
+;; THE SCREEN is the Spectrum's, 256 by 192, in 40 columns of six pixels
+;; -- the CPC's mode 1 -- and 24 rows (a font of our own, font.inc: 5 by 7
+;; in 6 by 8), centred, one colour
 ;; on another for the whole screen (the attributes). The console works as
 ;; the CPC's text VDU does, as far as the Lisp asks (the TRS-80's page is
 ;; the pattern): a cursor that may stand one past the last column until
@@ -30,10 +31,11 @@
     include "jumps.asm"
     include "memmap.asm"
 
-VCOLS       equ 42
+VCOLS       equ 40              ; as the CPC's mode 1: 240 pixels, centred
+XLEFT       equ 8               ;   on the 256
 VROWS       equ 24
 PA_BUF      equ #3B00           ; the harness's paste: 256 bytes
-SHADOW      equ #3C00           ; the characters on the screen, 42 x 24
+SHADOW      equ #3C00           ; the characters on the screen, 40 x 24
 FILL_STK    equ #3800           ; flood-fill's stack, to PA_BUF
 FILL_END    equ #3B00
 
@@ -45,8 +47,10 @@ FILL_END    equ #3B00
     ;; the harness's paste (tools/spectrum/zx.py): a line given to KEY_READ
     ;; as if typed. It writes PA_BUF, PA_REC, PA_POS = 0 and then PA_LEN;
     ;; the keys come from there until PA_POS reaches PA_LEN, which is then
-    ;; made 0. With PA_REC set, the line goes into the transcript as its
-    ;; return is read (the editor's own echo does not).
+    ;; made 0. With PA_REC = n+1, the line from its byte n on goes into the
+    ;; transcript as its return is read (the editor's own echo does not):
+    ;; the harness types a space first, as the CPC's does, and leaves it
+    ;; out of the transcript.
 PA_LEN:     db 0                ; &2006
 PA_POS:     db 0
 PA_REC:     db 0
@@ -57,7 +61,7 @@ PA_REC:     db 0
 ;; ---------------------------------------------------------------------------
 ;; STATE
 
-c_col:      db 0                ; 0-41, or 42: past the end
+c_col:      db 0                ; 0-39, or 40: past the end
 c_row:      db 0                ; 0-23
 c_roll:     db 0                ; down by one a scroll
 c_sys:      db 0                ; the cursor on (CON_CURON)
@@ -68,8 +72,11 @@ c_parm:     db 0                ;   the column, when the row comes
 c_echo:     db 0                ; 1: ZEsarUX's byte file gets it all too
 c_pen:      db 1                ; the text pen, 0 or 1 (pixels lit)
 c_paper:    db 0                ;   and paper
-c_ink0:     db 1+8              ; the inks' colours, the Spectrum's (8:
-c_ink1:     db 6+8              ;   bright): the paper and the pen
+;; the sixteen inks' colours, the Spectrum's (8: bright), from the CPC's
+;; defaults: ink 0 the paper's, 1 the text's, the rest the graphics pens'
+c_inks:     db 1,14,13,10,15,0,9,11,5,6,13,11,12,12,9,11
+c_ink0      equ c_inks
+c_ink1      equ c_inks+1
 c_border:   db 1
 d_and:      db #FF              ; how a glyph is drawn: its pixels AND this,
 d_xor:      db 0                ;   XOR this (the pen and paper)
@@ -165,7 +172,7 @@ d_addr:
     add a,a
     add a,b
     add a,a
-    add a,2                     ; x = 6 column + 2 (the screen is 252 wide)
+    add a,XLEFT                 ; x = 6 column + 8
     ld e,a
     and 7
     ld (d_sh),a
@@ -327,23 +334,20 @@ c_shadow:
     push de
     ld l,c
     ld h,0
+    add hl,hl
+    add hl,hl
+    add hl,hl                   ; 8r
     ld d,h
     ld e,l
-    add hl,hl                   ; 2r
-    add hl,de                   ; 3r
-    add hl,hl                   ; 6r
-    ld d,h
-    ld e,l
-    add hl,hl                   ; 12r
-    add hl,hl                   ; 24r
-    add hl,hl                   ; 48r
-    or a
-    sbc hl,de                   ; 42r
+    add hl,hl
+    add hl,hl                   ; 32r
+    add hl,de                   ; 40r
     ld e,b
     ld d,SHADOW >> 8
     add hl,de
     pop de
     ret
+    assert VCOLS == 40
 
 ;; c_at: -> B = the cursor's column, C = its row
 c_at:
@@ -461,12 +465,12 @@ c_scroll:
     ld a,c
     cp VROWS-1
     jr c,.row
-    ld a,VROWS-1
-    call c_clrrow
     ld hl,SHADOW+VCOLS
     ld de,SHADOW
     ld bc,VCOLS*(VROWS-1)
     ldir
+    ld a,VROWS-1
+    call c_clrrow
     ld hl,c_roll
     dec (hl)
     pop hl
@@ -798,7 +802,7 @@ m_con_curdis:
     ld (c_usr),a
     ret
 
-;; CON_GETWIN: the whole screen -> H, D = columns 0, 41; L, E = rows 0, 23
+;; CON_GETWIN: the whole screen -> H, D = columns 0, 39; L, E = rows 0, 23
 m_con_getwin:
     ld hl,0
     ld de,(VCOLS-1)*256+VROWS-1
@@ -851,30 +855,24 @@ c_01:
 m_vid_mode:
     jp m_con_cls
 
-;; VID_INK: A = an ink, B = a colour (the CPC's 0-26) -> ink 0 the paper's
-;; colour, ink 1 the pen's, on the whole screen; the others are not seen
+;; VID_INK: A = an ink, B = a colour (the CPC's 0-26) -> that ink's colour:
+;; for ink 0 the paper's and 1 the pen's, on the whole screen (the
+;; graphics' colours go); the others the graphics pens' (g_set)
 m_vid_ink:
     push bc
     push de
     push hl
+    and 15
     ld c,a
     ld a,b
     call v_colour
-    ld b,a
+    ld b,0
+    ld hl,c_inks
+    add hl,bc
+    ld (hl),a
     ld a,c
-    or a
-    jr nz,.i1
-    ld a,b
-    ld (c_ink0),a
-    jr .set
-.i1:
-    dec a
-    jr nz,.done
-    ld a,b
-    ld (c_ink1),a
-.set:
-    call c_attrs
-.done:
+    cp 2
+    call c,c_attrs
     pop hl
     pop de
     pop bc
@@ -1255,8 +1253,10 @@ k_pop:
     ret
 
 ;; k_paste: -> carry and A = the next character of the harness's paste; NC
-;; if there is none. At its end PA_LEN is made 0, and a return of a line
-;; to be recorded writes the line into the transcript. BC, DE, HL kept.
+;; if there is none. At its end PA_LEN is made 0. As the first is read, a
+;; line to be recorded goes into the transcript (k_record) -- where the
+;; CPC's harness writes it, before the editor answers it (a beep). BC, DE,
+;; HL kept.
 k_paste:
     ld a,(PA_LEN)
     or a
@@ -1267,31 +1267,14 @@ k_paste:
     ld a,(PA_POS)
     cp c
     jr nc,.end
+    or a
+    call z,k_record
+    ld a,(PA_POS)
     ld l,a
     inc a
     ld (PA_POS),a
     ld h,PA_BUF >> 8
     ld a,(hl)
-    cp 13
-    jr nz,.got
-    ld a,(PA_REC)
-    or a
-    jr z,.cr
-    ld b,l                      ; the line before the return, recorded
-    ld l,0
-    inc b
-.rec:
-    dec b
-    jr z,.cr
-    push bc
-    ld c,(hl)
-    call c_echoc
-    pop bc
-    inc l
-    jr .rec
-.cr:
-    ld a,13
-.got:
     pop hl
     pop bc
     scf
@@ -1303,6 +1286,28 @@ k_paste:
     pop bc
     or a
     ret
+;; k_record: C = PA_LEN -> with PA_REC = n+1, the paste from its byte n to
+;; its return into the transcript
+k_record:
+    ld a,(PA_REC)
+    or a
+    ret z
+    dec a
+    ld l,a
+    ld h,PA_BUF >> 8
+.r:
+    ld a,l
+    cp c
+    ret nc
+    ld a,(hl)
+    cp 13
+    ret z
+    push bc
+    ld c,a
+    call c_echoc
+    pop bc
+    inc l
+    jr .r
 
 ;; KEY_READ: -> carry and A = a character; no carry if there is none
 m_key_read:
@@ -1525,10 +1530,15 @@ g_cell:
     scf
     ret
 
-;; g_set: DE, HL = a pixel -> lit or put out, as the pen and ink-mode say
+;; g_set: DE, HL = a pixel -> lit or put out, as the pen and ink-mode say;
+;; a pen that lights it gives its cell its colour (the attribute's ink,
+;; the paper's kept: the Spectrum's way -- text there takes it too)
 g_set:
     call g_cell
     ret nc
+    ld a,(g_pen)
+    or a
+    call nz,g_attr
     ld b,(hl)
     ld a,(g_ink)
     dec a
@@ -1569,7 +1579,8 @@ g_set:
     ld (hl),a
     ret
 
-;; g_get: DE, HL = a pixel -> A = 1 lit, 0 not (or off the screen)
+;; g_get: DE, HL = a pixel -> A = the pen whose colour its cell has, if it
+;; is lit (1 if no pen has it); 0 if not (or off the screen)
 g_get:
     call g_cell
     ld a,0
@@ -1577,7 +1588,71 @@ g_get:
     ld a,(hl)
     and c
     ret z
+    call g_atad
+    ld a,(hl)
+    and 7
+    bit 6,(hl)
+    jr z,.nb
+    or 8
+.nb:
+    ld c,a                      ; the cell's colour
+    ld hl,c_inks+1
+    ld b,1
+.p:
+    ld a,(hl)
+    cp c
+    ld a,b
+    ret z
+    inc hl
+    inc b
+    ld a,b
+    cp 16
+    jr c,.p
     ld a,1
+    ret
+
+;; g_atad: HL = a pixel's byte on the screen -> HL = its cell's attribute.
+;; BC, DE kept.
+g_atad:
+    ld a,h
+    rrca
+    rrca
+    rrca
+    and 3
+    or ATTRS >> 8
+    ld h,a
+    ret
+
+;; g_attr: HL = a pixel's byte -> its cell's ink the pen's colour. All kept
+;; but AF.
+g_attr:
+    push bc
+    push hl
+    push de
+    ld a,(g_pen)
+    ld e,a
+    ld d,0
+    ld bc,c_inks
+    ex de,hl
+    add hl,bc
+    ld a,(hl)                   ; the pen's colour
+    ex de,hl
+    ld c,a
+    call g_atad
+    ld a,(hl)
+    and #38                     ; the paper's kept
+    ld b,a
+    ld a,c
+    and 7
+    or b
+    bit 3,c
+    jr z,.nb
+    or #40
+.nb:
+    ld (hl),a
+    pop de
+    pop hl
+    pop bc
     ret
 
 ;; GFX_MOVE, GFX_MOVER: DE = x, HL = y
@@ -1630,9 +1705,10 @@ m_gfx_origin:
     ld (g_y),hl
     ret
 
-;; GFX_PEN: A = a pen: 0 puts out, any other lights. GFX_PAPER: nothing
+;; GFX_PEN: A = a pen: 0 puts out, any other lights in its colour.
+;; GFX_PAPER: nothing
 m_gfx_pen:
-    call c_01
+    and 15
     ld (g_pen),a
     ret
 m_gfx_paper:
@@ -1984,10 +2060,14 @@ m_m_quit:
 .reset:
     di
     xor a
-    ld bc,P_1FFD
+    ld bc,P_7FFD
     out (c),a
-    ld b,P_7FFD >> 8
+    ld hl,RS_MODEL
+    cp (hl)
+    jr nz,.r128                 ; (a 128 has no &1FFD)
+    ld b,P_1FFD >> 8
     out (c),a
+.r128:
     out (P_DIVMMC),a
     rst 0
 

@@ -8,7 +8,6 @@
 NBANKS          equ 6                 ; banks 0, 1, 3, 4, 6, 7 as 0-5: the
                                       ;   core in 0, the library in 1-5
 KEY_ESC         equ 64                ; BREAK: CAPS SHIFT and SPACE together
-FILE_BUFSIZE    equ 256+16            ; a file's buffer: a block and its state
 
 CON_PUTC        equ JB+4*J_CON_PUTC
 CON_WRCH        equ JB+4*J_CON_WRCH

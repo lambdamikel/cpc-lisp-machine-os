@@ -16,7 +16,7 @@ VID_STATUS: db " EDIT or GRAPH: done    BREAK: cancel",0
 
 ;; VID_INIT: DE = VID_FONTSIZE bytes (none). The screen's size noted.
 VID_INIT:
-    ld a,42
+    ld a,40
     ld (VID_COLS),a
     xor a
     ld (VID_PAPER),a

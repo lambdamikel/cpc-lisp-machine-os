@@ -48,6 +48,7 @@
     db 0                        ; RS_BANK
     dw 0,0                      ; RS_FRAMES
     db 0                        ; RS_HOOK
+    db 0                        ; RS_MODEL
 mf_hl:      dw 0                ; mfar's, while it finds the routine
 mf_prev:    db 0
 mf_tgt:     dw 0
@@ -253,10 +254,14 @@ res_end:
 r_boot:
     di
     ld sp,LINEBUF
-    ld a,PG_1FFD
-    ld (BANK678),a
+    ld a,(RS_MODEL)
+    or a
+    jr nz,.p
+    ld a,PG_1FFD                ; (a 128 has no &1FFD: its 48 BASIC is
+    ld (BANK678),a              ;   ROM 1, &7FFD's bit 4 alone)
     ld bc,P_1FFD
     out (c),a
+.p:
     xor a
     ld (RS_BANK),a
     ld a,PG_7FFD                ; bank 0: the core

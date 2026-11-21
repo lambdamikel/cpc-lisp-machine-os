@@ -16,7 +16,9 @@ The file's lines are typed one at a time, each when the Lisp asks for one:
 a breakpoint at EDHOOK (the REPL calls it before every line) makes ZEsarUX
 set RS_HOOK, which this polls; the line goes into the machine page's paste
 buffer (PA_BUF: page.asm), whence KEY_READ takes it as if typed, and the
-machine page writes it into the transcript as its return is read. Lines
+machine page writes it into the transcript as its return is read -- typed
+with a space in front, as the CPC's harness types it (read-line sees it),
+which the transcript leaves out. Lines
 starting with ! are the CPC harness's actions (emu/repl.lua), N frames (of
 1/50 s, the Lisp's own clock) after the line before them was typed:
 
@@ -39,9 +41,12 @@ ZDIR = os.environ.get("ZESARUX_DIR",
 MP_A = 14                       # the machine pages' DivMMC pages (firmware.asm)
 BANKS = [("LISP.ROM", 0), ("LISPLIB.ROM", 1), ("LISPLIB2.ROM", 3),
          ("LISPLIB3.ROM", 4), ("LISPDEMO.ROM", 6), ("LISPVM.ROM", 7)]
-# the CPC's key numbers (emu/repl.lua's !press) as the codes the keys give
+# the CPC's key numbers (emu/repl.lua's !press) as the codes the keys give:
+# the cursor keys up, right, down, left (+4 with SHIFT, 21; +8 with CTRL,
+# 23), COPY, CLR, RETURN, ENTER, ESC, TAB, DEL
 CPCKEYS = {0: 0xF0, 1: 0xF3, 2: 0xF1, 8: 0xF2, 9: 0xE0, 16: 0x10, 18: 13,
            6: 13, 66: 0xFC, 68: 9, 79: 0x7F}
+CURSORS = (0, 1, 2, 8)
 
 
 def syms(path):
@@ -77,6 +82,8 @@ def actions(lines, i):
         if m:
             ks = [int(k) for k in m.group(1).split("+")]
             code = CPCKEYS.get(ks[-1])
+            if code is not None and ks[-1] in CURSORS:
+                code += 4 * (21 in ks) + 8 * (23 in ks)
             if code is not None:
                 out.append((int(m.group(2)), "type", chr(code)))
         j += 1
@@ -98,7 +105,7 @@ class Spectrum:
              "--hardware-debug-ports", "--hardware-debug-ports-byte-file", self.trans,
              "--enable-divmmc-paging", "--divmmc-rom", os.path.join(ZDIR, "esxmmc085.rom"),
              "--enable-esxdos-handler", "--esxdos-root-dir", sd,
-             "--emulatorspeed", str(speed)],
+             "--emulatorspeed", str(speed)] + os.environ.get("ZX_ARGS", "").split(),
             stdout=self.out, stderr=subprocess.STDOUT, cwd=log)
         self.z = Zrcp(port=self.port, wait=15)
         self.lisp = syms(os.path.join(build, "lisp.sym"))
@@ -157,16 +164,18 @@ class Spectrum:
         return self.ppeek(self.page["PA_LEN"])[0] == 0
 
     def paste(self, text, record):
+        """text given to the keys; record = n+1: into the transcript from
+        its byte n on, 0: not"""
         b = text.encode("latin-1")[:255]
         self.ppoke(self.page["PA_BUF"], b)
-        self.ppoke(self.page["PA_POS"], bytes([0, 1 if record else 0]))
+        self.ppoke(self.page["PA_POS"], bytes([0, record]))
         self.ppoke(self.page["PA_LEN"], bytes([len(b)]))
 
     def screen(self):
         """the text on the screen, from the machine page's shadow"""
-        d = self.ppeek(self.page["SHADOW"], 42 * 24)
+        d = self.ppeek(self.page["SHADOW"], 40 * 24)
         return "\n".join("|" + "".join(chr(c) if 32 <= c < 127 else "#"
-                                       for c in d[r * 42:r * 42 + 42]) + "|"
+                                       for c in d[r * 40:r * 40 + 40]) + "|"
                          for r in range(24))
 
     def close(self):
@@ -234,10 +243,8 @@ def run(args):
             now = None
             if todo:
                 now = zx.frames()
-                for a in [a for a in todo if a[0] <= now]:
-                    if zx.pasted():
-                        zx.paste(a[1], False)
-                        todo.remove(a)
+                while todo and todo[0][0] <= now and zx.pasted():
+                    zx.paste(todo.pop(0)[1], 0)     # in order, one at a time
             if done_at is not None:
                 if not todo and time.time() >= done_at:
                     break
@@ -251,7 +258,7 @@ def run(args):
                     continue
                 while not zx.pasted():
                     time.sleep(0.005)
-                zx.paste(lines[i] + "\r", True)
+                zx.paste(" " + lines[i] + "\r", 2)
                 t = zx.frames()
                 for n, kind, text in actions(lines, i):
                     t += n

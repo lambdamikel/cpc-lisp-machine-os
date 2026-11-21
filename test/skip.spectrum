@@ -1,0 +1,5 @@
+# tests the Spectrum version skips (tools/spectrum/test.sh): the LambdaSpeak
+# card, and the RAM disc and far arrays on M: (none yet)
+card
+discram
+discfar

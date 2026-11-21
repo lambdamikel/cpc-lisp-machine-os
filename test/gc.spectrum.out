@@ -1,0 +1,55 @@
+LISP> (defun make-list-n (n) (let ((l nil)) (dotimes (i n) (push i l)) l))
+MAKE-LIST-N
+LISP> (length (make-list-n 3000))
+Error: out of memory
+LISP> (dotimes (k 20) (length (make-list-n 1000)))
+NIL
+LISP> (defun tree (d) (if (= d 0) nil (cons (tree (- d 1)) (tree (- d 1)))))
+TREE
+LISP> (defun count-tree (tr) (if (null tr) 1 (+ (count-tree (car tr)) (count-tree (cdr tr)))))
+COUNT-TREE
+LISP> (count-tree (tree 10))
+1024
+LISP> (dotimes (k 4) (count-tree (tree 10)))
+NIL
+LISP> (progn (setq keep (make-list-n 2000)) (length keep))
+Error: out of memory
+LISP> (dotimes (k 10) (make-list-n 1000))
+NIL
+LISP> (length keep)
+Error: unbound variable KEEP
+LISP> (equal keep (make-list-n 2000))
+Error: unbound variable KEEP
+LISP> (defun nest (n) (let ((x nil)) (dotimes (i n) (setq x (list x))) x))
+NEST
+LISP> (progn (setq deepx (nest 1500)) t)
+T
+LISP> (> (gc) 1000)
+NIL
+LISP> (defun depth (x) (let ((d 0)) (loop (if (null x) (return d)) (setq x (car x)) (incf d))))
+DEPTH
+LISP> (depth deepx)
+1500
+LISP> (dotimes (k 300) (symbol-name (gensym)))
+NIL
+LISP> (setq s1 (symbol-name 'hello))
+"HELLO"
+LISP> (dotimes (k 600) (string 'abcdefghijklmnopqrstuvwxyz))
+NIL
+LISP> s1
+"HELLO"
+LISP> (setq syms nil)
+NIL
+LISP> (dotimes (i 50) (push (intern (symbol-name (gensym))) syms))
+NIL
+LISP> (length syms)
+50
+LISP> (> (gc) 1000)
+NIL
+LISP> (defun deep (n) (if (= n 0) 0 (+ 1 (deep (- n 1)))))
+DEEP
+LISP> (deep 100)
+Error: out of memory
+LISP> (deep 5000)
+Error: out of memory
+LISP> 
