@@ -796,7 +796,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   6128** (2026-11-19, from the card's drive E and the Gotek's A; this
   session uploaded the drive, with the card session's OK): hwtest 7 yes, rose, tune, say, save/load on E (the
   card's Vortex drive's first FutureOS writes) and on A, cd, dir,
-  (reset), hwtest2. Mike's Gotek shows no access activity -- he thought
+  (reset), hwtest2. **And on Mike's 464** (2026-11-20, build 9475,
+  1.0 ROM, Revaldinho config 8, the card's drive at &FB7E as FutureOS's
+  A, loaded with dskloader, CPC off): hwtest 7 yes, rose, say, three
+  starts with (reset) between, hwtest2. Mike's Gotek shows no access activity -- he thought
   A was never read; it was. **`(save)` with no names after hwtest wrote
   `'#S(FAR-ARRAY ...)`** (hwtest's *HW-A*), and the reader had no `#S`:
   "syntax error" at load, on every machine -- `read_hash` reads `#S(`

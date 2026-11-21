@@ -99,7 +99,11 @@ Gotek, drive A): FutureOS's colours, hwtest 7 yes, `(rose)`, `(tune)`,
 Vortex drive -- and on A, `(cd "a:")`, `(dir "a:")`, `(reset)` back to
 the desktop and `(hwtest2)` after it. (A `(save)` of everything after
 hwtest wrote its far array as `#S(...)`, which the reader could not read
-back until that day's fix, on every machine.) The desktop shows each
+back until that day's fix, on every machine.) **And on Mike's 464**
+(2026-11-20, build 9475: the 1.0 ROM, Revaldinho's card in
+configuration 8, the disc on the card's drive at &FB7E, FutureOS's
+drive A): hwtest 7 yes, `(rose)`, `(say)`, three starts with `(reset)`
+between, `(hwtest2)`. The desktop shows each
 drive's buffered directory, so listing a drive there touches nothing --
 and Mike's Gotek shows no activity when it is read.
 
