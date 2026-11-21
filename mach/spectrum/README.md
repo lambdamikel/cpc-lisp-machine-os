@@ -127,8 +127,13 @@ N B) as 7, and 64 for BREAK.
   the CPC's at 1): the same pitch.
 * `peek`, `poke`; `time` (the interrupt's count, in 1/300 s).
 * `*features*` is `(:zx-spectrum :cpc-lisp)`.
-* **Not here**: speech (`say` is quiet), MIDI (`midi-out` sends nothing
-  yet: the +2A's MIDI socket is the AY's port, to come), and the CPC's own
+* **MIDI** out of the 128K's RS232/MIDI socket (a cable to a MIDI plug
+  needed): `midi-out`, `midi-note`, `(midi-tune)` -- bit 2 of the AY's port
+  A at 31250 baud, as the +2A's ROM sends `PLAY`'s notes. Untried on the
+  machine (ZEsarUX has no such socket: there the bytes go to the
+  transcript as `<90>`).
+* **Not here**: speech (`say` is quiet: no LambdaSpeak), PlayCity, and the
+  CPC's own
   `symbol`, `window`, `tag`, `transparent`, `flash-speed`, `text-cursor`,
   `joystick`, PlayCity.
 

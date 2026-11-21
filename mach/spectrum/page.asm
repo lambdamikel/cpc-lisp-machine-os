@@ -2064,9 +2064,103 @@ m_m_quit:
     out (P_DIVMMC),a
     rst 0
 
-;; M_MIDI: A = a byte -> out of the +2A's MIDI socket (not yet: nothing)
+;; M_MIDI: A = a byte -> out of the 128K's MIDI socket: bit 2 of the
+;; AY's port A (register 14), a start bit, eight from the bottom, a stop
+;; bit, 114 T-states each -- 31250 baud at 3.5469 MHz -- exactly as the
+;; +2A's ROM sends PLAY's notes (ROM 1, &1DAD: &FA a 0, &FE a 1, the other
+;; bits up), the interrupts off for it. This page is the DivMMC's RAM, below
+;; &4000: no waits. In ZEsarUX, which has no MIDI socket, the byte goes to
+;; the transcript too, as <hex>. All kept but AF.
 m_m_midi:
+    push bc
+    push de
+    push hl
+    ld l,a
+    ld a,(c_echo)
+    or a
+    call nz,mi_echo
+    ld a,i                      ; P/V: the interrupts were on
+    push af
+    di
+    ld bc,P_AYREG
+    ld a,14
+    out (c),a
+    ld bc,P_AYDAT
+    ld a,#FA
+    out (c),a                   ; the start bit
+    ld e,3
+.d0:
+    dec e
+    jr nz,.d0
+    nop
+    nop
+    nop
+    nop
+    ld a,l
+    ld d,8
+.bit:
+    rra
+    ld l,a
+    jp nc,.zero
+    ld a,#FE
+    out (c),a
+    jr .w
+.zero:
+    ld a,#FA
+    out (c),a
+    jr .w
+.w:
+    ld e,2
+.d1:
+    dec e
+    jr nz,.d1
+    nop
+    add a,0
+    ld a,l
+    dec d
+    jr nz,.bit
+    nop
+    nop
+    add a,0
+    nop
+    nop
+    ld a,#FE
+    out (c),a                   ; the stop bit
+    ld e,6
+.d2:
+    dec e
+    jr nz,.d2
+    pop af
+    jp po,.off
+    ei
+.off:
+    pop hl
+    pop de
+    pop bc
     ret
+;; mi_echo: L = a byte -> "<hex>" into the transcript. HL kept.
+mi_echo:
+    ld c,'<'
+    call c_echoc
+    ld a,l
+    rrca
+    rrca
+    rrca
+    rrca
+    call .hex
+    ld a,l
+    call .hex
+    ld c,'>'
+    jp c_echoc
+.hex:
+    and 15
+    add a,'0'
+    cp '9'+1
+    jr c,.h
+    add a,7
+.h:
+    ld c,a
+    jp c_echoc
 
 font:
     include "font.inc"
