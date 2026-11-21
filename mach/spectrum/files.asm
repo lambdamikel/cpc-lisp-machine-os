@@ -410,7 +410,7 @@ b_m_delete:
     call rd_is                  ; on M:?
     pop de
     pop bc
-    jp z,rd_delete
+    jp z,rd_del
     call f_named
     jp nc,f_fail
     ld de,FB_NAME
@@ -539,7 +539,7 @@ fc_entry:
     jr .d
 .dd:
     pop hl
-    jr .col
+    jp fc_next
 .file:
     inc hl
     inc hl
@@ -559,7 +559,12 @@ fc_entry:
     rr l
     srl h
     rr l
-    ld a,' '                    ; right-aligned, in four places
+    jp fc_k
+
+;; fc_k: HL = a size in K -> it shown right-aligned in five places, "nnnK";
+;; then on to the next column (two to a row)
+fc_k:
+    ld a,' '
     call fc_out
     ld a,h
     or a
@@ -578,7 +583,7 @@ fc_entry:
     call fc_num
     ld a,'K'
     call fc_out
-.col:
+fc_next:
     ld a,(fc_col)
     inc a
     cp 2
@@ -592,6 +597,7 @@ fc_entry:
     xor a
     ld (fc_n),a
     ret
+
 ;; fc_to: spaces up to B characters of this entry. All kept but AF.
 fc_to:
     ld a,(fc_n)
