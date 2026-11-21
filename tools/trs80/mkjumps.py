@@ -24,8 +24,10 @@ import sys
 D = (sys.argv[1] if len(sys.argv) > 1
      else os.path.join(os.path.dirname(__file__), '..', '..', 'mach', 'trs80'))
 # a machine's own, after the shared ones (so the others' numbers stay): the
-# Model 4's M_NEXTY, the next y on another pixel row (fill-box, lib/gfx.asm)
-NAMES += {'trs80m4': ['M_NEXTY']}.get(os.path.basename(os.path.normpath(D)), [])
+# Model 4's M_NEXTY, the next y on another pixel row (fill-box, lib/gfx.asm);
+# the Spectrum's M_VIDCHAR, a character for the function editor (fr.asm)
+NAMES += {'trs80m4': ['M_NEXTY'],
+          'spectrum': ['M_VIDCHAR']}.get(os.path.basename(os.path.normpath(D)), [])
 
 def main():
     assert len(NAMES) == len(set(NAMES)) and 2 * len(NAMES) < 256
