@@ -925,6 +925,59 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   first, then asks for the disc); a 6128 `(cd "b:")` with no disc gets
   AMSDOS's Retry/Ignore/Cancel, as `|B` does. Parados and VDOS's
   `|DRIVE` are untried.
+* **The ZX Spectrum +2A** (`mach/spectrum/`, branch `spectrum`,
+  2026-11-21; Mike: "start with the plus 2 then"; his is a +2A/B: the
+  +3's design, &1FFD, the +3 ROMs; with a DivMMC). Its README has the
+  user's side and the map. Mike can't test it for a while (not on his
+  bench): work in ZEsarUX alone, ask for the real machine when it all
+  passes. Design: the six images in banks 0, 1, 3, 4, 6, 7 (SYS_BANK's 0-5);
+  the machine layer in **the DivMMC's RAM**, pages 14 (A: screen, keys,
+  graphics, sound, the tick) and 15 (B: files, floats, RAM disc), mapped at
+  &2000 with CONMEM (port &E3) only while a routine runs -- the jumpblock's
+  `mfar` (resident.asm) maps, calls and puts back what was there (RS_E3, the
+  port's copy: write it before the port), reentrant, so page B reaches page
+  A through the jumpblock; a routine's MTAB word has bit 15 set for page B
+  (`m_x equ b_x+#8000` in pageb.asm). Main RAM: the screen, 48 BASIC's
+  variables (the calculator's), IM 2's table and the resident part at
+  &5D00, then the Lisp's: ~1800 cells. Lessons:
+  * **esxDOS's RST 8 sets port &E3 itself** (its page 0 at the call, its
+    own idea after): RS_ESX writes 0 first, puts RS_E3 back after, with
+    the interrupts off (our IM 2 handler maps page A, which would pull
+    esxDOS's RAM away). Its pointers are in IX for a program (HL only in
+    a dot command); names and data must be in main RAM (the file's buffer:
+    FILE_BUFSIZE 288). esxDOS uses DivMMC pages 0-4 (its ROM's `out (&E3)`).
+  * **No code at &3D00-&3DFF in a machine page**: an opcode fetch there
+    sets the DivMMC's automap (its TR-DOS trap), which stays after CONMEM
+    goes. Data lives there (the shadow, the paste buffer).
+  * IM 2, not IM 1: &0038 would map the DivMMC in (and with CONMEM on it
+    is the EEPROM's code). The table is 257 bytes of &5E at &5D00; the
+    handler at &5E5E. The ROM's calculator runs with CONMEM off (RS_CALC:
+    IY = &5C3A, ERR_SP set so a BASIC error comes back as no carry).
+  * **48 BASIC's division truncates** (79 / 10 low: 7.9 - 7 printed
+    0.899999999): + - * / are our own, rounded (`fparith.asm`), and
+    float.out passes as the CPC's; the functions stay the ROM's (they
+    match the CPC's to the last digit).
+  * The CPC harness types every line with **a leading space** (read-line
+    sees " hello"): the paste does too, and PA_REC = 2 leaves it out of
+    the transcript; a line is recorded at its first key, before the
+    editor's beep (reader's `)^G`). 40 columns like the CPC's mode 1,
+    not 42: pp and the copy cursor's wrap then match.
+  * The firmware **doubles the volume without an envelope and keeps four
+    bits** (12 is 8, 8 is silent: mach/fos found it in AY logs).
+  * rasm: `fail` and `print` are directives -- a label so named fails
+    ("STOP assembling requested").
+  * **ZEsarUX**: ZRCP's prompt is "command> " or "command@cpu-step> ";
+    with `--vo null` save-screen is black (zx.py draws the screen's
+    memory); the debug port's register 1 prints controls as "?" (the byte
+    file, register 6, is raw: the transcript); a breakpoint with an action
+    (`write`, `prints`) does not stop; `--emulatorspeed 1000` runs ~10x;
+    its tape traps load LISP.TAP with the DivMMC's paging on (not without:
+    "press PLAY"); `send-keys-ascii 100 13` is ENTER on the +2A menu's
+    Loader; its AY writes are logged with breakpoints on OUTFIRED and PWA
+    (&FFFD, &BFFD); `(quit)` ends it (register 3). It writes
+    zesarux_index_menu.idx into its working folder: never run it from the
+    repo's root. Run it only by its full path or tools/spectrum (the
+    allow rules: no `cd ... &&` in front).
 * **Pocket Lisp** (`pocket/`, 2026-11-19; Mike: "pocket lisp ... a
   board with microcontroller and oled and keys", then colour and a
   bigger screen, the RP2350 chosen; the proposal is a private artifact,

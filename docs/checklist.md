@@ -511,9 +511,37 @@ compiled code (`docs/design.md` describes both)
           interrupts with LS-DOS's low memory out, the ROM's RAM at
           &4000
     - [ ] No compiler (no seventh slot), no RAM disc yet
-15. [ ] **The ZX Spectrum +2 with DivMMC** (Mike's: a +2, not a +3): the
-        128's banks 0, 1, 3, 4, 6, 7 at &C000 for the six images; files
-        through esxDOS; the DivMMC's own RAM for M: and far arrays,
-        maybe. To find out: grey +2 or +2A/B, the DivMMC's RAM, the
-        esxDOS version, an emulator with DivMMC that can be scripted.
+15. [ ] **The ZX Spectrum +2A with DivMMC** (`mach/spectrum/`, branch
+        `spectrum`; its README has the user's side). Mike's is a +2A or
+        +2B (black, "128K ZX Spectrum +2", the tape keys' symbols on the
+        case: his photo, 2026-11-21) -- the +3's design without the drive.
+    - [x] The emulator: ZEsarUX 13.0, headless and scripted over its
+          remote protocol (`tools/spectrum/zx.py`, `test.sh`); MAME has
+          no DivMMC
+    - [x] The six images in banks 0, 1, 3, 4, 6, 7 -- the compiler
+          included; the machine layer in the DivMMC's RAM (pages 14, 15,
+          seen at &2000 only while a routine runs); a resident part at
+          &5D00; IM 2
+    - [x] The console (40 columns, a font of our own), the keys (our own
+          scan), graphics with colour pens (the attributes), sound on the
+          AY (three channels, queues), files through esxDOS, floats (+ -
+          * / rounded here, the functions by the ROM's calculator), the
+          RAM disc `M:` and far arrays in the DivMMC's free pages
+    - [x] `LISP.TAP` and its loader (esxDOS's tape emulation, or a tape);
+          loads and starts in ZEsarUX through the +2A's Loader
+    - [x] The suite in ZEsarUX: 43 ok (`test/*.spectrum.out` where the
+          Spectrum differs: memory, AMSDOS's messages, the CPC's own
+          natives); `(hwtest)` 10 yes
+    - [ ] **On Mike's +2A**: `LISP.TAP` from the SD card (the NMI
+          browser), `(hwtest)`, the keys, the sound, the colours; and
+          which DivMMC and esxDOS it has (the loader wants 128 KB on it)
+    - [ ] Not yet: envelopes, rendezvous; MIDI out of the +2A's socket
+          (the AY's port A, bit-banged at 31250 baud); the joystick;
+          `symbol`; a `(sketch)` for the Spectrum in the demos
+    - [ ] More room: ~1800 cells and 5 KB of strings (the 128 KB holds
+          the six images; the Lisp's RAM is what 32 KB leaves after the
+          screen and the tables)
+    - [ ] Untried: a 128 or grey +2 (the loader tells them apart: no
+          &1FFD); esxDOS's own tape emulation (ZEsarUX's tape traps
+          loaded it)
 

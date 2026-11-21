@@ -19,3 +19,12 @@ asm_any mach/spectrum/resident.asm "$OUT/resident.bin" -s -sa -os "$OUT/resident
 # the loader (it needs the resident part's length) and the tape: LISP.TAP
 asm_any mach/spectrum/loader.asm "$OUT/loader.bin" -DRES_LEN=$(stat -c %s "$OUT/resident.bin")
 python3 tools/spectrum/mktap.py "$OUT"
+# what goes on the SD card: the tape, the hardware test, the examples (the
+# Apfelmaennchen, the classics) -- names in capitals, as esxDOS shows them
+rm -rf "$OUT/sd"
+mkdir -p "$OUT/sd"
+cp "$OUT/LISP.TAP" "$OUT/sd/"
+cp mach/spectrum/hwtest.lsp "$OUT/sd/HWTEST.LSP"
+for f in examples/*.lsp; do
+    cp "$f" "$OUT/sd/$(basename "$f" | tr a-z A-Z)"
+done

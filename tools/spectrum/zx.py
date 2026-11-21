@@ -192,7 +192,8 @@ class Spectrum:
 
     def close(self):
         try:
-            self.z.cmd("exit-emulator")
+            if self.p.poll() is None:
+                self.z.cmd("exit-emulator")
         except Exception:
             pass
         try:
@@ -257,6 +258,9 @@ def run(args):
         todo = []                   # actions: (frame, text)
         done_at = None
         while True:
+            if zx.p.poll() is not None:
+                why = "quit"            # (quit): the emulator has ended
+                break
             if time.time() > deadline:
                 why = "TIMEOUT"
                 break
@@ -270,7 +274,12 @@ def run(args):
                     break
                 time.sleep(0.01)
                 continue
-            if zx.hooked():
+            try:
+                hooked = zx.hooked()
+            except (EOFError, OSError):
+                why = "quit"
+                break
+            if hooked:
                 while i < len(lines) and lines[i].startswith("!"):
                     i += 1
                 if i >= len(lines):
