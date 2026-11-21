@@ -26,7 +26,7 @@ start:
     ld a,2
     call CHAN_OPEN              ; print to the screen
     ld hl,m_hello
-    call print
+    call ld_print
     ; the paging: banks 1 and 3 at &C000 must differ (48 BASIC locks it)
     ld a,(BANK_M)
     ld (ret_7ffd),a
@@ -47,7 +47,7 @@ start:
     ld a,(#C000)
     cp #A5
     ld hl,m_locked
-    jp nz,fail
+    jp nz,ld_fail
     ; which machine: with &7FFD's bit 4 set, a 128 shows 48 BASIC; a +2A
     ; its ROM 1 until &1FFD's bit 2 is set too
     xor a
@@ -59,7 +59,7 @@ start:
     out (c),a
     call is48
     ld hl,m_rom
-    jp nz,fail
+    jp nz,ld_fail
     jr .plus
 .got:
     ld a,1
@@ -76,7 +76,7 @@ start:
     ld (hl),c
     cp #A5
     ld hl,m_nodiv
-    jp nz,fail
+    jp nz,ld_fail
     ld a,CONMEM+6
     out (P_DIVMMC),a
     ld hl,MPAGE
@@ -94,11 +94,11 @@ start:
     ld a,b
     cp #5A
     ld hl,m_small
-    jp z,fail
+    jp z,ld_fail
     ei
     ; the machine pages, through &8000
     ld hl,m_loading
-    call print
+    call ld_print
     ld ix,BUF
     ld de,16384
     call block
@@ -150,7 +150,7 @@ block:
     scf
     call LD_BYTES
     ld hl,m_tape
-    jr nc,fail
+    jr nc,ld_fail
     ld a,'.'
     rst #10
     ret
@@ -177,8 +177,8 @@ is48:
     cp #FF
     ret
 
-;; fail: HL = a message -> it shown, the paging as BASIC had it, back to it
-fail:
+;; ld_fail: HL = a message -> it shown, the paging as BASIC had it, back to it
+ld_fail:
     di
     push hl
     ld a,(ret_7ffd)
@@ -195,18 +195,18 @@ fail:
     out (P_DIVMMC),a
     pop hl
     ei
-    call print
+    call ld_print
     ld sp,(ret_sp)
     ret
 
-;; print: HL = a message ending in 0 -> on the screen (RST 10)
-print:
+;; ld_print: HL = a message ending in 0 -> on the screen (RST 10)
+ld_print:
     ld a,(hl)
     or a
     ret z
     rst #10
     inc hl
-    jr print
+    jr ld_print
 
 ret_sp:     dw 0
 ret_7ffd:   db 0

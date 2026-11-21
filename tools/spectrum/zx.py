@@ -91,7 +91,7 @@ def actions(lines, i):
 
 
 class Spectrum:
-    def __init__(self, build, sd, speed, log):
+    def __init__(self, build, sd, speed, log, tape=None):
         self.build = build
         self.port = free_port()
         self.trans = os.path.join(log, "transcript.bin")
@@ -105,12 +105,24 @@ class Spectrum:
              "--hardware-debug-ports", "--hardware-debug-ports-byte-file", self.trans,
              "--enable-divmmc-paging", "--divmmc-rom", os.path.join(ZDIR, "esxmmc085.rom"),
              "--enable-esxdos-handler", "--esxdos-root-dir", sd,
-             "--emulatorspeed", str(speed)] + os.environ.get("ZX_ARGS", "").split(),
+             "--emulatorspeed", str(speed)]
+            + (["--tape", tape] if tape else [])
+            + os.environ.get("ZX_ARGS", "").split(),
             stdout=self.out, stderr=subprocess.STDOUT, cwd=log)
         self.z = Zrcp(port=self.port, wait=15)
         self.lisp = syms(os.path.join(build, "lisp.sym"))
         self.page = syms(os.path.join(build, "lispm.sym"))
         self.res = syms(os.path.join(build, "resident.sym"))
+
+    def boot_tape(self):
+        """the tape loaded as a user loads it: ENTER at the +2A's menu, on
+        its Loader (LOAD ""); ZEsarUX reads the tape through its ROM traps"""
+        z = self.z
+        time.sleep(0.5)
+        z.cmd("send-keys-ascii 100 13")
+        z.cmd("enable-breakpoints")
+        z.cmd("set-breakpoint 1 PC=%XH" % self.lisp["EDHOOK"])
+        z.cmd("set-breakpointaction 1 write %d 1" % self.res["RS_HOOK"])
 
     def boot(self):
         time.sleep(0.5)               # the +2A's menu up (10x its speed)
@@ -228,11 +240,19 @@ def run(args):
     log = tempfile.mkdtemp(prefix="zx-")
     sd = args.sd or os.path.join(log, "sd")
     os.makedirs(sd, exist_ok=True)
-    zx = Spectrum(os.path.abspath(args.build), os.path.abspath(sd), args.speed, log)
+    tape = os.path.abspath(args.tape) if args.tape else None
+    zx = Spectrum(os.path.abspath(args.build), os.path.abspath(sd), args.speed, log, tape)
     why = "done"
     try:
-        zx.boot()
         deadline = time.time() + args.timeout
+        if tape:
+            zx.boot_tape()
+            # RS_HOOK is BASIC's RAM until the Lisp starts (rs_boot clears
+            # it): it counts once the banner is in the transcript
+            while os.path.getsize(zx.trans) == 0 and time.time() < deadline:
+                time.sleep(0.05)
+        else:
+            zx.boot()
         i = 0                       # the next line
         todo = []                   # actions: (frame, text)
         done_at = None
@@ -295,7 +315,9 @@ def main():
     ap.add_argument("-s", "--speed", type=int, default=int(os.environ.get("ZX_SPEED", 1000)),
                     help="ZEsarUX's speed, in percent")
     ap.add_argument("-k", "--keep", action="store_true", help="keep the log folder")
-    ap.add_argument("-S", "--shot", help="a screenshot at the end (.bmp, or .png)")
+    ap.add_argument("-S", "--shot", help="a screenshot at the end (.png)")
+    ap.add_argument("-T", "--tape", help="load from this tape (LISP.TAP) as the machine would,"
+                    " not through ZRCP")
     ap.add_argument("file")
     run(ap.parse_args())
 

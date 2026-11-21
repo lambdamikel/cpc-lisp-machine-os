@@ -16,3 +16,6 @@ asm_any() {  # source output [rasm options]
 
 asm_any mach/spectrum/page.asm "$OUT/LISPM.ROM" -s -sa -os "$OUT/lispm.sym"
 asm_any mach/spectrum/resident.asm "$OUT/resident.bin" -s -sa -os "$OUT/resident.sym"
+# the loader (it needs the resident part's length) and the tape: LISP.TAP
+asm_any mach/spectrum/loader.asm "$OUT/loader.bin" -DRES_LEN=$(stat -c %s "$OUT/resident.bin")
+python3 tools/spectrum/mktap.py "$OUT"

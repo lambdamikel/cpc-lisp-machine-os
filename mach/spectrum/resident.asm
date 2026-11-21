@@ -277,6 +277,8 @@ r_boot:
     ld hl,0
     ld (RS_FRAMES),hl
     ld (RS_FRAMES+2),hl
+    xor a
+    ld (RS_HOOK),a
     ld a,IM2TAB >> 8
     ld i,a
     im 2
