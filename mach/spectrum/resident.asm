@@ -80,8 +80,8 @@ r_copy:
     ret
 
     defs IM2VEC-$,0
-;; the interrupt, 50 times a second: machine page A's tick, with the page
-;; that was there put back after. IY and the alternate registers are not
+;; the interrupt, 50 times a second: machine page A's tick, then page B's,
+;; with the page that was there put back after. IY and the alternate registers are not
 ;; touched (the ROM's calculator may be running).
     assert $ == IM2VEC
 im2:
@@ -94,7 +94,10 @@ im2:
     push bc
     push de
     push ix
-    call P_TICK
+    call P_TICK                 ; page A: the clock, the keys
+    ld a,E3_B
+    out (P_DIVMMC),a
+    call PB_TICK                ; page B: the sound
     pop ix
     pop de
     pop bc

@@ -5,20 +5,28 @@
 ;; routine's address + &8000.
 
 PB_DATA     equ #3B00           ; this page's data (no code at &3D00-&3DFF)
+PB_DATA_END equ #4000
 
     org #2000,#4000
     jp b_init                   ; rs_boot calls this once
+    assert $ == PB_TICK
+    jp b_tick                   ; the interrupt: the sound
     db "ZX SPECTRUM MACHINE PAGE B",0
 
 ;; b_init: from rs_boot, once
 b_init:
-    ret
+    jp s_init
 
 ;; ---------------------------------------------------------------------------
 ;; FILES: files.asm, the RAM disc rdisc.asm
 
     include "files.asm"
     include "rdisc.asm"
+
+;; ---------------------------------------------------------------------------
+;; SOUND: sound.asm
+
+    include "sound.asm"
 
 ;; ---------------------------------------------------------------------------
 ;; FLOATS: fpzx.asm
@@ -69,5 +77,12 @@ m_m_rdout       equ b_m_rdout+#8000
 m_m_rdcat       equ b_m_rdcat+#8000
 m_m_delete      equ b_m_delete+#8000
 m_m_drive       equ b_m_drive+#8000
+m_snd_queue     equ b_snd_queue+#8000
+m_m_sndcheck    equ b_m_sndcheck+#8000
+m_m_sndrel      equ b_m_sndrel+#8000
+m_m_sndhold     equ b_m_sndhold+#8000
+m_m_sndcont     equ b_m_sndcont+#8000
+m_m_ampenv      equ b_m_ampenv+#8000
+m_m_toneenv     equ b_m_toneenv+#8000
 
     defs #4000-$,0

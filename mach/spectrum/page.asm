@@ -140,14 +140,13 @@ m_init:
     ld (g_ox),hl
     ld (g_oy),hl
     call k_init
-    call s_init
     ld a,(c_border)
     call v_border
     jp c_clear
 
 ;; m_tick: the interrupt's work, 50 times a second, from the resident part
-;; (AF, BC, DE, HL, IX saved there): the clock, the keys, the sound. IY
-;; and the alternate registers are not touched.
+;; (AF, BC, DE, HL, IX saved there): the clock, the keys (the sound is page
+;; B's). IY and the alternate registers are not touched.
 m_tick:
     ld hl,(RS_FRAMES)
     ld de,6
@@ -158,8 +157,7 @@ m_tick:
     inc hl
     ld (RS_FRAMES+2),hl
 .c:
-    call k_tick
-    jp s_tick
+    jp k_tick
 
 ;; ---------------------------------------------------------------------------
 ;; DRAWING A CHARACTER
@@ -1973,11 +1971,6 @@ ff_pop:
 ff_t:       db 0                ; the area's colour
 ff_up:      db 0                ; a run above noted, and not ended yet
 ff_dn:      db 0                ;   below
-
-;; ---------------------------------------------------------------------------
-;; SOUND: sound.asm
-
-    include "sound.asm"
 
 ;; ---------------------------------------------------------------------------
 ;; SYSTEM

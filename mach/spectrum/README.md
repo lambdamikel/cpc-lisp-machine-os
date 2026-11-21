@@ -46,7 +46,7 @@ floats -- live in the DivMMC's RAM.
 | &6100-&BAFF | the Lisp's RAM: tables, symbols, cells, strings, the stack (`memmap.asm`) |
 | &BB00-&BFFF | the fixed variables and buffers |
 | &C000-&FFFF | one bank at a time: the core (bank 0), library parts 0-3 (1, 3, 4, 6), the VM (7) |
-| DivMMC pages 14, 15 | the machine pages A and B (`page.asm`, `pageb.asm`), seen at &2000 only while one of their routines runs |
+| DivMMC pages 14, 15 | the machine pages A and B (`page.asm`, `pageb.asm`; the sound, `sound.asm`, is B's), seen at &2000 only while one of their routines runs |
 | DivMMC pages 5-13 (16 on) | the RAM disc `M:` |
 
 A call of a machine routine goes to the resident jumpblock, which maps
@@ -57,7 +57,8 @@ DivMMC's EEPROM, so what needs the ROM -- the calculator (RST 28), esxDOS
 esxDOS has pages 0-4 of the DivMMC's RAM; it sets the DivMMC's port its own
 way at each call (the resident part puts back what was there after). The
 interrupt is IM 2 (the DivMMC would map itself in at &0038), 50 times a
-second: the clock, the keys, the sound. No machine page may have code at
+second: page A's tick (the clock, the keys), then page B's (the sound,
+twice: the firmware's 100 a second). No machine page may have code at
 &3D00-&3DFF: a fetch there maps the DivMMC in by itself (its TR-DOS trap).
 
 **About 1800 cells are free at start, and some 5 KB of strings** -- the
@@ -118,17 +119,18 @@ N B) as 7, and 64 for BREAK.
   CPC's firmware rounds them (`fparith.asm`); `sqrt`, `exp`, `log`, `sin`,
   `cos`, `tan`, `atan` by 48 BASIC's calculator. The float tests give what
   the CPC gives.
-* **Sound** on the 128K's AY: `sound`'s three channels, each a queue of
-  four, the periods made the AY's (it runs at 1.7734 MHz, the CPC's at 1);
-  `play`, the tunes. Not yet: `envelope`, `tone-envelope` (taken, not
-  heard), rendezvous and holding.
+* **Sound** on the 128K's AY, the CPC firmware's sound manager (as CPC
+  Lisp on FutureOS has it, checked there against the 464's): `sound`'s
+  three channels, each a queue of four, `envelope` and `tone-envelope`,
+  rendezvous, `release`, `sound-check`, `sound-hold`, `sound-continue`;
+  `play`, the tunes. The periods are made the AY's (it runs at 1.7734 MHz,
+  the CPC's at 1): the same pitch.
 * `peek`, `poke`; `time` (the interrupt's count, in 1/300 s).
 * `*features*` is `(:zx-spectrum :cpc-lisp)`.
 * **Not here**: speech (`say` is quiet), MIDI (`midi-out` sends nothing
   yet: the +2A's MIDI socket is the AY's port, to come), and the CPC's own
   `symbol`, `window`, `tag`, `transparent`, `flash-speed`, `text-cursor`,
-  `joystick`, `release`, `sound-check`, `sound-hold`, `sound-continue`,
-  PlayCity.
+  `joystick`, PlayCity.
 
 ## A test of the real machine
 

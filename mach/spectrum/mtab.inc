@@ -165,3 +165,15 @@
     dw m_m_drive
     assert $ == MTAB+2*J_M_VIDCHAR
     dw m_m_vidchar
+    assert $ == MTAB+2*J_M_SNDCHECK
+    dw m_m_sndcheck
+    assert $ == MTAB+2*J_M_SNDREL
+    dw m_m_sndrel
+    assert $ == MTAB+2*J_M_SNDHOLD
+    dw m_m_sndhold
+    assert $ == MTAB+2*J_M_SNDCONT
+    dw m_m_sndcont
+    assert $ == MTAB+2*J_M_AMPENV
+    dw m_m_ampenv
+    assert $ == MTAB+2*J_M_TONEENV
+    dw m_m_toneenv

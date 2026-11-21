@@ -82,3 +82,9 @@
     call mfar : db 2*J_M_MIDI
     call mfar : db 2*J_M_DRIVE
     call mfar : db 2*J_M_VIDCHAR
+    call mfar : db 2*J_M_SNDCHECK
+    call mfar : db 2*J_M_SNDREL
+    call mfar : db 2*J_M_SNDHOLD
+    call mfar : db 2*J_M_SNDCONT
+    call mfar : db 2*J_M_AMPENV
+    call mfar : db 2*J_M_TONEENV

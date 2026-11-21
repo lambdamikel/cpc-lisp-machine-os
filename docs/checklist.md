@@ -535,9 +535,11 @@ compiled code (`docs/design.md` describes both)
     - [ ] **On Mike's +2A**: `LISP.TAP` from the SD card (the NMI
           browser), `(hwtest)`, the keys, the sound, the colours; and
           which DivMMC and esxDOS it has (the loader wants 128 KB on it)
-    - [ ] Not yet: envelopes, rendezvous; MIDI out of the +2A's socket
-          (the AY's port A, bit-banged at 31250 baud); the joystick;
-          `symbol`; a `(sketch)` for the Spectrum in the demos
+    - [x] Sound: the FutureOS port's firmware sound manager on the AY
+          (envelopes, rendezvous, holding), periods scaled 227/128
+    - [ ] Not yet: MIDI out of the +2A's socket (the AY's port A,
+          bit-banged at 31250 baud); the joystick; `symbol`; a `(sketch)`
+          for the Spectrum in the demos
     - [ ] More room: ~1800 cells and 5 KB of strings (the 128 KB holds
           the six images; the Lisp's RAM is what 32 KB leaves after the
           screen and the tables)

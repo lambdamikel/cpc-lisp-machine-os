@@ -49,7 +49,7 @@ NIL
 LISP> (envelope 1 2 3)
 Error: wrong number of arguments for #<SUBR ENVELOPE>
 LISP> (sound-check 1)
-Error: undefined function SOUND-CHECK
+4
 LISP> (list (note 'c4) (note 'a4) (note 'c#4) (note 'eb4) (note 'b) (note 'c0) (note 'c7))
 (239 142 226 201 127 3822 30)
 LISP> (play '(c4 (e4 5) r) 5)

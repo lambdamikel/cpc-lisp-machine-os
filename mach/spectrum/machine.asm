@@ -92,3 +92,9 @@ M_FILL          equ JB+4*J_M_FILL
 M_MIDI          equ JB+4*J_M_MIDI
 M_DRIVE         equ JB+4*J_M_DRIVE
 M_VIDCHAR       equ JB+4*J_M_VIDCHAR
+M_SNDCHECK      equ JB+4*J_M_SNDCHECK
+M_SNDREL        equ JB+4*J_M_SNDREL
+M_SNDHOLD       equ JB+4*J_M_SNDHOLD
+M_SNDCONT       equ JB+4*J_M_SNDCONT
+M_AMPENV        equ JB+4*J_M_AMPENV
+M_TONEENV       equ JB+4*J_M_TONEENV
