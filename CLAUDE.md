@@ -930,7 +930,12 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   +3's design, &1FFD, the +3 ROMs; with a DivMMC). Its README has the
   user's side and the map. Mike can't test it for a while (not on his
   bench): work in ZEsarUX alone, ask for the real machine when it all
-  passes. Design: the six images in banks 0, 1, 3, 4, 6, 7 (SYS_BANK's 0-5);
+  passes. **Passed on Mike's +2A** (2026-11-21, build 362, now
+  `discs/spectrum/`): his DivMMC has esxDOS 0.8.5; the files in a
+  folder LISP on its card, NMI, LISP.TAP, ENTER; `(hwtest)` 10 yes,
+  the keys, `(tune)`, `(rose)`. His card reader drops off USB now and
+  then (the kernel log's "USB disconnect"): check the copy after a
+  remount. Design: the six images in banks 0, 1, 3, 4, 6, 7 (SYS_BANK's 0-5);
   the machine layer in **the DivMMC's RAM**, pages 14 (A: screen, keys,
   graphics, sound, the tick) and 15 (B: files, floats, RAM disc), mapped at
   &2000 with CONMEM (port &E3) only while a routine runs -- the jumpblock's

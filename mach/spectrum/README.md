@@ -1,8 +1,9 @@
 # CPC Lisp on the ZX Spectrum 128K with a DivMMC
 
-*Runs in ZEsarUX (a +2A, a DivMMC with the real esxDOS 0.8.5, started
-from its NMI browser as below; a 128 too); not tried on a real Spectrum
-yet.* The same Lisp as on the CPC -- the six images are built
+*Runs on a real +2A* (Mike's, with a DivMMC and esxDOS 0.8.5,
+2026-11-21: `(hwtest)` 10 yes, the keys, sound, graphics), *and in
+ZEsarUX (a +2A, a DivMMC with the real esxDOS 0.8.5, started from its
+NMI browser as below; a 128 too). Screenshots: the main README.* The same Lisp as on the CPC -- the six images are built
 from the same sources, the compiler included -- on a ZX Spectrum +2A,
 +2B or +3 (or a 128 or grey +2: the loader tells them apart) with
 a **DivMMC** (or a compatible interface) that has **128 KB of RAM** and
@@ -17,7 +18,8 @@ runs **esxDOS**.
                                      #   print the transcript
     tools/spectrum/test.sh           # the regression tests
 
-Copy what is in `build/spectrum/sd/` to the SD card, at its root or into a
+Copy what is in `build/spectrum/sd/` (or `discs/spectrum/`, ready made)
+to the SD card, at its root or into a
 folder of its own (`LISP`, say): `LISP.TAP`, `HWTEST.LSP` and the examples
 (`APFEL.LSP`, the classics). Lisp's files are esxDOS's current folder's --
 the one LISP.TAP was started from: keep them together.

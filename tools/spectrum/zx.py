@@ -28,6 +28,7 @@ starting with ! are the CPC harness's actions (emu/repl.lua), N frames (of
     !type N text   text given to the keys ({ENTER} is a return)
     !esc N         BREAK
     !press K N     the CPC's key K: its code given to the keys, if it has one
+    !shot N file   a screenshot (.png), as -S
     !steps S       a user's steps (-B's), at once after the line before:
                    after a (quit), loading LISP.TAP again with -M
     !ppoke SYM HEX bytes into machine page A at its symbol, before the next
@@ -83,6 +84,9 @@ def actions(lines, i):
         m = re.match(r"^!type (\d+) (.*)$", l)
         if m:
             out.append((int(m.group(1)), "type", m.group(2).replace("{ENTER}", "\r")))
+        m = re.match(r"^!shot (\d+) (\S+)$", l)
+        if m:
+            out.append((int(m.group(1)), "shot", m.group(2)))
         m = re.match(r"^!esc (\d+)", l)
         if m:
             out.append((int(m.group(1)), "type", "\xfc"))
@@ -264,7 +268,10 @@ def shot(zx, path):
     for a in range(0x4000, 0x5B00, 0x400):
         r = zx.z.cmd("read-memory %d %d" % (a, 0x400)).strip()
         m += bytes.fromhex(r[:0x800])
-    border = int(zx.z.cmd("evaluate IN(254)").strip() or 0) if False else 1
+    try:
+        border = zx.ppeek(zx.page["C_BORDER"])[0] & 7   # the Lisp's (page A)
+    except Exception:
+        border = 1
     img = Image.new("RGB", (256 + 32, 192 + 32), ZXRGB[border])
     px = img.load()
     for y in range(192):
@@ -306,7 +313,7 @@ def run(args):
         else:
             zx.boot()
         i = 0                       # the next line
-        todo = []                   # actions: (frame, text)
+        todo = []                   # actions: (frame, kind, data)
         done_at = None
         while True:
             if zx.p.poll() is not None:
@@ -319,7 +326,11 @@ def run(args):
             if todo:
                 now = zx.frames()
                 while todo and todo[0][0] <= now and zx.pasted():
-                    zx.paste(todo.pop(0)[1], 0)     # in order, one at a time
+                    _, kind, data = todo.pop(0)     # in order, one at a time
+                    if kind == "shot":
+                        shot(zx, os.path.abspath(data))
+                    else:
+                        zx.paste(data, 0)
             if done_at is not None:
                 if not todo and time.time() >= done_at:
                     break
@@ -343,9 +354,9 @@ def run(args):
                     time.sleep(0.005)
                 zx.paste(" " + lines[i] + "\r", 2)
                 t = zx.frames()
-                for n, kind, text in actions(lines, i):
+                for n, kind, data in actions(lines, i):
                     t += n
-                    todo.append((t, text))
+                    todo.append((t, kind, data))
                 i += 1
                 if i < len(lines) and lines[i].startswith("!steps "):
                     # RS_HOOK is BASIC's RAM until the Lisp starts again:

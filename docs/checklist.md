@@ -540,9 +540,10 @@ compiled code (`docs/design.md` describes both)
           `(quit)` hanging (the page dropped under its own code) and the
           loader taking the +2A for a 128 under esxDOS; a 128 in ZEsarUX:
           `(hwtest)` 10 yes
-    - [ ] **On Mike's +2A**: `LISP.TAP` from the SD card (the NMI
-          browser), `(hwtest)`, the keys, the sound, the colours; and
-          which DivMMC and esxDOS it has (the loader wants 128 KB on it)
+    - [x] **On Mike's +2A** (2026-11-21, build 362, `discs/spectrum/`):
+          a DivMMC with esxDOS 0.8.5; `LISP.TAP` from a folder on the SD
+          card by the NMI browser, `(hwtest)` 10 yes, the keys,
+          `(tune)`, `(rose)` -- "this all works"
     - [x] Sound: the FutureOS port's firmware sound manager on the AY
           (envelopes, rendezvous, holding), periods scaled 227/128
     - [x] MIDI out of the RS232/MIDI socket: bit 2 of the AY's port A,

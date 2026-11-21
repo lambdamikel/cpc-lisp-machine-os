@@ -26,6 +26,7 @@ the test discs for the real machine. Each disc's test is `HWTEST.LSP`:
 | `cpclisp-trs80-model4.hfe` | the same disc for a **Gotek** (FlashFloppy) or an **HxC** | 1000 |
 | `cpclisp-trs80-classics-model1.dsk`, `-model3.dsk`, `-model4.dsk`, `-model4.hfe` | **the classics disc for the TRS-80s**: the same programs on an LDOS 5.3.1, LDOS 5.1.4 and LS-DOS 6.3.1 data disc (`tools/trs80/mkclassics.py`); put it in a drive other than the system's: `(load "classics")` | -- |
 | `frehd/cpclisp4` | the same on the **FreHD**'s hard disc: an LS-DOS 6.3.1 system (1.6 MB, Radio Shack hard disc driver; the hard disc is drive :0 only, the floppies :4 and :5) with `LISP` and `HWTEST/LSP`. Copy it to the root of the FreHD's SD card *as it is named* (no extension, as the FreHD's images); its boot menu lists it, ENTER boots it, `LISP` -- no date asked | 1000 |
+| `spectrum/` | **CPC Lisp on a ZX Spectrum 128K with a DivMMC** (`mach/spectrum`): not a disc but the files for the DivMMC's SD card -- `LISP.TAP`, `HWTEST.LSP`, `APFEL.LSP` and the classics. Copy them into a folder of their own (`LISP`); switch on, NMI, the folder, `LISP.TAP`, ENTER. The DivMMC needs 128 KB of RAM and esxDOS | 362 |
 | `ld4-631.dsk` | **LS-DOS 6.3.1** for the Model 4, its system disc as distributed (Tim Mann's `ld4-631.zip`), which the Model 4 discs are made from -- see below | -- |
 
 Checked on a real CPC 464 with Revaldinho's universal 512K RAM card, on
@@ -138,3 +139,10 @@ also put the Lisp on any LS-DOS 6 `.hdv`.
 The disc versions' own documentation: `mach/cpc512/README.md`,
 `mach/cpc6128/README.md`. Licence: GPL-3.0, as the rest of the
 repository; what you write in CPC Lisp is yours (see the main README).
+
+`spectrum/` build 362 passed on Mike's ZX Spectrum +2A (2026-11-21:
+a DivMMC with esxDOS 0.8.5, the files in a folder `LISP` on its SD
+card, `LISP.TAP` started from esxDOS's NMI browser): `(hwtest)` 10 yes,
+the keys, `(tune)`, `(rose)`. In ZEsarUX with the real esxDOS 0.8.5
+(`tools/spectrum/esxtest.sh`) also `(quit)` and `(hwtest2)` 2 yes.
+`mach/spectrum/README.md` has the details.

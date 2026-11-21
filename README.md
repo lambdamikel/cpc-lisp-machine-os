@@ -13,6 +13,13 @@ and back to the desktop with `(reset)` ([*Under
 FutureOS*](#under-futureos), below). **Video:**
 [CPC Lisp on the 6128 under FutureOS](https://youtu.be/s4BsQOroQUc) (5:08).
 
+**New: the ZX Spectrum.** A 128K Spectrum -- the +2A, +2B or +3, or a
+128 -- with a DivMMC runs the same Lisp, the compiler and all, from its
+SD card: 40 columns, colour graphics on the Spectrum's attributes, the
+AY's three voices, files through esxDOS. It runs on a real +2A ([*On
+the ZX Spectrum*](#on-the-zx-spectrum), below; screenshots
+[below](#screenshots)).
+
     CPC Lisp 1.0
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
@@ -54,12 +61,17 @@ at the end says what is in each.
   240 on the Radio Shack board, the Grafyx Solution or the Improved
   Grafyx -- from a floppy, an HxC or Gotek, or a FreHD ([*The TRS-80
   Model 4*](#the-trs-80-model-4), below).
-* **More Z80 machines are to come**, in this order: the ZX Spectrum +2
-  (with a DivMMC), MSX1, the TA alphatronic PC, the Sharp MZ-700 and the
-  NABU PC.
+* **The ZX Spectrum 128K** -- the +2A, +2B and +3, or a 128 -- with a
+  **DivMMC** (128 KB of RAM, esxDOS) runs it from an SD card: the same
+  six images in the 128K's banks, the machine's own routines in the
+  DivMMC's RAM; 40 by 24 characters, graphics in colour, the AY's three
+  voices, MIDI out ([*On the ZX Spectrum*](#on-the-zx-spectrum), below).
+* **More Z80 machines are to come**, in this order: MSX1, the TA
+  alphatronic PC, the Sharp MZ-700 and the NABU PC.
   Everything a machine provides is behind one interface
   ([`mach/README.md`](mach/README.md)); the CPC's is `mach/cpc/`, the
-  TRS-80's `mach/trs80/`, the Model 4's `mach/trs80m4/`.
+  TRS-80's `mach/trs80/`, the Model 4's `mach/trs80m4/`, the Spectrum's
+  `mach/spectrum/`.
 
 ## Videos
 
@@ -72,8 +84,8 @@ at the end says what is in each.
 
 ## Screenshots
 
-From the emulators: MAME for the CPC, trs80gp for the TRS-80s. The same
-programs, the same Lisp. First the Apfelmaennchen on all three:
+From the emulators: MAME for the CPC, trs80gp for the TRS-80s, ZEsarUX
+for the ZX Spectrum. The same programs, the same Lisp.
 
 **On the Amstrad CPC**
 
@@ -82,12 +94,20 @@ programs, the same Lisp. First the Apfelmaennchen on all three:
 <tr><td align="center" valign="top"><img src="docs/images/cpc-tree.png" width="190" alt="<code>(tree)</code>: a recursive tree"><br><code>(tree)</code>: a recursive tree</td><td align="center" valign="top"><img src="docs/images/cpc-shapes.png" width="190" alt="<code>(shapes)</code>: discs and boxes in 16 colours"><br><code>(shapes)</code>: discs and boxes in 16 colours</td><td align="center" valign="top"><img src="docs/images/cpc-sierpinski.png" width="190" alt="<code>(sierpinski)</code>: the chaos game"><br><code>(sierpinski)</code>: the chaos game</td><td align="center" valign="top"><img src="docs/images/cpc-moire.png" width="190" alt="<code>(moire)</code>: lines drawn with XOR"><br><code>(moire)</code>: lines drawn with XOR</td></tr>
 </table>
 
+**The Apfelmaennchen on all four** -- `(load "apfel")`, `(apfel)`, from
+the demo disc ([`examples/apfel.lsp`](examples/apfel.lsp)) -- the same
+program on each:
+
 <table>
-<tr><td align="center" valign="top"><img src="docs/images/cpc-apfel.png" width="250" alt="<code>(apfel)</code> on the CPC: mode 2, compiled"><br><code>(apfel)</code> on the CPC: mode 2, compiled</td><td align="center" valign="top"><img src="docs/images/m4-apfel.png" width="250" alt="<code>(apfel)</code> on the TRS-80 Model 4: the high-resolution board"><br><code>(apfel)</code> on the TRS-80 Model 4: the high-resolution board</td><td align="center" valign="top"><img src="docs/images/trs80-apfel.png" width="250" alt="<code>(apfel)</code> on the TRS-80 Model I: in the 2 x 3 blocks"><br><code>(apfel)</code> on the TRS-80 Model I: in the 2 x 3 blocks</td></tr>
+<tr><td align="center" valign="top"><img src="docs/images/cpc-apfel.png" width="190" alt="<code>(apfel)</code> on the CPC: mode 2, compiled"><br><code>(apfel)</code> on the CPC: mode 2, compiled</td><td align="center" valign="top"><img src="docs/images/zx-apfel.png" width="190" alt="<code>(apfel)</code> on the ZX Spectrum: 256 by 192, compiled"><br><code>(apfel)</code> on the ZX Spectrum: 256 by 192, compiled</td><td align="center" valign="top"><img src="docs/images/m4-apfel.png" width="190" alt="<code>(apfel)</code> on the TRS-80 Model 4: the high-resolution board"><br><code>(apfel)</code> on the TRS-80 Model 4: the high-resolution board</td><td align="center" valign="top"><img src="docs/images/trs80-apfel.png" width="190" alt="<code>(apfel)</code> on the TRS-80 Model I: in the 2 x 3 blocks"><br><code>(apfel)</code> on the TRS-80 Model I: in the 2 x 3 blocks</td></tr>
 </table>
 
-The Apfelmaennchen -- `(load "apfel")`, `(apfel)`, from the demo disc
-([`examples/apfel.lsp`](examples/apfel.lsp)) -- the same program on each.
+**On the ZX Spectrum +2A, with a DivMMC**
+
+<table>
+<tr><td align="center" valign="top"><img src="docs/images/zx-repl.png" width="190" alt="The REPL, 40 by 24: <code>loop</code>, <code>format</code>, floats, the compiler"><br>The REPL, 40 by 24: <code>loop</code>, <code>format</code>, floats, the compiler</td><td align="center" valign="top"><img src="docs/images/zx-ed.png" width="190" alt="The function editor: <code>(ed 'rose)</code>; EDIT or GRAPH is done"><br>The function editor: <code>(ed 'rose)</code>; EDIT or GRAPH is done</td><td align="center" valign="top"><img src="docs/images/zx-rose.png" width="190" alt="<code>(rose)</code>: floats by the Spectrum ROM's calculator"><br><code>(rose)</code>: floats by the Spectrum ROM's calculator</td><td align="center" valign="top"><img src="docs/images/zx-koch.png" width="190" alt="<code>(koch 4)</code>"><br><code>(koch 4)</code></td></tr>
+<tr><td align="center" valign="top"><img src="docs/images/zx-tree.png" width="190" alt="<code>(tree)</code>"><br><code>(tree)</code></td><td align="center" valign="top"><img src="docs/images/zx-shapes.png" width="190" alt="<code>(shapes)</code>: a pen colours its 8 by 8 cell -- the Spectrum's colour clash"><br><code>(shapes)</code>: a pen colours its 8 by 8 cell -- the Spectrum's colour clash</td><td align="center" valign="top"><img src="docs/images/zx-sierpinski.png" width="190" alt="<code>(sierpinski)</code>"><br><code>(sierpinski)</code></td><td align="center" valign="top"><img src="docs/images/zx-moire.png" width="190" alt="<code>(moire)</code>: lines drawn with XOR"><br><code>(moire)</code>: lines drawn with XOR</td></tr>
+</table>
 
 **On the TRS-80 Model 4, with the high-resolution board**
 
@@ -323,6 +343,57 @@ FutureOS everything back at `(reset)`. The video below shows it.
 
 [CPC LISP running on the CPC 6128 with FutureOS -- Vortex Floppy Emulation with LambdaSpeak AI](https://youtu.be/s4BsQOroQUc) (5:08)
 
+## On the ZX Spectrum
+
+The same Lisp -- the same six images, built from the same sources, the
+compiler included -- runs on a **ZX Spectrum 128K with a DivMMC**: a
++2A, +2B or +3, or a 128 or a grey +2 (the loader tells them apart). The
+six images take the 128K's banks 0, 1, 3, 4, 6 and 7; what is the
+Spectrum's -- the screen, the keys, graphics, sound, files through
+esxDOS, floats, a RAM disc -- lives in the DivMMC's own RAM, two of its
+8 KB pages, mapped in only while one of its routines runs
+(`mach/spectrum/`).
+
+    CPC Lisp 1.0
+    A Lisp machine for the ZX Spectrum
+    library ROMs 1 2 3 4
+    1811 cells free
+
+**What it needs**: a 128K Spectrum and a DivMMC (or a compatible
+interface) with **128 KB of RAM** and **esxDOS** on its SD card.
+
+**The files**: [`discs/spectrum/`](discs/spectrum/) -- `LISP.TAP`,
+`HWTEST.LSP`, the Apfelmaennchen and the classics. Copy them to the SD
+card, into a folder of their own (`LISP`, say): Lisp's files are that
+folder's. Or build them: `MACH=spectrum tools/build.sh` (rasm and Python
+3, as for the CPC) makes `build/spectrum/sd/`.
+
+**Starting**: switch on; esxDOS starts the Spectrum in 48 BASIC ("(C)
+1982 Amstrad"). Press the DivMMC's **NMI** button, go into the `LISP`
+folder (ENTER), move onto `LISP.TAP` with the cursor keys and press
+**ENTER**: esxDOS loads it as a tape, in a few seconds. `(quit)` starts
+the Spectrum afresh -- NMI, `LISP.TAP`, ENTER to come back; the RAM disc
+`M:` keeps its files.
+
+**What is different**: 40 by 24 characters in a font of its own;
+graphics 256 by 192, where a pen colours its 8 by 8 cell -- the
+Spectrum's colour clash (screenshots above); the CPC firmware's sound
+manager on the AY, envelopes and all; MIDI out of the RS232/MIDI socket
+(through an adapter to a MIDI socket); floats by the Spectrum ROM's
+calculator; a RAM disc `M:` of 72 KB in the DivMMC's spare RAM (more on
+a bigger one) and far arrays there; about 1800 cells. **EDIT** is COPY,
+**GRAPH** is CTRL-S, **BREAK** is ESC; SYMBOL SHIFT gives `[ ] { } ~ |
+\` on Y U F G A S D. [`mach/spectrum/README.md`](mach/spectrum/README.md)
+has it all.
+
+**It runs on a real +2A** with a DivMMC and esxDOS 0.8.5 (2026-11-21):
+`(hwtest)` -- the cells, the compiler, files on the SD card, lazy
+loading, the RAM disc and far arrays, the ROM's calculator, the colour
+pens -- all yes; the keys, `(tune)`, `(rose)`. It was made in
+[ZEsarUX](https://github.com/chernandezba/zesarux), headless:
+`tools/spectrum/zx.py` types a file at it, `test.sh` runs the
+regression tests, `esxtest.sh` the real esxDOS from an SD card image.
+
 ## On a TRS-80
 
 The same Lisp -- the same six images, built from the same sources --
@@ -505,7 +576,8 @@ KB, in six 16 KB ROMs. It covers:
   each is, and how to install them
 * [`discs/README.md`](discs/README.md): CPC Lisp from disc (512K, plain
   6128), the TRS-80 discs (Model I, III, 4 -- the Model 4's for a FreHD
-  too) and the test discs for the real machine
+  too), the ZX Spectrum's SD card files and the test discs for the real
+  machine
 * [`examples/`](examples/): programs on the discs -- the Apfelmaennchen,
   `(load "apfel")` `(apfel)`, and the classics: ELIZA, symbolic
   differentiation, the animal game, Lisp in Lisp, Life, tic-tac-toe,
@@ -529,6 +601,9 @@ KB, in six 16 KB ROMs. It covers:
   III with X-MEM/80 -- building, the discs, the keys, what works
 * [`mach/trs80m4/README.md`](mach/trs80m4/README.md): the TRS-80 Model 4
   -- the discs (floppy, HxC, FreHD), the memory, the keys, what works
+* [`mach/spectrum/README.md`](mach/spectrum/README.md): the ZX Spectrum
+  128K with a DivMMC -- the SD card, starting it, the memory, the
+  screen, the keys, what works
 
 ### On the workbench
 
