@@ -289,7 +289,24 @@ fos_start:
     ld hl,LADE_N
     call ROM_C
     inc a                       ; &FF: loaded
-    jr nz,lr_fail
+    jp nz,lr_fail
+    call lr_sum                 ; and whole? (a sector FutureOS gave up
+    push hl                     ;   still says loaded -- the card's drive,
+    ld a,(lr_k)                 ;   2026-11-19)
+    add a,a
+    ld hl,lr_sums
+    add a,l
+    ld l,a
+    adc a,h
+    sub l
+    ld h,a
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    pop hl
+    or a
+    sbc hl,de
+    jp nz,lr_bad
     ld a,(lr_k)                 ; into its bank's block 3, at &C000
     ld hl,lr_cfgs
     add a,l
@@ -326,21 +343,49 @@ fos_start:
     ldir
     jp fin
 
-;; lr_fail: an image not there -- said on the desktop's lower half, which
-;; stays (KLICK) after a few seconds
+;; lr_sum: HL = the sum of the image's 16-bit words at LORAM, as the
+;; build's lr_sums (post-build.sh) -- some 0.1 s
+lr_sum:
+    assert (LORAM and #FF) == 0
+    ld de,LORAM
+    ld hl,0
+.l:
+    repeat 4
+    ld a,(de)
+    ld c,a
+    inc de
+    ld a,(de)
+    ld b,a
+    inc de
+    add hl,bc
+    rend
+    ld a,d
+    cp (LORAM+#4000)/256
+    jr nz,.l
+    ret
+
+;; lr_fail: an image not there, lr_bad: one that came in damaged -- said
+;; on the desktop's lower half, which stays (KLICK) after a few seconds
+lr_bad:
+    ld hl,lr_bmsg
+    jr lr_say
 lr_fail:
+    ld hl,lr_msg
+lr_say:
+    push hl
     ld bc,#FA7E
     xor a
     out (c),a
     ld a,(lr_k)
     add a,"0"
     ld (lr_mk),a
+    ld (lr_bk),a
     ld bc,(FOS_ROMNUM_A)
     out (c),c
     ld bc,#7F82                 ; mode 2, both ROMs in (the font)
     out (c),c
     ld (RAMCHAR),bc
-    ld hl,lr_msg
+    pop hl
     call TERM_2
     ld d,40                     ; some four seconds
 .w1:
@@ -362,4 +407,7 @@ lr_name:    db 0,"LISP0   IMG"  ; user, name, extension: in one page
     assert (lr_name and #FF) <= #F4
 lr_msg:     db #1E,30,2,"CPC Lisp: cannot load LISP"
 lr_mk:      db "0.IMG from the drive LISP.64K came from.",0
+lr_bmsg:    db #1E,30,2,"CPC Lisp: LISP"
+lr_bk:      db "0.IMG came in damaged (its checksum). Try again.",0
+    include "imgsum.inc"        ; lr_sums: a word per image (post-build.sh)
     assert $ <= RESIDENT_END

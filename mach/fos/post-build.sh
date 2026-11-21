@@ -20,6 +20,17 @@ asm_fos mach/fos/resident.asm "$OUT/resident.bin" -s -sa -os "$OUT/resident.sym"
 awk '$3 == "B0" && $4 == "L" && $1 !~ /\./ { print $1 " equ " $2 }' "$OUT/resident.sym" > "$OUT/resident.inc"
 asm_fos mach/fos/page.asm "$OUT/LISP6.IMG" -s -sa -os "$OUT/page.sym"
 [ "$(stat -c %s "$OUT/LISP6.IMG")" = 16384 ] || { echo "build: LISP6.IMG is not 16 KB" >&2; exit 1; }
+# each image's sum of 16-bit words, which LISP.64K checks after loading it
+python3 - "$OUT" > "$OUT/imgsum.inc" <<'EOF' || { echo "build: imgsum.inc FAILED" >&2; exit 1; }
+import struct, sys
+sums = []
+for n in ('LISP.ROM', 'LISPLIB.ROM', 'LISPLIB2.ROM', 'LISPLIB3.ROM',
+          'LISPDEMO.ROM', 'LISPVM.ROM', 'LISP6.IMG'):   # LISP0-6.IMG
+    d = open(sys.argv[1] + '/' + n, 'rb').read()
+    assert len(d) == 16384, n
+    sums.append(sum(struct.unpack('<8192H', d)) & 0xFFFF)
+print('lr_sums: dw ' + ','.join('#%04X' % s for s in sums))
+EOF
 asm_fos mach/fos/loader.asm "$OUT/LISP64K.BIN" -s -sa -os "$OUT/loader.sym"
 IDSK=${IDSK:-$HOME/claude/midi80/toolchain/idsk/iDSK}
 dsk="$OUT/cpclispfos-n.dsk"

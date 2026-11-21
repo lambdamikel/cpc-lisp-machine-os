@@ -116,6 +116,10 @@ was the card: a status read in mid-sector now and then got &00, and
 FutureOS's sector loop gave that sector up while `LADE_N` still said
 the file loaded -- an image came in short. Fixed in the card's
 firmware (lambdaspeak4 40b0fc3); three starts with `(reset)` passed.
+Since then `LISP.64K` checks each image's checksum (the sum of its
+16-bit words, written into it by the build) and stops at a damaged one
+on the desktop: "CPC Lisp: LISP3.IMG came in damaged (its checksum).
+Try again."
 
 ## Files
 

@@ -816,9 +816,12 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   in lambdaspeak4 40b0fc3 (main, 2026-11-20): three starts with
   `(reset)` between passed, 1.27 MB read from E, nothing starved. MAME's
   FDC never answers &00 inside a sector, so six clean starts there said
-  nothing. Lesson: LISP.64K trusts LADE_N's &FF -- a short image shows
-  only as broken library text later (a checksum per image in the stub
-  would say which; offered, not built). FutureOS's &A000-&BFFF differs
+  nothing. LADE_N's &FF is not enough: since 2026-11-20 (Mike: "yes
+  please") the stub sums each image's 16-bit words in LORAM against
+  `lr_sums` (post-build.sh writes `imgsum.inc` from the images) and says
+  "LISPn.IMG came in damaged" on the desktop (lr_bad; ~0.1 s an image;
+  MAME: a flipped byte in LISP3.IMG caught on the 464 and the 6128).
+  FutureOS's &A000-&BFFF differs
   between starts only at &BA5B (ROM D &F019, at every RUN: it spoils
   OK_ATE, the OK icon's checksum -- harmless). MAME's restart after
   `(reset)` (TUR_E keeps A tagged): `!press 61 300` (D), then down x3,
