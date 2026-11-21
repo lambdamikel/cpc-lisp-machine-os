@@ -9,8 +9,8 @@
 ;; second at a time. The CPC's AY runs at 1 MHz, the Spectrum's at 1.7734:
 ;; a period is made 227/128 times as long, the same pitch (down to the
 ;; AY's longest, 4095: below about 27 Hz the notes stay there). Without a
-;; volume envelope the volume is doubled, as the CPC's firmware does it (8
-;; is silent). Not yet: the envelopes themselves (a note keeps its volume),
+;; volume envelope the volume is doubled and kept to four bits, as the
+;; CPC's firmware does it (12 is 8, and 8 is silent). Not yet: the envelopes themselves (a note keeps its volume),
 ;; rendezvous and holding (a sound starts when its channel is free).
 
 S_QN        equ 4               ; sounds queued a channel
@@ -150,11 +150,8 @@ m_snd_queue:
     inc b
     dec b
     jr nz,.v                    ; with an envelope: as it is
-    add a,a
-    cp 16
-    jr c,.v
-    xor a                       ; (8 and more without one: silent)
-.v:
+    add a,a                     ; without, doubled, four bits kept: as the
+.v:                             ;   firmware does (12 is 8; 8 is silent)
     and 15
     ld (s_new+3),a
     ld e,(hl)
@@ -246,9 +243,10 @@ m_snd_queue:
     ret
 
 ;; s_ch_in: A = a channel, C = the record's channels -> NZ if it is one of
-;; them. BC kept.
+;; them. A, BC kept.
 s_ch_in:
     push bc
+    push af
     inc a
     ld b,a
     ld a,c
@@ -257,6 +255,8 @@ s_ch_in:
     djnz .s
     rlca
     and 1
+    pop bc                      ; B = the channel (the flags stay)
+    ld a,b
     pop bc
     ret
 
