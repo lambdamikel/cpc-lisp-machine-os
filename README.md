@@ -255,8 +255,8 @@ cells.
 
 **The discs are ready in [`discs/`](discs/)**, and with each
 [release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases) --
-`cpclisp512.dsk` and `cpclisp6128.dsk`, `cpclispfos.dsk` for FutureOS
-([below](#under-futureos)), a test disc for the ROMs' use of a RAM expansion, and
+`cpclisp512.dsk` and `cpclisp6128.dsk`, `cpclispfos.dsk` and
+`cpclispfos-n.dsk` for FutureOS ([below](#under-futureos)), a test disc for the ROMs' use of a RAM expansion, and
 the demo disc `cpclisp-demo.dsk` with the Apfelmaennchen (`(load
 "apfel")`, `(apfel)`), and the classics disc `cpclisp-classics.dsk`:
 ELIZA, symbolic differentiation, the animal game that learns, Lisp in
@@ -299,8 +299,18 @@ tested where.
 6128 in the video, from E, the LambdaSpeak card's Vortex emulation --
 but the six images, and Lisp's own `load` and `save`, still go through
 the firmware's disc ROM: AMSDOS on a 6128, which knows only drives A and
-B. So drive A needs the disc too. Loading through FutureOS's own
-routines, from any of its drives, is the next step.
+B. So drive A needs the disc too.
+
+**On FutureOS itself**, with no firmware at all: `discs/cpclispfos-n.dsk`,
+started the same way. FutureOS stays resident, and Lisp loads its
+images, reads and writes its files and prints its text through
+FutureOS's own routines -- from any FutureOS drive, E as well as A --
+with its own keyboard scan, graphics and sound, and the lower ROM's
+maths for floats (FutureOS has none). It is noticeably faster than the
+version above. It passed on Mike's 6128 (2026-11-19) and 464
+(2026-11-20): `(hwtest)` 7 yes, graphics, sound, speech, files on both
+drives, `(reset)` and back. [`mach/fos/README.md`](mach/fos/README.md)
+has how it works.
 
 <a href="https://youtu.be/s4BsQOroQUc"><img src="https://img.youtube.com/vi/s4BsQOroQUc/maxresdefault.jpg" width="400" alt="CPC Lisp under FutureOS on the CPC 6128"></a>
 

@@ -15,6 +15,7 @@ the test discs for the real machine. Each disc's test is `HWTEST.LSP`:
 | `cpclisp512.dsk` | **CPC Lisp from disc, for a 512K RAM expansion** (`mach/cpc512`): `RUN"LISP` -- all of it, the compiler too, and a RAM disc `M:` of 399 KB; and its test: the cells, two files open at once, lazy loading, the RAM disc, far arrays (into the expansion's banks 6 and 7), the compiler | 990 |
 | `cpclisp6128.dsk` | **CPC Lisp from disc, for a plain 6128** (or a CPC with 64 KB more; `mach/cpc6128`): `RUN"LISP` -- everything but the compiler, no RAM disc; and its test, of what it has | 990 |
 | `cpclispfos.dsk` | **CPC Lisp under FutureOS** (`mach/futureos`), on a 464, 664 or 6128 with a 512K RAM expansion: on FutureOS's desktop, drive A, tag `LISP.64K`, RUN (X); `(reset)` goes back to the desktop. The 512K version and its test (check 5 sized for the smaller RAM disc); `mach/futureos/README.md` has the details | 990 |
+| `cpclispfos-n.dsk` | **CPC Lisp on FutureOS itself** (`mach/fos`), on a 464, 664 or 6128 with a 512K RAM expansion: no firmware -- FutureOS stays resident, and Lisp loads, saves and prints through it, from any FutureOS drive (A, E...). Started the same way (tag `LISP.64K`, X); `(reset)` back to the desktop. Its own test (far arrays sized for its 191 KB RAM disc); `mach/fos/README.md` has the details | 9475 |
 | `cpclisp-demo.dsk` | **the demo disc**, for the ROMs (or a disc version): the programs of `examples/` -- `APFEL.LSP`, the Apfelmaennchen: `(load "apfel")`, `(apfel)` (mode 2) | -- |
 | `cpclisp-classics.dsk` | **the classics disc**: ELIZA, symbolic differentiation, the animal game that learns, Lisp in Lisp, Conway's Life, tic-tac-toe by minimax, SICP's Huffman codes (`examples/`) -- `(load "classics")` lists them | -- |
 | `cpclisp-hwtest.dsk` | **the test of the ROMs' use of a RAM expansion** (or a 6128's second 64 KB): two files at once, lazy loading from the drive and from `M:`, the RAM disc, far arrays over its banks, the compiler. Needs the 0.96 ROMs or later (`roms/`) | -- |
@@ -66,6 +67,16 @@ the images come from A). On his 464 the build before it (the same but
 for the 664's and 6128's lower ROMs) passed too: 7 yes, `(rose)`,
 `(reset)` -- the card on its 464 firmware, `|DDI1,4`, the disc in the
 card's drive as A. `mach/futureos/README.md` has the details.
+
+`cpclispfos-n.dsk` build 9475 passed on Mike's 464 (2026-11-20: the
+1.0 ROM, Revaldinho's card in configuration 8, FutureOS from the
+LambdaSpeak card's slots, the disc in the card's drive as A):
+`(hwtest)` 7 yes, `(rose)`, `(say)`, three starts with `(reset)`
+between, `(hwtest2)`, and `save` and `load` of everything hwtest
+defined (its far array written as `#S(...)`). The same code passed on
+his 6128 the day before (Revaldinho's card in configuration 0, from the
+card's drive E and the Gotek's A): hwtest, the graphics, sound, speech,
+`save` and `load` on both drives, `cd`, `dir`, `(reset)`, hwtest2.
 
 Every disc here also carries **APFEL.LSP**, the
 Apfelmaennchen (`examples/apfel.lsp`): `(load "apfel")`, `(apfel)`.

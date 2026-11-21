@@ -1,4 +1,4 @@
-# CPC Lisp on FutureOS itself (in progress)
+# CPC Lisp on FutureOS itself
 
 *A Lisp machine for the Amstrad CPC* -- natively on TFM's FutureOS: no
 firmware island (that is [`mach/futureos`](../futureos/README.md), the
@@ -12,6 +12,9 @@ runs beside it, using FutureOS's own functions where it has them:
     A Lisp machine for the Amstrad CPC on FutureOS
     library ROMs 1 2 3 4
     4713 cells free
+
+**Ready-made: [`discs/cpclispfos-n.dsk`](../../discs/cpclispfos-n.dsk)**
+(build 9475; passed on Mike's 464 and 6128).
 
 ## State (2026-11-19)
 
