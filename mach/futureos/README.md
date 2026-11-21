@@ -1,4 +1,9 @@
-# CPC Lisp under FutureOS
+# CPC Lisp under FutureOS -- the firmware island
+
+**Since 1.0 there is a native version**, which runs on FutureOS itself,
+through its own routines and from any of its drives:
+[`mach/fos`](../fos/README.md), `discs/cpclispfos-n.dsk`. This one
+still works and stays available.
 
 CPC Lisp started from FutureOS's desktop, on a CPC 464, 664 or 6128
 with a 512 KB RAM expansion; `(reset)` goes back to the desktop. It is
@@ -8,7 +13,7 @@ everything back at the end. TFM, FutureOS's author, asked for it; Mike
 set it as the goal for 2026-11-17, and it passed on his 464 and his 6128
 that evening. **Video:** [CPC LISP running on the CPC 6128 with FutureOS -- Vortex Floppy Emulation with LambdaSpeak AI](https://youtu.be/s4BsQOroQUc) (5:08).
 
-    CPC Lisp 0.99
+    CPC Lisp 1.0
     A Lisp machine for the Amstrad CPC, 512K
     library ROMs 1 2 3 4
     5497 cells free

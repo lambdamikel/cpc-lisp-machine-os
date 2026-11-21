@@ -1,6 +1,6 @@
-# CPC Lisp 0.99 — working notes for Claude
+# CPC Lisp 1.0 — working notes for Claude
 
-*A Lisp machine for the Amstrad CPC.* Version 0.99 since 2026-11-18 (FutureOS, string space, the classics), 0.98 from 2026-11-15 (fixes from the real machines), 0.97 from 2026-11-13 (the Model 4), 0.96 from 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
+*A Lisp machine for the Amstrad CPC.* Version 1.0 since 2026-11-20 (FutureOS itself, cd everywhere, #S), 0.99 from 2026-11-18 (FutureOS, string space, the classics), 0.98 from 2026-11-15 (fixes from the real machines), 0.97 from 2026-11-13 (the Model 4), 0.96 from 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
 banner, the ROM headers' version bytes and the documents' titles say so).
 
 A Lisp machine for the Amstrad CPC: **six ROMs** -- an auto-boot core and
@@ -1367,7 +1367,13 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   `cpc-lisp-0.99-trs80-classics-model1/3/4`, `.dsk` and `.hfe`), the
   TRS-80 and Model 4 discs; 464 42 ok, 6128 file tests 6, 512K 42,
   plain 6128 40, Model 4 35, FutureOS 464/6128 sessions, Model I hwtest
-  8. A new one: refresh `roms/` from one
+  8; `v1.0` (2026-11-20, Mike chose the number: FutureOS itself
+  `cpclispfos-n.dsk`, `cd` everywhere, the reader's `#S`, the image
+  checks) = every build 1000, the same files plus `cpclispfos-n.dsk`;
+  464 44 ok, 6128 file tests 8, 512K 44, plain 6128 42, Model 4 37,
+  FutureOS native and island hwtest 7 yes on 464 and 6128, Model I
+  hwtest 8; `tools/card.py`'s `is_ours` takes headers 00 09 and 01 00.
+  A new one: refresh `roms/` from one
   tested build, bump the version (banner, ROM headers, document
   titles), tag, `gh release create` with the same files.
 * Commit with the attribution lines the session gives you.

@@ -1,12 +1,25 @@
-# CPC Lisp 0.99 -- the ROM images
+# CPC Lisp 1.0 -- the ROM images
 
 *A Lisp machine for the Amstrad CPC*
 
 Ready to use: six 16 KB ROM images, built from this repository (build
-990, version 0.99). You do not need to build anything to use them.
+1000, version 1.0). You do not need to build anything to use them.
 (No ROM board? CPC Lisp loads from disc too, with a 512K expansion or on
 a 6128, and under FutureOS: [`discs/`](../discs/). The TRS-80's discs are there and with the
 release: see the end.)
+
+**New in 1.0**: **CPC Lisp on FutureOS itself** -- `cpclispfos-n.dsk`:
+no firmware, FutureOS stays resident, and Lisp loads, saves and prints
+through FutureOS's own routines, from any of its drives (`(dir "e:")`,
+`(cd "e:")`), with its own keyboard, graphics and sound, the RAM disc
+`M:` in the expansion's free blocks, and a check of every image it
+loads; quicker than through the firmware (checked on a real 464 and
+6128; [`mach/fos/`](../mach/fos/README.md)). **`cd`** on every disc
+version and machine: `(cd "b:")` makes B the drive for names without
+one, `(cd)` says which, and `(dir "b:")` lists another drive. **`save`
+and `load` round-trip structures**: the reader reads `#S(...)` (a far
+array saved after `(hwtest)` said "syntax error" when loaded). The
+ROMs have the last two.
 
 **New in 0.99**: **CPC Lisp under FutureOS**, TFM's operating system --
 `cpclispfos.dsk`, started from FutureOS's desktop on a 464, 664 or 6128
@@ -83,7 +96,7 @@ LambdaSpeak card, below. The rules:
 
 When it starts, it says
 
-    CPC Lisp 0.99
+    CPC Lisp 1.0
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -130,8 +143,8 @@ boot, each as a `.dsk` for emulators and an `.hfe` for a Gotek or HxC
 
 | file | for |
 |---|---|
-| `cpc-lisp-0.99-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp (0.95 also on a real Model I with X-MEM/80 and MIDI/80) |
-| `cpc-lisp-0.99-trs80-model3.dsk` / `.hfe` | a Model III: LDOS 5.1.4, double density (JV3) -- tested on a real Model III with X-MEM/80, Talker/80 and MIDI/80 (0.96) |
+| `cpc-lisp-1.0-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp (0.95 also on a real Model I with X-MEM/80 and MIDI/80) |
+| `cpc-lisp-1.0-trs80-model3.dsk` / `.hfe` | a Model III: LDOS 5.1.4, double density (JV3) -- tested on a real Model III with X-MEM/80, Talker/80 and MIDI/80 (0.96) |
 
 Each has `HWTEST/LSP`, a test of the machine: `(load "hwtest")`,
 `(hwtest)`.
@@ -143,12 +156,12 @@ Boot it, give LDOS the date (and on a Model I the time), type `LISP`.
 
 | file | for |
 |---|---|
-| `cpc-lisp-0.99-trs80-model4.dsk` / `.hfe` | a floppy, or an HxC or Gotek: LS-DOS 6.3.1's system disc with `LISP`, `HWTEST/LSP` and `APFEL/LSP` -- boot, the date and time, `LISP` |
-| `cpc-lisp-0.99-trs80-model4-frehd` | a FreHD: a bootable LS-DOS 6.3.1 hard disc with the same. Copy it to the FreHD's SD card **as `cpclisp4`** (no extension); its boot menu lists it, ENTER, `LISP` |
+| `cpc-lisp-1.0-trs80-model4.dsk` / `.hfe` | a floppy, or an HxC or Gotek: LS-DOS 6.3.1's system disc with `LISP`, `HWTEST/LSP` and `APFEL/LSP` -- boot, the date and time, `LISP` |
+| `cpc-lisp-1.0-trs80-model4-frehd` | a FreHD: a bootable LS-DOS 6.3.1 hard disc with the same. Copy it to the FreHD's SD card **as `cpclisp4`** (no extension); its boot menu lists it, ENTER, `LISP` |
 
 **The classics** -- ELIZA, symbolic differentiation, the animal game,
 Lisp in Lisp, Life, tic-tac-toe, Huffman codes -- are on a data disc for
-each: `cpc-lisp-0.99-trs80-classics-model1`, `-model3`, `-model4` (`.dsk`
+each: `cpc-lisp-1.0-trs80-classics-model1`, `-model3`, `-model4` (`.dsk`
 and `.hfe`). Put it in drive 1 and `(load "classics")`. The CPC's is
 `cpclisp-classics.dsk`.
 

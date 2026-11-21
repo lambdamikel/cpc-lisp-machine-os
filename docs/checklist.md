@@ -48,18 +48,19 @@ CPC; the README says how to install the ROMs.
       ROMs of the 464, 664 and 6128 found (the 664's untried); the
       screen's geometry set and given back
 - [ ] Under FutureOS with a Vortex-format disc on the 464's drive E
-      (VDOS): FutureOS hung loading `LISP.64K` there (the card's side)
-- [ ] Under FutureOS, its benefits (Mike, 2026-11-17: after the hardware
-      test): Lisp's expansion blocks taken only where FutureOS's XRAM
-      variables say free -- FutureOS has preemptive multitasking (Mike),
-      and a task's blocks (bit 6), loaded files (7), long-term buffers
-      (2) and other programs' (4) must not be overwritten -- and marked
-      there (the images and M: survive the desktop: a second start skips
-      loading); the images loaded through FutureOS's own loaders (faster,
-      from any FutureOS medium, the M4 too); later a native console and
-      keyboard (a FutureOS program proper: fast text, IM 2, the
-      alternate registers; and then Lisp as a task beside others, with
-      TFM's description of the task interface)
+      (VDOS): FutureOS hung loading `LISP.64K` there (the card's side;
+      its drive E fixes are in lambdaspeak4 40b0fc3, and on the 6128 the
+      native version loads from E)
+- [x] On FutureOS itself (`mach/fos`, 2026-11-19/20, in 1.0): no
+      firmware -- the images loaded through FutureOS's own loader (LADE_N)
+      from any FutureOS drive and checked, files through TEISI/SIDIR/EWEG,
+      text through PR_2, our own keyboard scan, graphics and sound, the
+      lower ROM's maths; Lisp's expansion blocks taken only where XRAM
+      says free and marked there (`M:` outlasts the desktop). Passed on
+      the real 6128 (from the Gotek's A and the card's E) and 464 (the
+      card's drive as A)
+- [ ] Under FutureOS as a task beside others (FutureOS has preemptive
+      multitasking; TFM's description of the task interface)
 
 ## The language (Common Lisp syntax and semantics where they fit)
 

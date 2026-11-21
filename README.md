@@ -1,4 +1,4 @@
-# CPC Lisp 0.99
+# CPC Lisp 1.0
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -6,13 +6,14 @@ ROMs that start a Lisp instead of BASIC. Common Lisp syntax, lexical closures, m
 -- in 16 KB of Z80 assembly -- with graphics, sound, files, floats and
 editors in four more ROMs, and a bytecode compiler in a fifth.
 
-**It also runs from disc -- and under FutureOS**, TFM's operating system
-for the CPC: started from FutureOS's desktop on a 464, 664 or 6128 with a
-512K expansion, and back to the desktop with `(reset)`
-([*Under FutureOS*](#under-futureos), below). **Video:**
+**It also runs from disc -- and on FutureOS**, TFM's operating system
+for the CPC: natively, through FutureOS's own routines (new in 1.0),
+started from its desktop on a 464, 664 or 6128 with a 512K expansion,
+and back to the desktop with `(reset)` ([*Under
+FutureOS*](#under-futureos), below). **Video:**
 [CPC Lisp on the 6128 under FutureOS](https://youtu.be/s4BsQOroQUc) (5:08).
 
-    CPC Lisp 0.99
+    CPC Lisp 1.0
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -40,8 +41,9 @@ at the end says what is in each.
   Revaldinho's, the DK'tronics, any that banks the DK'tronics way -- runs
   the same six images loaded into it; a plain 6128 runs five, without
   the compiler ([*From disc*](#from-disc), below).
-* **Under FutureOS** on a 464, 664 or 6128 with a 512K expansion: the
-  512K version, started from FutureOS's desktop ([*Under
+* **On FutureOS**, TFM's operating system, on a 464, 664 or 6128 with
+  a 512K expansion: natively, through FutureOS's own routines, from any
+  of its drives -- started from its desktop ([*Under
   FutureOS*](#under-futureos), below).
 * **The TRS-80 Model I and Model III with
   [X-MEM/80](https://github.com/lambdamikel/x-mem-80)** run it too, as a
@@ -239,7 +241,7 @@ and a RAM disc `M:` of 399 KB in its free blocks -- which also holds
 far arrays (`make-far-array`, `far-ref`) and programs loaded with
 `(load "m:big" :lazy t)`, each function read in when first called.
 
-    CPC Lisp 0.99
+    CPC Lisp 1.0
     A Lisp machine for the Amstrad CPC, 512K
     library ROMs 1 2 3 4
     5521 cells free
@@ -248,7 +250,7 @@ far arrays (`make-far-array`, `far-ref`) and programs loaded with
 KB: everything but the compiler, without a RAM disc, and with about 2400
 cells.
 
-    CPC Lisp 0.99
+    CPC Lisp 1.0
     A Lisp machine for the Amstrad CPC, 128K
     library ROMs 1 2 3 4
     2430 cells free
@@ -277,40 +279,45 @@ configuration 4 (2026-11-12): [`discs/README.md`](discs/README.md).
 
 [FutureOS](https://futureos.de), TFM's operating system for the CPC,
 takes the place of BASIC and the firmware, with a fast graphical
-desktop of its own. CPC Lisp runs under it: the 512K version, started from FutureOS's desktop,
-on a 464, 664 or 6128 with a 512K RAM expansion that does the 6128's C3
-mode (Revaldinho's card: configuration 8 on a 464, 0 on a 6128).
+desktop of its own. **Since 1.0 CPC Lisp runs on FutureOS itself**: no
+firmware, FutureOS stays resident, and Lisp loads, saves and prints
+through FutureOS's own routines -- from any of its drives. It needs a
+464, 664 or 6128 with FutureOS and a 512K RAM expansion that does the
+6128's C3 mode (Revaldinho's card: configuration 8 on a 464, 0 on a
+6128).
 
-    SPACE, A, D     drive A's directory: discs/cpclispfos.dsk in drive A
+    SPACE, A        read drive A (or E...): discs/cpclispfos-n.dsk there
     LISP.64K        tag it: the pointer on it, COPY
     X               RUN -- CPC Lisp loads, and LISP> comes up
-    (reset)         back to FutureOS's desktop
+    (reset)         back to FutureOS's desktop, the drives still read;
+                    to start again: D, tag LISP.64K, X
 
-Lisp puts FutureOS's RAM aside in the expansion, starts the CPC's own
-firmware for itself -- found in the lower ROM of whichever CPC it is --
-reads its six images through the machine's disc ROM, and gives FutureOS
-everything back at the end: its RAM, colours, screen and ROMs. It passed
-on Mike's 464 and 6128 on 2026-11-17 -- `(hwtest)` 7 yes, the graphics,
-the demos, the way back. [`mach/futureos/README.md`](mach/futureos/README.md)
-has what it needs, building, how it works, the memory, and what was
-tested where.
+    CPC Lisp 1.0
+    A Lisp machine for the Amstrad CPC on FutureOS
+    library ROMs 1 2 3 4
+    4713 cells free
 
-`LISP.64K` may also be started from another FutureOS drive -- on the
-6128 in the video, from E, the LambdaSpeak card's Vortex emulation --
-but the six images, and Lisp's own `load` and `save`, still go through
-the firmware's disc ROM: AMSDOS on a 6128, which knows only drives A and
-B. So drive A needs the disc too.
+It is all of CPC Lisp -- the compiler, graphics, sound, speech through
+the LambdaSpeak card, the editors, floats (from the lower ROM's maths:
+FutureOS has none) -- with its own keyboard scan, graphics and sound in
+a machine page of its own, and files on **any FutureOS drive**: `(dir
+"e:")` lists one, `(cd "e:")` makes it the drive for names without one,
+and the RAM disc `M:` (191 KB) and far arrays live in the expansion's
+free blocks. Text comes through FutureOS's fast character output: it is
+noticeably quicker than the firmware's. `LISP.64K` checks each image it
+loads and names a damaged one on the desktop. It passed on Mike's 6128
+(2026-11-19) and 464 (2026-11-20): `(hwtest)` 7 yes, graphics, sound,
+speech, files on the Gotek and on the LambdaSpeak card's drives, three
+starts with `(reset)` between. [`mach/fos/README.md`](mach/fos/README.md)
+has what it needs, how it is arranged, and what was tested where.
 
-**On FutureOS itself**, with no firmware at all: `discs/cpclispfos-n.dsk`,
-started the same way. FutureOS stays resident, and Lisp loads its
-images, reads and writes its files and prints its text through
-FutureOS's own routines -- from any FutureOS drive, E as well as A --
-with its own keyboard scan, graphics and sound, and the lower ROM's
-maths for floats (FutureOS has none). It is noticeably faster than the
-version above. It passed on Mike's 6128 (2026-11-19) and 464
-(2026-11-20): `(hwtest)` 7 yes, graphics, sound, speech, files on both
-drives, `(reset)` and back. [`mach/fos/README.md`](mach/fos/README.md)
-has how it works.
+**The firmware island** (`discs/cpclispfos.dsk`, since 0.99) is the
+first way it ran there, and still works: `LISP.64K` puts FutureOS's RAM
+aside in the expansion, starts the CPC's own firmware for itself -- found
+in the lower ROM of whichever CPC it is -- and runs the 512K version
+through the machine's disc ROM (AMSDOS, Parados: drives A and B), giving
+FutureOS everything back at `(reset)`. The video below shows it.
+[`mach/futureos/README.md`](mach/futureos/README.md) has the details.
 
 <a href="https://youtu.be/s4BsQOroQUc"><img src="https://img.youtube.com/vi/s4BsQOroQUc/maxresdefault.jpg" width="400" alt="CPC Lisp under FutureOS on the CPC 6128"></a>
 
@@ -327,7 +334,7 @@ the cassette port, floats through the Level II ROM, files through LDOS,
 a RAM disc in X-MEM/80's spare pages, speech through Talker/80, MIDI
 through MIDI/80 -- is in `mach/trs80/`.
 
-    CPC Lisp 0.99
+    CPC Lisp 1.0
     A Lisp machine for the TRS-80
     library ROMs 3 4 5 6
     2315 cells free
@@ -347,7 +354,7 @@ The Model III Talker/80 needs nothing.
 
 **The disc**: ready to boot with each
 [release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases) --
-`cpc-lisp-0.99-trs80-model1` and `-model3`, as `.dsk` for emulators and
+`cpc-lisp-1.0-trs80-model1` and `-model3`, as `.dsk` for emulators and
 `.hfe` for a Gotek (the `.dsk` files are in [`discs/`](discs/) too).
 X-MEM/80 must be in its 16 KB mode (X-MEM/80, not SuperMem) for all of
 the RAM disc. Or build it: `MACH=trs80 tools/build.sh` (rasm and Python 3, as for the
@@ -395,7 +402,7 @@ The **TRS-80 Model 4** with 128 KB runs it natively, in its own mode,
 under LS-DOS 6.3.1 -- no X-MEM/80: the six images in its three 32 KB
 banks.
 
-    CPC Lisp 0.99
+    CPC Lisp 1.0
     A Lisp machine for the TRS-80 Model 4
     library ROMs 2 4 5 6
     1897 cells free

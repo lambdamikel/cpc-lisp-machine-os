@@ -51,7 +51,7 @@
 
     org PART_ORG
     db 1                        ; a background ROM
-    db 0,9,9                    ; mark, version, modification: 0.99
+    db 1,0,0                    ; mark, version, modification: 1.0
     dw vm_names
     jp vm_init                  ; the ROM walk: nothing to do
 

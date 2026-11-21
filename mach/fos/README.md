@@ -1,22 +1,74 @@
-# CPC Lisp on FutureOS itself
+# CPC Lisp on FutureOS
 
-*A Lisp machine for the Amstrad CPC* -- natively on TFM's FutureOS: no
-firmware island (that is [`mach/futureos`](../futureos/README.md), the
-released version). FutureOS stays resident, its RAM untouched, and Lisp
-runs beside it, using FutureOS's own functions where it has them:
-**loading** (LADE_N, from any FutureOS drive) and **character output**
-(PR_2, mode 2). TFM asked for exactly that; Mike chose this way on
-2026-11-19.
+*A Lisp machine for the Amstrad CPC* -- natively on TFM's
+[FutureOS](https://futureos.de), new in 1.0. FutureOS stays resident,
+its RAM untouched, and Lisp runs beside it, using FutureOS's own
+functions where it has them: **loading** (LADE_N, from any FutureOS
+drive), **files** (TEISI, SIDIR, EWEG) and **character output** (PR_2).
+TFM asked for exactly that; Mike chose this way on 2026-11-19. (The
+firmware island, [`mach/futureos`](../futureos/README.md), was the
+first way: it starts the CPC's own firmware beside FutureOS.)
 
-    CPC Lisp 0.99
+    CPC Lisp 1.0
     A Lisp machine for the Amstrad CPC on FutureOS
     library ROMs 1 2 3 4
     4713 cells free
 
 **Ready-made: [`discs/cpclispfos-n.dsk`](../../discs/cpclispfos-n.dsk)**
-(build 9475; passed on Mike's 464 and 6128).
+(build 1000).
 
-## State (2026-11-19)
+## What it needs
+
+* A CPC **464, 664 or 6128 with FutureOS** -- its ROMs in a ROM board
+  (Mike's: the LambdaSpeak 4 card's slots).
+* **A 512K RAM expansion that does configuration C3 as the 6128 does**,
+  which FutureOS needs anyway: Revaldinho's card, in configuration 8 (ON
+  OFF OFF OFF) on a 464 and 0 on a 6128. Lisp takes the expansion's
+  blocks FutureOS has free when it starts and gives them back at
+  `(reset)`.
+* `cpclispfos-n.dsk` in **any FutureOS drive**: a real or Gotek drive
+  A or B, the LambdaSpeak card's drive (A at &FB7E, or E as a Vortex
+  drive)... The images load from the drive `LISP.64K` came from.
+
+## Using it
+
+On FutureOS's desktop:
+
+    SPACE, A        read drive A (SPACE, E for drive E...)
+    LISP.64K        tag it: the pointer on it, COPY
+    X               RUN -- the seven images load, and LISP> comes up
+    (reset)         back to the desktop, the drives still read
+    D, LISP.64K, X  start it again (M:'s files are still there)
+
+Everything CPC Lisp has is there: the compiler, `compile-file`, the
+line and function editors, floats (the lower ROM's maths package:
+FutureOS has none), graphics in modes 0-2 and the sixteen inks, sound
+with the firmware's envelopes, speech through the LambdaSpeak card, and
+the disc's test, `(load "hwtest")`, `(hwtest)` -- 7 yes; after `(reset)`
+and `LISP.64K` again, `(load "hwtest")`, `(hwtest2)`.
+
+* **Files on any drive**: `(dir "e:")` lists a drive (reading its
+  directory again: a swapped disc is seen), `(cd "e:")` makes it the
+  drive for names without one, `(cd)` says which; `load`, `save`,
+  `open`, `delete-file` take `e:name` as well. Files up to 48 KB.
+* **The RAM disc `M:`** (191 KB) and **far arrays** live in the
+  expansion's free blocks; `M:` outlasts `(reset)` and a new start,
+  unless the desktop used those blocks meanwhile.
+* **Memory**: 4713 cells at the start (the heap is &1500-&8FFF).
+* **A damaged image** stops the start on the desktop: "CPC Lisp:
+  LISP3.IMG came in damaged (its checksum). Try again."
+* It is quicker than the firmware: text comes through FutureOS's PR_2,
+  and graphics rows are written a byte at a time.
+
+| where | what | result |
+|---|---|---|
+| MAME, 464 and 6128 | FutureOS's ROMs in the ROM box, 576K, `tools/fos/run.sh` | `(hwtest)` 7 yes, files, graphics, sound (the AY's writes timed against the firmware's), `M:`, `(reset)` and restarts |
+| Mike's 6128 | Revaldinho's card in configuration 0; FutureOS from the LambdaSpeak 4 card's slots (its 664/6128 firmware); the disc on the card's drive E and on the Gotek as A | 2026-11-19: hwtest 7 yes, `(rose)`, `(tune)`, `(say)`, `save` and `load` on E and A, `cd`, `dir`, `(reset)`, `(hwtest2)` |
+| Mike's 464 | the 1.0 ROM; Revaldinho's card in configuration 8; FutureOS from the card's slots (its 464 firmware); the disc in the card's drive as A | 2026-11-20: hwtest 7 yes, `(rose)`, `(say)`, three starts with `(reset)` between, `(hwtest2)`, `save` and `load` of everything hwtest defined; then the checksum's build too |
+
+The 664 is untried.
+
+## How it came about (2026-11-19/20)
 
 **Phase 1** -- the REPL, the line editor, the function editor, floats,
 ESC, scrolling, `(room)`, `(time)`, `(reset)` back to the desktop --
