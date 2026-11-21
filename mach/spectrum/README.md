@@ -133,8 +133,9 @@ N B) as 7, and 64 for BREAK.
   the CPC's at 1): the same pitch.
 * `peek`, `poke`; `time` (the interrupt's count, in 1/300 s).
 * `*features*` is `(:zx-spectrum :cpc-lisp)`.
-* **MIDI** out of the 128K's RS232/MIDI socket (a cable to a MIDI plug
-  needed): `midi-out`, `midi-note`, `(midi-tune)` -- bit 2 of the AY's port
+* **MIDI** out of the 128K's RS232/MIDI socket (a 6-pin BT socket at
+  RS232 levels, not MIDI's: an adapter to a DIN socket needed -- a
+  transistor and resistors, as for `PLAY`'s MIDI): `midi-out`, `midi-note`, `(midi-tune)` -- bit 2 of the AY's port
   A at 31250 baud, as the +2A's ROM sends `PLAY`'s notes. Untried on the
   machine (ZEsarUX has no such socket: there the bytes go to the
   transcript as `<90>`).

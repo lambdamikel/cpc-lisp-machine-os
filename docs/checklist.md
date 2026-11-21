@@ -547,7 +547,9 @@ compiled code (`docs/design.md` describes both)
           (envelopes, rendezvous, holding), periods scaled 227/128
     - [x] MIDI out of the RS232/MIDI socket: bit 2 of the AY's port A,
           31250 baud, the +2A ROM's own way (ROM 1, &1DAD) -- untried on
-          the machine (needs a cable to a MIDI plug)
+          the machine: the socket is a 6-pin BT one at RS232 levels, so
+          it needs an adapter (a transistor, resistors) to a MIDI DIN
+          socket -- later (Mike, 2026-11-21)
     - [ ] Not yet: the joystick; `symbol`; a `(sketch)` for the Spectrum
           in the demos
     - [ ] More room: ~1800 cells and 5 KB of strings (the 128 KB holds
