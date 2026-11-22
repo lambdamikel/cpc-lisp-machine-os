@@ -3,32 +3,29 @@
 ;;
 ;; A real is the CPC's: five bytes, four of mantissa, least significant
 ;; first, the top bit of the last the sign, then the exponent (0 is zero,
-;; &80 is 0.5's). The Spectrum's calculator (48 BASIC's, RST 28) has the
-;; same number with the bytes the other way round -- the exponent first,
-;; then the mantissa from its top byte -- and a second form for whole
-;; numbers to 65535 (exponent 0, then a sign byte and the number), which
-;; its answers may come in.
+;; &80 is 0.5's): the mantissa m (its top bit 1) times 2^(e-160).
 ;;
 ;; + - * / are done here, rounded to the nearest as the CPC's firmware
-;; does it (fparith.asm: the calculator truncates its quotients). The
-;; functions go to the calculator: the operand onto its stack (STKEND, at
-;; CALC_STK in 48 BASIC's own RAM), the function run with the ROM mapped
-;; in (RS_CALC, in the resident part), the answer back off it -- its
-;; mantissa is the CPC's 32 bits.
-;; Whatever would make the ROM stop with a BASIC error (dividing by zero,
-;; overflow, the logarithm of 0) is looked for first and answered with no
-;; carry, as the CPC's firmware answers it; anything left over comes back
-;; through ERR_SP as no carry too. The rest -- comparing, the signs, the
-;; conversions to and from whole numbers -- is done here on the bytes, as
-;; on the TRS-80 (mach/trs80/fp80.asm, whence most of it comes).
+;; does it (fparith.asm, the Spectrum's). The functions go to the main
+;; ROM's Math-Pack -- BASIC's maths, decimal, 14 digits (firmware.asm):
+;; the real made its number (m in ten digits, times 2^(e-160) by a
+;; Math-Pack multiply: pow2tab, tools/msx/mkpow2.py), the function run on
+;; it (RS_MATH, the resident part), the answer made a real again (times
+;; 2^(32-E) for the E that puts it between 2^31 and 2^32, the integer
+;; part rounded by the next digit). Whatever would make the ROM stop with a
+;; BASIC error (the root or logarithm of a negative, an overflow) is looked
+;; for first and answered with no carry, as the CPC's firmware answers it.
+;; The rest -- comparing, the signs, the conversions to and from whole
+;; numbers -- is done here on the bytes, as on the TRS-80
+;; (mach/trs80/fp80.asm, whence most of it comes, by the Spectrum's).
 
-C_SQR       equ #28             ; the calculator's literals
-C_LN        equ #25
-C_EXP       equ #26
-C_SIN       equ #1F
-C_COS       equ #20
-C_TAN       equ #21
-C_ATN       equ #24
+C_SQR       equ 0               ; f_calc1's functions: mp_fns
+C_LN        equ 1
+C_EXP       equ 2
+C_SIN       equ 3
+C_COS       equ 4
+C_TAN       equ 5
+C_ATN       equ 6
 
 fp_t:       defs 5,0            ; a real to work on
 fp_a:       defs 5,0            ;   and another
@@ -106,13 +103,404 @@ f_top:
     ret
 
 ;; ---------------------------------------------------------------------------
-;; THE MATH-PACK (not yet: every function fails)
+;; THE MATH-PACK
 
-;; f_calc1: HL = a real, A = which function -> (HL) = that of it. HL kept;
-;; carry, or none if it failed.
+mp_fns:     dw MP_SQR,MP_LOG,MP_EXP,MP_SIN,MP_COS,MP_TAN,MP_ATN
+mp_x:       defs 8,0            ; a number, the Math-Pack's way
+mp_t:       defs 8,0            ;   and another
+f_m32:      defs 4,0            ; a magnitude, 32 bits
+f_t32:      defs 4,0
+f_e:        db 0                ; an exponent
+f_e2:       dw 0                ; a power of two, signed
+f_s:        db 0                ; a sign (bit 7)
+f_tries:    db 0
+;; 10^9 ... 10^0, four bytes each
+p10tab:
+    dw #CA00,#3B9A
+    dw #E100,#05F5
+    dw #9680,#0098
+    dw #4240,#000F
+    dw #86A0,#0001
+    dw #2710,#0000
+    dw #03E8,#0000
+    dw #0064,#0000
+    dw #000A,#0000
+    dw #0001,#0000
+
+;; f_calc1: HL = a real, A = which function (C_SQR...) -> (HL) = that of
+;; it. HL kept; carry, or none if the answer is too big for a real.
 f_calc1:
+    push hl
+    push af
+    ld ix,mp_x
+    call f_tomp                 ; mp_x = the real
+    pop af
+    add a,a
+    ld hl,mp_fns
+    add a,l
+    ld l,a
+    adc a,h
+    sub l
+    ld h,a
+    ld a,(hl)
+    inc hl
+    ld h,(hl)
+    ld l,a
+    push hl
+    pop ix
+    ld hl,mp_x
+    ld de,0
+    call RS_MATH                ; mp_x = f(mp_x)
+    pop hl
+;; f_frommp: mp_x -> the real at HL. HL kept; carry, or none if it is too
+;; big for a real (too small: 0).
+f_frommp:
+    ld (f_xp),hl
+    ld a,(mp_x)
+    ld c,a
+    and #80
+    ld (f_s),a
+    ld a,c
+    and #7F
+    jp z,.zero
+    ld (mp_x),a                 ; the magnitude
+    sub 64                      ; p: 0.d1d2... times 10^p
+    ld e,a
+    sbc a,a
+    ld d,a                      ; DE = p
+    ld hl,0                     ; * 213 / 64: p log2(10), near enough
+    ld a,213
+    ld b,8
+.mul:
+    add hl,hl
+    add a,a
+    jr nc,.m0
+    add hl,de
+.m0:
+    djnz .mul
+    ld b,6
+.sh:
+    sra h
+    rr l
+    djnz .sh
+    ld a,(mp_x+1)               ; the first digit: log2 of 0.d1...
+    and #F0
+    cp #20
+    jr nc,.d2
+    dec hl                      ; 1: about -3
+.d2:
+    cp #40
+    jr nc,.d4
+    dec hl                      ; 1-3: about -2
+.d4:
+    ld (f_e2),hl                ; E: the guess (2^(E-1) <= it < 2^E)
+    ld a,5
+    ld (f_tries),a              ; (a product rounded to 2^32 might swing)
+.try:
+    ld hl,(f_e2)
+    ld de,128
+    add hl,de                   ; E + 128, the exponent: 1-255
+    ld a,h
+    or a
+    jp m,.zero                  ; below: too small, 0
+    jp nz,.big
+    ld a,l
+    or a
+    jp z,.zero
+    ld (f_e),a
+    ld hl,mp_x                  ; mp_t = it * 2^(32-E): entry 192-E,
+    ld de,mp_t                  ;   320 - the exponent
+    ld bc,8
+    ldir
+    ld hl,320
+    ld a,(f_e)
+    ld e,a
+    ld d,0
+    or a
+    sbc hl,de
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    ld de,pow2tab
+    add hl,de
+    ex de,hl
+    ld hl,mp_t
+    ld ix,MP_DECMUL
+    call RS_MATH
+    ld a,(mp_t)                 ; between 2^31 and 2^32? Ten digits,
+    cp 64+10                    ;   2147483648 to 4294967295.x
+    jr c,.less
+    jr nz,.more
+    ld hl,mp_t+1
+    ld de,f_2p31
+    call f_bcdcmp
+    jr c,.less
+    ld hl,mp_t+1
+    ld de,f_2p32
+    call f_bcdcmp
+    jr nc,.more
+    call f_bcdbin               ; DEHL = the ten digits
+    ld a,(mp_t+6)               ; the eleventh: 5 or more rounds up
+    cp #50
+    jr c,.round
+    inc l
+    jr nz,.round
+    inc h
+    jr nz,.round
+    inc e
+    jr nz,.round
+    inc d
+    jr nz,.round
+    ld d,#80                    ; 2^32: 2^31, one more power
+    ld a,(f_e)
+    inc a
+    jr z,.big
+    ld (f_e),a
+.round:
+    ld ix,(f_xp)
+    ld (ix+0),l
+    ld (ix+1),h
+    ld (ix+2),e
+    ld a,d
+    and #7F
+    ld d,a
+    ld a,(f_s)
+    or d
+    ld (ix+3),a
+    ld a,(f_e)
+    ld (ix+4),a
+    ld hl,(f_xp)
+    scf
+    ret
+.less:
+    ld hl,f_tries
+    dec (hl)
+    jr z,.lo
+    ld hl,(f_e2)
+    dec hl
+    ld (f_e2),hl
+    jp .try
+.more:
+    ld hl,f_tries
+    dec (hl)
+    jr z,.hi
+    ld hl,(f_e2)
+    inc hl
+    ld (f_e2),hl
+    jp .try
+.lo:                            ; it swung: 2^31 or 2^32 - 1, near enough
+    ld de,#8000
+    ld h,e
+    ld l,e
+    jp .round
+.hi:
+    ld de,#FFFF
+    ld h,d
+    ld l,e
+    jp .round
+.big:
+    ld hl,(f_xp)
     or a
     ret
+.zero:
+    ld hl,(f_xp)
+    jp f_zero
+f_2p31:     db #21,#47,#48,#36,#48 ; 2147483648
+f_2p32:     db #42,#94,#96,#72,#96 ; 4294967296
+
+;; f_bcdcmp: HL, DE = five bytes of BCD each -> carry if HL's is below. BC
+;; kept.
+f_bcdcmp:
+    push bc
+    ld b,5
+.c:
+    ld a,(de)
+    cp (hl)
+    jr nz,.ne
+    inc hl
+    inc de
+    djnz .c
+    pop bc
+    or a                        ; equal: no carry
+    ret
+.ne:
+    ccf                         ; (DE's above HL's: carry)
+    pop bc
+    ret nc
+    scf
+    ret
+
+;; f_bcdbin: mp_t's first ten digits -> DEHL, as a number
+f_bcdbin:
+    ld hl,0
+    ld d,h
+    ld e,l
+    ld ix,mp_t+1
+    ld b,5
+.byte:
+    push bc
+    ld a,(ix+0)
+    rrca
+    rrca
+    rrca
+    rrca
+    call .dig
+    ld a,(ix+0)
+    call .dig
+    inc ix
+    pop bc
+    djnz .byte
+    ret
+.dig:                           ; DEHL = DEHL * 10 + A's low digit
+    and 15
+    ld (f_dig),a
+    add hl,hl                   ; * 2
+    rl e
+    rl d
+    push de
+    push hl
+    add hl,hl
+    rl e
+    rl d
+    add hl,hl
+    rl e
+    rl d                        ; * 8
+    pop bc
+    add hl,bc                   ; + * 2
+    pop bc
+    ex de,hl
+    adc hl,bc
+    ex de,hl
+    ld a,(f_dig)
+    add a,l
+    ld l,a
+    ret nc
+    inc h
+    ret nz
+    inc de
+    ret
+f_dig:      db 0
+
+;; f_tomp: HL = a real -> the Math-Pack's number at IX: its mantissa in
+;; ten digits, times 2^(e-160). HL kept.
+f_tomp:
+    push hl
+    call f_exp
+    or a
+    jr nz,.nz
+    ld b,8                      ; zero
+.z:
+    ld (ix+0),a
+    inc ix
+    djnz .z
+    pop hl
+    ret
+.nz:
+    ld (f_e),a
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    inc hl
+    ld (f_m32),de
+    ld e,(hl)
+    inc hl
+    ld a,(hl)
+    and #80
+    ld (f_s),a
+    ld a,(hl)
+    or #80                      ; its leading 1
+    ld d,a
+    ld (f_m32+2),de
+    push ix
+    call f_m2bcd
+    pop hl                      ; (the number)
+    push hl
+    ld a,(f_e)                  ; times entry e: 2^(e-160)
+    ld e,a
+    ld d,0
+    ex de,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    ld bc,pow2tab
+    add hl,bc
+    ex de,hl
+    ld ix,MP_DECMUL
+    call RS_MATH
+    pop hl
+    ld a,(f_s)                  ; the sign
+    or (hl)
+    ld (hl),a
+    pop hl
+    ret
+
+;; f_m2bcd: f_m32 (2^31 or more) -> the Math-Pack's number at IX: ten
+;; digits, 0.d1...d10 times 10^10
+f_m2bcd:
+    ld (ix+0),64+10
+    ld (ix+6),0
+    ld (ix+7),0
+    inc ix
+    ld hl,p10tab
+    ld b,10
+.dig:
+    ld c,0                      ; this digit
+.sub:
+    push hl
+    ld de,f_m32
+    ld a,(de)                   ; f_t32 = f_m32 - the power
+    sub (hl)
+    ld (f_t32),a
+    inc de
+    inc hl
+    ld a,(de)
+    sbc a,(hl)
+    ld (f_t32+1),a
+    inc de
+    inc hl
+    ld a,(de)
+    sbc a,(hl)
+    ld (f_t32+2),a
+    inc de
+    inc hl
+    ld a,(de)
+    sbc a,(hl)
+    ld (f_t32+3),a
+    pop hl
+    jr c,.put                   ; below it: the digit is C
+    push hl
+    push bc
+    ld hl,f_t32
+    ld de,f_m32
+    ld bc,4
+    ldir
+    pop bc
+    pop hl
+    inc c
+    jr .sub
+.put:
+    ld a,c
+    bit 0,b
+    jr nz,.low
+    rlca                        ; B even: the byte's first digit
+    rlca
+    rlca
+    rlca
+    ld (ix+0),a
+    jr .next
+.low:
+    or (ix+0)
+    ld (ix+0),a
+    inc ix
+.next:
+    inc hl
+    inc hl
+    inc hl
+    inc hl
+    djnz .dig
+    ret
+
+    include "pow2.inc"
 
 ;; ---------------------------------------------------------------------------
 ;; THE ROUTINES
@@ -587,8 +975,6 @@ fp_pw10:    dw 1,0, 10,0, 100,0, 1000,0, 10000,0, #86A0,1, #4240,#F
             dw #9680,#98, #E100,#5F5   ; 10^0-10^8, four bytes each
 
 ;; FP_SQR, FP_LOG, FP_EXP, FP_SIN, FP_COS, FP_TAN, FP_ATN: (HL) = f((HL)).
-;; The root is the calculator's (e to the half of the logarithm), then
-;; made good to 32 bits with two of Newton's steps, s = (s + a/s) / 2.
 b_fp_sqr:
     call f_exp
     or a
@@ -596,38 +982,8 @@ b_fp_sqr:
     ret z                       ; the root of 0
     call f_neg
     jp nz,f_no
-    ld (f_xp),hl
-    ld de,fp_a
-    ex de,hl
-    call b_fp_move              ; fp_a = a
-    ex de,hl
     ld a,C_SQR
-    call f_calc1                ; s
-    ret nc
-    ld a,2
-.newton:
-    ld (f_cnt),a
-    ld hl,fp_t
-    ld de,fp_a
-    call b_fp_move              ; t = a
-    ld de,(f_xp)
-    call b_fp_div               ; t = a / s
-    jp nc,f_no
-    ld hl,(f_xp)
-    ld de,fp_t
-    call b_fp_add               ; s = s + a / s
-    jp nc,f_no
-    inc hl
-    inc hl
-    inc hl
-    inc hl
-    dec (hl)                    ; s = s / 2
-    ld hl,(f_xp)
-    ld a,(f_cnt)
-    dec a
-    jr nz,.newton
-    scf
-    ret
+    jp f_calc1
 b_fp_log:
     call f_exp
     or a

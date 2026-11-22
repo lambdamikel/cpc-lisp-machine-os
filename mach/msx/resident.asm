@@ -9,12 +9,14 @@
 ;;               DE, BC bytes), then what was there (the RAM disc's way to
 ;;               its segments)
 ;;   RESIDENT+12 RS_DOS: a DOS call -- C its function, A, B, DE, HL, IX as
-;;               it takes them and as it gives them back -- with DOS's
+;;               it takes them and as it gives them back, IY kept -- with DOS's
 ;;               segments in pages 2 and 3 for it, on a stack in DOS's page 3
-;;   RESIDENT+15 RS_ROM: IX = a routine in the main ROM, called (CALSLT)
-;;               with DOS's page 3 -- the BIOS's variables, the Math-Pack's
-;;               DAC and ARG -- and the interrupts off; page 2 is left as it
-;;               is (machine page B calls it, and reads the DAC after)
+;;   RESIDENT+15 RS_MATH: IX = a Math-Pack routine (the main ROM's), HL =
+;;               a number of its own, 8 bytes, into DAC; DE = another, into
+;;               ARG (or 0); the routine called (CALSLT) and DAC back at HL
+;;               -- with DOS's page 3 for it (the BIOS's variables, DAC and
+;;               ARG), the main ROM in pages 0 and 1, page 2 left as it is
+;;               (machine page B calls it), the interrupts off
 ;;   RESIDENT+18 RS_QUIT: back to DOS -- SCREEN 0 through the BIOS, the
 ;;               program's end (DOS frees our segments)
 ;;   RESIDENT+21 RS_BOOT: the start, once everything is loaded
@@ -48,7 +50,7 @@
     jp r_curbank
     jp r_copy
     jp r_dos
-    jp r_rom
+    jp r_math
     jp r_quit
     jp r_boot
     assert $ == RS_P2
@@ -243,23 +245,56 @@ r_dos:
     call to_dos
     ld (rs_sp),sp
     ld sp,DOS_STACK
+    push iy                     ; (_ALLOC's IY, say)
     ei
     call DOS_BDOS
+    pop iy
 rd_back:
     ld sp,(rs_sp)
     jp to_lisp
 
-;; RS_ROM: IX = a routine in the main ROM; AF, BC, DE, HL as it takes them
-;; -> as it gives them back. Page 2 kept, the interrupts off throughout.
-r_rom:
+;; RS_MATH: IX = a Math-Pack routine, HL = 8 bytes for DAC, DE = 8 for ARG
+;; or 0 -> the routine run, DAC back at HL. HL kept; AF, BC, DE lost. The
+;; numbers must be in pages 0-2.
+r_math:
     call to_dos3
     ld (rs_sp),sp
     ld sp,DOS_STACK
+    push hl                     ; where the answer goes
+    push de
+    ld de,MP_DAC
+    ld bc,8
+    ldir
+    pop hl                      ; ARG's, if there is one
+    ld a,h
+    or l
+    jr z,.go
+    ld de,MP_ARG
+    ld bc,8
+    ldir
+.go:
+    ld a,8                      ; double precision
+    ld (MP_VALTYP),a
     push iy
+    push ix
+    ld a,(EXPTBL)               ; the ROM in page 1 too: the Math-Pack calls
+    ld h,#40                    ;   BASIC's half (SIN its INT)
+    call DOS_ENASLT
+    pop ix
     ld iy,(EXPTBL-1)            ; IYH = the main ROM's slot
     call DOS_CALSLT
     di
+    ld a,(RAMAD1)               ; our RAM in page 1 again
+    ld h,#40
+    call DOS_ENASLT
+    di
     pop iy
+    pop de
+    push de
+    ld hl,MP_DAC
+    ld bc,8
+    ldir
+    pop hl
     jr rd_back
 
 ;; r_abort: DOS's abort routine (D_DEFAB), called when a DOS call meets an

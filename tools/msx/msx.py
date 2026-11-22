@@ -106,7 +106,7 @@ def tcl_str(s):
     return '"' + "".join(out).replace("$", "\\$").replace("[", "\\[").replace("]", "\\]") + '"'
 
 
-def script(lines, core, page, log, timeout, shot):
+def script(lines, core, page, log, timeout, shot, extra=None):
     """the Tcl that runs the session: [(kind, data)] for each step"""
     steps = []                  # per REPL line: (ppokes, text, actions)
     i = 0
@@ -141,7 +141,12 @@ def script(lines, core, page, log, timeout, shot):
         al = " ".join("[list %d %s %s]" % (n, k, tcl_str(d)) for n, k, d in acts)
         w("lappend ::steps [list [list %s] %s [list %s]]" % (ppl, tcl_str(text), al))
     w(r"""
-proc segbase {} { return [expr {[debug read memory [expr {$::RS_SEGS + 6}]] * 16384}] }
+proc segbase {} {
+  # page A's segment, noted at the first prompt (page 0 is the ROM during
+  # a Math-Pack call: read then, RS_SEGS would be the ROM's bytes)
+  if {![info exists ::sega]} { set ::sega [debug read memory [expr {$::RS_SEGS + 6}]] }
+  return [expr {$::sega * 16384}]
+}
 proc pwrite {off data} { debug write_block {%s} [expr {[segbase] + $off}] $data }
 proc pread {off} { return [debug read {%s} [expr {[segbase] + $off}]] }
 proc pasted {} {
@@ -186,6 +191,7 @@ proc ending {} {
 }
 proc hook {} {
   if {!$::started} return
+  segbase
   if {$::step >= [llength $::steps]} {
     # the prompt after the last line ends it -- once its keys are given
     if {$::pending == 0} { after time 0.05 quitnow } else { ending }
@@ -204,18 +210,23 @@ proc hook {} {
   }
 }
 proc timeout {} {
+  flush $::trans
   set f [open [file join $::log timeout.txt] w]
-  puts $f "pc [format %%04X [reg pc]] sp [format %%04X [reg sp]]"
+  catch { puts $f "pc [format %%04X [reg pc]] sp [format %%04X [reg sp]] slots [slotselect]" }
+  catch { puts $f "mapper [debug read MapperIO 0] [debug read MapperIO 1] [debug read MapperIO 2] [debug read MapperIO 3]" }
+  catch { puts $f "at pc: [debug read_block memory [reg pc] 8]" }
   if {[catch {set s [get_screen]}] == 0} { puts $f "screen 0:\n$s" }
   if {$::started} {
-    set sh ""
-    for {set r 0} {$r < 24} {incr r} {
-      for {set c 0} {$c < 40} {incr c} {
-        append sh [format %%c [pread [expr {$::SHADOW + 40 * $r + $c}]]]
+    catch {
+      set sh ""
+      for {set r 0} {$r < 24} {incr r} {
+        for {set c 0} {$c < 40} {incr c} {
+          append sh [format %%c [pread [expr {$::SHADOW + 40 * $r + $c}]]]
+        }
+        append sh "\n"
       }
-      append sh "\n"
+      puts $f "shadow:\n$sh"
     }
-    puts $f "shadow:\n$sh"
   }
   close $f
   quitnow
@@ -227,6 +238,8 @@ after realtime %d timeout
 """ % (RAMDBG, RAMDBG, core["EDHOOK"], int(timeout)))
     if shot:
         t.insert(1, "set ::endshot %s" % tcl_str(os.path.abspath(shot)))
+    if extra:
+        w("source %s" % tcl_str(os.path.abspath(extra)))
     return "\n".join(t) + "\n"
 
 
@@ -290,7 +303,7 @@ def run(args):
     page = syms(os.path.join(build, "lispm.sym"))
     tcl = os.path.join(log, "run.tcl")
     with open(tcl, "w", encoding="latin-1") as f:
-        f.write(script(lines, core, page, log, args.timeout, args.shot))
+        f.write(script(lines, core, page, log, args.timeout, args.shot, args.tcl))
     env = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy",
                OPENMSX_HOME=os.path.join(MSXDIR, "home"))
     why = "done"
@@ -341,6 +354,8 @@ def main():
     ap.add_argument("-t", "--timeout", type=float, default=float(os.environ.get("TIMEOUT", 300)))
     ap.add_argument("-k", "--keep", action="store_true", help="keep the log folder")
     ap.add_argument("-S", "--shot", help="a screenshot at the end (.png)")
+    ap.add_argument("-x", "--tcl", help="more Tcl for openMSX, after the harness's (a log of"
+                    " the PSG's writes, say)")
     ap.add_argument("file")
     run(ap.parse_args())
 

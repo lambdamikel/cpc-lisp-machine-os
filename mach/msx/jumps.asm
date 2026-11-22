@@ -15,8 +15,8 @@ RS_XFER     equ RESIDENT+9      ;   A = a segment: an LDIR with it at &8000
                                 ;     (the RAM disc's way to it)
 RS_DOS      equ RESIDENT+12     ;   a DOS call, as DOS takes it, with DOS's
                                 ;     own pages for it
-RS_ROM      equ RESIDENT+15     ;   IX = a main ROM routine, called with DOS's
-                                ;     page 3, the machine page kept
+RS_MATH     equ RESIDENT+15     ;   IX = a Math-Pack routine, run on DAC = 8
+                                ;     bytes at HL (ARG = at DE, if not 0)
 RS_QUIT     equ RESIDENT+18     ;   back to DOS: SCREEN 0, the program ends
 RS_BOOT     equ RESIDENT+21     ;   the start, once everything is loaded
 RS_P2       equ RESIDENT+24     ; the segment at &8000 now
@@ -38,8 +38,8 @@ MTAB        equ #8100           ; machine page A's table, a word an entry
 P_INIT      equ #8000           ; page A: its start (rs_boot calls it),
 P_TICK      equ #8003           ;   the interrupt's work
 PB_TICK     equ #8003           ; page B: the interrupt's sound
-DOS_STACK   equ #C200           ; in DOS's page 3 (TPA there): a stack for
-                                ;   DOS's and the ROM's calls, down to &C100
+DOS_STACK   equ #C400           ; in DOS's page 3 (TPA there): a stack for
+                                ;   DOS's and the ROM's calls, down to &C000
 FILE_BUFSIZE equ 32+256         ; a file's buffer: its state, 256 bytes of it
 
 J_CON_PUTC       equ 0

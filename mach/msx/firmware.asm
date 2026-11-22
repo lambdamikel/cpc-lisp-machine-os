@@ -66,16 +66,36 @@ ROM_ID2     equ #002C           ; bits 0-3 the keyboard: 0 Japanese, 1
 INITXT      equ #006C           ; the BIOS: SCREEN 0 (for DOS, at the end)
 CHGMOD      equ #005F
 
+;; THE MATH-PACK (the main ROM's: BASIC's maths, decimal, 14 digits): a
+;; number is 8 bytes -- bit 7 the sign, bits 0-6 the exponent (64: 0.d1d2...
+;; times 10^0; 0 is zero), then 14 digits of BCD, d1 not 0. The routines
+;; work on DAC (and ARG), VALTYP 8 (double); an error would end in BASIC's
+;; error handler: what would cause one is looked for first (fpmsx.asm).
+MP_DECMUL   equ #27E6           ; DAC = DAC * ARG
+MP_COS      equ #2993
+MP_SIN      equ #29AC
+MP_TAN      equ #29FB
+MP_ATN      equ #2A14
+MP_LOG      equ #2A72
+MP_SQR      equ #2AFF
+MP_EXP      equ #2B4A
+MP_DAC      equ #F7F6
+MP_ARG      equ #F847
+MP_VALTYP   equ #F663
+
 ;; THE BIOS'S AND DOS'S PAGE 3 (seen only with DOS's segment there)
 EXPTBL      equ #FCC1           ; the main ROM's slot, then each slot's
                                 ;   expanded bit
 EXTBIO      equ #FFCA           ; the extended BIOS: D = device
 LINL40      equ #F3AE           ; SCREEN 0's width
+RAMAD1      equ #F342           ; the RAM's slot in page 1 (DOS's)
 
 ;; DOS's page 0 (in our page 0 too)
 DOS_BDOS    equ #0005           ; C = a function
 DOS_RDSLT   equ #000C           ; A = slot, HL = address -> A
 DOS_CALSLT  equ #001C           ; IY = slot (high byte), IX = address
+DOS_ENASLT  equ #0024           ; A = slot, H = the page's address: every
+                                ;   register lost
 DOS_INT     equ #0038           ; the interrupt: a JP, ours while Lisp runs
 
 ;; MSX-DOS 2's functions
@@ -85,6 +105,8 @@ D_STROUT    equ #09
 D_SELDSK    equ #0E             ; E = a drive (0 A:) -> A = drives
 D_LOGIN     equ #18             ; -> HL: bit n, drive n is there
 D_CURDRV    equ #19             ; -> A = the current drive (0 A:)
+D_ALLOC     equ #1B             ; E = a drive (0 the current) -> A =
+                                ;   sectors a cluster, HL = free clusters
 D_FFIRST    equ #40             ; DE = a name, B = attributes, IX = a FIB
 D_FNEXT     equ #41             ;   IX = the FIB
 D_OPEN      equ #43             ; DE = a name, A = mode -> B = handle

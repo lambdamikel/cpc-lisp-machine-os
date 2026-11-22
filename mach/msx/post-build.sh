@@ -17,6 +17,7 @@ asm_any() {  # source output [rasm options]
     grep -i -E "warning|machine page|resident part|LISP.COM" <<<"$log" || true
 }
 
+python3 tools/msx/mkpow2.py > "$OUT/pow2.inc"
 asm_any mach/msx/page.asm "$OUT/LISPM.ROM" -s -sa -os "$OUT/lispm.sym"
 [ "$(stat -c %s "$OUT/LISPM.ROM")" = 32768 ] || { echo "build: LISPM.ROM is not 32 KB" >&2; exit 1; }
 asm_any mach/msx/resident.asm "$OUT/LISP.COM" -s -sa -os "$OUT/resident.sym"

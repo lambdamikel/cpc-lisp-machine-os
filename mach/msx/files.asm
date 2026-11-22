@@ -485,7 +485,67 @@ b_file_cat:
     ld a,(fc_col)
     or a
     call nz,fc_nl
+    call fc_nl
+    ld e,0                      ; the current drive: what is free
+    ld c,D_ALLOC                ;   (HL clusters of A sectors, 512 bytes)
+    call RS_DOS
+    ld b,a
+    ex de,hl
+    ld hl,0
+    ld c,l
+.m:
+    add hl,de                   ; C:HL = clusters * sectors
+    jr nc,.mc
+    inc c
+.mc:
+    djnz .m
+    srl c                       ; / 2: K
+    rr h
+    rr l
+    ld (f_m32),hl
+    ld l,c
+    ld h,0
+    ld (f_m32+2),hl
+    call fc_big
+    ld hl,rd_m_free
+    call fc_str
+    call fc_nl
     jp fc_nl
+
+;; fc_big: f_m32 -> it in decimal (f_m32 lost)
+fc_big:
+    ld ix,mp_t
+    call f_m2bcd
+    ld hl,mp_t+1
+    ld b,10
+    ld c,0                      ; a digit shown yet
+.d:
+    ld a,(hl)
+    bit 0,b
+    jr z,.hi
+    inc hl                      ; the byte's second digit: the next after
+    jr .p
+.hi:
+    rrca
+    rrca
+    rrca
+    rrca
+.p:
+    and 15
+    jr nz,.show
+    inc c
+    dec c
+    jr nz,.show                 ; a 0 after the first digit
+    ld a,b
+    dec a
+    jr nz,.skip                 ; a leading 0 (not the last)
+.show:
+    ld c,1
+    add a,'0'
+    call fc_out
+.skip:
+    djnz .d
+    ret
 
 ;; fc_entry: the entry in the FIB, shown if it is a file or a folder, as
 ;; AMSDOS shows them: NAME    .EXT, then the size, two to a row

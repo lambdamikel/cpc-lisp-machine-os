@@ -1,13 +1,12 @@
-;;; CPC Lisp on the ZX Spectrum: a test of the real machine -- esxDOS's
-;;; files on the SD card, the RAM disc in the DivMMC's RAM, the ROM's
-;;; calculator.
+;;; CPC Lisp on the MSX: a test of the real machine -- DOS's files on the
+;;; SD card, the RAM disc in the mapper's segments, the ROM's Math-Pack,
+;;; the VDP's colours.
 ;;;
 ;;;   (load "hwtest")  then  (hwtest)     each check says yes or NO
-;;;   (quit), load LISP.TAP again, (load "hwtest"), (hwtest2)
-;;;                                       what starting again should leave
 ;;;
 ;;; (hwtest) writes HWTEST.TMP on the SD card (and deletes it), and on M:
 ;;; COPY.LSP, LZM.LSP, WORK.LSP, T.FAR and B.FAR (S.FAR comes and goes).
+;;; M: goes when Lisp ends: DOS frees its segments.
 
 (defvar *hw-yes* 0)
 (defvar *hw-no* 0)
@@ -40,7 +39,7 @@
   (setq *hw-yes* 0 *hw-no* 0)
   (setq *hw-m* (car (%catch-errors
                      (with-open-file (o "m:hwm" :direction :output) t))))
-  (format t "~%CPC Lisp on the ZX Spectrum: the test~%")
+  (format t "~%CPC Lisp on the MSX: the test~%")
   (unless *hw-m* (format t "No RAM disc: 1-4, 9, 10 apply~%"))
   (hw-check 1 "cells" #'(lambda () (length (make-list 500))) 500)
   (when (fboundp 'compile)
@@ -78,7 +77,7 @@
     (hw-check 7 "the RAM disc"
               #'(lambda () (save "m:work" 'hw-sq) (probe-file "m:work"))
               "m:work")
-    (hw-check 8 "far arrays over five of its pages"
+    (hw-check 8 "far arrays over three of its segments"
               #'(lambda ()
                   (make-far-array "s" 10)
                   (let ((b (make-far-array "b" 40000
@@ -91,7 +90,7 @@
                     (list (far-ref b 16000) (far-ref b 39999) (far-ref a 7)
                           (hw-byte "m:b.far" 16002) (hw-byte "m:b.far" 40001))))
               '(65 66 42 65 66)))
-  (hw-check 9 "floats: the ROM's calculator"
+  (hw-check 9 "floats: the ROM's Math-Pack"
             #'(lambda ()
                 (list (floor (* 10000 (sqrt 2.0))) (floor (* 1000 (sin 1.0)))
                       (floor (* 1000 (exp 1.0))) (floor (* 1000 (- 7.9 7)))))
@@ -101,20 +100,5 @@
                 (cls) (disc 320 200 40 2) (box 100 100 140 140 3)
                 (prog1 (list (test 320 200) (test 120 100) (test 500 300)) (cls)))
             '(2 3 0))
-  (format t "~%~D yes, ~D NO~%" *hw-yes* *hw-no*)
-  (when *hw-m*
-    (format t "Then (quit), load LISP.TAP again,~%(load \"hwtest\"), (hwtest2)~%"))
-  t)
-
-(defun hwtest2 ()
-  (setq *hw-yes* 0 *hw-no* 0)
-  (format t "~%After a reset~%")
-  (hw-check 1 "the far arrays kept"
-            #'(lambda () (list (far-ref (far-array "t") 7)
-                               (far-ref (far-array "b") 39999)))
-            '(42 66))
-  (hw-check 2 "the RAM disc's file kept"
-            #'(lambda () (fmakunbound 'hw-sq) (load "m:work") (hw-sq 9))
-            81)
   (format t "~%~D yes, ~D NO~%" *hw-yes* *hw-no*)
   t)
