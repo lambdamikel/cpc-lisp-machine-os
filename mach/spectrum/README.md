@@ -3,7 +3,9 @@
 *Runs on a real +2A* (Mike's, with a DivMMC and esxDOS 0.8.5,
 2026-11-21: `(hwtest)` 10 yes, the keys, sound, graphics), *and in
 ZEsarUX (a +2A, a DivMMC with the real esxDOS 0.8.5, started from its
-NMI browser as below; a 128 too). Screenshots: the main README.* The same Lisp as on the CPC -- the six images are built
+NMI browser as below; a 128 too). Screenshots, and photos of the real
+one: the [main README](../../README.md#on-the-zx-spectrum).* The same
+Lisp as on the CPC -- the six images are built
 from the same sources, the compiler included -- on a ZX Spectrum +2A,
 +2B or +3 (or a 128 or grey +2: the loader tells them apart) with
 a **DivMMC** (or a compatible interface) that has **128 KB of RAM** and
