@@ -16,9 +16,9 @@ FutureOS*](#under-futureos), below). **Video:**
 **New: the ZX Spectrum.** A 128K Spectrum -- the +2A, +2B or +3, or a
 128 -- with a DivMMC runs the same Lisp, the compiler and all, from its
 SD card: 40 columns, colour graphics on the Spectrum's attributes, the
-AY's three voices, files through esxDOS. It runs on a real +2A ([*On
-the ZX Spectrum*](#on-the-zx-spectrum), below; screenshots
-[below](#screenshots)).
+AY's three voices, files through esxDOS. It runs on a real +2A
+([*On the ZX Spectrum*](#on-the-zx-spectrum), below, with photos;
+screenshots [below](#screenshots)).
 
     CPC Lisp 1.0
     A Lisp machine for the Amstrad CPC
@@ -102,7 +102,8 @@ program on each:
 <tr><td align="center" valign="top"><img src="docs/images/cpc-apfel.png" width="190" alt="<code>(apfel)</code> on the CPC: mode 2, compiled"><br><code>(apfel)</code> on the CPC: mode 2, compiled</td><td align="center" valign="top"><img src="docs/images/zx-apfel.png" width="190" alt="<code>(apfel)</code> on the ZX Spectrum: 256 by 192, compiled"><br><code>(apfel)</code> on the ZX Spectrum: 256 by 192, compiled</td><td align="center" valign="top"><img src="docs/images/m4-apfel.png" width="190" alt="<code>(apfel)</code> on the TRS-80 Model 4: the high-resolution board"><br><code>(apfel)</code> on the TRS-80 Model 4: the high-resolution board</td><td align="center" valign="top"><img src="docs/images/trs80-apfel.png" width="190" alt="<code>(apfel)</code> on the TRS-80 Model I: in the 2 x 3 blocks"><br><code>(apfel)</code> on the TRS-80 Model I: in the 2 x 3 blocks</td></tr>
 </table>
 
-**On the ZX Spectrum +2A, with a DivMMC**
+**On the ZX Spectrum +2A, with a DivMMC** (in ZEsarUX; photos of the
+real one [below](#on-the-zx-spectrum))
 
 <table>
 <tr><td align="center" valign="top"><img src="docs/images/zx-repl.png" width="190" alt="The REPL, 40 by 24: <code>loop</code>, <code>format</code>, floats, the compiler"><br>The REPL, 40 by 24: <code>loop</code>, <code>format</code>, floats, the compiler</td><td align="center" valign="top"><img src="docs/images/zx-ed.png" width="190" alt="The function editor: <code>(ed 'rose)</code>; EDIT or GRAPH is done"><br>The function editor: <code>(ed 'rose)</code>; EDIT or GRAPH is done</td><td align="center" valign="top"><img src="docs/images/zx-rose.png" width="190" alt="<code>(rose)</code>: floats by the Spectrum ROM's calculator"><br><code>(rose)</code>: floats by the Spectrum ROM's calculator</td><td align="center" valign="top"><img src="docs/images/zx-koch.png" width="190" alt="<code>(koch 4)</code>"><br><code>(koch 4)</code></td></tr>
@@ -358,6 +359,13 @@ esxDOS, floats, a RAM disc -- lives in the DivMMC's own RAM, two of its
     A Lisp machine for the ZX Spectrum
     library ROMs 1 2 3 4
     1811 cells free
+
+**On a real +2A** -- photos, on a Sony monitor:
+
+<table>
+<tr><td colspan="3" align="center" valign="top"><a href="docs/images/zx-real-setup.jpg"><img src="docs/images/zx-real-setup.jpg" width="580" alt="A ZX Spectrum +2A with a DivMMC running CPC Lisp's (shapes) on a Sony monitor"></a><br>The +2A, its DivMMC at the back: <code>(shapes)</code></td></tr>
+<tr><td align="center" valign="top"><a href="docs/images/zx-real-repl.jpg"><img src="docs/images/zx-real-repl.jpg" width="190" alt="CPC Lisp's banner on the real +2A"></a><br>Started from the SD card: the banner, <code>(test 3)</code></td><td align="center" valign="top"><a href="docs/images/zx-real-ed.jpg"><img src="docs/images/zx-real-ed.jpg" width="190" alt="The function editor on the real +2A"></a><br>The function editor: <code>(ed 'koch)</code></td><td align="center" valign="top"><a href="docs/images/zx-real-tree.jpg"><img src="docs/images/zx-real-tree.jpg" width="190" alt="(tree) on the real +2A"></a><br><code>(tree)</code></td></tr>
+</table>
 
 **What it needs**: a 128K Spectrum and a DivMMC (or a compatible
 interface) with **128 KB of RAM** and **esxDOS** on its SD card.
