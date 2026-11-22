@@ -11,15 +11,16 @@
 ;;   RESIDENT+12 RS_DOS: a DOS call -- C its function, A, B, DE, HL, IX as
 ;;               it takes them and as it gives them back, IY kept -- with DOS's
 ;;               segments in pages 2 and 3 for it, on a stack in DOS's page 3
-;;   RESIDENT+15 RS_MATH: IX = a Math-Pack routine (the main ROM's), HL =
-;;               a number of its own, 8 bytes, into DAC; DE = another, into
-;;               ARG (or 0); the routine called (CALSLT) and DAC back at HL
-;;               -- with DOS's page 3 for it (the BIOS's variables, DAC and
-;;               ARG), the main ROM in pages 0 and 1, page 2 left as it is
-;;               (machine page B calls it), the interrupts off
+;;   RESIDENT+15 RS_SYS3: DOS's page 3 and its interrupt, the interrupts
+;;               off, JIFFY noted -- for machine page B's Math-Pack calls
+;;               (fpmsx.asm: it puts the ROM in pages 0 and 1 itself, and
+;;               calls the routine with the interrupts on, the BIOS's
+;;               counting the ticks); page 2 is left as it is
 ;;   RESIDENT+18 RS_QUIT: back to DOS -- SCREEN 0 through the BIOS, the
 ;;               program's end (DOS frees our segments)
 ;;   RESIDENT+21 RS_BOOT: the start, once everything is loaded
+;;   RESIDENT+24 RS_BACK3: back from RS_SYS3: Lisp's page 3 and interrupt,
+;;               the ticks JIFFY counted meanwhile run (r_ticks). All kept.
 ;;   JB          the jumpblock: entry k is "call mfar : db 2k" (jumps.asm)
 ;;
 ;; The mapper's ports cannot be read: RS_P2 says what page 2 holds, and
@@ -30,7 +31,10 @@
 ;; into its page 3. While Lisp runs, that jump's address is r_int, ours:
 ;; it maps machine page A for its tick (the clock, the keys), then B (the
 ;; sound), and puts back page 2. For a DOS or ROM call it is DOS's again
-;; (to_dos), with DOS's segments.
+;; (to_dos), with DOS's segments -- the BIOS's, while the ROM is at &0038
+;; -- and the ticks the BIOS counts meanwhile (JIFFY) are run after it, one
+;; after the other (r_ticks): the clock, the keys and the sound do not lose
+;; them.
 ;;
 ;; A call to entry k lands on "call mfar": mfar takes the byte after it
 ;; (and drops that return), maps machine page A, finds the routine in its
@@ -50,9 +54,10 @@
     jp r_curbank
     jp r_copy
     jp r_dos
-    jp r_math
+    jp r_sys3
     jp r_quit
     jp r_boot
+    jp r_back3
     assert $ == RS_P2
     db 0                        ; RS_P2
     db 0                        ; RS_BANK
@@ -73,6 +78,8 @@ rs_dosint:  dw 0                ; DOS's interrupt (its &0038 jump's address)
 rs_sp:      dw 0                ; the caller's stack, during a DOS call
 rs_in:      db 0                ; 1 while DOS or the ROM has the machine
 rp_prev:    db 0                ; r_copy's
+rs_jif:     db 0                ; JIFFY as a DOS or ROM call started; then
+                                ;   the ticks it had
     assert $ <= JB
 
     defs JB-$,0
@@ -167,6 +174,13 @@ r_copy:
 r_int:
     push af
     in a,(P_VDPCTL)             ; the VDP's status: the interrupt answered
+    call r_tick
+    pop af
+    ei
+    ret
+;; r_tick: a tick -- page A's (the clock, the keys), then page B's (the
+;; sound) -- the interrupts off. All but AF kept.
+r_tick:
     push hl
     ld a,(RS_P2)
     push af
@@ -188,8 +202,25 @@ r_int:
     ld (RS_P2),a
     out (P_MAP2),a
     pop hl
-    pop af
+    ret
+;; r_ticks: the ticks the BIOS's interrupt had during a DOS or ROM call
+;; (rs_jif: its JIFFY's count), ours now, one after the other -- the
+;; clock, the keys and the sound catch up. All kept.
+r_ticks:
+    push af
+    ld a,(rs_jif)
+    or a
+    jr z,.none
+    di
+    push bc
+    ld b,a
+.t:
+    call r_tick
+    djnz .t
+    pop bc
     ei
+.none:
+    pop af
     ret
 
 ;; to_dos: DOS's pages 2 and 3 and its interrupt, the interrupts off. All
@@ -246,56 +277,48 @@ r_dos:
     ld (rs_sp),sp
     ld sp,DOS_STACK
     push iy                     ; (_ALLOC's IY, say)
+    call rd_jif
     ei
     call DOS_BDOS
     pop iy
+;; rd_back: the end of a DOS or ROM call (and of an abort): the ticks the
+;; BIOS's interrupt counted meanwhile (JIFFY) noted, the caller's stack and
+;; Lisp's pages back, those ticks ours. All kept.
 rd_back:
+    call rd_jifs
     ld sp,(rs_sp)
-    jp to_lisp
-
-;; RS_MATH: IX = a Math-Pack routine, HL = 8 bytes for DAC, DE = 8 for ARG
-;; or 0 -> the routine run, DAC back at HL. HL kept; AF, BC, DE lost. The
-;; numbers must be in pages 0-2.
-r_math:
-    call to_dos3
-    ld (rs_sp),sp
-    ld sp,DOS_STACK
-    push hl                     ; where the answer goes
-    push de
-    ld de,MP_DAC
-    ld bc,8
-    ldir
-    pop hl                      ; ARG's, if there is one
-    ld a,h
-    or l
-    jr z,.go
-    ld de,MP_ARG
-    ld bc,8
-    ldir
-.go:
-    ld a,8                      ; double precision
-    ld (MP_VALTYP),a
-    push iy
-    push ix
-    ld a,(EXPTBL)               ; the ROM in page 1 too: the Math-Pack calls
-    ld h,#40                    ;   BASIC's half (SIN its INT)
-    call DOS_ENASLT
-    pop ix
-    ld iy,(EXPTBL-1)            ; IYH = the main ROM's slot
-    call DOS_CALSLT
-    di
-    ld a,(RAMAD1)               ; our RAM in page 1 again
-    ld h,#40
-    call DOS_ENASLT
-    di
-    pop iy
-    pop de
-    push de
-    ld hl,MP_DAC
-    ld bc,8
-    ldir
+    call to_lisp
+    jp r_ticks
+;; RS_BACK3: back from RS_SYS3 (the caller's own stack): the ticks noted,
+;; Lisp's pages and interrupt, the ticks run. All kept.
+r_back3:
+    call rd_jifs
+    call to_lisp
+    jp r_ticks
+;; rd_jifs: the ticks JIFFY counted since rd_jif -> rs_jif (DOS's page 3
+;; in). All kept.
+rd_jifs:
+    push af
+    push hl
+    ld a,(JIFFY)
+    ld hl,rs_jif
+    sub (hl)
+    ld (hl),a
     pop hl
-    jr rd_back
+    pop af
+    ret
+;; RS_SYS3: DOS's page 3 and interrupt, the interrupts off, JIFFY noted.
+;; All kept.
+r_sys3:
+    call to_dos3
+    jp rd_jif
+;; rd_jif: JIFFY noted, as a DOS or ROM call starts. All kept.
+rd_jif:
+    push af
+    ld a,(JIFFY)
+    ld (rs_jif),a
+    pop af
+    ret
 
 ;; r_abort: DOS's abort routine (D_DEFAB), called when a DOS call meets an
 ;; error it would end the program for (CTRL-STOP, a disc error aborted):
@@ -313,7 +336,7 @@ r_abort:
     ld a,c
 .b:
     or a                        ; NZ (an error is never 0)
-    jr rd_back
+    jp rd_back
 ;; r_diskerr: DOS's disc error routine (D_DEFER): abort, which r_abort
 ;; turns into the call's error
 r_diskerr:
@@ -325,6 +348,9 @@ r_quit:
     call to_dos
     ld sp,DOS_STACK
 r_end:
+    ld iy,(EXPTBL-1)            ; the keys the BIOS took while Lisp ran
+    ld ix,KILBUF                ;   are not DOS's
+    call DOS_CALSLT
     ld iy,(EXPTBL-1)
     ld ix,INITXT
     call DOS_CALSLT

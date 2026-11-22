@@ -15,23 +15,25 @@ RS_XFER     equ RESIDENT+9      ;   A = a segment: an LDIR with it at &8000
                                 ;     (the RAM disc's way to it)
 RS_DOS      equ RESIDENT+12     ;   a DOS call, as DOS takes it, with DOS's
                                 ;     own pages for it
-RS_MATH     equ RESIDENT+15     ;   IX = a Math-Pack routine, run on DAC = 8
-                                ;     bytes at HL (ARG = at DE, if not 0)
+RS_SYS3     equ RESIDENT+15     ;   DOS's page 3 and interrupt, the interrupts
+                                ;     off, JIFFY noted (page B's Math-Pack)
 RS_QUIT     equ RESIDENT+18     ;   back to DOS: SCREEN 0, the program ends
 RS_BOOT     equ RESIDENT+21     ;   the start, once everything is loaded
-RS_P2       equ RESIDENT+24     ; the segment at &8000 now
-RS_BANK     equ RESIDENT+25     ; the bank at &C000 (0-5)
-RS_FRAMES   equ RESIDENT+26     ; 4 bytes: 1/300 s since the start
-RS_HOOK     equ RESIDENT+30     ; the test harness's (openMSX's Tcl)
-RS_HZ       equ RESIDENT+31     ; the interrupt's frequency: 50 or 60
-RS_KBD      equ RESIDENT+32     ; the keyboard: the main ROM's &002C, bits 0-3
-RS_TPA2     equ RESIDENT+33     ; DOS's segments in pages 2 and 3
-RS_TPA3     equ RESIDENT+34
-RS_SEGS     equ RESIDENT+35     ; 8: the segments of banks 0-5, then of
+RS_BACK3    equ RESIDENT+24     ;   back from RS_SYS3: Lisp's page 3 and
+                                ;     interrupt, the ticks JIFFY counted ours
+RS_P2       equ RESIDENT+27     ; the segment at &8000 now
+RS_BANK     equ RESIDENT+28     ; the bank at &C000 (0-5)
+RS_FRAMES   equ RESIDENT+29     ; 4 bytes: 1/300 s since the start
+RS_HOOK     equ RESIDENT+33     ; the test harness's (openMSX's Tcl)
+RS_HZ       equ RESIDENT+34     ; the interrupt's frequency: 50 or 60
+RS_KBD      equ RESIDENT+35     ; the keyboard: the main ROM's &002C, bits 0-3
+RS_TPA2     equ RESIDENT+36     ; DOS's segments in pages 2 and 3
+RS_TPA3     equ RESIDENT+37
+RS_SEGS     equ RESIDENT+38     ; 8: the segments of banks 0-5, then of
 SEG_A       equ RS_SEGS+6       ;   machine page A
 SEG_B       equ RS_SEGS+7       ;   and B
-RS_RDN      equ RESIDENT+43     ; the RAM disc's segments: how many,
-RS_RD       equ RESIDENT+44     ;   then each (up to RD_MAX)
+RS_RDN      equ RESIDENT+46     ; the RAM disc's segments: how many,
+RS_RD       equ RESIDENT+47     ;   then each (up to RD_MAX)
 RD_MAX      equ 32
 JB          equ #0180           ; the jumpblock, four bytes an entry
 MTAB        equ #8100           ; machine page A's table, a word an entry

@@ -16,6 +16,7 @@ PB_DATA_END equ #C000
 ;; b_init: from rs_boot, once
 b_init:
     call f_init
+    call fp_init
     jp s_init
 
 ;; ---------------------------------------------------------------------------

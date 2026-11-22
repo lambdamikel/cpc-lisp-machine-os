@@ -1323,9 +1323,18 @@ k_emit:
     ld (k_lock),a
     jp k_lamp
 
-;; k_queue: A = a code -> into the queue, unless it is full
+;; k_queue: A = a code -> into the queue, unless it is full. ESC makes the
+;; core look at the keys in its very next body: it looks only every 32nd
+;; (V_BRK counts them down: src/eval.asm), and a body that calls the
+;; Math-Pack takes a tenth of a second here (V_BRK's address: the core's,
+;; from post-build.sh)
 k_queue:
     ld c,a
+    cp #FC
+    jr nz,.q
+    ld a,1
+    ld (V_BRK),a
+.q:
     ld a,(k_in)
     ld b,a
     inc a

@@ -18,7 +18,9 @@ asm_any() {  # source output [rasm options]
 }
 
 python3 tools/msx/mkpow2.py > "$OUT/pow2.inc"
-asm_any mach/msx/page.asm "$OUT/LISPM.ROM" -s -sa -os "$OUT/lispm.sym"
+# the core's ESC countdown, which page A's keys make 0 at once (k_queue)
+vbrk=$(awk '$1 == "V_BRK" { print substr($2, 2) }' "$OUT/lisp.sym")
+asm_any mach/msx/page.asm "$OUT/LISPM.ROM" -s -sa -os "$OUT/lispm.sym" -DV_BRK=$((16#$vbrk))
 [ "$(stat -c %s "$OUT/LISPM.ROM")" = 32768 ] || { echo "build: LISPM.ROM is not 32 KB" >&2; exit 1; }
 asm_any mach/msx/resident.asm "$OUT/LISP.COM" -s -sa -os "$OUT/resident.sym"
 cat "$OUT/LISP.ROM" "$OUT/LISPLIB.ROM" "$OUT/LISPLIB2.ROM" "$OUT/LISPLIB3.ROM" \

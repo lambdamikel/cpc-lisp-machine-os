@@ -64,6 +64,7 @@ ROM_ID2     equ #002C           ; bits 0-3 the keyboard: 0 Japanese, 1
                                 ;   international, 2 French, 3 British,
                                 ;   4 German...
 INITXT      equ #006C           ; the BIOS: SCREEN 0 (for DOS, at the end)
+KILBUF      equ #0156           ;   its key buffer emptied
 CHGMOD      equ #005F
 
 ;; THE MATH-PACK (the main ROM's: BASIC's maths, decimal, 14 digits): a
@@ -88,7 +89,9 @@ EXPTBL      equ #FCC1           ; the main ROM's slot, then each slot's
                                 ;   expanded bit
 EXTBIO      equ #FFCA           ; the extended BIOS: D = device
 LINL40      equ #F3AE           ; SCREEN 0's width
-RAMAD1      equ #F342           ; the RAM's slot in page 1 (DOS's)
+RAMAD0      equ #F341           ; the RAM's slot in page 0 (DOS's)
+RAMAD1      equ #F342           ;   and in page 1
+JIFFY       equ #FC9E           ; the BIOS's interrupt counts here
 
 ;; DOS's page 0 (in our page 0 too)
 DOS_BDOS    equ #0005           ; C = a function

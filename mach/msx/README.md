@@ -1,8 +1,10 @@
 # CPC Lisp on the MSX
 
-*Runs in openMSX (a Toshiba HX-10 -- Mike's ROM --, a 512 KB memory
-mapper, Nextor 2.1.0 on a Sunrise IDE): the regression tests, 43 of 43,
-and the hardware test, 10 yes. Not yet tried on a real machine.* The same
+*Runs on a real Toshiba HX-10 (Mike's, 2026-11-22: an MSX SD Mapper &
+Megaram 512 KB with Nextor 2.1.0 alpha 2 -- the hardware test, the keys,
+the demos, sound, `(quit)`), and in openMSX (the HX-10 -- Mike's ROM --, a
+512 KB memory mapper, Nextor 2.1.0 on a Sunrise IDE): the regression tests,
+43 of 43, and the hardware test, 10 yes.* The same
 Lisp as on the CPC -- the six images are built from the same sources, the
 compiler included -- on an **MSX1** (or any later MSX) with a **memory
 mapper** that has **144 KB free** under **MSX-DOS 2 or Nextor**: say an
@@ -52,14 +54,18 @@ A call of a machine routine goes to the resident jumpblock, which maps the
 machine page at &8000, calls the routine and maps back what was there
 (`mfar`). DOS is called through the resident part (`RS_DOS`), which puts
 DOS's segments back in pages 2 and 3 and its interrupt, on a stack of its
-own in DOS's page 3; the Math-Pack the same way (`RS_MATH`), with the main
-ROM in pages 0 and 1 too. The mapper's ports cannot be read: `RS_P2` says
-what page 2 holds. The interrupt (the VDP's, 50 or 60 a second: the main
-ROM says which) is ours while Lisp runs -- DOS's jump at &0038 points at
-`r_int` -- and runs page A's tick (the clock, the keys), then page B's
-(the sound, 100 times a second). If DOS meets an error in a call -- a disc
-error, CTRL-STOP -- it calls `r_abort`, which returns from that call with
-the error (`D_DEFAB`, `D_DEFER`).
+own in DOS's page 3. The Math-Pack is called from machine page B
+(`f_mp`): DOS's page 3 (`RS_SYS3`), the main ROM put in pages 0 and 1 by
+DOS's ENASLT, and the routine called with the interrupts on. The mapper's
+ports cannot be read: `RS_P2` says what page 2 holds. The interrupt (the
+VDP's, 50 or 60 a second: the main ROM says which) is ours while Lisp
+runs -- DOS's jump at &0038 points at `r_int` -- and runs page A's tick
+(the clock, the keys), then page B's (the sound, 100 times a second).
+During a DOS or Math-Pack call the BIOS's interrupt takes them; its JIFFY
+counts them, and the resident part runs those ticks after the call
+(`r_ticks`): the clock, the keys and the sound lose none. If DOS meets an
+error in a call -- a disc error, CTRL-STOP -- it calls `r_abort`, which
+returns from that call with the error (`D_DEFAB`, `D_DEFER`).
 
 ## The screen
 
@@ -90,6 +96,11 @@ high). `mode` only clears the screen.
 | SHIFT and a cursor key | the copy cursor |
 | CAPS | capitals until pressed again (its lamp says so) |
 | CTRL and a letter | its control code |
+
+ESC breaks within some 0.3 s, even in code full of floats: the core looks
+at the keys in every 32nd body, and a body with a `sin` in it takes 0.15 s
+on an MSX, so page A makes the core look in its very next body once ESC is
+seen (it sets the core's countdown, `V_BRK`, to 1).
 
 The characters are the international layout's, SHIFT the upper ones:
 `[ ] { } ~ | \ `` ` are on their own keys. GRAPH and CODE give nothing.

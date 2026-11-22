@@ -1011,7 +1011,8 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   variables) only inside `RS_DOS`/`RS_MATH` (`to_dos`/`to_lisp`), so
   `src/` and `lib/` needed no change; the machine pages A and B are at
   &8000 while a routine runs; the Lisp's RAM is pages 0-1 (2899 cells).
-  Lessons:
+  **Passed on Mike's real HX-10** (2026-11-22): hwtest 10 yes, the keys,
+  the demos, sound, (quit) to DOS. Lessons:
   * **C-BIOS cannot start a disc ROM** (it has no BASIC): openMSX needs a
     real machine's ROM for Nextor -- Mike's HX-10's, by
     `tools/msx/romdump.asm` (Disk BASIC's `BSAVE` from &0000 said "Illegal
@@ -1023,11 +1024,22 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     reaches past it), with DOS's segment in page 2 too -- DOS keeps its
     own idea of page 2 (PUT_P2) and would map it back.
   * **The Math-Pack's SIN calls BASIC's INT in page 1** (&55DF: a hang
-    in our RAM): `RS_MATH` puts the main ROM in pages 0 and 1 (ENASLT,
-    then RAMAD1 back). Its errors jump into page 1 too (BASIC's error
-    handler): `fpmsx.asm` looks for them first, as the Spectrum's did.
-    The conversions (ten digits times a power of two from `pow2tab`, one
-    DECMUL each way) make float.out the CPC's, digit for digit.
+    in our RAM): the main ROM goes in pages 0 and 1. Its errors jump into
+    page 1 too (BASIC's error handler): `fpmsx.asm` looks for them first,
+    as the Spectrum's did. The conversions (ten digits times a power of
+    two from `pow2tab`, one DECMUL each way) make float.out the CPC's,
+    digit for digit. A `sin` takes ~0.15 s.
+  * **DOS's CALSLT keeps the interrupts off in the routine** (its `di`
+    before the jump; the Math-Pack never turns them on): Lisp's clock ran
+    at half speed in float code and ESC was seen late (Mike, on the real
+    HX-10). So page B calls the Math-Pack itself (`f_mp`): DOS's ENASLT at
+    its page 3 address (&0024's jump: page 0 goes from under the resident
+    part) puts the ROM in pages 0 and 1, the routine runs with the
+    interrupts on -- the BIOS's KEYINT takes them, its JIFFY counts -- and
+    the resident part runs the ticks JIFFY counted after every DOS or ROM
+    call (`r_ticks`). And ESC seen by page A sets the core's `V_BRK` to 1
+    (its address from lisp.sym, post-build's -D): the core looks at the
+    keys every 32nd body, which in `(rose)` was 0.7 s; 0.3 s now.
   * The VDP's address is two writes to its control port; the interrupt
     reads the status, which resets the latch: `v_wr`/`v_rd` keep the
     interrupts off for the pair, and the tick never touches the VDP. Its

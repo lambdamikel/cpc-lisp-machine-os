@@ -44,7 +44,6 @@ MSXDIR = os.path.expanduser(os.environ.get("MSX_DIR", "~/claude/msx"))
 MACHINE = os.environ.get("MSX_MACHINE", "Toshiba_HX-10")
 RAMEXT = "ram512k"
 RAMDBG = "512k External RAM"   # openMSX's debuggable of the mapper's RAM
-RS_SEGS = 0x0123                # jumps.asm: RESIDENT+35; SEG_A = +6
 # the CPC's key numbers (emu/repl.lua's !press) as the codes the keys give:
 # the cursor keys up, right, down, left (+4 with SHIFT, 21; +8 with CTRL,
 # 23), COPY, CLR, RETURN, ENTER, ESC, TAB, DEL
@@ -106,7 +105,7 @@ def tcl_str(s):
     return '"' + "".join(out).replace("$", "\\$").replace("[", "\\[").replace("]", "\\]") + '"'
 
 
-def script(lines, core, page, log, timeout, shot, extra=None):
+def script(lines, core, page, res, log, timeout, shot, extra=None):
     """the Tcl that runs the session: [(kind, data)] for each step"""
     steps = []                  # per REPL line: (ppokes, text, actions)
     i = 0
@@ -132,7 +131,7 @@ def script(lines, core, page, log, timeout, shot, extra=None):
     w("set ::done 0")
     w("set ::nshot 0")
     w("set ::pending 0")
-    w("set ::RS_SEGS %d" % RS_SEGS)
+    w("set ::RS_SEGS %d" % res["RS_SEGS"])
     for n in ("PA_BUF", "PA_LEN", "PA_POS", "PA_REC", "SHADOW", "C_BORDER"):
         w("set ::%s %d" % (n, page[n] - 0x8000))
     w("set ::steps {}")
@@ -301,9 +300,10 @@ def run(args):
     disc(build, os.path.abspath(args.dir) if args.dir else None, hd)
     core = syms(os.path.join(build, "lisp.sym"))
     page = syms(os.path.join(build, "lispm.sym"))
+    res = syms(os.path.join(build, "resident.sym"))
     tcl = os.path.join(log, "run.tcl")
     with open(tcl, "w", encoding="latin-1") as f:
-        f.write(script(lines, core, page, log, args.timeout, args.shot, args.tcl))
+        f.write(script(lines, core, page, res, log, args.timeout, args.shot, args.tcl))
     env = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy",
                OPENMSX_HOME=os.path.join(MSXDIR, "home"))
     why = "done"

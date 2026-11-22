@@ -10,7 +10,7 @@
 ;; ROM's Math-Pack -- BASIC's maths, decimal, 14 digits (firmware.asm):
 ;; the real made its number (m in ten digits, times 2^(e-160) by a
 ;; Math-Pack multiply: pow2tab, tools/msx/mkpow2.py), the function run on
-;; it (RS_MATH, the resident part), the answer made a real again (times
+;; it (f_mp), the answer made a real again (times
 ;; 2^(32-E) for the E that puts it between 2^31 and 2^32, the integer
 ;; part rounded by the next digit). Whatever would make the ROM stop with a
 ;; BASIC error (the root or logarithm of a negative, an overflow) is looked
@@ -150,7 +150,7 @@ f_calc1:
     pop ix
     ld hl,mp_x
     ld de,0
-    call RS_MATH                ; mp_x = f(mp_x)
+    call f_mp                   ; mp_x = f(mp_x)
     pop hl
 ;; f_frommp: mp_x -> the real at HL. HL kept; carry, or none if it is too
 ;; big for a real (too small: 0).
@@ -226,7 +226,7 @@ f_frommp:
     ex de,hl
     ld hl,mp_t
     ld ix,MP_DECMUL
-    call RS_MATH
+    call f_mp
     ld a,(mp_t)                 ; between 2^31 and 2^32? Ten digits,
     cp 64+10                    ;   2147483648 to 4294967295.x
     jr c,.less
@@ -426,7 +426,7 @@ f_tomp:
     add hl,bc
     ex de,hl
     ld ix,MP_DECMUL
-    call RS_MATH
+    call f_mp
     pop hl
     ld a,(f_s)                  ; the sign
     or (hl)
@@ -501,6 +501,79 @@ f_m2bcd:
     ret
 
     include "pow2.inc"
+
+;; f_mp: IX = a Math-Pack routine, HL = 8 bytes for DAC, DE = 8 for ARG or
+;; 0 -> the routine run on them, DAC back at HL. HL kept; AF, BC, DE, IX
+;; lost. With DOS's page 3 for it (RS_SYS3: DAC, ARG and the BIOS's
+;; variables) and the main ROM in pages 0 and 1 -- put there here, by
+;; DOS's ENASLT at its own address in page 3 (page 0 goes from under the
+;; resident part; the Math-Pack calls BASIC's half in page 1: SIN its INT)
+;; -- on a stack in DOS's page 3. The routine is called with the interrupts
+;; on: the BIOS's interrupt (the ROM is at &0038) takes them and its JIFFY
+;; counts them, and RS_BACK3 runs those ticks after, ours: the clock, the
+;; keys and the sound lose none. (CALSLT would keep them off throughout.)
+f_mp:
+    call RS_SYS3
+    ld (f_mpsp),sp
+    ld sp,DOS_STACK
+    push hl                     ; where the answer goes
+    push de
+    ld de,MP_DAC
+    ld bc,8
+    ldir
+    pop hl                      ; ARG's, if there is one
+    ld a,h
+    or l
+    jr z,.go
+    ld de,MP_ARG
+    ld bc,8
+    ldir
+.go:
+    ld a,8                      ; double precision
+    ld (MP_VALTYP),a
+    push ix
+    ld a,(EXPTBL)               ; the main ROM in page 1,
+    ld h,#40
+    call f_ena
+    ld a,(EXPTBL)               ;   and in page 0
+    ld h,0
+    call f_ena
+    pop ix
+    ei
+    call .ix
+    di
+    ld a,(RAMAD0)               ; our RAM again
+    ld h,0
+    call f_ena
+    ld a,(RAMAD1)
+    ld h,#40
+    call f_ena
+    di
+    pop de
+    push de
+    ld hl,MP_DAC
+    ld bc,8
+    ldir
+    pop hl
+    ld sp,(f_mpsp)
+    jp RS_BACK3
+.ix:
+    jp (ix)
+;; f_ena: A = a slot, H = a page's address -> that slot there: DOS's
+;; ENASLT, at its address in page 3 (f_enaslt). Every register lost.
+f_ena:
+    push hl
+    ld hl,(f_enaslt)
+    ex (sp),hl
+    ret
+f_mpsp:     dw 0
+f_enaslt:   dw 0                ; DOS's ENASLT (&0024's jump), in its page 3
+
+;; fp_init: from b_init: DOS's ENASLT's address
+fp_init:
+    ld hl,(DOS_ENASLT+1)
+    ld (f_enaslt),hl
+    ret
 
 ;; ---------------------------------------------------------------------------
 ;; THE ROUTINES
