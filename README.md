@@ -18,7 +18,8 @@ FutureOS*](#under-futureos), below). **Video:**
 SD card: 40 columns, colour graphics on the Spectrum's attributes, the
 AY's three voices, files through esxDOS. It runs on a real +2A
 ([*On the ZX Spectrum*](#on-the-zx-spectrum), below, with photos;
-screenshots [below](#screenshots)).
+screenshots [below](#screenshots)). **Video:**
+[CPC Lisp on the ZX Spectrum +2](https://youtu.be/4GQVhU6cOpw) (6:02).
 
     CPC Lisp 1.0
     A Lisp machine for the Amstrad CPC
@@ -79,8 +80,8 @@ at the end says what is in each.
 |---|---|
 | <a href="https://youtu.be/rrI9Di3qzVM"><img src="https://img.youtube.com/vi/rrI9Di3qzVM/maxresdefault.jpg" width="400" alt="A Modern Lisp OS for the Amstrad CPC"></a> | <a href="https://youtu.be/qcSBfZ-axFA"><img src="https://img.youtube.com/vi/qcSBfZ-axFA/maxresdefault.jpg" width="400" alt="CPC Lisp 0.9 demos"></a> |
 | [A Modern Lisp OS for the Amstrad CPC -- Common Lisp in ROM!](https://youtu.be/rrI9Di3qzVM) (11:32) | [CPC Lisp 0.9 Demos -- Turn your Amstrad CPC into a Lisp Machine!](https://youtu.be/qcSBfZ-axFA) (6:51) |
-| <a href="https://youtu.be/s4BsQOroQUc"><img src="https://img.youtube.com/vi/s4BsQOroQUc/maxresdefault.jpg" width="400" alt="CPC Lisp under FutureOS on the CPC 6128"></a> | |
-| [CPC LISP running on the CPC 6128 with FutureOS -- Vortex Floppy Emulation with LambdaSpeak AI](https://youtu.be/s4BsQOroQUc) (5:08) | |
+| <a href="https://youtu.be/s4BsQOroQUc"><img src="https://img.youtube.com/vi/s4BsQOroQUc/maxresdefault.jpg" width="400" alt="CPC Lisp under FutureOS on the CPC 6128"></a> | <a href="https://youtu.be/4GQVhU6cOpw"><img src="https://img.youtube.com/vi/4GQVhU6cOpw/maxresdefault.jpg" width="400" alt="CPC Lisp on the ZX Spectrum +2"></a> |
+| [CPC LISP running on the CPC 6128 with FutureOS -- Vortex Floppy Emulation with LambdaSpeak AI](https://youtu.be/s4BsQOroQUc) (5:08) | [CPC Lisp on the Sinclair ZX Spectrum +2 -- Common Lisp on the Speccy!](https://youtu.be/4GQVhU6cOpw) (6:02) |
 
 ## Screenshots
 
@@ -366,6 +367,10 @@ esxDOS, floats, a RAM disc -- lives in the DivMMC's own RAM, two of its
 <tr><td colspan="4" align="center" valign="top"><a href="docs/images/zx-real-setup.jpg"><img src="docs/images/zx-real-setup.jpg" width="600" alt="A ZX Spectrum +2A with a DivMMC drawing a Koch snowflake in CPC Lisp, on a Sony monitor"></a><br>The +2A, its DivMMC at the back: a Koch snowflake</td></tr>
 <tr><td align="center" valign="top"><a href="docs/images/zx-real-demo.jpg"><img src="docs/images/zx-real-demo.jpg" width="190" alt="CPC Lisp's demo list on the real +2A"></a><br><code>(demo)</code>: the demos</td><td align="center" valign="top"><a href="docs/images/zx-real-ed.jpg"><img src="docs/images/zx-real-ed.jpg" width="190" alt="The function editor on the real +2A"></a><br>The function editor: <code>(ed 'koch)</code></td><td align="center" valign="top"><a href="docs/images/zx-real-shapes.jpg"><img src="docs/images/zx-real-shapes.jpg" width="190" alt="(shapes) on the real +2A"></a><br><code>(shapes)</code> and its colour clash</td><td align="center" valign="top"><a href="docs/images/zx-real-tree.jpg"><img src="docs/images/zx-real-tree.jpg" width="190" alt="(tree) on the real +2A"></a><br><code>(tree)</code></td></tr>
 </table>
+
+<a href="https://youtu.be/4GQVhU6cOpw"><img src="https://img.youtube.com/vi/4GQVhU6cOpw/maxresdefault.jpg" width="400" alt="CPC Lisp on the ZX Spectrum +2"></a>
+
+[CPC Lisp on the Sinclair ZX Spectrum +2 -- Common Lisp on the Speccy!](https://youtu.be/4GQVhU6cOpw) (6:02)
 
 **What it needs**: a 128K Spectrum and a DivMMC (or a compatible
 interface) with **128 KB of RAM** and **esxDOS** on its SD card.
