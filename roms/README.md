@@ -1,12 +1,18 @@
-# CPC Lisp 1.0 -- the ROM images
+# CPC Lisp 1.1 -- the ROM images
 
 *A Lisp machine for the Amstrad CPC*
 
 Ready to use: six 16 KB ROM images, built from this repository (build
-1000, version 1.0). You do not need to build anything to use them.
+1100, version 1.1). You do not need to build anything to use them.
 (No ROM board? CPC Lisp loads from disc too, with a 512K expansion or on
 a 6128, and under FutureOS: [`discs/`](../discs/). The TRS-80's discs are there and with the
 release: see the end.)
+
+**New in 1.1**: **the ZX Spectrum** -- the same Lisp, the compiler and
+all, on a 128K Spectrum (+2A, +2B, +3, or a 128) with a DivMMC, from its
+SD card: `cpc-lisp-1.1-spectrum.zip` (see the end; checked on a real
++2A). For the CPC and the TRS-80s, 1.1 is 1.0 but for `(demo)`'s list,
+which fits the CPC's 40 columns now (the speech demos' lines wrapped).
 
 **New in 1.0**: **CPC Lisp on FutureOS itself** -- `cpclispfos-n.dsk`:
 no firmware, FutureOS stays resident, and Lisp loads, saves and prints
@@ -96,7 +102,7 @@ LambdaSpeak card, below. The rules:
 
 When it starts, it says
 
-    CPC Lisp 1.0
+    CPC Lisp 1.1
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -143,8 +149,8 @@ boot, each as a `.dsk` for emulators and an `.hfe` for a Gotek or HxC
 
 | file | for |
 |---|---|
-| `cpc-lisp-1.0-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp (0.95 also on a real Model I with X-MEM/80 and MIDI/80) |
-| `cpc-lisp-1.0-trs80-model3.dsk` / `.hfe` | a Model III: LDOS 5.1.4, double density (JV3) -- tested on a real Model III with X-MEM/80, Talker/80 and MIDI/80 (0.96) |
+| `cpc-lisp-1.1-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp (0.95 also on a real Model I with X-MEM/80 and MIDI/80) |
+| `cpc-lisp-1.1-trs80-model3.dsk` / `.hfe` | a Model III: LDOS 5.1.4, double density (JV3) -- tested on a real Model III with X-MEM/80, Talker/80 and MIDI/80 (0.96) |
 
 Each has `HWTEST/LSP`, a test of the machine: `(load "hwtest")`,
 `(hwtest)`.
@@ -156,18 +162,30 @@ Boot it, give LDOS the date (and on a Model I the time), type `LISP`.
 
 | file | for |
 |---|---|
-| `cpc-lisp-1.0-trs80-model4.dsk` / `.hfe` | a floppy, or an HxC or Gotek: LS-DOS 6.3.1's system disc with `LISP`, `HWTEST/LSP` and `APFEL/LSP` -- boot, the date and time, `LISP` |
-| `cpc-lisp-1.0-trs80-model4-frehd` | a FreHD: a bootable LS-DOS 6.3.1 hard disc with the same. Copy it to the FreHD's SD card **as `cpclisp4`** (no extension); its boot menu lists it, ENTER, `LISP` |
+| `cpc-lisp-1.1-trs80-model4.dsk` / `.hfe` | a floppy, or an HxC or Gotek: LS-DOS 6.3.1's system disc with `LISP`, `HWTEST/LSP` and `APFEL/LSP` -- boot, the date and time, `LISP` |
+| `cpc-lisp-1.1-trs80-model4-frehd` | a FreHD: a bootable LS-DOS 6.3.1 hard disc with the same. Copy it to the FreHD's SD card **as `cpclisp4`** (no extension); its boot menu lists it, ENTER, `LISP` |
 
 **The classics** -- ELIZA, symbolic differentiation, the animal game,
 Lisp in Lisp, Life, tic-tac-toe, Huffman codes -- are on a data disc for
-each: `cpc-lisp-1.0-trs80-classics-model1`, `-model3`, `-model4` (`.dsk`
+each: `cpc-lisp-1.1-trs80-classics-model1`, `-model3`, `-model4` (`.dsk`
 and `.hfe`). Put it in drive 1 and `(load "classics")`. The CPC's is
 `cpclisp-classics.dsk`.
 
 Tested on a real Model 4 with a FreHD, an HxC and Ian Mavric's Improved
 Grafyx; [`mach/trs80m4/README.md`](../mach/trs80m4/README.md) has the
 keys (SHIFT down-arrow for `[ ] { } ~`...) and the rest.
+
+## On a ZX Spectrum
+
+`cpc-lisp-1.1-spectrum.zip` holds the files for a **DivMMC's SD card**
+(the same as [`discs/spectrum/`](../discs/spectrum/)): `LISP.TAP`,
+`HWTEST.LSP`, `APFEL.LSP` and the classics. The Spectrum is a 128K one
+-- a +2A, +2B or +3, or a 128 or grey +2 -- and the DivMMC needs 128 KB
+of RAM and esxDOS. Copy the files into a folder of their own (`LISP`);
+switch on, press NMI, go into the folder, `LISP.TAP`, ENTER.
+`(load "hwtest")`, `(hwtest)` is the test of the machine. Tested on a
+real +2A with esxDOS 0.8.5; [`mach/spectrum/README.md`](../mach/spectrum/README.md)
+has the keys (SYMBOL SHIFT and Y U F G for `[ ] { }`...) and the rest.
 
 ## What next
 

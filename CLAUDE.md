@@ -1,6 +1,6 @@
-# CPC Lisp 1.0 — working notes for Claude
+# CPC Lisp 1.1 — working notes for Claude
 
-*A Lisp machine for the Amstrad CPC.* Version 1.0 since 2026-11-20 (FutureOS itself, cd everywhere, #S), 0.99 from 2026-11-18 (FutureOS, string space, the classics), 0.98 from 2026-11-15 (fixes from the real machines), 0.97 from 2026-11-13 (the Model 4), 0.96 from 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
+*A Lisp machine for the Amstrad CPC.* Version 1.1 since 2026-11-21 (the ZX Spectrum, the demo menu fit for 40 columns), 1.0 from 2026-11-20 (FutureOS itself, cd everywhere, #S), 0.99 from 2026-11-18 (FutureOS, string space, the classics), 0.98 from 2026-11-15 (fixes from the real machines), 0.97 from 2026-11-13 (the Model 4), 0.96 from 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
 banner, the ROM headers' version bytes and the documents' titles say so).
 
 A Lisp machine for the Amstrad CPC: **six ROMs** -- an auto-boot core and
@@ -930,8 +930,9 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   +3's design, &1FFD, the +3 ROMs; with a DivMMC). Its README has the
   user's side and the map. Mike can't test it for a while (not on his
   bench): work in ZEsarUX alone, ask for the real machine when it all
-  passes. **Passed on Mike's +2A** (2026-11-21, build 362, now
-  `discs/spectrum/`): his DivMMC has esxDOS 0.8.5; the files in a
+  passes. **Passed on Mike's +2A** (2026-11-21, build 362;
+  `discs/spectrum/` is 1.1's build 1100, the same but for the version and
+  `(demo)`): his DivMMC has esxDOS 0.8.5; the files in a
   folder LISP on its card, NMI, LISP.TAP, ENTER; `(hwtest)` 10 yes,
   the keys, `(tune)`, `(rose)`. His card reader drops off USB now and
   then (the kernel log's "USB disconnect"): check the copy after a
@@ -1445,7 +1446,14 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   checks) = every build 1000, the same files plus `cpclispfos-n.dsk`;
   464 44 ok, 6128 file tests 8, 512K 44, plain 6128 42, Model 4 37,
   FutureOS native and island hwtest 7 yes on 464 and 6128, Model I
-  hwtest 8; `tools/card.py`'s `is_ours` takes headers 00 09 and 01 00.
+  hwtest 8; `v1.1` (2026-11-21: the ZX Spectrum; `(demo)` lists only
+  what the machine has, in 40 columns -- the speech lines wrapped on the
+  CPC) = every build 1100, 1.0's files plus `cpc-lisp-1.1-spectrum.zip`
+  (the SD card's files, as `discs/spectrum/`); 464 44 ok, 6128 file
+  tests 8, 512K 44, plain 6128 42, Spectrum 43 and esxtest 10+2 yes,
+  Model 4 37, FutureOS native and island 7 yes on 464 and 6128, Model I
+  hwtest 8, Pocket Lisp 37; `tools/card.py`'s `is_ours` takes headers
+  00 09, 01 00 and 01 01.
   A new one: refresh `roms/` from one
   tested build, bump the version (banner, ROM headers, document
   titles), tag, `gh release create` with the same files.

@@ -1,4 +1,4 @@
-# CPC Lisp 1.0
+# CPC Lisp 1.1
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -21,7 +21,7 @@ AY's three voices, files through esxDOS. It runs on a real +2A
 screenshots [below](#screenshots)). **Video:**
 [CPC Lisp on the ZX Spectrum +2](https://youtu.be/4GQVhU6cOpw) (6:02).
 
-    CPC Lisp 1.0
+    CPC Lisp 1.1
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -263,7 +263,7 @@ and a RAM disc `M:` of 399 KB in its free blocks -- which also holds
 far arrays (`make-far-array`, `far-ref`) and programs loaded with
 `(load "m:big" :lazy t)`, each function read in when first called.
 
-    CPC Lisp 1.0
+    CPC Lisp 1.1
     A Lisp machine for the Amstrad CPC, 512K
     library ROMs 1 2 3 4
     5521 cells free
@@ -272,7 +272,7 @@ far arrays (`make-far-array`, `far-ref`) and programs loaded with
 KB: everything but the compiler, without a RAM disc, and with about 2400
 cells.
 
-    CPC Lisp 1.0
+    CPC Lisp 1.1
     A Lisp machine for the Amstrad CPC, 128K
     library ROMs 1 2 3 4
     2430 cells free
@@ -314,7 +314,7 @@ through FutureOS's own routines -- from any of its drives. It needs a
     (reset)         back to FutureOS's desktop, the drives still read;
                     to start again: D, tag LISP.64K, X
 
-    CPC Lisp 1.0
+    CPC Lisp 1.1
     A Lisp machine for the Amstrad CPC on FutureOS
     library ROMs 1 2 3 4
     4713 cells free
@@ -356,7 +356,7 @@ esxDOS, floats, a RAM disc -- lives in the DivMMC's own RAM, two of its
 8 KB pages, mapped in only while one of its routines runs
 (`mach/spectrum/`).
 
-    CPC Lisp 1.0
+    CPC Lisp 1.1
     A Lisp machine for the ZX Spectrum
     library ROMs 1 2 3 4
     1811 cells free
@@ -375,8 +375,11 @@ esxDOS, floats, a RAM disc -- lives in the DivMMC's own RAM, two of its
 **What it needs**: a 128K Spectrum and a DivMMC (or a compatible
 interface) with **128 KB of RAM** and **esxDOS** on its SD card.
 
-**The files**: [`discs/spectrum/`](discs/spectrum/) -- `LISP.TAP`,
-`HWTEST.LSP`, the Apfelmaennchen and the classics. Copy them to the SD
+**The files**: [`discs/spectrum/`](discs/spectrum/), or
+`cpc-lisp-1.1-spectrum.zip` with each
+[release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases)
+since 1.1 -- `LISP.TAP`, `HWTEST.LSP`, the Apfelmaennchen and the
+classics. Copy them to the SD
 card, into a folder of their own (`LISP`, say): Lisp's files are that
 folder's. Or build them: `MACH=spectrum tools/build.sh` (rasm and Python
 3, as for the CPC) makes `build/spectrum/sd/`.
@@ -418,7 +421,7 @@ the cassette port, floats through the Level II ROM, files through LDOS,
 a RAM disc in X-MEM/80's spare pages, speech through Talker/80, MIDI
 through MIDI/80 -- is in `mach/trs80/`.
 
-    CPC Lisp 1.0
+    CPC Lisp 1.1
     A Lisp machine for the TRS-80
     library ROMs 3 4 5 6
     2315 cells free
@@ -438,7 +441,7 @@ The Model III Talker/80 needs nothing.
 
 **The disc**: ready to boot with each
 [release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases) --
-`cpc-lisp-1.0-trs80-model1` and `-model3`, as `.dsk` for emulators and
+`cpc-lisp-1.1-trs80-model1` and `-model3`, as `.dsk` for emulators and
 `.hfe` for a Gotek (the `.dsk` files are in [`discs/`](discs/) too).
 X-MEM/80 must be in its 16 KB mode (X-MEM/80, not SuperMem) for all of
 the RAM disc. Or build it: `MACH=trs80 tools/build.sh` (rasm and Python 3, as for the
@@ -486,7 +489,7 @@ The **TRS-80 Model 4** with 128 KB runs it natively, in its own mode,
 under LS-DOS 6.3.1 -- no X-MEM/80: the six images in its three 32 KB
 banks.
 
-    CPC Lisp 1.0
+    CPC Lisp 1.1
     A Lisp machine for the TRS-80 Model 4
     library ROMs 2 4 5 6
     1897 cells free

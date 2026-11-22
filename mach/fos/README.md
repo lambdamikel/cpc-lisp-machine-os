@@ -9,7 +9,7 @@ TFM asked for exactly that; Mike chose this way on 2026-11-19. (The
 firmware island, [`mach/futureos`](../futureos/README.md), was the
 first way: it starts the CPC's own firmware beside FutureOS.)
 
-    CPC Lisp 1.0
+    CPC Lisp 1.1
     A Lisp machine for the Amstrad CPC on FutureOS
     library ROMs 1 2 3 4
     4713 cells free

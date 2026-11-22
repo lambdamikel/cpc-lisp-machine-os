@@ -5,7 +5,7 @@ board, no expansion: the core and the four library parts, built from the
 same sources. The compiler (the VM ROM) is left out: there is no room
 for a sixth image.
 
-    CPC Lisp 1.0
+    CPC Lisp 1.1
     A Lisp machine for the Amstrad CPC, 128K
     library ROMs 1 2 3 4
     2430 cells free

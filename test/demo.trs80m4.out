@@ -13,8 +13,8 @@ CPC Lisp demos:
 (tree)       a tree, by turtle
 (tune)       Ode to Joy
 (midi-tune)  a minuet, out of MIDI OUT
-(talk)       speech: LambdaSpeak, Talker/80
-(sing)       singing: LambdaSpeak, Talker/80
+(talk)       speech: Talker/80
+(sing)       singing: Talker/80
 (hanoi 4)    the towers of Hanoi
 (queens 6)   n queens on a board
 (primes 100) a sieve

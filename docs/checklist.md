@@ -1,8 +1,8 @@
-# CPC Lisp 0.96 -- what is done, what is to come
+# CPC Lisp 1.1 -- what is done, what is to come
 
 *A Lisp machine for the Amstrad CPC*
 
-Version 0.96, 2026-11-12. Ticked items are built and covered by the regression
+Version 1.1, 2026-11-21. Ticked items are built and covered by the regression
 tests in MAME on a 464 and a 6128 (`tools/test.sh`) unless they say
 otherwise. `docs/hardware-test.txt` is the sheet for trying it on a real
 CPC; the README says how to install the ROMs.
@@ -275,8 +275,9 @@ lists, strings and vectors, and `:test`, `:test-not`, `:key` (and
   `setf` places (`%catch`, `%set-aref`...)
 - **The demos:** `(demo)` lists them: `shapes` `rose` `spiral` `moire`
   `bounce` `sierpinski` `sketch` `koch` (the Koch snowflake) `tree` `tune`
-  `talk` `sing` `chords` (PlayCity) `hanoi` `queens` `primes` `fact`.
-  They are Lisp text in the ROM, read when first called, so `(ed 'rose)`
+  `talk` `sing` `chords` (PlayCity) `hanoi` `queens` `primes` `fact` --
+  each machine's list only what it has, in 40 columns (since 1.1: the
+  speech lines wrapped on the CPC). They are Lisp text in the ROM, read when first called, so `(ed 'rose)`
   shows one.
 
 ### The VM ROM
@@ -512,7 +513,8 @@ compiled code (`docs/design.md` describes both)
           &4000
     - [ ] No compiler (no seventh slot), no RAM disc yet
 15. [ ] **The ZX Spectrum +2A with DivMMC** (`mach/spectrum/`, branch
-        `spectrum`; its README has the user's side). Mike's is a +2A or
+        `spectrum`; its README has the user's side; released in 1.1,
+        2026-11-21). Mike's is a +2A or
         +2B (black, "128K ZX Spectrum +2", the tape keys' symbols on the
         case: his photo, 2026-11-21) -- the +3's design without the drive.
     - [x] The emulator: ZEsarUX 13.0, headless and scripted over its
