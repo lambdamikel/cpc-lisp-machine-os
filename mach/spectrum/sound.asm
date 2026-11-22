@@ -1,4 +1,4 @@
-;; CPC Lisp -- sound on the Spectrum's AY-3-8912, in machine page B
+;; CPC Lisp -- sound on the AY-3-8912 of a Spectrum or an MSX, in machine page B
 ;; (pageb.asm includes this): the CPC firmware's sound manager, as CPC Lisp
 ;; on FutureOS has it (mach/fos/page.asm, matched there against the 464's
 ;; firmware by logs of the AY's writes): three channels (A, B, C: 1, 2, 4),
@@ -10,15 +10,17 @@
 ;; one every pause; without an amplitude envelope the volume doubled
 ;; (BASIC's 0-7). No hardware envelopes, no sound events.
 ;;
-;; The Spectrum's: the AY at &FFFD (its register) and &BFFD (the value);
-;; its clock 1.7734 MHz, the CPC's 1 MHz -- a period, tone or noise, is
-;; made 227/128 times as long on its way to the AY (snd_per, snd_mix: the
-;; same pitch; down to the AY's longest, 4095: below 27 Hz the notes stay
-;; there); its port A an output (the 128K's RS232 and MIDI: the mixer's bit
-;; 6 set). snd_tick runs twice from each of the interrupt's 50 a second
-;; (b_tick, which the resident part's interrupt calls with this page in).
-;; The queues and envelopes are in this page's data, past its code (s_init
-;; clears them).
+;; The machine's (firmware.asm): AY_OUT writes a register; the AY's clock
+;; makes a period, tone or noise, AY_MUL/128 times the CPC's on its way to
+;; it (the Spectrum's 1.7734 MHz: 227; the MSX's 1.7898: 229. snd_per,
+;; snd_mix: the same pitch; down to the AY's longest, 4095: below 27 Hz the
+;; notes stay there); AY_IO is the mixer's port bits (the Spectrum's port A
+;; an output -- the 128K's RS232 and MIDI: bit 6; the MSX's port B: bit 7).
+;; snd_tick runs 100 times a second from the interrupt (b_tick, which the
+;; resident part's interrupt calls with this page in): twice from each of
+;; the Spectrum's 50; on the MSX as its 50 or 60 (RS_HZ) come out. The
+;; queues and envelopes are in this page's data, past its code (s_init
+;; clears them). (This is the Spectrum's; mach/msx links to it.)
 
 SQN         equ 4               ; sounds a channel's queue holds
     assert SQN == 4             ; (snd_slot)
@@ -1021,7 +1023,7 @@ snd_mix:
 .m:
     ld a,e
     and #3F
-    or #40                      ; (port A an output: the RS232 and MIDI)
+    or AY_IO                    ; (the ports' directions: firmware.asm)
     ld (snd_mixv),a
     push bc
     ld c,a
@@ -1041,28 +1043,18 @@ snd_amp:
 ;; ay_w: A = an AY register, C = a value: written. B kept... and A,
 ;; flags lost.
 ay_w:
-    push bc
-    ld b,c
-    ld c,P_AYREG and #FF
-    push bc                     ; (B: the value)
-    ld b,P_AYREG >> 8
-    out (c),a
-    pop af                      ; A = the value
-    ld b,P_AYDAT >> 8
-    out (c),a
-    pop bc
-    ret
+    AY_OUT
 
-;; snd_scale: HL = a period, the CPC's -> HL = the AY's here: * 227 / 128.
+;; snd_scale: HL = a period, the CPC's -> HL = the AY's here: * AY_MUL / 128.
 ;; BC kept, DE lost.
 snd_scale:
     push bc
     ld b,h
     ld c,l
-    xor a                       ; A:HL = HL * 227 (24 bits)
+    xor a                       ; A:HL = HL * AY_MUL (24 bits)
     ld h,a
     ld l,a
-    ld d,227
+    ld d,AY_MUL
     ld e,8
 .m:
     add hl,hl
@@ -1095,7 +1087,7 @@ st_vol:     db 0                ; snd_start: the volume,
 st_env:     db 0                ;   the envelopes,
 st_dur:     dw 0                ;   the duration,
 st_len:     dw 0                ;   the amplitude envelope's length
-snd_mixv:   db #7F              ; the mixer: all off
+snd_mixv:   db #3F+AY_IO        ; the mixer: all off
 snd_cnt:    db 0,0,0            ; sounds waiting, each channel
 snd_rd:     db 0,0,0            ; the first of them
 ch_dur:     dw 0,0,0            ; the sound on: 1/100 s to go,
@@ -1132,13 +1124,34 @@ s_init:
     call ay_w
     ld a,10
     call ay_w
-    ld a,#7F
+    ld a,#3F+AY_IO
     ld (snd_mixv),a
     ld c,a
     ld a,7
     jp ay_w
 
+    ifdef RS_HZ
+;; b_tick: from the interrupt, RS_HZ times a second: the firmware's 100
+;; ticks, as many each time as make 100 a second
+b_tick:
+    ld a,(snd_acc)
+    add a,100
+.l:
+    ld hl,RS_HZ
+    cp (hl)
+    jr c,.e
+    sub (hl)
+    push af
+    call snd_tick
+    pop af
+    jr .l
+.e:
+    ld (snd_acc),a
+    ret
+snd_acc:    db 0
+    else
 ;; b_tick: from the interrupt, 50 times a second: the firmware's 100 ticks
 b_tick:
     call snd_tick
     jp snd_tick
+    endif

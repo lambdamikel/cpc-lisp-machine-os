@@ -35,9 +35,27 @@ SCREEN      equ #4000           ; 6144 bytes of pixels, 768 of attributes
 ATTRS       equ #5800
 
 ;; THE AY-3-8912 (the 128K's sound): register at &FFFD, data at &BFFD;
-;; clocked at 1.7734 MHz (the CPC's at 1 MHz)
+;; clocked at 1.7734 MHz (the CPC's at 1 MHz): a period 227/128 times the
+;; CPC's; its port A an output (the RS232 and MIDI: the mixer's bit 6).
+;; AY_OUT: A = a register, C = a value -> written; B kept, AF lost; it
+;; returns (sound.asm's ay_w)
 P_AYREG     equ #FFFD
 P_AYDAT     equ #BFFD
+AY_MUL      equ 227
+AY_IO       equ #40
+macro AY_OUT
+    push bc
+    ld b,c
+    ld c,P_AYREG and #FF
+    push bc                     ; (B: the value)
+    ld b,P_AYREG >> 8
+    out (c),a
+    pop af                      ; A = the value
+    ld b,P_AYDAT >> 8
+    out (c),a
+    pop bc
+    ret
+mend
 
 ;; THE 48 BASIC ROM (ROM 3)
 ROM_FONT    equ #3D00           ; characters 32-127, 8 bytes each
