@@ -1012,7 +1012,13 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   `src/` and `lib/` needed no change; the machine pages A and B are at
   &8000 while a routine runs; the Lisp's RAM is pages 0-1 (2899 cells).
   **Passed on Mike's real HX-10** (2026-11-22): hwtest 10 yes, the keys,
-  the demos, sound, (quit) to DOS. Lessons:
+  the demos, sound, (quit) to DOS; then build 7971, with the ESC fix
+  below, "out of the box" -- `discs/msx/` is that build, and the main
+  README has his photos of it (whole, not cropped: Mike wants the
+  machine seen) and openMSX's screenshots (`msx.py`'s `!shot`: an
+  action's N counts from the action before it, not from the line).
+  Merged into main the same day (fast-forward; the Spectrum's and the
+  TRS-80s' builds byte for byte the same, BUILD_ID=77). Lessons:
   * **C-BIOS cannot start a disc ROM** (it has no BASIC): openMSX needs a
     real machine's ROM for Nextor -- Mike's HX-10's, by
     `tools/msx/romdump.asm` (Disk BASIC's `BSAVE` from &0000 said "Illegal

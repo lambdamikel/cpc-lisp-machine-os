@@ -21,6 +21,14 @@ AY's three voices, files through esxDOS. It runs on a real +2A
 screenshots [below](#screenshots)). **Video:**
 [CPC Lisp on the ZX Spectrum +2](https://youtu.be/4GQVhU6cOpw) (6:02).
 
+**And now the MSX.** An MSX1 -- or any later MSX -- with a memory mapper
+and MSX-DOS 2 or Nextor (an MSX SD Mapper & Megaram 512 KB cartridge
+brings both) runs it from its SD card: 40 columns, colour graphics in
+the VDP's screen 2, the PSG's three voices, floats by the ROM's
+Math-Pack, files through DOS. It runs on a real Toshiba HX-10 ([*On the
+MSX*](#on-the-msx), below, with photos; screenshots
+[below](#screenshots)).
+
     CPC Lisp 1.1
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
@@ -67,12 +75,17 @@ at the end says what is in each.
   six images in the 128K's banks, the machine's own routines in the
   DivMMC's RAM; 40 by 24 characters, graphics in colour, the AY's three
   voices, MIDI out ([*On the ZX Spectrum*](#on-the-zx-spectrum), below).
-* **More Z80 machines are to come**, in this order: MSX1, the TA
-  alphatronic PC, the Sharp MZ-700 and the NABU PC.
+* **The MSX1** -- or any later MSX -- with a **memory mapper** (144 KB
+  free) and **MSX-DOS 2 or Nextor** runs it from DOS: the same six
+  images in the mapper's segments; 40 by 24 characters, graphics in
+  colour, the PSG's three voices, a RAM disc in the mapper's spare
+  segments ([*On the MSX*](#on-the-msx), below).
+* **More Z80 machines are to come**, in this order: the TA alphatronic
+  PC, the Sharp MZ-700 and the NABU PC.
   Everything a machine provides is behind one interface
   ([`mach/README.md`](mach/README.md)); the CPC's is `mach/cpc/`, the
   TRS-80's `mach/trs80/`, the Model 4's `mach/trs80m4/`, the Spectrum's
-  `mach/spectrum/`.
+  `mach/spectrum/`, the MSX's `mach/msx/`.
 
 ## Videos
 
@@ -86,7 +99,8 @@ at the end says what is in each.
 ## Screenshots
 
 From the emulators: MAME for the CPC, trs80gp for the TRS-80s, ZEsarUX
-for the ZX Spectrum. The same programs, the same Lisp.
+for the ZX Spectrum, openMSX for the MSX. The same programs, the same
+Lisp.
 
 **On the Amstrad CPC**
 
@@ -95,12 +109,12 @@ for the ZX Spectrum. The same programs, the same Lisp.
 <tr><td align="center" valign="top"><img src="docs/images/cpc-tree.png" width="190" alt="<code>(tree)</code>: a recursive tree"><br><code>(tree)</code>: a recursive tree</td><td align="center" valign="top"><img src="docs/images/cpc-shapes.png" width="190" alt="<code>(shapes)</code>: discs and boxes in 16 colours"><br><code>(shapes)</code>: discs and boxes in 16 colours</td><td align="center" valign="top"><img src="docs/images/cpc-sierpinski.png" width="190" alt="<code>(sierpinski)</code>: the chaos game"><br><code>(sierpinski)</code>: the chaos game</td><td align="center" valign="top"><img src="docs/images/cpc-moire.png" width="190" alt="<code>(moire)</code>: lines drawn with XOR"><br><code>(moire)</code>: lines drawn with XOR</td></tr>
 </table>
 
-**The Apfelmaennchen on all four** -- `(load "apfel")`, `(apfel)`, from
+**The Apfelmaennchen on all five** -- `(load "apfel")`, `(apfel)`, from
 the demo disc ([`examples/apfel.lsp`](examples/apfel.lsp)) -- the same
 program on each:
 
 <table>
-<tr><td align="center" valign="top"><img src="docs/images/cpc-apfel.png" width="190" alt="<code>(apfel)</code> on the CPC: mode 2, compiled"><br><code>(apfel)</code> on the CPC: mode 2, compiled</td><td align="center" valign="top"><img src="docs/images/zx-apfel.png" width="190" alt="<code>(apfel)</code> on the ZX Spectrum: 256 by 192, compiled"><br><code>(apfel)</code> on the ZX Spectrum: 256 by 192, compiled</td><td align="center" valign="top"><img src="docs/images/m4-apfel.png" width="190" alt="<code>(apfel)</code> on the TRS-80 Model 4: the high-resolution board"><br><code>(apfel)</code> on the TRS-80 Model 4: the high-resolution board</td><td align="center" valign="top"><img src="docs/images/trs80-apfel.png" width="190" alt="<code>(apfel)</code> on the TRS-80 Model I: in the 2 x 3 blocks"><br><code>(apfel)</code> on the TRS-80 Model I: in the 2 x 3 blocks</td></tr>
+<tr><td align="center" valign="top"><img src="docs/images/cpc-apfel.png" width="152" alt="(apfel) on the CPC: mode 2, compiled"><br><code>(apfel)</code> on the CPC: mode 2, compiled</td><td align="center" valign="top"><img src="docs/images/zx-apfel.png" width="152" alt="(apfel) on the ZX Spectrum: 256 by 192, compiled"><br><code>(apfel)</code> on the ZX Spectrum: 256 by 192, compiled</td><td align="center" valign="top"><img src="docs/images/msx-apfel.png" width="152" alt="(apfel) on the MSX: 256 by 192, compiled"><br><code>(apfel)</code> on the MSX: 256 by 192, compiled</td><td align="center" valign="top"><img src="docs/images/m4-apfel.png" width="152" alt="(apfel) on the TRS-80 Model 4: the high-resolution board"><br><code>(apfel)</code> on the TRS-80 Model 4: the high-resolution board</td><td align="center" valign="top"><img src="docs/images/trs80-apfel.png" width="152" alt="(apfel) on the TRS-80 Model I: in the 2 x 3 blocks"><br><code>(apfel)</code> on the TRS-80 Model I: in the 2 x 3 blocks</td></tr>
 </table>
 
 **On the ZX Spectrum +2A, with a DivMMC** (in ZEsarUX; photos of the
@@ -109,6 +123,14 @@ real one [below](#on-the-zx-spectrum))
 <table>
 <tr><td align="center" valign="top"><img src="docs/images/zx-repl.png" width="190" alt="The REPL, 40 by 24: <code>loop</code>, <code>format</code>, floats, the compiler"><br>The REPL, 40 by 24: <code>loop</code>, <code>format</code>, floats, the compiler</td><td align="center" valign="top"><img src="docs/images/zx-ed.png" width="190" alt="The function editor: <code>(ed 'rose)</code>; EDIT or GRAPH is done"><br>The function editor: <code>(ed 'rose)</code>; EDIT or GRAPH is done</td><td align="center" valign="top"><img src="docs/images/zx-rose.png" width="190" alt="<code>(rose)</code>: floats by the Spectrum ROM's calculator"><br><code>(rose)</code>: floats by the Spectrum ROM's calculator</td><td align="center" valign="top"><img src="docs/images/zx-koch.png" width="190" alt="<code>(koch 4)</code>"><br><code>(koch 4)</code></td></tr>
 <tr><td align="center" valign="top"><img src="docs/images/zx-tree.png" width="190" alt="<code>(tree)</code>"><br><code>(tree)</code></td><td align="center" valign="top"><img src="docs/images/zx-shapes.png" width="190" alt="<code>(shapes)</code>: a pen colours its 8 by 8 cell -- the Spectrum's colour clash"><br><code>(shapes)</code>: a pen colours its 8 by 8 cell -- the Spectrum's colour clash</td><td align="center" valign="top"><img src="docs/images/zx-sierpinski.png" width="190" alt="<code>(sierpinski)</code>"><br><code>(sierpinski)</code></td><td align="center" valign="top"><img src="docs/images/zx-moire.png" width="190" alt="<code>(moire)</code>: lines drawn with XOR"><br><code>(moire)</code>: lines drawn with XOR</td></tr>
+</table>
+
+**On the MSX1, with a memory mapper and Nextor** (in openMSX, a Toshiba
+HX-10; photos of the real one [below](#on-the-msx))
+
+<table>
+<tr><td align="center" valign="top"><img src="docs/images/msx-repl.png" width="190" alt="The REPL on the MSX, 40 by 24"><br>The REPL, 40 by 24: <code>loop</code>, <code>format</code>, floats, the compiler</td><td align="center" valign="top"><img src="docs/images/msx-ed.png" width="190" alt="The function editor on the MSX"><br>The function editor: <code>(ed 'rose)</code>; F1 is done</td><td align="center" valign="top"><img src="docs/images/msx-rose.png" width="190" alt="(rose) on the MSX"><br><code>(rose)</code>: floats by the MSX ROM's Math-Pack</td><td align="center" valign="top"><img src="docs/images/msx-koch.png" width="190" alt="(koch 4) on the MSX"><br><code>(koch 4)</code></td></tr>
+<tr><td align="center" valign="top"><img src="docs/images/msx-tree.png" width="190" alt="(tree) on the MSX"><br><code>(tree)</code></td><td align="center" valign="top"><img src="docs/images/msx-shapes.png" width="190" alt="(shapes) on the MSX"><br><code>(shapes)</code>: a pen colours 8 pixels across, in one row -- the MSX's colour clash</td><td align="center" valign="top"><img src="docs/images/msx-sierpinski.png" width="190" alt="(sierpinski) on the MSX"><br><code>(sierpinski)</code></td><td align="center" valign="top"><img src="docs/images/msx-moire.png" width="190" alt="(moire) on the MSX"><br><code>(moire)</code>: lines drawn with XOR</td></tr>
 </table>
 
 **On the TRS-80 Model 4, with the high-resolution board**
@@ -410,6 +432,66 @@ pens -- all yes; the keys, `(tune)`, `(rose)`. It was made in
 `tools/spectrum/zx.py` types a file at it, `test.sh` runs the
 regression tests, `esxtest.sh` the real esxDOS from an SD card image.
 
+## On the MSX
+
+The same Lisp -- the same six images, built from the same sources, the
+compiler included -- runs on an **MSX1** (or any later MSX) with a
+**memory mapper** and **MSX-DOS 2 or Nextor**: an MSX SD Mapper &
+Megaram 512 KB cartridge, say, which brings both and an SD card.
+`LISP.COM` asks DOS for eight of the mapper's 16 KB segments -- the six
+images and two of the MSX's own: the screen, the keys, graphics, sound,
+files through DOS, floats, a RAM disc -- and runs the images at &C000,
+where DOS keeps its own segment while Lisp runs (`mach/msx/`).
+
+    CPC Lisp 1.1
+    A Lisp machine for the MSX
+    library ROMs 1 2 3 4
+    2899 cells free
+
+**On a real Toshiba HX-10** -- photos, on a Sony monitor; the cartridge
+is in the slot behind the keyboard:
+
+<table>
+<tr><td colspan="2" align="center" valign="top"><a href="docs/images/msx-real-shapes.jpg"><img src="docs/images/msx-real-shapes.jpg" width="390" alt="A Toshiba HX-10 with an MSX SD Mapper cartridge, CPC Lisp's (shapes) on a Sony monitor"></a><br><code>(shapes)</code>: a pen colours 8 pixels across -- the MSX's colour clash</td><td colspan="2" align="center" valign="top"><a href="docs/images/msx-real-ed.jpg"><img src="docs/images/msx-real-ed.jpg" width="390" alt="CPC Lisp's function editor on the real HX-10"></a><br>The function editor: <code>(ed 'koch)</code></td></tr>
+<tr><td align="center" valign="top"><a href="docs/images/msx-real-koch.jpg"><img src="docs/images/msx-real-koch.jpg" width="190" alt="A Koch snowflake on the real HX-10"></a><br>A Koch snowflake</td><td align="center" valign="top"><a href="docs/images/msx-real-sierpinski.jpg"><img src="docs/images/msx-real-sierpinski.jpg" width="190" alt="(sierpinski) on the real HX-10"></a><br><code>(sierpinski)</code>: the chaos game</td><td align="center" valign="top"><a href="docs/images/msx-real-shapes2.jpg"><img src="docs/images/msx-real-shapes2.jpg" width="190" alt="(shapes) on the real HX-10, from the side"></a><br><code>(shapes)</code>, from the side</td><td align="center" valign="top"><a href="docs/images/msx-real-ed2.jpg"><img src="docs/images/msx-real-ed2.jpg" width="190" alt="The function editor on the real HX-10, from the side"></a><br>The editor, from the side</td></tr>
+</table>
+
+**What it needs**: an MSX with a memory mapper that has **144 KB free**
+-- nine segments; with the cartridge's 512 KB the rest is a RAM disc of
+271 KB -- and **MSX-DOS 2 or Nextor**. The MSX SD Mapper & Megaram's
+switches: **ON** (its RAM) and **MP** (a mapper, not MegaRAM).
+
+**The files**: [`discs/msx/`](discs/msx/) -- `LISP.COM`, `LISP.IMG`
+(the images, 128 KB), `HWTEST.LSP`, the Apfelmaennchen and the classics.
+Copy them to the SD card, into a folder of their own (`LISP`, say):
+Lisp's files are DOS's current folder's. Or build them: `MACH=msx
+tools/build.sh` (rasm and Python 3, as for the CPC) makes
+`build/msx/sd/`.
+
+**Starting**: at DOS's prompt, `CD LISP`, then `LISP`. `(quit)` goes
+back to DOS; Lisp gives the mapper's segments back, and the RAM disc
+`M:` with them.
+
+**What is different**: 40 by 24 characters in the Spectrum port's font;
+graphics 256 by 192 in the VDP's screen 2, where a pen colours the 8
+pixels across its own, in that one row -- the MSX's colour clash, finer
+than the Spectrum's 8 by 8 cells: in `(shapes)` the rings step 8 pixels
+at a time across and go smoothly down. The VDP's 15 colours stand in
+for the CPC's 27. The CPC firmware's sound manager on the PSG,
+envelopes and all; floats by the main ROM's Math-Pack (BASIC's maths: a
+`sin` takes 0.15 s); a RAM disc `M:` in the mapper's spare segments, and
+far arrays there; about 2900 cells. **F1** (or SELECT) is COPY, **F2**
+is CTRL-S, **ESC** or **STOP** breaks. No speech, no MIDI.
+[`mach/msx/README.md`](mach/msx/README.md) has it all.
+
+**It runs on a real Toshiba HX-10** with an MSX SD Mapper & Megaram 512
+KB and Nextor 2.1.0 (2026-11-22): `(hwtest)` -- the cells, the compiler,
+files on the SD card, lazy loading, two files open at once, the RAM disc
+and far arrays, the ROM's Math-Pack, the colour pens -- 10 yes; the
+keys, the demos, sound, ESC, `(quit)` back to DOS. It was made in
+[openMSX](https://openmsx.org/), headless: `tools/msx/msx.py` types a
+file at it, `test.sh` runs the regression tests.
+
 ## On a TRS-80
 
 The same Lisp -- the same six images, built from the same sources --
@@ -592,8 +674,8 @@ KB, in six 16 KB ROMs. It covers:
   each is, and how to install them
 * [`discs/README.md`](discs/README.md): CPC Lisp from disc (512K, plain
   6128), the TRS-80 discs (Model I, III, 4 -- the Model 4's for a FreHD
-  too), the ZX Spectrum's SD card files and the test discs for the real
-  machine
+  too), the ZX Spectrum's and the MSX's SD card files and the test discs
+  for the real machine
 * [`examples/`](examples/): programs on the discs -- the Apfelmaennchen,
   `(load "apfel")` `(apfel)`, and the classics: ELIZA, symbolic
   differentiation, the animal game, Lisp in Lisp, Life, tic-tac-toe,
@@ -620,6 +702,9 @@ KB, in six 16 KB ROMs. It covers:
 * [`mach/spectrum/README.md`](mach/spectrum/README.md): the ZX Spectrum
   128K with a DivMMC -- the SD card, starting it, the memory, the
   screen, the keys, what works
+* [`mach/msx/README.md`](mach/msx/README.md): the MSX1 with a memory
+  mapper and MSX-DOS 2 or Nextor -- building, starting it, the memory,
+  the screen, the keys, what works, openMSX
 
 ### On the workbench
 

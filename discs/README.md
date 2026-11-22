@@ -27,6 +27,7 @@ the test discs for the real machine. Each disc's test is `HWTEST.LSP`:
 | `cpclisp-trs80-classics-model1.dsk`, `-model3.dsk`, `-model4.dsk`, `-model4.hfe` | **the classics disc for the TRS-80s**: the same programs on an LDOS 5.3.1, LDOS 5.1.4 and LS-DOS 6.3.1 data disc (`tools/trs80/mkclassics.py`); put it in a drive other than the system's: `(load "classics")` | -- |
 | `frehd/cpclisp4` | the same on the **FreHD**'s hard disc: an LS-DOS 6.3.1 system (1.6 MB, Radio Shack hard disc driver; the hard disc is drive :0 only, the floppies :4 and :5) with `LISP` and `HWTEST/LSP`. Copy it to the root of the FreHD's SD card *as it is named* (no extension, as the FreHD's images); its boot menu lists it, ENTER boots it, `LISP` -- no date asked | 1100 |
 | `spectrum/` | **CPC Lisp on a ZX Spectrum 128K with a DivMMC** (`mach/spectrum`): not a disc but the files for the DivMMC's SD card -- `LISP.TAP`, `HWTEST.LSP`, `APFEL.LSP` and the classics. Copy them into a folder of their own (`LISP`); switch on, NMI, the folder, `LISP.TAP`, ENTER. The DivMMC needs 128 KB of RAM and esxDOS | 1100 |
+| `msx/` | **CPC Lisp on an MSX** (`mach/msx`), an MSX1 or later with a memory mapper (144 KB free) and MSX-DOS 2 or Nextor -- say an MSX SD Mapper & Megaram 512 KB, its switches at ON and MP: the files for its SD card -- `LISP.COM`, `LISP.IMG`, `HWTEST.LSP`, `APFEL.LSP` and the classics. Copy them into a folder of their own (`LISP`); at DOS's prompt `CD LISP`, `LISP` | 7971 |
 | `ld4-631.dsk` | **LS-DOS 6.3.1** for the Model 4, its system disc as distributed (Tim Mann's `ld4-631.zip`), which the Model 4 discs are made from -- see below | -- |
 
 Checked on a real CPC 464 with Revaldinho's universal 512K RAM card, on
@@ -155,3 +156,11 @@ card, `LISP.TAP` started from esxDOS's NMI browser): `(hwtest)` 10 yes,
 the keys, `(tune)`, `(rose)`. In ZEsarUX with the real esxDOS 0.8.5
 (`tools/spectrum/esxtest.sh`) also `(quit)` and `(hwtest2)` 2 yes.
 `mach/spectrum/README.md` has the details.
+
+`msx/` build 7971 runs on Mike's Toshiba HX-10 (2026-11-22: an MSX SD
+Mapper & Megaram 512 KB with Nextor 2.1.0, the files in a folder `LISP`
+on its SD card): the keys, the demos, ESC in `(rose)`; the build before
+it, the same but for ESC and the clock in float code, gave `(hwtest)`
+10 yes there, the demos, sound, `(quit)` back to DOS. In openMSX
+(`tools/msx/test.sh`) the regression tests, 43 of 43, and `(hwtest)` 10
+yes. `mach/msx/README.md` has the details.

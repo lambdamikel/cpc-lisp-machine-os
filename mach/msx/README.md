@@ -2,7 +2,8 @@
 
 *Runs on a real Toshiba HX-10 (Mike's, 2026-11-22: an MSX SD Mapper &
 Megaram 512 KB with Nextor 2.1.0 alpha 2 -- the hardware test, the keys,
-the demos, sound, `(quit)`), and in openMSX (the HX-10 -- Mike's ROM --, a
+the demos, sound, ESC, `(quit)`; photos in the [main
+README](../../README.md#on-the-msx)), and in openMSX (the HX-10 -- Mike's ROM --, a
 512 KB memory mapper, Nextor 2.1.0 on a Sunrise IDE): the regression tests,
 43 of 43, and the hardware test, 10 yes.* The same
 Lisp as on the CPC -- the six images are built from the same sources, the
@@ -20,7 +21,8 @@ RAM on, a mapper), which brings both.
                                      #   (headless), print the transcript
     tools/msx/test.sh                # the regression tests
 
-Copy what is in `build/msx/sd/` to the SD card, into a folder of its own
+Copy what is in `build/msx/sd/` (or the repository's `discs/msx/`, ready
+built) to the SD card, into a folder of its own
 (`LISP`, say): `LISP.COM`, `LISP.IMG` (the images, 128 KB), `HWTEST.LSP`
 and the examples (`APFEL.LSP`, the classics). Switch on, and at DOS's
 prompt:
