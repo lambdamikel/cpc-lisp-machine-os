@@ -999,6 +999,54 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     page** -- the next fetch was the ROM's: a hang. Its OUT and RST 0
     run from LINEBUF now. In the test, `!ppoke c_echo 00` before
     `(quit)` makes it the machine's reset, `!steps` loads again.
+* **The MSX1** (`mach/msx/`, branch `msx`, 2026-11-22; Mike's Toshiba
+  HX-10 and Philips VG-8020, 64 KB each, and an MSX SD Mapper & Megaram
+  512 KB cartridge -- switches ON and MP -- with Nextor 2.1.0 alpha 2,
+  NEXTOR.SYS 2.10, COMMAND2.COM 2.44 on its card; his card mounts at
+  /media/mike/MSX, his folders there: ours go in LISP/). Its README has
+  the user's side and the map. Design: `LISP.COM` (the resident part at
+  &0100, the loader after it) asks DOS 2 for eight mapper segments and
+  reads `LISP.IMG` into them; **the images stay at &C000** -- page 3 is an
+  image's segment while Lisp runs, DOS's own (its and the BIOS's
+  variables) only inside `RS_DOS`/`RS_MATH` (`to_dos`/`to_lisp`), so
+  `src/` and `lib/` needed no change; the machine pages A and B are at
+  &8000 while a routine runs; the Lisp's RAM is pages 0-1 (2899 cells).
+  Lessons:
+  * **C-BIOS cannot start a disc ROM** (it has no BASIC): openMSX needs a
+    real machine's ROM for Nextor -- Mike's HX-10's, by
+    `tools/msx/romdump.asm` (Disk BASIC's `BSAVE` from &0000 said "Illegal
+    function call"); its SHA1 is openMSX's own. `~/claude/msx`: ROMs,
+    Nextor's release files -- never in the repo.
+  * DOS's &0038 is `JP` into its page 3: while page 3 is an image, that
+    jump's address is `r_int`; `to_dos` puts DOS's back. DOS's calls run on
+    a stack in DOS's page 3 (`DOS_STACK`, &C400: the loader checks the TPA
+    reaches past it), with DOS's segment in page 2 too -- DOS keeps its
+    own idea of page 2 (PUT_P2) and would map it back.
+  * **The Math-Pack's SIN calls BASIC's INT in page 1** (&55DF: a hang
+    in our RAM): `RS_MATH` puts the main ROM in pages 0 and 1 (ENASLT,
+    then RAMAD1 back). Its errors jump into page 1 too (BASIC's error
+    handler): `fpmsx.asm` looks for them first, as the Spectrum's did.
+    The conversions (ten digits times a power of two from `pow2tab`, one
+    DECMUL each way) make float.out the CPC's, digit for digit.
+  * The VDP's address is two writes to its control port; the interrupt
+    reads the status, which resets the latch: `v_wr`/`v_rd` keep the
+    interrupts off for the pair, and the tick never touches the VDP. Its
+    loops take 38 T-states a byte (an MSX1's VDP needs ~29).
+  * DOS frees a program's segments when it ends: `M:` lasts only while
+    Lisp runs (no `hwtest2`).
+  * rasm again: no `dd`; `chunk`/`CHUNK` and `k_shift`/`K_SHIFT` collide
+    (case-insensitive labels); `fail` is a directive.
+  * **The harness** (`tools/msx/msx.py`): openMSX runs a Tcl script in
+    step with the emulation -- watchpoints on port &2F (the transcript:
+    `LISP /T` turns it on) and &2E ((quit)), a breakpoint at EDHOOK for the
+    next line into page A's paste buffer (through the mapper's
+    debuggable). Python's `str.isalnum` is true for Latin-1 letters: the
+    key codes above &7F must be escaped for Tcl. The run ends at the prompt
+    after the last line *and its keys* (a scroll takes 0.1 s: a fixed
+    wait cut output short). Page A's segment is noted at the first prompt
+    (page 0 is the ROM during a Math-Pack call). ~37x real time: the
+    suite in 15 s. `-x file.tcl` for a PSG log and the like. Never a
+    window: SDL's dummy drivers, `set renderer none`.
 * **Pocket Lisp** (`pocket/`, 2026-11-19; Mike: "pocket lisp ... a
   board with microcontroller and oled and keys", then colour and a
   bigger screen, the RP2350 chosen; the proposal is a private artifact,
