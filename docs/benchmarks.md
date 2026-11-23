@@ -557,9 +557,13 @@ The seconds:
   Compiled code conses less, and gains on the other machines.
   * **The MSX** (0.81): a Z80 at 3.58 MHz with a wait state in every
     opcode fetch, and 2,899 cells.
-  * **The PCW** (0.97, measured 2026-11-23 in ZEsarUX): a Z80 at 4 MHz
-    and 6,499 cells -- the 464's speed. Its deriv runs faster than the
-    464's (1.07 compiled): more cells, fewer collections.
+  * **The PCW** (0.97, measured 2026-11-23 in ZEsarUX): 6,499 cells --
+    the 464's speed there. Its deriv runs faster than the 464's (1.07
+    compiled): more cells, fewer collections. But ZEsarUX sets no timing
+    of its own for the PCW and keeps the Spectrum's 224 T-states a line:
+    its Z80 runs at 3.49 MHz, the PCW's at 4. On a real PCW every figure
+    should be some 14% better (the Lisp about 1.1) -- unless its memory
+    adds wait states, which nobody here has measured.
   * **The Spectrum** (0.71): 3.55 MHz, its upper banks contended, and
     about 1,800 cells.
   * **The Model 4** (0.69): trs80gp's Model 4 runs some 2.77 million

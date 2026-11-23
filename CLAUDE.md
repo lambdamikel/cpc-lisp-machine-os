@@ -1125,6 +1125,9 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     (fpfun.asm, tools/pcw/mkfpconst.py) -- float.out as the CPC's.
   * rasm again: `LD_DIR` (equ) and `ld_dir` (label) collide; global
     labels inside a routine move its locals' scope (fl_plot1...).
+  * **ZEsarUX runs its PCW at 3.49 MHz** (no PCW timing of its own: the
+    Spectrum's 224 T-states a line, cpu.c), the real one at 4: its
+    benchmark figures are some 14% low.
   * The interrupt: reading &F4 answers it and gives the ticks since
     (missed ones while a disc transfer had them off); the FDC polled
     (&F8 command 4), its terminal count &F8 5/6; seeks wait with the
