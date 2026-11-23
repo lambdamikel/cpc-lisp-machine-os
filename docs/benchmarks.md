@@ -6,6 +6,8 @@ How fast is CPC Lisp, against the Lisps of its own time on the same kind
 of machine, against the big machines of the 1980s, and against a Lisp of
 today? Measured on 2026-11-17, at Mike's question: "if you compare CPC
 Lisp with UOLisp for the TRS-80, which also had a compiler, who wins?"
+And how fast is it on each machine it runs on, and against BASIC?
+Measured on 2026-11-22: *The ports compared*, *Against BASIC*.
 
 ## The benchmarks
 
@@ -59,6 +61,12 @@ CPC Lisp is faster; below 1, the other Lisp is.
   `(fib 20)`.
 * **SBCL on a 2019 PC** is 3,000-4,900 times faster than CPC Lisp
   interpreted, and 154,000-267,000 times faster compiled.
+* **Across the ports**, with the CPC 464 at 1.0, the Lisp itself runs
+  at 0.96-1.00 on the other CPCs (the plain 6128's disc version 0.80),
+  0.81 on the MSX, 0.71 on the Spectrum, 0.69 on the TRS-80 Model 4 and
+  0.48 on the Model I.
+* **Against Locomotive BASIC, on floats, BASIC wins** by 2.7 times: a
+  torus of dots, the same program in both.
 
 ## Who wins on the TRS-80
 
@@ -484,6 +492,133 @@ only). Ours are in bold.
 * SBCL on an ordinary PC does TAK about 150 times faster than the
   Cray-1 did.
 
+## The ports compared
+
+The same Lisp runs on ten machines and setups. How fast is each one,
+with the CPC 464 at 1.0? This was measured on 2026-11-22, in each
+port's own emulator, by the Lisp's own clock (*How it was measured*).
+The benchmarks:
+
+* **`fib-i`, `tak-i`, `deriv-i`**, interpreted: `(fib 17)` twice,
+  `(tak 14 8 4)`, and `deriv` × 200.
+* **`fib-c`, `tak-c`, `deriv-c`**, compiled: `(fib 20)`, `(tak 15 10 5)`
+  twice, and `deriv` × 300.
+* **`torus`**: `(torus)`, the dotted torus of the next section. It is
+  float arithmetic, and 496 plots.
+* **`text`**: 50 lines of 38 characters printed, the screen scrolling.
+* **`lines`**: 100 lines drawn across the screen, from (0, 4i) to (639,
+  399 - 4i).
+
+Each figure is the CPC 464's time divided by the port's: above 1 is
+faster. The two indices are geometric means. **Lisp** covers the six
+Lisp benchmarks (three where there is no compiler) and says how fast the
+Lisp itself runs. **all** covers all nine (six), screen and maths
+included.
+
+| | `fib-i` | `tak-i` | `deriv-i` | `fib-c` | `tak-c` | `deriv-c` | `torus` | `text` | `lines` | Lisp | **all** |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| CPC 464, ROMs | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | **1.00** |
+| CPC 6128, ROMs | 1.00 | 0.95 | 1.06 | 1.00 | 1.00 | 1.00 | 0.98 | 1.01 | 0.84 | 1.00 | **0.98** |
+| CPC 464 + 512K, disc | 0.98 | 0.97 | 1.02 | 1.00 | 1.00 | 0.96 | 1.09 | 0.92 | 1.00 | 0.99 | **0.99** |
+| CPC 6128, disc (no compiler) | 0.85 | 0.73 | 0.82 | -- | -- | -- | 1.05 | 1.00 | 0.84 | 0.80 | **0.88** |
+| CPC 464 + 512K, FutureOS island | 0.98 | 0.97 | 1.02 | 1.00 | 1.00 | 0.95 | 1.07 | 0.92 | 1.00 | 0.99 | **0.99** |
+| CPC 464 + 512K, FutureOS native | 0.95 | 0.93 | 0.97 | 0.98 | 0.99 | 0.93 | 0.58 | 2.74 | 0.20 | 0.96 | **0.85** |
+| TRS-80 Model I + X-MEM/80 | 0.46 | 0.39 | 0.44 | 0.55 | 0.55 | 0.50 | 0.27 | 3.15 | 0.87 | 0.48 | **0.59** |
+| TRS-80 Model 4 (no compiler) | 0.74 | 0.62 | 0.72 | -- | -- | -- | 0.43 | 4.20 | 0.37 | 0.69 | **0.78** |
+| ZX Spectrum +2A + DivMMC | 0.71 | 0.57 | 0.68 | 0.81 | 0.82 | 0.69 | 0.56 | 1.42 | 0.63 | 0.71 | **0.73** |
+| MSX1 (HX-10) + mapper | 0.79 | 0.69 | 0.78 | 0.90 | 0.90 | 0.84 | 0.53 | 0.75 | 0.47 | 0.81 | **0.72** |
+
+The seconds:
+
+| | `fib-i` | `tak-i` | `deriv-i` | `fib-c` | `tak-c` | `deriv-c` | `torus` | `text` | `lines` |
+|---|---|---|---|---|---|---|---|---|---|
+| CPC 464, ROMs | 28.1 | 18.6 | 18.3 | 17.0 | 15.1 | 15.3 | 55.0 | 6.9 | 6.4 |
+| CPC 6128, ROMs | 28.0 | 19.5 | 17.3 | 17.0 | 15.1 | 15.4 | 56.0 | 6.8 | 7.6 |
+| CPC 464 + 512K, disc | 28.8 | 19.2 | 18.0 | 17.0 | 15.2 | 16.0 | 50.3 | 7.5 | 6.4 |
+| CPC 6128, disc (no compiler) | 33.0 | 25.3 | 22.3 | -- | -- | -- | 52.2 | 6.9 | 7.6 |
+| CPC 464 + 512K, FutureOS island | 28.8 | 19.2 | 18.0 | 17.0 | 15.2 | 16.1 | 51.3 | 7.5 | 6.4 |
+| CPC 464 + 512K, FutureOS native | 29.7 | 20.0 | 18.8 | 17.3 | 15.4 | 16.5 | 94.4 | 2.5 | 32.6 |
+| TRS-80 Model I + X-MEM/80 | 61.6 | 47.4 | 42.0 | 30.8 | 27.6 | 30.4 | 202.1 | 2.2 | 7.3 |
+| TRS-80 Model 4 (no compiler) | 38.0 | 30.2 | 25.3 | -- | -- | -- | 127.9 | 1.6 | 17.5 |
+| ZX Spectrum +2A + DivMMC | 39.8 | 32.8 | 27.1 | 21.0 | 18.6 | 22.3 | 98.5 | 4.8 | 10.2 |
+| MSX1 (HX-10) + mapper | 35.7 | 26.8 | 23.3 | 18.9 | 16.9 | 18.2 | 104.2 | 9.1 | 13.5 |
+
+* **The CPCs run the Lisp at one speed.** The ROMs, the 512K's disc
+  version and both FutureOS versions are within 4% of the 464. The
+  exception is the plain 6128's disc version, at 0.80. Its heap has a
+  third of the 464's cells (2,430 against 6,660), so its garbage
+  collector runs about three times as often. That is all of it: with a
+  `(gc)` before each timed `(fib 12)`, so that none falls inside, the
+  two take the same 22.7 s for twenty.
+* **The other machines follow their clocks and their heaps.** Each
+  interpreted call conses, so a small heap means more collections.
+  Compiled code conses less, and gains on the other machines.
+  * **The MSX** (0.81): a Z80 at 3.58 MHz with a wait state in every
+    opcode fetch, and 2,899 cells.
+  * **The Spectrum** (0.71): 3.55 MHz, its upper banks contended, and
+    about 1,800 cells.
+  * **The Model 4** (0.69): trs80gp's Model 4 runs some 2.77 million
+    T-states a second; about 1,900 cells.
+  * **The Model I** (0.48): 1.77 MHz.
+* **The Model III could not be measured.** trs80gp has X-MEM/80 only
+  on a Model I. At 2.03 MHz, it should come out about 15% ahead of the
+  Model I.
+* **The torus is each machine's maths.**
+  * The CPCs use the firmware's.
+  * FutureOS native calls the lower ROM's at the ROM's own addresses,
+    swapping the maths' RAM each time: 0.58.
+  * The Spectrum and the MSX do + - * / themselves, and `sin` and `cos`
+    through the ROM's calculator or the Math-Pack: 0.56, 0.53.
+  * The Model I uses the Level II ROM: 0.27.
+* **Text and lines are each port's own screen code.**
+  * The TRS-80s write straight into their text RAM, three to four times
+    as fast as the CPC's firmware. FutureOS native prints through
+    FutureOS's PR_2: 2.7.
+  * The MSX's VDP sits behind I/O ports: 0.75 for text, 0.47 for lines.
+  * The Model I's lines are in 128 × 48 blocks, few to draw.
+  * **FutureOS native draws lines at a fifth of the firmware's speed**:
+    worth a look.
+
+## Against BASIC: a torus of dots
+
+Someone asked Mike for a port of Madram's "John Dot Donut" (64 NOPs,
+*Rosetta Sugar*, 2021-01-21), to compare it with Locomotive BASIC. The
+program makes a torus of 31 × 16 dots: a circle of radius 20, 100 from
+the axis, turned about the axis. It tilts the torus by -0.5 about x and
+draws it in perspective. It is [`examples/torus.lsp`](../examples/torus.lsp):
+`(load "torus")`, `(torus)`.
+
+The BASIC keeps the 496 dots in an array of reals, and goes over the
+array three times: make, tilt, draw. CPC Lisp's floats are objects, a
+cell and a 9-byte block each, and 1,488 of them do not fit in a 464's
+5.8 KB of block space. So the Lisp makes, tilts and draws each dot in
+turn, with the same arithmetic. The BASIC was timed in that one-pass
+form too, to compare like with like.
+
+| MAME, the ROM Lisp | CPC 464 | CPC 6128 |
+|---|---|---|
+| BASIC, Madram's (three passes, arrays) | 45.0 s | 42.6 s |
+| BASIC, one pass | **19.4 s** | **18.9 s** |
+| CPC Lisp, interpreted | 52.2 s | 53.1 s |
+| CPC Lisp, compiled | 51.1 s | 51.9 s |
+
+* **BASIC is 2.7 times faster** at the same one-pass program. This is
+  float arithmetic and little else, and both call the same maths
+  routines in the firmware.
+* **CPC Lisp's floats cost what BASIC's do not.** Each result is a new
+  object, a cell and a block, and each operation goes from the core
+  through a library ROM to the firmware and back. That means two ROM
+  switches each way, through the firmware's KL ROM SELECT. A fifth of
+  the time is the garbage collector, clearing up after them. BASIC's
+  reals stay where they are, five bytes in a variable.
+* **Compiling does not help here.** The bytecode's arithmetic is for
+  fixnums: a float leaves the VM for the library, as in the interpreter.
+* The post's 42 seconds is the 6128 with BASIC 1.1; the 464's BASIC 1.0
+  is 6% slower. One pass makes the BASIC itself 2.3 times faster.
+* Fixnums cost none of this: they are words, made and added in place.
+  The Apfelmännchen (`examples/apfel.lsp`) works in fixnums times 64 for
+  that reason.
+
 ## How it was measured
 
 * **The CPC 464:** MAME, the ROM version (`tools/run.sh -t`, which counts
@@ -520,4 +655,18 @@ only). Ours are in bold.
   same source, no declarations, Mike's SBCL 2.2.9.
 * **Gabriel's numbers:** his Raw Time tables for TAK (pp. 86-87) and
   DERIV (pp. 173-174), from dreamsongs.com/Files/Timrep.pdf.
+* **The ports:** `tools/bench/ports.py` types `tools/bench/ports.lsp`,
+  with `examples/torus.lsp` put in, at each port's own emulator through
+  its test harness. Each benchmark is timed by the Lisp's own clock,
+  `(time)`, which counts the emulated machine's interrupts, so the
+  emulator's speed does not matter. On the 464 it agrees with MAME's
+  frame count: 27.72 s against 27.76 s for `fib-i`. `(time)` wraps every 54.6 s, so no
+  single run may take longer than that: a benchmark is a few short runs,
+  added up.
+* **The torus in BASIC:** MAME's own 464 and 6128 romsets, with the
+  program typed at BASIC's EDIT by `emu/repl.lua` (`LISP_EDIT` &BD3A on
+  the 464, &BD5E on the 6128), then `RUN`. BASIC times itself with
+  `TIME`. Madram's listing is on 64 NOPs (`torus.zip`). The one-pass
+  form computes the circle into two arrays, then for each dot `x`, `y`,
+  `z` as the Lisp does, and plots it.
 

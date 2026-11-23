@@ -1150,6 +1150,25 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   DEFPROP (its DEFINE is broken in 1.1), CTRL-C leaves it (a `^C` line);
   muLISP's RDS loads UTILITY.LIB (DEFUN, MAPCAR); XLisp 1.1 has no if,
   not, mapcar, caddr.
+* **The ports compared** (2026-11-22, Mike: "CPC should have index
+  1.0"): `tools/bench/ports.py [port...]` types `tools/bench/ports.lsp`
+  (with `examples/torus.lsp` put in) at each port's harness and prints
+  the table in docs/benchmarks.md; `--table DIR` again from a run's
+  results.json. Timed by `(time)` (checked against MAME's frames: 0.15%);
+  it wraps every 54.6 s, so each timed run stays shorter than that on the
+  Model I. **The Model 4 has no compiler** (novm, like the plain 6128):
+  its `compile` is undefined. Findings: the plain 6128's 0.80 is its
+  small heap's extra collections (fib between `(gc)`s is the 464's
+  speed); FutureOS native draws lines at 0.20 of the firmware (not looked
+  into); its floats 0.58 (the maths' RAM swapped per call).
+* **Against BASIC** (2026-11-22, someone asked Mike): `examples/torus.lsp`,
+  Madram's "John Dot Donut" (64nops, Rosetta Sugar; his BASIC is theirs:
+  not in the repo). One pass, as 1488 floats do not fit in block space.
+  MAME 464: BASIC's original 45.0 s (6128 BASIC 1.1: 42.6, the post's
+  42), BASIC one pass 19.4, Lisp 52.2 interpreted, 51.1 compiled: each
+  float op makes an object and crosses ROMs twice; the GC is a fifth.
+  BASIC is typed at EDIT by emu/repl.lua (LISP_EDIT &BD3A, 6128 &BD5E)
+  on MAME's own romsets.
 * **Still to come**: `docs/checklist.md` has the list, in Mike's order.
 
 **Upper ROM caveat:** code running in an upper ROM sits at &C000-&FFFF, the

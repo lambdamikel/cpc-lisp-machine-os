@@ -628,7 +628,8 @@ are marked **CPC only** or **TRS-80 only**.
 How fast CPC Lisp is, measured with `fib`, `tak` and Gabriel's `deriv`.
 It is compared with the CPC's own CP/M Lisps of the 1980s (muLISP-80,
 HiSoft Lisp, LISP/80, XLisp), with UOLisp (1982) on a TRS-80, with SBCL
-on a PC, and with the Lisp machines and VAXes of Gabriel's 1985 book.
+on a PC, and with the Lisp machines and VAXes of Gabriel's 1985 book;
+across its own ports, the CPC 464 at 1.0; and with Locomotive BASIC.
 In a nutshell:
 
 * **CPC Lisp's interpreter is level with muLISP-80's**, the fastest
@@ -639,6 +640,14 @@ In a nutshell:
   setting.
 * **Compiled, it runs TAK as fast as a VAX 11/750** did with Franz
   Lisp at its slowest settings, in Gabriel's table.
+* **Across the ports**, with the CPC 464 at 1.0, the Lisp runs at
+  0.96-1.00 on the other CPCs (the plain 6128's disc version 0.80),
+  0.81 on the MSX, 0.71 on the Spectrum, 0.69 on the TRS-80 Model 4 and
+  0.48 on the Model I.
+* **Against Locomotive BASIC, on floats, BASIC wins** by 2.7 times: a
+  torus of dots ([`examples/torus.lsp`](examples/torus.lsp)), the same
+  program in both. CPC Lisp's floats are objects, made anew by every
+  operation.
 
 The page also shows how to define a function in each of those
 dialects, which for most of them is far from obvious, and takes a blunt
@@ -679,7 +688,8 @@ KB, in six 16 KB ROMs. It covers:
 * [`examples/`](examples/): programs on the discs -- the Apfelmaennchen,
   `(load "apfel")` `(apfel)`, and the classics: ELIZA, symbolic
   differentiation, the animal game, Lisp in Lisp, Life, tic-tac-toe,
-  Huffman codes
+  Huffman codes -- and a torus of dots, `torus.lsp`, a port of a BASIC
+  program to compare the two (*Against BASIC* in the benchmarks)
 * [`vintage/`](vintage/): the Lisps of the day from the benchmarks, as
   disc images
 
