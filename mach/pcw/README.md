@@ -63,7 +63,8 @@ uPD765A, polled, the interrupts off for each transfer (a byte every 32
 microseconds) and its terminal count the transfer's end. A disc says its
 format in its first sector: the 8256's 180 KB (one side, 40 tracks, 9
 sectors of 512, 1 KB blocks, 64 directory entries), an 8512's 720 KB B:
-(two sides, 80 tracks, 2 KB blocks). Files are CP/M's -- CP/M reads what
+(two sides, 80 tracks, 2 KB blocks -- untested: ZEsarUX's PCW has one
+drive). Files are CP/M's -- CP/M reads what
 Lisp saves; a text file ends at its first ^Z. `dir` lists a disc as
 AMSDOS does, four to a row; a file that is not there gets AMSDOS's "NAME
 .EXT not found".
