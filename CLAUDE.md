@@ -1070,6 +1070,65 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     (page 0 is the ROM during a Math-Pack call). ~37x real time: the
     suite in 15 s. `-x file.tcl` for a PSG log and the like. Never a
     window: SDL's dummy drivers, `set renderer none`.
+* **The Amstrad PCW** (`mach/pcw/`, branch `pcw`, 2026-11-23; Mike: "a
+  new port target: the Amstrad PCW (the first version, 256 KB? AKA
+  Schneider Joyce) ... we can ONLY test this in the emulator for now" --
+  he has no PCW yet, a Gotek is on his wish-list). Its README has the
+  user's side and the map. **Booted from a disc of its own, no CP/M, no
+  ROM**: our boot sector (track 0 sector 1, its 512 bytes summing to &FF
+  -- mkdisk.py sets byte 15 --, entered at &F010 with blocks 0-3 mapped)
+  reads track 0's sectors 2-9: the loader (at &2000, block 0) and the
+  resident part; the loader reads LISP.IMG (the six images, pages A and
+  B: 128 KB) through CP/M's directory into blocks 8-15 and the resident
+  part into block 4, measures the RAM (block 16 aliases block 0 on an
+  8256), then blocks 4-6 at &0000-&BFFF and RS_BOOT. Images and machine
+  pages take turns at &C000 (`mfar` maps a page there and the image back
+  after -- so a machine routine can never read the caller's image: the
+  library hands floats only its RAM V_FA-V_FD, luckily); the WINDOW
+  (&4000) shows the screen, block 3's keyboard or a RAM disc block for a
+  moment (RS_P1 first, then the OUT). 6499 cells (MACH_BLOCKS a quarter:
+  three eighths left 3640 after a classic against the 464's 4664).
+  Built and tested only in **ZEsarUX 13** (`--machine PCW8256/8512`,
+  `tools/pcw/pcw.py`, test.sh: 43 of 43, hwtest 10 yes on both); MAME's
+  pcw needs the printer and keyboard MCUs' ROMs (40026, 40027: Amstrad's,
+  not here). Lessons:
+  * **ZEsarUX's PCW has no hardware debug ports** (its out handler
+    decodes only the PCW's): the transcript is a 4 KB ring in page A
+    (T_BUF, word indices T_IN/T_OUT, read twice by the harness: a torn
+    word). At 256 bytes it throttled the Lisp at ten times the speed (50
+    lines 12.6 s, 3.6 at real speed), and **the harness waiting for the
+    paste buffer while the ring was full deadlocked** (drain in every
+    wait).
+  * **The harness's mark must not be RS_HOOK**: the disc's resident part
+    had it 1, the loader copied it in before rs_boot cleared it, and the
+    harness took it for a prompt -- the first line typed early, the end
+    seen at the real first prompt. RS_HARN (mkdisk.py --hook) now.
+  * **read-line calls EDHOOK too** (edit_line): with keys still to give
+    after the last line, the end is the prompt after them (or 3 s).
+  * ZEsarUX's reboot (port &F8 command 1) puts its boot program into
+    block 0 and jumps to &0000 with the mapping as it was: the resident
+    part's &0000 is `out (&F0),a` with A = &80 (RS_QUIT). A real PCW
+    reboots.
+  * ZEsarUX's `send-keys-event` takes its own numbers (ENTER 129, the
+    cursor keys 142-145, ESC 165 = STOP, SHIFT 133); `send-keys-ascii`
+    maps letters and digits only. Hold a key under 50 ms real at ten times
+    the speed or it repeats. The keyboard map's bytes 9 and 10 below bit
+    7 are swapped between MAME and ZEsarUX/John Elliott: both taken.
+  * **f_flush lost the sector number** (a `pop hl` after f_lsn): every
+    sector after a block's first went nowhere; one-sector files worked.
+  * Graphics a unit a pixel across (640 of the 720): at 9/8 the circle's
+    unit steps left holes that flood-fill leaked through. The rows are
+    25/16 units: M_NEXTY (the Model 4's) for disc and fill-box. Lines
+    with both ends on the screen step the byte and bit (fl_draw, 150 T a
+    pixel; g_set's per-pixel 700+ made `lines` 0.27 -- 1.62 now).
+  * Floats with no ROM: the Spectrum's fparith.asm and our own series
+    (fpfun.asm, tools/pcw/mkfpconst.py) -- float.out as the CPC's.
+  * rasm again: `LD_DIR` (equ) and `ld_dir` (label) collide; global
+    labels inside a routine move its locals' scope (fl_plot1...).
+  * The interrupt: reading &F4 answers it and gives the ticks since
+    (missed ones while a disc transfer had them off); the FDC polled
+    (&F8 command 4), its terminal count &F8 5/6; seeks wait with the
+    interrupts on.
 * **Pocket Lisp** (`pocket/`, 2026-11-19; Mike: "pocket lisp ... a
   board with microcontroller and oled and keys", then colour and a
   bigger screen, the RP2350 chosen; the proposal is a private artifact,

@@ -494,7 +494,7 @@ only). Ours are in bold.
 
 ## The ports compared
 
-The same Lisp runs on ten machines and setups. How fast is each one,
+The same Lisp runs on eleven machines and setups. How fast is each one,
 with the CPC 464 at 1.0? This was measured on 2026-11-22, in each
 port's own emulator, by the Lisp's own clock (*How it was measured*).
 The benchmarks:
@@ -527,6 +527,7 @@ included.
 | TRS-80 Model 4 (no compiler) | 0.74 | 0.62 | 0.72 | -- | -- | -- | 0.43 | 4.20 | 0.37 | 0.69 | **0.78** |
 | ZX Spectrum +2A + DivMMC | 0.71 | 0.57 | 0.68 | 0.81 | 0.82 | 0.69 | 0.56 | 1.42 | 0.63 | 0.71 | **0.73** |
 | MSX1 (HX-10) + mapper | 0.79 | 0.69 | 0.78 | 0.90 | 0.90 | 0.84 | 0.53 | 0.75 | 0.47 | 0.81 | **0.72** |
+| Amstrad PCW 8256 | 0.95 | 0.91 | 1.01 | 0.96 | 0.95 | 1.07 | 0.59 | 3.01 | 1.62 | 0.97 | **1.10** |
 
 The seconds:
 
@@ -542,6 +543,7 @@ The seconds:
 | TRS-80 Model 4 (no compiler) | 38.0 | 30.2 | 25.3 | -- | -- | -- | 127.9 | 1.6 | 17.5 |
 | ZX Spectrum +2A + DivMMC | 39.8 | 32.8 | 27.1 | 21.0 | 18.6 | 22.3 | 98.5 | 4.8 | 10.2 |
 | MSX1 (HX-10) + mapper | 35.7 | 26.8 | 23.3 | 18.9 | 16.9 | 18.2 | 104.2 | 9.1 | 13.5 |
+| Amstrad PCW 8256 | 29.6 | 20.5 | 18.1 | 17.7 | 15.8 | 14.3 | 94.0 | 2.3 | 4.0 |
 
 * **The CPCs run the Lisp at one speed.** The ROMs, the 512K's disc
   version and both FutureOS versions are within 4% of the 464. The
@@ -555,6 +557,9 @@ The seconds:
   Compiled code conses less, and gains on the other machines.
   * **The MSX** (0.81): a Z80 at 3.58 MHz with a wait state in every
     opcode fetch, and 2,899 cells.
+  * **The PCW** (0.97, measured 2026-11-23 in ZEsarUX): a Z80 at 4 MHz
+    and 6,499 cells -- the 464's speed. Its deriv runs faster than the
+    464's (1.07 compiled): more cells, fewer collections.
   * **The Spectrum** (0.71): 3.55 MHz, its upper banks contended, and
     about 1,800 cells.
   * **The Model 4** (0.69): trs80gp's Model 4 runs some 2.77 million
@@ -569,12 +574,18 @@ The seconds:
     swapping the maths' RAM each time: 0.58.
   * The Spectrum and the MSX do + - * / themselves, and `sin` and `cos`
     through the ROM's calculator or the Math-Pack: 0.56, 0.53.
+  * The PCW has no ROM: the Spectrum's + - * / and series of our own
+    for the rest: 0.59.
   * The Model I uses the Level II ROM: 0.27.
 * **Text and lines are each port's own screen code.**
   * The TRS-80s write straight into their text RAM, three to four times
     as fast as the CPC's firmware. FutureOS native prints through
     FutureOS's PR_2: 2.7.
   * The MSX's VDP sits behind I/O ports: 0.75 for text, 0.47 for lines.
+  * The PCW's screen is RAM, a block seen at &4000 for a moment: text
+    3.0 (the rows scroll by the roller RAM), lines 1.6 (the byte and its
+    bit stepped along, the block mapped only when the line moves into
+    another).
   * The Model I's lines are in 128 × 48 blocks, few to draw.
   * **FutureOS native draws lines at a fifth of the firmware's speed**:
     worth a look.

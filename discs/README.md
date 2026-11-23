@@ -28,6 +28,8 @@ the test discs for the real machine. Each disc's test is `HWTEST.LSP`:
 | `frehd/cpclisp4` | the same on the **FreHD**'s hard disc: an LS-DOS 6.3.1 system (1.6 MB, Radio Shack hard disc driver; the hard disc is drive :0 only, the floppies :4 and :5) with `LISP` and `HWTEST/LSP`. Copy it to the root of the FreHD's SD card *as it is named* (no extension, as the FreHD's images); its boot menu lists it, ENTER boots it, `LISP` -- no date asked | 1100 |
 | `spectrum/` | **CPC Lisp on a ZX Spectrum 128K with a DivMMC** (`mach/spectrum`): not a disc but the files for the DivMMC's SD card -- `LISP.TAP`, `HWTEST.LSP`, `APFEL.LSP` and the classics. Copy them into a folder of their own (`LISP`); switch on, NMI, the folder, `LISP.TAP`, ENTER. The DivMMC needs 128 KB of RAM and esxDOS | 1100 |
 | `msx/` | **CPC Lisp on an MSX** (`mach/msx`), an MSX1 or later with a memory mapper (144 KB free) and MSX-DOS 2 or Nextor -- say an MSX SD Mapper & Megaram 512 KB, its switches at ON and MP: the files for its SD card -- `LISP.COM`, `LISP.IMG`, `HWTEST.LSP`, `APFEL.LSP`, `TORUS.LSP` and the classics. Copy them into a folder of their own (`LISP`); at DOS's prompt `CD LISP`, `LISP` | 11262 |
+| `pcw/cpclisp-pcw.dsk` | **CPC Lisp on an Amstrad PCW 8256 or 8512** (`mach/pcw`), the disc that boots it -- no CP/M: our boot sector, our loader, `LISP.IMG`, `HWTEST.LSP`, `APFEL.LSP` (180 KB, the 8256's format: CP/M reads its files). Put it in drive A -- on a Gotek, the image as it is -- and switch on | 5462 |
+| `pcw/cpclisp-pcw-classics.dsk` | **the classics disc for the PCW**: the example programs on a CP/M data disc of the same format -- swap it in once Lisp runs, `(load "classics")` | 5462 |
 | `ld4-631.dsk` | **LS-DOS 6.3.1** for the Model 4, its system disc as distributed (Tim Mann's `ld4-631.zip`), which the Model 4 discs are made from -- see below | -- |
 
 Checked on a real CPC 464 with Revaldinho's universal 512K RAM card, on
@@ -166,3 +168,8 @@ files in a folder `LISP` on its SD card): the keys, the demos, ESC in
 10 yes there, the demos, sound, `(quit)` back to DOS. In openMSX
 (`tools/msx/test.sh`) the regression tests, 43 of 43, and `(hwtest)` 10
 yes. `mach/msx/README.md` has the details.
+
+`pcw/` build 5462 has run in ZEsarUX only (2026-11-23: an emulated PCW
+8256 and 8512, booted from the disc as a real one boots): the regression
+tests, 43 of 43 (`tools/pcw/test.sh`), and `(hwtest)` 10 yes on both.
+Not yet on a real PCW. `mach/pcw/README.md` has the details.

@@ -29,6 +29,12 @@ Math-Pack, files through DOS. It runs on a real Toshiba HX-10 and a
 Philips VG-8020 ([*On the MSX*](#on-the-msx), below, with photos; screenshots
 [below](#screenshots)).
 
+**And the Amstrad PCW.** A PCW 8256 or 8512 -- the Schneider Joyce --
+boots it from a disc of its own, no CP/M and no ROM: 90 by 32 characters
+on its green screen, graphics on its 720 by 256, our own disc routines on
+CP/M's file system, our own maths. So far in ZEsarUX ([*On the Amstrad
+PCW*](#on-the-amstrad-pcw), below; screenshots [below](#screenshots)).
+
     CPC Lisp 1.1
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
@@ -80,12 +86,17 @@ at the end says what is in each.
   images in the mapper's segments; 40 by 24 characters, graphics in
   colour, the PSG's three voices, a RAM disc in the mapper's spare
   segments ([*On the MSX*](#on-the-msx), below).
-* **More Z80 machines are to come**, in this order: the TA alphatronic
-  PC, the Sharp MZ-700 and the NABU PC.
+* **The Amstrad PCW** 8256 or 8512 boots it from its own disc -- a Gotek
+  serves one well: the same six images in its 16 KB blocks; 90 by 32
+  characters, graphics on its 720 by 256, CP/M's discs through our own
+  routines, a RAM disc in the blocks left ([*On the Amstrad
+  PCW*](#on-the-amstrad-pcw), below).
+* **More Z80 machines are to come**, in this order: the NABU PC, the TA
+  alphatronic PC and the Sharp MZ-700.
   Everything a machine provides is behind one interface
   ([`mach/README.md`](mach/README.md)); the CPC's is `mach/cpc/`, the
   TRS-80's `mach/trs80/`, the Model 4's `mach/trs80m4/`, the Spectrum's
-  `mach/spectrum/`, the MSX's `mach/msx/`.
+  `mach/spectrum/`, the MSX's `mach/msx/`, the PCW's `mach/pcw/`.
 
 ## Videos
 
@@ -99,8 +110,8 @@ at the end says what is in each.
 ## Screenshots
 
 From the emulators: MAME for the CPC, trs80gp for the TRS-80s, ZEsarUX
-for the ZX Spectrum, openMSX for the MSX. The same programs, the same
-Lisp.
+for the ZX Spectrum and the PCW, openMSX for the MSX. The same programs,
+the same Lisp.
 
 **On the Amstrad CPC**
 
@@ -131,6 +142,13 @@ HX-10; photos of a real one and a VG-8020 [below](#on-the-msx))
 <table>
 <tr><td align="center" valign="top"><img src="docs/images/msx-repl.png" width="190" alt="The REPL on the MSX, 40 by 24"><br>The REPL, 40 by 24: <code>loop</code>, <code>format</code>, floats, the compiler</td><td align="center" valign="top"><img src="docs/images/msx-ed.png" width="190" alt="The function editor on the MSX"><br>The function editor: <code>(ed 'rose)</code>; F1 is done</td><td align="center" valign="top"><img src="docs/images/msx-rose.png" width="190" alt="(rose) on the MSX"><br><code>(rose)</code>: floats by the MSX ROM's Math-Pack</td><td align="center" valign="top"><img src="docs/images/msx-koch.png" width="190" alt="(koch 4) on the MSX"><br><code>(koch 4)</code></td></tr>
 <tr><td align="center" valign="top"><img src="docs/images/msx-tree.png" width="190" alt="(tree) on the MSX"><br><code>(tree)</code></td><td align="center" valign="top"><img src="docs/images/msx-shapes.png" width="190" alt="(shapes) on the MSX"><br><code>(shapes)</code>: a pen colours 8 pixels across, in one row -- the MSX's colour clash</td><td align="center" valign="top"><img src="docs/images/msx-sierpinski.png" width="190" alt="(sierpinski) on the MSX"><br><code>(sierpinski)</code></td><td align="center" valign="top"><img src="docs/images/msx-moire.png" width="190" alt="(moire) on the MSX"><br><code>(moire)</code>: lines drawn with XOR</td></tr>
+</table>
+
+**On the Amstrad PCW 8256** (in ZEsarUX, booted from its own disc)
+
+<table>
+<tr><td align="center" valign="top"><img src="docs/images/pcw-repl.png" width="190" alt="The REPL on the PCW, 90 by 32"><br>The REPL, 90 by 32: <code>loop</code>, <code>format</code>, floats, the compiler</td><td align="center" valign="top"><img src="docs/images/pcw-ed.png" width="190" alt="The function editor on the PCW"><br>The function editor: <code>(ed 'rose)</code>; COPY is done</td><td align="center" valign="top"><img src="docs/images/pcw-rose.png" width="190" alt="(rose) on the PCW"><br><code>(rose)</code>: floats by our own maths</td><td align="center" valign="top"><img src="docs/images/pcw-koch.png" width="190" alt="(koch 4) on the PCW"><br><code>(koch 4)</code></td></tr>
+<tr><td align="center" valign="top"><img src="docs/images/pcw-tree.png" width="190" alt="(tree) on the PCW"><br><code>(tree)</code></td><td align="center" valign="top"><img src="docs/images/pcw-shapes.png" width="190" alt="(shapes) on the PCW"><br><code>(shapes)</code>: one colour, every pen lights</td><td align="center" valign="top"><img src="docs/images/pcw-sierpinski.png" width="190" alt="(sierpinski) on the PCW"><br><code>(sierpinski)</code></td><td align="center" valign="top"><img src="docs/images/pcw-moire.png" width="190" alt="(moire) on the PCW"><br><code>(moire)</code>: lines drawn with XOR</td></tr>
 </table>
 
 **On the TRS-80 Model 4, with the high-resolution board**
@@ -501,6 +519,49 @@ connector brought it back.
 It was made in
 [openMSX](https://openmsx.org/), headless: `tools/msx/msx.py` types a
 file at it, `test.sh` runs the regression tests.
+
+## On the Amstrad PCW
+
+The same Lisp -- the six images, the compiler included -- runs on an
+**Amstrad PCW 8256 or 8512** (the Schneider Joyce), booted from **a disc
+of its own**: no CP/M, no ROM -- the machine is Lisp's from the boot
+sector on (`mach/pcw/`).
+
+    CPC Lisp 1.1
+    A Lisp machine for the Amstrad PCW
+    library ROMs 1 2 3 4
+    6499 cells free
+
+**What it needs**: a PCW 8256 or 8512 (256 or 512 KB) and the disc in
+drive A -- a Gotek serves the image as it is.
+
+**The disc**: [`discs/pcw/`](discs/pcw/) -- `cpclisp-pcw.dsk`, the one
+that boots (`LISP.IMG`, `HWTEST.LSP`, `APFEL.LSP`), and
+`cpclisp-pcw-classics.dsk`, the examples. Or build them: `MACH=pcw
+tools/build.sh` makes both in `build/pcw/`. Switch on with the disc in
+A (or SHIFT, EXTRA and EXIT): a bar fills as the eight parts load, then
+the banner. `(quit)` boots whatever disc is in A again.
+
+**How it works**: the PCW's memory is blocks of 16 KB, four seen at a
+time. Lisp's RAM is three of them, always there; the six images and two
+machine pages take turns at &C000; the screen, the keyboard and the RAM
+disc are seen for a moment when a routine needs them. Our boot sector
+reads our loader, which reads `LISP.IMG` through CP/M's directory. The
+screen: 90 by 32 characters in a bold font of our own, scrolled by the
+PCW's roller RAM; graphics on the 640 middle pixels of its 720 by 256,
+one colour. Discs: our own uPD765 routines on CP/M's file system, so CP/M
+reads what Lisp saves. Floats: + - * / as the Spectrum's, `sqrt`, `exp`,
+`log`, `sin`, `cos`, `tan`, `atan` by our own series. A RAM disc `M:` in
+the blocks left: 47 KB on an 8256, 303 KB on an 8512. **COPY** (or f1)
+is COPY, **ALT** is CTRL, **STOP** or **EXIT** breaks, **1/2** gives `` ` ``
+and the paragraph sign `\`. Sound: the beeper, and a DKTronics sound
+generator's AY if there is one. No speech, no MIDI, no colours.
+[`mach/pcw/README.md`](mach/pcw/README.md) has it all.
+
+**It runs in ZEsarUX** (13.0, an emulated 8256 and 8512, headless:
+`tools/pcw/pcw.py` boots its disc and types a file at it, `test.sh` runs
+the regression tests -- 43 of 43 -- and `(hwtest)` says 10 yes on both).
+Not yet on a real PCW.
 
 ## On a TRS-80
 
