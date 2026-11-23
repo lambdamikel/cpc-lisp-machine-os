@@ -481,14 +481,17 @@ for the CPC's 27. The CPC firmware's sound manager on the PSG,
 envelopes and all; floats by the main ROM's Math-Pack (BASIC's maths: a
 `sin` takes 0.15 s); a RAM disc `M:` in the mapper's spare segments, and
 far arrays there; about 2900 cells. **F1** (or SELECT) is COPY, **F2**
-is CTRL-S, **ESC** or **STOP** breaks. No speech, no MIDI.
+is CTRL-S, **ESC** or **STOP** breaks, **GRAPH** is a second SHIFT. No
+speech, no MIDI.
 [`mach/msx/README.md`](mach/msx/README.md) has it all.
 
 **It runs on a real Toshiba HX-10** with an MSX SD Mapper & Megaram 512
 KB and Nextor 2.1.0 (2026-11-22): `(hwtest)` -- the cells, the compiler,
 files on the SD card, lazy loading, two files open at once, the RAM disc
 and far arrays, the ROM's Math-Pack, the colour pens -- 10 yes; the
-keys, the demos, sound, ESC, `(quit)` back to DOS. It was made in
+keys, the demos, sound, ESC, `(quit)` back to DOS. And on a Philips
+VG-8020, whose SHIFT and ESC keys have died: GRAPH and STOP stand in.
+It was made in
 [openMSX](https://openmsx.org/), headless: `tools/msx/msx.py` types a
 file at it, `test.sh` runs the regression tests.
 

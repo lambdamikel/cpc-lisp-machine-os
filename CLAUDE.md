@@ -1015,7 +1015,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   the demos, sound, (quit) to DOS; then build 7971, with the ESC fix
   below, "out of the box" -- `discs/msx/` is that build, and the main
   README has his photos of it (whole, not cropped: Mike wants the
-  machine seen) and openMSX's screenshots (`msx.py`'s `!shot`: an
+  machine seen); since the same evening build 11262: **GRAPH is a
+  second SHIFT** (k_emit), as Mike's VG-8020's SHIFT and ESC are dead --
+  it ran there, STOP as ESC (the VG-8020's video is composite from its
+  DIN; only the French /19 has RGB) and openMSX's screenshots (`msx.py`'s `!shot`: an
   action's N counts from the action before it, not from the line).
   Merged into main the same day (fast-forward; the Spectrum's and the
   TRS-80s' builds byte for byte the same, BUILD_ID=77). Lessons:
