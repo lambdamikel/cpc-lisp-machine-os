@@ -29,6 +29,7 @@ PORTS = {
     "trs80m4":  ("TRS-80 Model 4 (no compiler)", ["tools/trs80m4/run.sh"], False),
     "spectrum": ("ZX Spectrum +2A + DivMMC", ["tools/spectrum/zx.py", "-t", "2400"], True),
     "msx":      ("MSX1 (HX-10) + mapper", ["tools/msx/msx.py", "-t", "2400"], True),
+    "pcw":      ("Amstrad PCW 8256", ["tools/pcw/pcw.py", "-t", "2400"], True),
 }
 BENCHES = [
     ("fib-i", "(fib 17) x2, interpreted"),

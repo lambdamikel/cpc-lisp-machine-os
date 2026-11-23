@@ -155,18 +155,37 @@ class PCW:
         return self.peek(self.res["RS_QUITF"])[0] != 0
 
     def drain(self):
-        """the transcript's ring emptied into self.text"""
-        t_in, t_out = self.ppeek(self.page["T_IN"], 2)
+        """the transcript's ring emptied into self.text; True if it had
+        something. T_IN is read until two reads agree (the machine may be
+        between its two bytes)."""
+        size = 0x1000
+        while True:
+            a = self.ppeek(self.page["T_IN"], 4)
+            b = self.ppeek(self.page["T_IN"], 4)
+            if a[:2] == b[:2]:
+                break
+        t_in, t_out = a[0] | a[1] << 8, a[2] | a[3] << 8
         if t_in == t_out:
-            return
+            return False
         base = self.page["T_BUF"]
         if t_in > t_out:
-            self.text += self.ppeek(base + t_out, t_in - t_out)
+            self.text += self.big(base + t_out, t_in - t_out)
         else:
-            self.text += self.ppeek(base + t_out, 256 - t_out)
+            self.text += self.big(base + t_out, size - t_out)
             if t_in:
-                self.text += self.ppeek(base, t_in)
-        self.ppoke(self.page["T_OUT"], bytes([t_in]))
+                self.text += self.big(base, t_in)
+        self.ppoke(self.page["T_OUT"], bytes([t_in & 255, t_in >> 8]))
+        return True
+
+    def big(self, addr, n):
+        """n bytes of page A from addr, in pieces"""
+        out = b""
+        while n > 0:
+            k = min(n, 1024)
+            out += self.ppeek(addr, k)
+            addr += k
+            n -= k
+        return out
 
     def pasted(self):
         """the paste buffer empty again?"""
@@ -251,7 +270,7 @@ def run(args):
                 why = "TIMEOUT"
                 break
             try:
-                pc.drain()
+                busy = pc.drain()
                 if pc.quitted():
                     pc.drain()
                     why = "quit"
@@ -300,7 +319,7 @@ def run(args):
                     t += n
                     todo.append((t, kind, data))
                 i += 1
-            else:
+            elif not busy:
                 time.sleep(0.005)
         if args.shot:
             shot(pc, os.path.abspath(args.shot))

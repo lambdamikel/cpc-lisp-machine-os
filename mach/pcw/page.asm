@@ -38,11 +38,13 @@
 VCOLS       equ 90
 VROWS       equ 32
 XLEFT       equ 40              ; graphics' x 0, in pixels
-FILL_STK    equ #E900           ; flood-fill's stack, 512 entries of 4,
-FILL_END    equ #F100           ;   to SHADOW
-SHADOW      equ #F100           ; the characters on the screen, 90 x 32
-PA_BUF      equ #FD00           ; the harness's paste: 256 bytes
-T_BUF       equ #FE00           ; the transcript's ring: 256 bytes
+FILL_STK    equ #DB00           ; flood-fill's stack, 512 entries of 4,
+FILL_END    equ #E300           ;   to SHADOW
+SHADOW      equ #E300           ; the characters on the screen, 90 x 32
+PA_BUF      equ #EF00           ; the harness's paste: 256 bytes
+T_BUF       equ #F000           ; the transcript's ring: 4 KB
+T_MASK      equ #0FFF
+    assert SHADOW+90*32 <= PA_BUF
 
     org #C000,#4000             ; (LISPM.ROM: page A, then page B)
     assert $ == P_INIT
@@ -56,12 +58,12 @@ T_BUF       equ #FE00           ; the transcript's ring: 256 bytes
     ;; transcript as its return is read (the editor's own echo does not):
     ;; the harness types a space first, as the CPC's does, and leaves it out
     ;; of the transcript. The transcript: T_BUF from T_OUT (the harness's)
-    ;; to T_IN (ours); full, the machine waits for the harness.
+    ;; to T_IN (ours), words; full, the machine waits for the harness.
 PA_LEN:     db 0                ; &C006
 PA_POS:     db 0
 PA_REC:     db 0
-T_IN:       db 0
-T_OUT:      db 0
+T_IN:       dw 0
+T_OUT:      dw 0
     db "PCW MACHINE PAGE A",0
     defs MTAB-$,0
     include "mtab.inc"
@@ -116,8 +118,10 @@ m_init:
     ld (g_ink),a
     ld (PA_LEN),a
     ld (PA_POS),a
-    ld (T_IN),a
-    ld (T_OUT),a
+    ld h,a
+    ld l,a
+    ld (T_IN),hl
+    ld (T_OUT),hl
     ld (c_paper),a
     inc a
     ld (c_usr),a
@@ -455,20 +459,31 @@ c_echoc:
     ld a,(c_echo)
     or a
     ret z
+    push de
     push hl
 .w:
-    ld a,(T_IN)
-    inc a
-    ld hl,T_OUT
-    cp (hl)
+    ld hl,(T_IN)
+    inc hl
+    ld a,h
+    and T_MASK >> 8
+    ld h,a
+    ld de,(T_OUT)
+    or a
+    sbc hl,de
     jr z,.w                     ; full: the harness empties it
-    dec a
-    ld l,a
-    ld h,T_BUF >> 8
+    ld hl,(T_IN)
+    push hl
+    ld de,T_BUF
+    add hl,de
     ld (hl),c
-    inc a
-    ld (T_IN),a
     pop hl
+    inc hl
+    ld a,h
+    and T_MASK >> 8
+    ld h,a
+    ld (T_IN),hl
+    pop hl
+    pop de
     ret
 
 ;; c_put: C = a character, at the cursor; the cursor on. BC, DE, HL, IX
@@ -1759,6 +1774,8 @@ m_gfx_line:
     call g_pix
     ld (l_x1),de
     ld (l_y1),hl
+    call fl_in                  ; both ends on the screen: the fast way
+    jp c,fl_draw
     ; dx = |x1 - x0|, sx = the sign
     ld hl,(l_x1)
     ld de,(l_x0)
@@ -1832,6 +1849,304 @@ m_gfx_line:
     add hl,de
     ld (l_y0),hl
     jr .step
+
+;; THE FAST LINE: both ends on the screen. Bresenham's in the screen's own
+;; terms: the byte and its bit moved along a step at a time (fl_xr...),
+;; the block mapped only when a row in another one comes (fl_row); the
+;; plot (fl_plot1, fl_plot2: four bytes) set for the ink-mode and the pen
+;; before, the steps' calls set for the directions. Some 150 T-states a
+;; pixel, against g_set's 700 and more. The error and the two distances
+;; are in the alternate registers (the interrupt does not touch them).
+fl_rs:      dw 0                ; the row's first byte (in the WINDOW)
+fl_prow:    db 0                ; the row, of the 32 in the blocks
+fl_line:    db 0                ; the line in it, 0-7
+fl_ym:      db 0                ; &FF: y goes further than x
+
+;; fl_in: -> carry if (l_x0, l_y0) and (l_x1, l_y1) are both on the screen
+fl_in:
+    ld de,(l_x0)
+    ld hl,(l_y0)
+    call .one
+    ret nc
+    ld de,(l_x1)
+    ld hl,(l_y1)
+.one:
+    ld a,h
+    or a
+    ret nz                      ; (no carry: or)
+    ld a,d
+    cp 720 >> 8
+    ret c
+    ret nz
+    ld a,e
+    cp 720 and #FF
+    ret
+
+;; fl_draw: the line from (l_x0, l_y0) to (l_x1, l_y1), both on the screen
+fl_draw:
+    call fl_mode
+    ret z                       ; the ink-mode and pen draw nothing
+    ld hl,(l_x1)                ; dx = |x1 - x0|, the step
+    ld de,(l_x0)
+    ld bc,fl_xr
+    or a
+    sbc hl,de
+    jr nc,.dxp
+    ld bc,fl_xl
+    call g_neg
+.dxp:
+    ld (l_dx),hl
+    ld (fl_xs1+1),bc
+    ld (fl_xs2+1),bc
+    ld a,(l_y1)                 ; dy = |y1 - y0| (rows: below 256)
+    ld hl,l_y0
+    ld bc,fl_yd
+    sub (hl)
+    jr nc,.dyp
+    ld bc,fl_yu
+    neg
+.dyp:
+    ld l,a
+    ld h,0
+    ld (l_dy),hl
+    ld (fl_ys1+1),bc
+    ld (fl_ys2+1),bc
+    ld hl,(l_dx)                ; which goes further: x or y
+    ld de,(l_dy)
+    or a
+    sbc hl,de
+    sbc a,a
+    ld (fl_ym),a                ; &FF: y
+    ld de,(l_x0)                ; the start: its byte, its bit
+    ld a,(l_y0)
+    ld l,a
+    call fl_at
+    ld a,(fl_ym)
+    or a
+    jr nz,fl_ymaj
+    exx                         ; x the major: err = dx / 2
+    ld de,(l_dx)                ; DE' = dx
+    ld bc,(l_dy)                ; BC' = dy
+    ld h,d
+    ld l,e
+    srl h
+    rr l                        ; HL' = err
+    exx
+    ld de,(l_dx)
+    inc de                      ; DE = the pixels: dx + 1
+fl_xloop:
+fl_plot1:
+    ld a,(hl)
+    or c
+    ld (hl),a
+    nop
+    dec de
+    ld a,d
+    or e
+    jp z,s_unmap
+fl_xs1:
+    call fl_xr
+    exx
+    or a
+    sbc hl,bc                   ; err -= dy
+    exx
+    jr nc,fl_xloop
+    exx
+    add hl,de                   ; err += dx
+    exx
+fl_ys1:
+    call fl_yd
+    jr fl_xloop
+fl_ymaj:
+    exx
+    ld de,(l_dy)                ; DE' = dy
+    ld bc,(l_dx)                ; BC' = dx
+    ld h,d
+    ld l,e
+    srl h
+    rr l                        ; HL' = err
+    exx
+    ld de,(l_dy)
+    inc de                      ; DE = the pixels: dy + 1
+fl_yloop:
+fl_plot2:
+    ld a,(hl)
+    or c
+    ld (hl),a
+    nop
+    dec de
+    ld a,d
+    or e
+    jp z,s_unmap
+fl_ys2:
+    call fl_yd
+    exx
+    or a
+    sbc hl,bc                   ; err -= dx
+    exx
+    jr nc,fl_yloop
+    exx
+    add hl,de                   ; err += dy
+    exx
+fl_xs2:
+    call fl_xr
+    jr fl_yloop
+
+;; fl_mode: the plot for the ink-mode and the pen into fl_plot1 and
+;; fl_plot2 -> Z if it draws nothing
+fl_mode:
+    ld a,(g_pen)
+    or a
+    ld a,(g_ink)
+    jr z,.pen0
+    cp 2
+    ret z                       ; AND with a lit pen: nothing changes
+    ld hl,fl_or
+    dec a
+    jr nz,.set                  ; plain, OR: lit
+    ld hl,fl_xor                ; XOR
+    jr .set
+.pen0:
+    cp 1
+    ret z                       ; XOR, OR with pen 0: nothing
+    cp 3
+    ret z
+    ld hl,fl_clr                ; plain, AND: put out
+.set:
+    push hl
+    ld de,fl_plot1
+    ld bc,4
+    ldir
+    pop hl
+    ld de,fl_plot2
+    ld bc,4
+    ldir
+    or 1                        ; (NZ)
+    ret
+fl_or:      ld a,(hl) : or c : ld (hl),a : nop
+fl_xor:     ld a,(hl) : xor c : ld (hl),a : nop
+fl_clr:     ld a,c : cpl : and (hl) : ld (hl),a
+
+;; fl_at: DE = a column, L = a row, on the screen -> HL = its byte, its
+;; block in the WINDOW, C = its bit; fl_rs, fl_prow, fl_line set. DE kept.
+fl_at:
+    ld a,(c_top)
+    add a,a
+    add a,a
+    add a,a
+    add a,l                     ; its line in the blocks
+    ld b,a
+    and 7
+    ld (fl_line),a
+    ld a,b
+    rrca
+    rrca
+    rrca
+    and 31
+    ld (fl_prow),a
+    call s_prow
+    ld (fl_rs),hl
+    call s_map
+    ld a,(fl_line)
+    add a,l
+    ld l,a
+    jr nc,.n
+    inc h
+.n:
+    push de
+    ld a,e
+    and #F8
+    ld e,a
+    add hl,de
+    pop de
+    ld a,e
+    and 7
+    ld c,#80
+    ret z
+    ld b,a
+.s:
+    srl c
+    djnz .s
+    ret
+
+;; the steps: HL, C a pixel's byte and bit -> the next one's. B, DE kept
+;; (fl_row's: AF).
+fl_xr:                          ; right
+    rrc c
+    ret nc
+    ld a,l
+    add a,8
+    ld l,a
+    ret nc
+    inc h
+    ret
+fl_xl:                          ; left
+    rlc c
+    ret nc
+    ld a,l
+    sub 8
+    ld l,a
+    ret nc
+    dec h
+    ret
+fl_yd:                          ; down
+    ld a,(fl_line)
+    cp 7
+    jr z,.row
+    inc a
+    ld (fl_line),a
+    inc hl
+    ret
+.row:
+    xor a
+    ld (fl_line),a
+    ld a,(fl_prow)
+    inc a
+    jr fl_row
+fl_yu:                          ; up
+    ld a,(fl_line)
+    or a
+    jr z,.row
+    dec a
+    ld (fl_line),a
+    dec hl
+    ret
+.row:
+    ld a,7
+    ld (fl_line),a
+    ld a,(fl_prow)
+    dec a
+;; fl_row: A = the row now (mod 32), HL still in the one before -> HL in
+;; the new row, the same column, at fl_line; its block in the WINDOW
+fl_row:
+    and 31
+    ld (fl_prow),a
+    push de
+    ld de,(fl_rs)
+    or a
+    sbc hl,de
+    ld a,l
+    and #F8
+    ld l,a                      ; the column * 8
+    push hl
+    ld a,(fl_prow)
+    call s_prow
+    ld (fl_rs),hl
+    ld e,a
+    ld a,(RS_P1)
+    cp e
+    ld a,e
+    call nz,s_map
+    pop de
+    add hl,de
+    ld a,(fl_line)
+    add a,l
+    ld l,a
+    jr nc,.n
+    inc h
+.n:
+    pop de
+    ret
 
 ;; M_FILL: DE = x, HL = y, logical -> the area around that pixel of its
 ;; colour, to where the other starts, made the pen's; the position there.
