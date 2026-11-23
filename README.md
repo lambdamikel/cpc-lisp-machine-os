@@ -25,8 +25,8 @@ screenshots [below](#screenshots)). **Video:**
 and MSX-DOS 2 or Nextor (an MSX SD Mapper & Megaram 512 KB cartridge
 brings both) runs it from its SD card: 40 columns, colour graphics in
 the VDP's screen 2, the PSG's three voices, floats by the ROM's
-Math-Pack, files through DOS. It runs on a real Toshiba HX-10 ([*On the
-MSX*](#on-the-msx), below, with photos; screenshots
+Math-Pack, files through DOS. It runs on a real Toshiba HX-10 and a
+Philips VG-8020 ([*On the MSX*](#on-the-msx), below, with photos; screenshots
 [below](#screenshots)).
 
     CPC Lisp 1.1
@@ -126,7 +126,7 @@ real one [below](#on-the-zx-spectrum))
 </table>
 
 **On the MSX1, with a memory mapper and Nextor** (in openMSX, a Toshiba
-HX-10; photos of the real one [below](#on-the-msx))
+HX-10; photos of a real one and a VG-8020 [below](#on-the-msx))
 
 <table>
 <tr><td align="center" valign="top"><img src="docs/images/msx-repl.png" width="190" alt="The REPL on the MSX, 40 by 24"><br>The REPL, 40 by 24: <code>loop</code>, <code>format</code>, floats, the compiler</td><td align="center" valign="top"><img src="docs/images/msx-ed.png" width="190" alt="The function editor on the MSX"><br>The function editor: <code>(ed 'rose)</code>; F1 is done</td><td align="center" valign="top"><img src="docs/images/msx-rose.png" width="190" alt="(rose) on the MSX"><br><code>(rose)</code>: floats by the MSX ROM's Math-Pack</td><td align="center" valign="top"><img src="docs/images/msx-koch.png" width="190" alt="(koch 4) on the MSX"><br><code>(koch 4)</code></td></tr>
@@ -454,6 +454,12 @@ is in the slot behind the keyboard:
 <table>
 <tr><td colspan="2" align="center" valign="top"><a href="docs/images/msx-real-shapes.jpg"><img src="docs/images/msx-real-shapes.jpg" width="390" alt="A Toshiba HX-10 with an MSX SD Mapper cartridge, CPC Lisp's (shapes) on a Sony monitor"></a><br><code>(shapes)</code>: a pen colours 8 pixels across -- the MSX's colour clash</td><td colspan="2" align="center" valign="top"><a href="docs/images/msx-real-ed.jpg"><img src="docs/images/msx-real-ed.jpg" width="390" alt="CPC Lisp's function editor on the real HX-10"></a><br>The function editor: <code>(ed 'koch)</code></td></tr>
 <tr><td align="center" valign="top"><a href="docs/images/msx-real-koch.jpg"><img src="docs/images/msx-real-koch.jpg" width="190" alt="A Koch snowflake on the real HX-10"></a><br>A Koch snowflake</td><td align="center" valign="top"><a href="docs/images/msx-real-sierpinski.jpg"><img src="docs/images/msx-real-sierpinski.jpg" width="190" alt="(sierpinski) on the real HX-10"></a><br><code>(sierpinski)</code>: the chaos game</td><td align="center" valign="top"><a href="docs/images/msx-real-shapes2.jpg"><img src="docs/images/msx-real-shapes2.jpg" width="190" alt="(shapes) on the real HX-10, from the side"></a><br><code>(shapes)</code>, from the side</td><td align="center" valign="top"><a href="docs/images/msx-real-ed2.jpg"><img src="docs/images/msx-real-ed2.jpg" width="190" alt="The function editor on the real HX-10, from the side"></a><br>The editor, from the side</td></tr>
+</table>
+
+**And on a Philips VG-8020**, with the same cartridge and SD card:
+
+<table>
+<tr><td align="center" valign="top"><a href="docs/images/msx-philips-life.jpg"><img src="docs/images/msx-philips-life.jpg" width="390" alt="A Philips VG-8020 with an MSX SD Mapper cartridge, CPC Lisp's (life) on a Sony monitor"></a><br><code>(life)</code> from the classics: a glider and a blinker</td><td align="center" valign="top"><a href="docs/images/msx-philips-ed.jpg"><img src="docs/images/msx-philips-ed.jpg" width="170" alt="CPC Lisp's function editor on the VG-8020, showing LIFE"></a><br>The function editor: <code>(ed 'life)</code></td></tr>
 </table>
 
 **What it needs**: an MSX with a memory mapper that has **144 KB free**
