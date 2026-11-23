@@ -1148,7 +1148,8 @@ m_m_vidchar:
 ;;   COPY, F2 CTRL-S (both the function editor's "done"), CAPS locks the
 ;;   capitals (its lamp says so), CTRL with a letter its control code
 ;; and the international layout's characters, SHIFT the upper ones.
-;; GRAPH and CODE give nothing.
+;; GRAPH is a second SHIFT (Mike's VG-8020's SHIFT died); CODE gives
+;; nothing.
 
 KQ          equ 16              ; the queue's size
 REPDEL      equ 25              ; ticks before a held key repeats,
@@ -1284,8 +1285,8 @@ k_emit:
     ld d,0
     ld hl,k_shift
     ld a,(k_mat+6)
-    rra                         ; SHIFT
-    jr c,.look
+    and 5                       ; SHIFT, or GRAPH: a second SHIFT (for a
+    jr nz,.look                 ;   keyboard whose SHIFT has died)
     ld hl,k_plain
 .look:
     add hl,de

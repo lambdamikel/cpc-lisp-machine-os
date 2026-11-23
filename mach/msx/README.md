@@ -105,7 +105,8 @@ on an MSX, so page A makes the core look in its very next body once ESC is
 seen (it sets the core's countdown, `V_BRK`, to 1).
 
 The characters are the international layout's, SHIFT the upper ones:
-`[ ] { } ~ | \ `` ` are on their own keys. GRAPH and CODE give nothing.
+`[ ] { } ~ | \ `` ` are on their own keys. GRAPH is a second SHIFT (for
+a keyboard whose SHIFT has died: `(` is GRAPH 9); CODE gives nothing.
 `key-down-p` takes the matrix's numbers -- row * 8 + bit, rows 0-8 -- and
 72 for ESC or STOP.
 
