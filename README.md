@@ -490,7 +490,8 @@ KB and Nextor 2.1.0 (2026-11-22): `(hwtest)` -- the cells, the compiler,
 files on the SD card, lazy loading, two files open at once, the RAM disc
 and far arrays, the ROM's Math-Pack, the colour pens -- 10 yes; the
 keys, the demos, sound, ESC, `(quit)` back to DOS. And on a Philips
-VG-8020, whose SHIFT and ESC keys have died: GRAPH and STOP stand in.
+VG-8020, where GRAPH stood in for SHIFT until a reseated keyboard
+connector brought it back.
 It was made in
 [openMSX](https://openmsx.org/), headless: `tools/msx/msx.py` types a
 file at it, `test.sh` runs the regression tests.

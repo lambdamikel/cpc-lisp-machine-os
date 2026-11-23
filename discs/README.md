@@ -158,8 +158,8 @@ the keys, `(tune)`, `(rose)`. In ZEsarUX with the real esxDOS 0.8.5
 `mach/spectrum/README.md` has the details.
 
 `msx/` build 11262 runs on Mike's Philips VG-8020 (2026-11-22, the
-same cartridge and card): GRAPH as SHIFT (its own SHIFT is dead), STOP
-as ESC. It is build 7971 but for GRAPH, which ran on his Toshiba HX-10
+same cartridge and card): GRAPH as SHIFT (while its own SHIFT was out:
+the keyboard's foil connector, reseated since), STOP and ESC. It is build 7971 but for GRAPH, which ran on his Toshiba HX-10
 (2026-11-22: an MSX SD Mapper & Megaram 512 KB with Nextor 2.1.0, the
 files in a folder `LISP` on its SD card): the keys, the demos, ESC in
 `(rose)`; the build before it, the same but for ESC and the clock in float code, gave `(hwtest)`

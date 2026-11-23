@@ -1016,8 +1016,10 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   below, "out of the box" -- `discs/msx/` is that build, and the main
   README has his photos of it (whole, not cropped: Mike wants the
   machine seen); since the same evening build 11262: **GRAPH is a
-  second SHIFT** (k_emit), as Mike's VG-8020's SHIFT and ESC are dead --
-  it ran there, STOP as ESC (the VG-8020's video is composite from its
+  second SHIFT** (k_emit), as Mike's VG-8020's SHIFT was out (the
+  membrane's foil connector: reseated, it came back; its ESC was fine
+  all along -- MSX BASIC ignores ESC, CTRL+STOP breaks there) -- it ran
+  there (the VG-8020's video is composite from its
   DIN; only the French /19 has RGB) and openMSX's screenshots (`msx.py`'s `!shot`: an
   action's N counts from the action before it, not from the line).
   Merged into main the same day (fast-forward; the Spectrum's and the
