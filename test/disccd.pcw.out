@@ -1,0 +1,39 @@
+LISP> (cd)
+"A:"
+LISP> (cd "a:")
+T
+LISP> (cd)
+"A:"
+LISP> (defun cdt () 1)
+CDT
+LISP> (save "cdtest")
+(CDT)
+LISP> (dir "a:")
+
+Drive A: user  0
+
+CDTEST  .LSP   1K   LISP    .IMG 128K
+
+44K free
+
+NIL
+LISP> (cd "z:")
+NIL
+LISP> (cd "")
+NIL
+LISP> (cd nil)
+T
+LISP> (cd)
+"A:"
+LISP> (dir "z:")
+Error: no such drive: z:
+LISP> (dir)
+
+Drive A: user  0
+
+CDTEST  .LSP   1K   LISP    .IMG 128K
+
+44K free
+
+NIL
+LISP> 

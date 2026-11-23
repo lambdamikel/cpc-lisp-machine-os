@@ -1,0 +1,23 @@
+LISP> (load "eliza")
+T
+LISP> (eliza)
+I am ELIZA. Tell me your problem -- BYE ends it.
+> Hello there
+How do you do -- please state your problem.
+> I am sad about my computer
+Do computers worry you?
+> My mother says I always remember the war
+Tell me more about your family.
+> I want a holiday
+What would it mean if you got a holiday?
+> Well, you are like my father
+Your father?
+> Why?
+Very interesting.
+> bye
+Goodbye. That will be 50 pence.
+NIL
+LISP> (room)
+4913 cells, 156 symbols, 7030 string bytes free
+NIL
+LISP> 

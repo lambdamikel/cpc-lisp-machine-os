@@ -1,0 +1,54 @@
+LISP> (load "classics")
+
+Classic Lisp programs. Load one, then:
+ eliza    (eliza)       DOCTOR, 1966
+ deriv    (deriv-demo)  differentiation
+ animals  (animals)     it learns
+ meval    (meval-demo)  Lisp in Lisp
+ life     (life 8)      Conway's Life
+ tictac   (tictac)      minimax, unbeaten
+ huffman  (huffman-demo) SICP's codes
+(load "eliza") loads ELIZA, and so on.
+Built in, no load: (hanoi 4), (queens 6)
+-- (demo) lists all the ROM's.
+T
+LISP> (load "deriv")
+T
+LISP> (deriv-demo)
+d/dx (+ (* 3 (^ X 2)) (* 2 X) 1)
+   = (+ (* 6 X) 2)
+d/dx (* X (SIN X))
+   = (+ (* X (COS X)) (SIN X))
+d/dx (/ 1 X)
+   = (/ -1 (^ X 2))
+d/dx (EXP (* 2 X))
+   = (* 2 (EXP (* 2 X)))
+d/dx (LOG (^ X 2))
+   = (/ (* 2 X) (^ X 2))
+d/dx (SIN (COS X))
+   = (* (COS (COS X)) (* -1 (SIN X)))
+d/dx (* (+ X 1) (- X 1))
+   = (+ (+ X 1) (- X 1))
+NIL
+LISP> (hanoi 3)
+disc 1: A to C
+disc 2: A to B
+disc 1: C to B
+disc 3: A to C
+disc 1: B to A
+disc 2: B to C
+disc 1: A to C
+T
+LISP> (queens 6)
+. . . . Q . 
+. . Q . . . 
+Q . . . . . 
+. . . . . Q 
+. . . Q . . 
+. Q . . . . 
+4 solutions
+4
+LISP> (room)
+5537 cells, 306 symbols, 8672 string bytes free
+NIL
+LISP> 
