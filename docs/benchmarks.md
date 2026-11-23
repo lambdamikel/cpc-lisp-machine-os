@@ -635,7 +635,7 @@ form too, to compare like with like.
   that reason.
 
 <table>
-<tr><td align="center" valign="top"><img src="images/cpc-torus.png" width="190" alt="(torus) in CPC Lisp on the CPC 464: 52.17 seconds"><br>CPC Lisp, CPC 464: 52.2 s</td><td align="center" valign="top"><img src="images/cpc-torus-basic.png" width="190" alt="The one-pass BASIC on the CPC 464: 19.35 seconds"><br>BASIC 1.0, one pass, CPC 464: 19.4 s</td><td align="center" valign="top"><img src="images/msx-torus.png" width="190" alt="(torus) in CPC Lisp on the MSX: 102.66 seconds"><br>CPC Lisp, MSX1: 102.7 s</td><td align="center" valign="top"><img src="images/zx-torus.png" width="190" alt="(torus) in CPC Lisp on the ZX Spectrum +2A: 94.72 seconds"><br>CPC Lisp, Spectrum +2A: 94.7 s</td></tr>
+<tr><td align="center" valign="top"><img src="images/cpc-torus.png" width="190" alt="(torus) in CPC Lisp on the CPC 464: 52.17 seconds"><br>CPC Lisp, CPC 464: 52.2 s</td><td align="center" valign="top"><img src="images/cpc-torus-basic.png" width="190" alt="The one-pass BASIC on the CPC 464: 19.35 seconds"><br>BASIC 1.0, one pass, CPC 464: 19.4 s</td><td align="center" valign="top"><img src="images/msx-torus.png" width="190" alt="(torus) in CPC Lisp on the MSX: 102.66 seconds"><br>CPC Lisp, MSX1: 102.7 s</td><td align="center" valign="top"><img src="images/zx-torus.png" width="190" alt="(torus) in CPC Lisp on the ZX Spectrum +2A: 94.72 seconds"><br>CPC Lisp, Spectrum +2A: 94.7 s</td><td align="center" valign="top"><img src="images/pcw-torus.png" width="190" alt="(torus) in CPC Lisp on the Amstrad PCW 8256: 92.92 seconds"><br>CPC Lisp, PCW 8256: 92.9 s -- in ZEsarUX (its PCW at 3.49 MHz); not yet on a real PCW</td></tr>
 </table>
 
 ## How it was measured

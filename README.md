@@ -32,8 +32,9 @@ Philips VG-8020 ([*On the MSX*](#on-the-msx), below, with photos; screenshots
 **And the Amstrad PCW.** A PCW 8256 or 8512 -- the Schneider Joyce --
 boots it from a disc of its own, no CP/M and no ROM: 90 by 32 characters
 on its green screen, graphics on its 720 by 256, our own disc routines on
-CP/M's file system, our own maths. So far in ZEsarUX ([*On the Amstrad
-PCW*](#on-the-amstrad-pcw), below; screenshots [below](#screenshots)).
+CP/M's file system, our own maths. So far in ZEsarUX only -- **not yet
+tested on a real PCW** ([*On the Amstrad PCW*](#on-the-amstrad-pcw),
+below; screenshots [below](#screenshots)).
 
     CPC Lisp 1.1
     A Lisp machine for the Amstrad CPC
@@ -89,8 +90,8 @@ at the end says what is in each.
 * **The Amstrad PCW** 8256 or 8512 boots it from its own disc -- a Gotek
   serves one well: the same six images in its 16 KB blocks; 90 by 32
   characters, graphics on its 720 by 256, CP/M's discs through our own
-  routines, a RAM disc in the blocks left ([*On the Amstrad
-  PCW*](#on-the-amstrad-pcw), below).
+  routines, a RAM disc in the blocks left -- in the emulator so far, not
+  yet on a real PCW ([*On the Amstrad PCW*](#on-the-amstrad-pcw), below).
 * **More Z80 machines are to come**, in this order: the NABU PC, the TA
   alphatronic PC and the Sharp MZ-700.
   Everything a machine provides is behind one interface
@@ -125,7 +126,7 @@ the demo disc ([`examples/apfel.lsp`](examples/apfel.lsp)) -- the same
 program on each:
 
 <table>
-<tr><td align="center" valign="top"><img src="docs/images/cpc-apfel.png" width="152" alt="(apfel) on the CPC: mode 2, compiled"><br><code>(apfel)</code> on the CPC: mode 2, compiled</td><td align="center" valign="top"><img src="docs/images/zx-apfel.png" width="152" alt="(apfel) on the ZX Spectrum: 256 by 192, compiled"><br><code>(apfel)</code> on the ZX Spectrum: 256 by 192, compiled</td><td align="center" valign="top"><img src="docs/images/msx-apfel.png" width="152" alt="(apfel) on the MSX: 256 by 192, compiled"><br><code>(apfel)</code> on the MSX: 256 by 192, compiled</td><td align="center" valign="top"><img src="docs/images/m4-apfel.png" width="152" alt="(apfel) on the TRS-80 Model 4: the high-resolution board"><br><code>(apfel)</code> on the TRS-80 Model 4: the high-resolution board</td><td align="center" valign="top"><img src="docs/images/trs80-apfel.png" width="152" alt="(apfel) on the TRS-80 Model I: in the 2 x 3 blocks"><br><code>(apfel)</code> on the TRS-80 Model I: in the 2 x 3 blocks</td><td align="center" valign="top"><img src="docs/images/pcw-apfel.png" width="152" alt="(apfel) on the Amstrad PCW: 640 by 256, one colour, compiled"><br><code>(apfel)</code> on the Amstrad PCW: one colour, compiled</td></tr>
+<tr><td align="center" valign="top"><img src="docs/images/cpc-apfel.png" width="152" alt="(apfel) on the CPC: mode 2, compiled"><br><code>(apfel)</code> on the CPC: mode 2, compiled</td><td align="center" valign="top"><img src="docs/images/zx-apfel.png" width="152" alt="(apfel) on the ZX Spectrum: 256 by 192, compiled"><br><code>(apfel)</code> on the ZX Spectrum: 256 by 192, compiled</td><td align="center" valign="top"><img src="docs/images/msx-apfel.png" width="152" alt="(apfel) on the MSX: 256 by 192, compiled"><br><code>(apfel)</code> on the MSX: 256 by 192, compiled</td><td align="center" valign="top"><img src="docs/images/m4-apfel.png" width="152" alt="(apfel) on the TRS-80 Model 4: the high-resolution board"><br><code>(apfel)</code> on the TRS-80 Model 4: the high-resolution board</td><td align="center" valign="top"><img src="docs/images/trs80-apfel.png" width="152" alt="(apfel) on the TRS-80 Model I: in the 2 x 3 blocks"><br><code>(apfel)</code> on the TRS-80 Model I: in the 2 x 3 blocks</td><td align="center" valign="top"><img src="docs/images/pcw-apfel.png" width="152" alt="(apfel) on the Amstrad PCW: 640 by 256, one colour, compiled"><br><code>(apfel)</code> on the Amstrad PCW: one colour, compiled (ZEsarUX; not yet on a real PCW)</td></tr>
 </table>
 
 **On the ZX Spectrum +2A, with a DivMMC** (in ZEsarUX; photos of the
@@ -144,7 +145,7 @@ HX-10; photos of a real one and a VG-8020 [below](#on-the-msx))
 <tr><td align="center" valign="top"><img src="docs/images/msx-tree.png" width="190" alt="(tree) on the MSX"><br><code>(tree)</code></td><td align="center" valign="top"><img src="docs/images/msx-shapes.png" width="190" alt="(shapes) on the MSX"><br><code>(shapes)</code>: a pen colours 8 pixels across, in one row -- the MSX's colour clash</td><td align="center" valign="top"><img src="docs/images/msx-sierpinski.png" width="190" alt="(sierpinski) on the MSX"><br><code>(sierpinski)</code></td><td align="center" valign="top"><img src="docs/images/msx-moire.png" width="190" alt="(moire) on the MSX"><br><code>(moire)</code>: lines drawn with XOR</td></tr>
 </table>
 
-**On the Amstrad PCW 8256** (in ZEsarUX, booted from its own disc)
+**On the Amstrad PCW 8256** (in ZEsarUX, booted from its own disc -- not yet tested on a real PCW)
 
 <table>
 <tr><td align="center" valign="top"><img src="docs/images/pcw-repl.png" width="190" alt="The REPL on the PCW, 90 by 32"><br>The REPL, 90 by 32: <code>loop</code>, <code>format</code>, floats, the compiler</td><td align="center" valign="top"><img src="docs/images/pcw-ed.png" width="190" alt="The function editor on the PCW"><br>The function editor: <code>(ed 'rose)</code>; COPY is done</td><td align="center" valign="top"><img src="docs/images/pcw-rose.png" width="190" alt="(rose) on the PCW"><br><code>(rose)</code>: floats by our own maths</td><td align="center" valign="top"><img src="docs/images/pcw-koch.png" width="190" alt="(koch 4) on the PCW"><br><code>(koch 4)</code></td></tr>
@@ -561,7 +562,11 @@ generator's AY if there is one. No speech, no MIDI, no colours.
 **It runs in ZEsarUX** (13.0, an emulated 8256 and 8512, headless:
 `tools/pcw/pcw.py` boots its disc and types a file at it, `test.sh` runs
 the regression tests -- 43 of 43 -- and `(hwtest)` says 10 yes on both).
-Not yet on a real PCW.
+**It has not been tested on a real PCW yet**: the boot on a 3" drive,
+the disc routines' timing, the keyboard's layout (MAME's UK PCW) and the
+beeper are still to be seen on one. ZEsarUX runs its PCW's Z80 at 3.49
+MHz, a real one at 4: the speeds measured there should be some 14%
+better on the machine.
 
 ## On a TRS-80
 
