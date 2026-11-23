@@ -1074,7 +1074,9 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
   new port target: the Amstrad PCW (the first version, 256 KB? AKA
   Schneider Joyce) ... we can ONLY test this in the emulator for now" --
   he has no PCW yet, a Gotek is on his wish-list). Its README has the
-  user's side and the map. **Booted from a disc of its own, no CP/M, no
+  user's side and the map. Merged into main the same day (Mike: "please
+  merge it into main"; fast-forward, nothing shared changed); the README
+  says it has not run on a real PCW yet. **Booted from a disc of its own, no CP/M, no
   ROM**: our boot sector (track 0 sector 1, its 512 bytes summing to &FF
   -- mkdisk.py sets byte 15 --, entered at &F010 with blocks 0-3 mapped)
   reads track 0's sectors 2-9: the loader (at &2000, block 0) and the
