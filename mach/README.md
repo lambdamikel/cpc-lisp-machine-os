@@ -1,4 +1,4 @@
-# CPC Lisp 1.1 -- the machine layer
+# CPC Lisp 1.2 -- the machine layer
 
 *A Lisp machine for the Amstrad CPC*
 

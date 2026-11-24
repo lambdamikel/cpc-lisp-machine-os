@@ -77,9 +77,10 @@ def slots(card, port):
 
 
 def is_ours(header):
-    """A CPC Lisp ROM's header: version 0.9x, 1.0 or 1.1 (bytes 1, 2 =
-    00 09, 01 00 or 01 01)."""
-    return header.split()[1:3] in (['00', '09'], ['01', '00'], ['01', '01'])
+    """A CPC Lisp ROM's header: version 0.9x, 1.0, 1.1 or 1.2 (bytes 1, 2 =
+    00 09, 01 00, 01 01 or 01 02)."""
+    return header.split()[1:3] in (['00', '09'], ['01', '00'], ['01', '01'],
+                                   ['01', '02'])
 
 
 def require_off(card, port):

@@ -1,4 +1,4 @@
-# CPC Lisp 1.1 -- the discs
+# CPC Lisp 1.2 -- the discs
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -12,24 +12,24 @@ the test discs for the real machine. Each disc's test is `HWTEST.LSP`:
 
 | disc | what | build |
 |---|---|---|
-| `cpclisp512.dsk` | **CPC Lisp from disc, for a 512K RAM expansion** (`mach/cpc512`): `RUN"LISP` -- all of it, the compiler too, and a RAM disc `M:` of 399 KB; and its test: the cells, two files open at once, lazy loading, the RAM disc, far arrays (into the expansion's banks 6 and 7), the compiler | 1100 |
-| `cpclisp6128.dsk` | **CPC Lisp from disc, for a plain 6128** (or a CPC with 64 KB more; `mach/cpc6128`): `RUN"LISP` -- everything but the compiler, no RAM disc; and its test, of what it has | 1100 |
-| `cpclispfos.dsk` | **CPC Lisp under FutureOS** (`mach/futureos`), on a 464, 664 or 6128 with a 512K RAM expansion: on FutureOS's desktop, drive A, tag `LISP.64K`, RUN (X); `(reset)` goes back to the desktop. The 512K version and its test (check 5 sized for the smaller RAM disc); `mach/futureos/README.md` has the details | 1100 |
-| `cpclispfos-n.dsk` | **CPC Lisp on FutureOS itself** (`mach/fos`), on a 464, 664 or 6128 with a 512K RAM expansion: no firmware -- FutureOS stays resident, and Lisp loads, saves and prints through it, from any FutureOS drive (A, E...). Started the same way (tag `LISP.64K`, X); `(reset)` back to the desktop. Its own test (far arrays sized for its 191 KB RAM disc); `mach/fos/README.md` has the details | 1100 |
+| `cpclisp512.dsk` | **CPC Lisp from disc, for a 512K RAM expansion** (`mach/cpc512`): `RUN"LISP` -- all of it, the compiler too, and a RAM disc `M:` of 399 KB; and its test: the cells, two files open at once, lazy loading, the RAM disc, far arrays (into the expansion's banks 6 and 7), the compiler | 1200 |
+| `cpclisp6128.dsk` | **CPC Lisp from disc, for a plain 6128** (or a CPC with 64 KB more; `mach/cpc6128`): `RUN"LISP` -- everything but the compiler, no RAM disc; and its test, of what it has | 1200 |
+| `cpclispfos.dsk` | **CPC Lisp under FutureOS** (`mach/futureos`), on a 464, 664 or 6128 with a 512K RAM expansion: on FutureOS's desktop, drive A, tag `LISP.64K`, RUN (X); `(reset)` goes back to the desktop. The 512K version and its test (check 5 sized for the smaller RAM disc); `mach/futureos/README.md` has the details | 1200 |
+| `cpclispfos-n.dsk` | **CPC Lisp on FutureOS itself** (`mach/fos`), on a 464, 664 or 6128 with a 512K RAM expansion: no firmware -- FutureOS stays resident, and Lisp loads, saves and prints through it, from any FutureOS drive (A, E...). Started the same way (tag `LISP.64K`, X); `(reset)` back to the desktop. Its own test (far arrays sized for its 191 KB RAM disc); `mach/fos/README.md` has the details | 1200 |
 | `cpclisp-demo.dsk` | **the demo disc**, for the ROMs (or a disc version): the programs of `examples/` -- `APFEL.LSP`, the Apfelmaennchen: `(load "apfel")`, `(apfel)` (mode 2) | -- |
 | `cpclisp-classics.dsk` | **the classics disc**: ELIZA, symbolic differentiation, the animal game that learns, Lisp in Lisp, Conway's Life, tic-tac-toe by minimax, SICP's Huffman codes (`examples/`) -- `(load "classics")` lists them | -- |
 | `cpclisp-hwtest.dsk` | **the test of the ROMs' use of a RAM expansion** (or a 6128's second 64 KB): two files at once, lazy loading from the drive and from `M:`, the RAM disc, far arrays over its banks, the compiler. Needs the 0.96 ROMs or later (`roms/`) | -- |
 
-| `cpclisp-trs80-model1.dsk` | **CPC Lisp on a TRS-80 Model I** with X-MEM/80 (LDOS 5.3.1, single density): `LISP` at LDOS Ready, and its test, `HWTEST/LSP` -- also `(hwtest-big)`, the RAM disc past 256 KB -- and `APFEL/LSP` (since 2026-11-14, without its comments: in the room of LDOS's KI/DVR, which nothing loads) | 1100 |
-| `cpclisp-trs80-model3.dsk` | **the same for a Model III** (LDOS 5.1.4, double density, JV3), and `APFEL/LSP` (since 2026-11-14: the same images, the disc made again) | 1100 |
-| `cpclisp-trs80-model4.dsk` | **CPC Lisp on a TRS-80 Model 4** with 128 KB, natively (`mach/trs80m4`): LS-DOS 6.3.1's system disc (double density, 40 tracks, JV3) with `LISP` and `HWTEST/LSP` -- boot it, give the date and time, `LISP` | 1100 |
-| `cpclisp-trs80-model4.hfe` | the same disc for a **Gotek** (FlashFloppy) or an **HxC** | 1100 |
+| `cpclisp-trs80-model1.dsk` | **CPC Lisp on a TRS-80 Model I** with X-MEM/80 (LDOS 5.3.1, single density): `LISP` at LDOS Ready, and its test, `HWTEST/LSP` -- also `(hwtest-big)`, the RAM disc past 256 KB -- and `APFEL/LSP` (since 2026-11-14, without its comments: in the room of LDOS's KI/DVR, which nothing loads) | 1200 |
+| `cpclisp-trs80-model3.dsk` | **the same for a Model III** (LDOS 5.1.4, double density, JV3), and `APFEL/LSP` (since 2026-11-14: the same images, the disc made again) | 1200 |
+| `cpclisp-trs80-model4.dsk` | **CPC Lisp on a TRS-80 Model 4** with 128 KB, natively (`mach/trs80m4`): LS-DOS 6.3.1's system disc (double density, 40 tracks, JV3) with `LISP` and `HWTEST/LSP` -- boot it, give the date and time, `LISP` | 1200 |
+| `cpclisp-trs80-model4.hfe` | the same disc for a **Gotek** (FlashFloppy) or an **HxC** | 1200 |
 | `cpclisp-trs80-classics-model1.dsk`, `-model3.dsk`, `-model4.dsk`, `-model4.hfe` | **the classics disc for the TRS-80s**: the same programs on an LDOS 5.3.1, LDOS 5.1.4 and LS-DOS 6.3.1 data disc (`tools/trs80/mkclassics.py`); put it in a drive other than the system's: `(load "classics")` | -- |
-| `frehd/cpclisp4` | the same on the **FreHD**'s hard disc: an LS-DOS 6.3.1 system (1.6 MB, Radio Shack hard disc driver; the hard disc is drive :0 only, the floppies :4 and :5) with `LISP` and `HWTEST/LSP`. Copy it to the root of the FreHD's SD card *as it is named* (no extension, as the FreHD's images); its boot menu lists it, ENTER boots it, `LISP` -- no date asked | 1100 |
-| `spectrum/` | **CPC Lisp on a ZX Spectrum 128K with a DivMMC** (`mach/spectrum`): not a disc but the files for the DivMMC's SD card -- `LISP.TAP`, `HWTEST.LSP`, `APFEL.LSP` and the classics. Copy them into a folder of their own (`LISP`); switch on, NMI, the folder, `LISP.TAP`, ENTER. The DivMMC needs 128 KB of RAM and esxDOS | 1100 |
-| `msx/` | **CPC Lisp on an MSX** (`mach/msx`), an MSX1 or later with a memory mapper (144 KB free) and MSX-DOS 2 or Nextor -- say an MSX SD Mapper & Megaram 512 KB, its switches at ON and MP: the files for its SD card -- `LISP.COM`, `LISP.IMG`, `HWTEST.LSP`, `APFEL.LSP`, `TORUS.LSP` and the classics. Copy them into a folder of their own (`LISP`); at DOS's prompt `CD LISP`, `LISP` | 11262 |
-| `pcw/cpclisp-pcw.dsk` | **CPC Lisp on an Amstrad PCW 8256 or 8512** (`mach/pcw`), the disc that boots it -- no CP/M: our boot sector, our loader, `LISP.IMG`, `HWTEST.LSP`, `APFEL.LSP` (180 KB, the 8256's format: CP/M reads its files). Put it in drive A -- on a Gotek, the image as it is -- and switch on | 5462 |
-| `pcw/cpclisp-pcw-classics.dsk` | **the classics disc for the PCW**: the example programs on a CP/M data disc of the same format -- swap it in once Lisp runs, `(load "classics")` | 5462 |
+| `frehd/cpclisp4` | the same on the **FreHD**'s hard disc: an LS-DOS 6.3.1 system (1.6 MB, Radio Shack hard disc driver; the hard disc is drive :0 only, the floppies :4 and :5) with `LISP` and `HWTEST/LSP`. Copy it to the root of the FreHD's SD card *as it is named* (no extension, as the FreHD's images); its boot menu lists it, ENTER boots it, `LISP` -- no date asked | 1200 |
+| `spectrum/` | **CPC Lisp on a ZX Spectrum 128K with a DivMMC** (`mach/spectrum`): not a disc but the files for the DivMMC's SD card -- `LISP.TAP`, `HWTEST.LSP`, `APFEL.LSP` and the classics. Copy them into a folder of their own (`LISP`); switch on, NMI, the folder, `LISP.TAP`, ENTER. The DivMMC needs 128 KB of RAM and esxDOS | 1200 |
+| `msx/` | **CPC Lisp on an MSX** (`mach/msx`), an MSX1 or later with a memory mapper (144 KB free) and MSX-DOS 2 or Nextor -- say an MSX SD Mapper & Megaram 512 KB, its switches at ON and MP: the files for its SD card -- `LISP.COM`, `LISP.IMG`, `HWTEST.LSP`, `APFEL.LSP`, `TORUS.LSP` and the classics. Copy them into a folder of their own (`LISP`); at DOS's prompt `CD LISP`, `LISP` | 1200 |
+| `pcw/cpclisp-pcw.dsk` | **CPC Lisp on an Amstrad PCW 8256 or 8512** (`mach/pcw`), the disc that boots it -- no CP/M: our boot sector, our loader, `LISP.IMG`, `HWTEST.LSP`, `APFEL.LSP` (180 KB, the 8256's format: CP/M reads its files). Put it in drive A -- on a Gotek, the image as it is -- and switch on | 1200 |
+| `pcw/cpclisp-pcw-classics.dsk` | **the classics disc for the PCW**: the example programs on a CP/M data disc of the same format -- swap it in once Lisp runs, `(load "classics")` | 1200 |
 | `ld4-631.dsk` | **LS-DOS 6.3.1** for the Model 4, its system disc as distributed (Tim Mann's `ld4-631.zip`), which the Model 4 discs are made from -- see below | -- |
 
 Checked on a real CPC 464 with Revaldinho's universal 512K RAM card, on
@@ -101,6 +101,16 @@ discs were striped; Mike: "check out round now". Since 2026-11-14 the
 TRS-80 discs are build 19680 (the Model 4's 19042) and the 512K's 19682,
 since 2026-11-15 10997 (the Model 4's 11294: the function editor's key
 line says SHIFT ->, indent, too; Model I hwtest 8 yes, Model 4 suite 30 ok).
+**1.2** (2026-11-23): every disc build 1200 -- the MSX's SD card files
+(`msx/`, build 11262 ran on Mike's HX-10 and VG-8020: 1200 is 11262 but
+for the version) and the PCW's discs (`pcw/`, in ZEsarUX only so far) are
+new with the release; for the CPC, the TRS-80s and the Spectrum 1.2 is
+1.1 but for the version. In the emulators: the 464's suite 44 ok, the
+6128's file tests 8, the 512K 44, the plain 6128 42, the Spectrum 43
+(with the real esxDOS: `(hwtest)` 10 yes, `(hwtest2)` 2 yes), the MSX 43
+and `(hwtest)` 10 yes, the PCW 43 and `(hwtest)` 10 yes on an 8256 and
+an 8512, the Model 4 37; on FutureOS on a 464 and a 6128, natively and
+as the firmware island, `(hwtest)` 7 yes; the Model I's hwtest 8 yes.
 **1.1** (2026-11-21): every disc build 1100 -- the ZX Spectrum's SD
 card files (`spectrum/`) are new (build 362 passed on Mike's +2A: 1100
 is 362 but for the version and `(demo)`'s list), and `(demo)` lists
@@ -152,6 +162,11 @@ The disc versions' own documentation: `mach/cpc512/README.md`,
 `mach/cpc6128/README.md`. Licence: GPL-3.0, as the rest of the
 repository; what you write in CPC Lisp is yours (see the main README).
 
+Every disc is build 1200 (1.2) since 2026-11-23. On the Spectrum and the
+MSX an earlier build ran on the real machine: the Spectrum's 362 (the
+same but for the version and `(demo)`'s list), the MSX's 11262 (the same
+but for the version). The PCW's has run in an emulator only:
+
 `spectrum/` build 362 passed on Mike's ZX Spectrum +2A (2026-11-21:
 a DivMMC with esxDOS 0.8.5, the files in a folder `LISP` on its SD
 card, `LISP.TAP` started from esxDOS's NMI browser): `(hwtest)` 10 yes,
@@ -169,7 +184,7 @@ files in a folder `LISP` on its SD card): the keys, the demos, ESC in
 (`tools/msx/test.sh`) the regression tests, 43 of 43, and `(hwtest)` 10
 yes. `mach/msx/README.md` has the details.
 
-`pcw/` build 5462 has run in ZEsarUX only (2026-11-23: an emulated PCW
+`pcw/` (build 5462, then 1200 for the release) has run in ZEsarUX only (2026-11-23: an emulated PCW
 8256 and 8512, booted from the disc as a real one boots): the regression
 tests, 43 of 43 (`tools/pcw/test.sh`), and `(hwtest)` 10 yes on both.
 Not yet on a real PCW. `mach/pcw/README.md` has the details.

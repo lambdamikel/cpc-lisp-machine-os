@@ -1,6 +1,6 @@
-# CPC Lisp 1.1 — working notes for Claude
+# CPC Lisp 1.2 — working notes for Claude
 
-*A Lisp machine for the Amstrad CPC.* Version 1.1 since 2026-11-21 (the ZX Spectrum, the demo menu fit for 40 columns), 1.0 from 2026-11-20 (FutureOS itself, cd everywhere, #S), 0.99 from 2026-11-18 (FutureOS, string space, the classics), 0.98 from 2026-11-15 (fixes from the real machines), 0.97 from 2026-11-13 (the Model 4), 0.96 from 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
+*A Lisp machine for the Amstrad CPC.* Version 1.2 since 2026-11-23 (the MSX, the Amstrad PCW), 1.1 from 2026-11-21 (the ZX Spectrum, the demo menu fit for 40 columns), 1.0 from 2026-11-20 (FutureOS itself, cd everywhere, #S), 0.99 from 2026-11-18 (FutureOS, string space, the classics), 0.98 from 2026-11-15 (fixes from the real machines), 0.97 from 2026-11-13 (the Model 4), 0.96 from 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
 banner, the ROM headers' version bytes and the documents' titles say so).
 
 A Lisp machine for the Amstrad CPC: **six ROMs** -- an auto-boot core and
@@ -1606,8 +1606,17 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   (the SD card's files, as `discs/spectrum/`); 464 44 ok, 6128 file
   tests 8, 512K 44, plain 6128 42, Spectrum 43 and esxtest 10+2 yes,
   Model 4 37, FutureOS native and island 7 yes on 464 and 6128, Model I
-  hwtest 8, Pocket Lisp 37; `tools/card.py`'s `is_ours` takes headers
-  00 09, 01 00 and 01 01.
+  hwtest 8, Pocket Lisp 37; `v1.2` (2026-11-23: the MSX and the PCW, Mike:
+  "yes work in the release") = every build 1200, 1.1's files plus
+  `cpc-lisp-1.2-msx.zip` (`discs/msx/` with LISP/ and LICENSE, as the
+  Spectrum's) and `cpc-lisp-1.2-pcw.dsk`, `-pcw-classics.dsk` (31 files;
+  `discs/spectrum/` gained TORUS.LSP); 464 44 ok, 6128 file tests 8,
+  512K 44, plain 6128 42, Spectrum 43 and esxtest 10+2 yes, MSX 43 and
+  hwtest 10 yes, PCW 43 and hwtest 10 yes on 8256 and 8512, Model 4 37,
+  FutureOS native and island 7 yes on 464 and 6128, Model I hwtest 8,
+  Pocket Lisp 37 -- the PCW in ZEsarUX only, said so in the notes;
+  `tools/card.py`'s `is_ours` takes headers 00 09, 01 00, 01 01 and
+  01 02.
   A new one: refresh `roms/` from one
   tested build, bump the version (banner, ROM headers, document
   titles), tag, `gh release create` with the same files.

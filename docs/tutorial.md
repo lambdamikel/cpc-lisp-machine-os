@@ -1,4 +1,4 @@
-# CPC Lisp 1.1 -- a tour
+# CPC Lisp 1.2 -- a tour
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -24,7 +24,7 @@ down-arrow, let go, then `-`; then `8` and `9` are `[` `]`.)
 
 When the CPC is switched on it says
 
-    CPC Lisp 1.1
+    CPC Lisp 1.2
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free

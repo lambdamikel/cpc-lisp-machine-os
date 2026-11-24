@@ -1,4 +1,4 @@
-# CPC Lisp 1.1 -- how it is made
+# CPC Lisp 1.2 -- how it is made
 
 *A Lisp machine for the Amstrad CPC*
 

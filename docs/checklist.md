@@ -1,4 +1,4 @@
-# CPC Lisp 1.1 -- what is done, what is to come
+# CPC Lisp 1.2 -- what is done, what is to come
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -562,3 +562,46 @@ compiled code (`docs/design.md` describes both)
           &1FFD); esxDOS's own tape emulation (ZEsarUX's tape traps
           loaded it)
 
+16. [ ] **The MSX1 with a memory mapper** (`mach/msx/`, branch `msx`,
+        2026-11-22; merged into main the same day, released in 1.2,
+        2026-11-23; its README has the user's side). Mike's Toshiba
+        HX-10 and Philips VG-8020, an MSX SD Mapper & Megaram 512 KB
+        (switches ON and MP) with Nextor 2.1.0.
+    - [x] The emulator: openMSX, headless (`tools/msx/msx.py`, `test.sh`:
+          a Tcl script in step with the emulation), the HX-10's own ROM
+    - [x] `LISP.COM` from MSX-DOS 2 reads `LISP.IMG` into eight mapper
+          segments; the images at &C000 in page 3, DOS's segment there
+          only inside DOS and ROM calls; machine pages A and B at &8000;
+          2899 cells
+    - [x] Screen 2 (40 columns, colour graphics), our own key scan, sound
+          on the PSG (the firmware's sound manager), floats by the
+          Math-Pack (called with the interrupts on), files through DOS 2,
+          the RAM disc `M:` and far arrays in the segments left
+    - [x] The suite in openMSX: 43 ok; `(hwtest)` 10 yes
+    - [x] **On Mike's HX-10** (2026-11-22): `(hwtest)` 10 yes, the keys,
+          the demos, sound, `(quit)` to DOS; build 7971 with ESC seen
+          during float code; **on his VG-8020** build 11262 (GRAPH as a
+          second SHIFT)
+    - [ ] `M:` lasts only while Lisp runs (DOS frees the segments): no
+          `(hwtest2)`
+17. [ ] **The Amstrad PCW 8256/8512** (`mach/pcw/`, branch `pcw`,
+        2026-11-23; merged into main the same day, released in 1.2; its
+        README has the user's side). Mike has no PCW yet (a Gotek is on
+        his wish-list): emulator only.
+    - [x] The emulator: ZEsarUX 13, `--machine PCW8256/8512`, headless
+          (`tools/pcw/pcw.py`, `test.sh`); MAME's pcw needs MCU ROMs we
+          do not have
+    - [x] A boot disc of its own, no CP/M: our boot sector, loader and
+          resident part on track 0, `LISP.IMG` (the six images, pages A
+          and B) into blocks 8-15; 6499 cells
+    - [x] 90 x 32 characters by the roller RAM, the keyboard at block 3's
+          &3FF0, graphics on 720 x 256 (one unit a pixel across, rows by
+          `M_NEXTY`, a fast line), our own uPD765 routines on CP/M's file
+          system, floats by our own maths, sound on the beeper (and a
+          DKTronics AY), the RAM disc `M:` (47 KB on an 8256, 303 on an
+          8512)
+    - [x] The suite in ZEsarUX: 43 ok; `(hwtest)` 10 yes on both
+    - [ ] **On a real PCW**: the boot from the 3" drive (or a Gotek), the
+          FDC's polled transfers, the keyboard tables (from MAME's UK
+          layout), the beeper, `(quit)`'s reboot; the 8512's drive B
+          (ZEsarUX has one drive)
