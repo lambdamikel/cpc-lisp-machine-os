@@ -1134,6 +1134,16 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     (missed ones while a disc transfer had them off); the FDC polled
     (&F8 command 4), its terminal count &F8 5/6; seeks wait with the
     interrupts on.
+  * **MiSTer's PCW core** (Stephen Eddy's, on Mike's MiSTer, 2026-11-25:
+    the first run outside ZEsarUX, "works well!"): it boots our disc
+    after the menu's Reset. Its DKTronics AY is off until *DKTronics
+    I/F* is switched on, and then the beeper buzzed over the tune ("awful,
+    very loud"): `ay_init` writes register 0 twice and reads it back
+    through &A9 (&FF without the card), and `ay_have` keeps the beeper
+    out of the notes. Its AY is a 2 MHz YM with SEL low -- a 1 MHz AY,
+    ZEsarUX's 1.77 (AY_MUL): tunes some seven semitones lower there; the
+    real card's clock is unknown (John Elliott's guide has its joystick
+    register only).
 * **Pocket Lisp** (`pocket/`, 2026-11-19; Mike: "pocket lisp ... a
   board with microcontroller and oled and keys", then colour and a
   bigger screen, the RP2350 chosen; the proposal is a private artifact,

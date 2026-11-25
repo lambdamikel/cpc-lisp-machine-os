@@ -36,13 +36,35 @@ b_init:
 
 ay_regs:    defs 16,0           ; what the AY was told: the beeper's view
 ay_beep:    db 0                ; 1: the beeper is on
+ay_have:    db 0                ; 1: a DKTronics AY answers -- notes leave the beeper alone
 
-;; ay_init: the beeper off
+;; ay_init: the beeper off; is there an AY? Register 0 (8 bits) is written
+;; twice and read back through &A9 -- without the card the port says &FF
+;; (MiSTer's PCW core) or nothing of the kind. With the AY there, the
+;; beeper (one loud pitch of its own) stays out of the notes: the bell keeps it.
 ay_init:
     xor a
     ld (ay_beep),a
+    ld (ay_have),a
     ld a,SC_BEEPOFF
     out (P_SYS),a
+    xor a
+    out (P_AYREG),a
+    ld a,#5A
+    out (P_AYDAT),a
+    in a,(P_AYRD)
+    cp #5A
+    jr nz,.none
+    ld a,#A5
+    out (P_AYDAT),a
+    in a,(P_AYRD)
+    cp #A5
+    jr nz,.none
+    ld a,1
+    ld (ay_have),a
+.none:
+    xor a
+    out (P_AYDAT),a             ; register 0 back to 0, as ay_regs has it
     ret
 
 ;; ay_pcw: A = an AY register, C = a value -> to the DKTronics AY (ports
@@ -64,6 +86,9 @@ ay_pcw:
     inc h
 .n:
     ld (hl),c
+    ld a,(ay_have)
+    or a
+    jr nz,.same                 ; the AY sounds: the beeper stays quiet
     ld a,(ay_regs+7)            ; the mixer: a 0 bit is a tone on
     cpl
     ld b,a
