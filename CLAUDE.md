@@ -1,6 +1,6 @@
-# CPC Lisp 1.2 — working notes for Claude
+# CPC Lisp 1.2.1 — working notes for Claude
 
-*A Lisp machine for the Amstrad CPC.* Version 1.2 since 2026-11-23 (the MSX, the Amstrad PCW), 1.1 from 2026-11-21 (the ZX Spectrum, the demo menu fit for 40 columns), 1.0 from 2026-11-20 (FutureOS itself, cd everywhere, #S), 0.99 from 2026-11-18 (FutureOS, string space, the classics), 0.98 from 2026-11-15 (fixes from the real machines), 0.97 from 2026-11-13 (the Model 4), 0.96 from 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
+*A Lisp machine for the Amstrad CPC.* Version 1.2.1 since 2026-11-25 (the PCW's AY without the beeper), 1.2 from 2026-11-23 (the MSX, the Amstrad PCW), 1.1 from 2026-11-21 (the ZX Spectrum, the demo menu fit for 40 columns), 1.0 from 2026-11-20 (FutureOS itself, cd everywhere, #S), 0.99 from 2026-11-18 (FutureOS, string space, the classics), 0.98 from 2026-11-15 (fixes from the real machines), 0.97 from 2026-11-13 (the Model 4), 0.96 from 2026-11-12 (evening), 0.95 from 2026-11-12, 0.9 from 2026-11-07 (the
 banner, the ROM headers' version bytes and the documents' titles say so).
 
 A Lisp machine for the Amstrad CPC: **six ROMs** -- an auto-boot core and
@@ -1626,6 +1626,12 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   hwtest 10 yes, PCW 43 and hwtest 10 yes on 8256 and 8512, Model 4 37,
   FutureOS native and island 7 yes on 464 and 6128, Model I hwtest 8,
   Pocket Lisp 37 -- the PCW in ZEsarUX only, said so in the notes;
+  `v1.2.1` (2026-11-25: the PCW's DKTronics AY plays the notes without
+  the beeper -- found in MiSTer's PCW core; Mike: "do you want to cut a
+  new release fro this bugfix?") = every build 1210, 1.2's 31 files
+  named 1.2.1 (the ROM headers' modification byte: `db 1,2,1`), the
+  same results as 1.2's, and the MSX's hwtest (`tools/msx/msx.py -t 240
+  hw.lsp`: not in the release driver) 10 yes;
   `tools/card.py`'s `is_ours` takes headers 00 09, 01 00, 01 01 and
   01 02.
   A new one: refresh `roms/` from one

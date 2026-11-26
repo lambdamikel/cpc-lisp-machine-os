@@ -24,7 +24,7 @@ BUILD_ID = 0                    ; tools/build.sh gives both ROMs the same one
 
     org #C000
     db 0                        ; foreground ROM
-    db 1,2,0                    ; mark, version, modification: 1.2
+    db 1,2,1                    ; mark, version, modification: 1.2.1
     dw rsx_names
     jp boot                     ; entry 0: power-up, or |LISP
 
@@ -538,7 +538,7 @@ err_nostr:
     include "subrs.asm"
     include "xrom.asm"
 
-banner:      db "CPC Lisp 1.2",13,10
+banner:      db "CPC Lisp 1.2.1",13,10
              MACH_TITLE                 ; "A Lisp machine for ...": mmacros.asm
 banner_lib:  db "library ROMs"
 banner_sp:   db " ",0

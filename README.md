@@ -1,4 +1,4 @@
-# CPC Lisp 1.2
+# CPC Lisp 1.2.1
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -32,11 +32,11 @@ Philips VG-8020 ([*On the MSX*](#on-the-msx), below, with photos; screenshots
 **And the Amstrad PCW.** A PCW 8256 or 8512 -- the Schneider Joyce --
 boots it from a disc of its own, no CP/M and no ROM: 90 by 32 characters
 on its green screen, graphics on its 720 by 256, our own disc routines on
-CP/M's file system, our own maths. So far in ZEsarUX only -- **not yet
+CP/M's file system, our own maths. So far in ZEsarUX and MiSTer's PCW core -- **not yet
 tested on a real PCW** ([*On the Amstrad PCW*](#on-the-amstrad-pcw),
 below; screenshots [below](#screenshots)).
 
-    CPC Lisp 1.2
+    CPC Lisp 1.2.1
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -90,8 +90,8 @@ at the end says what is in each.
 * **The Amstrad PCW** 8256 or 8512 boots it from its own disc -- a Gotek
   serves one well: the same six images in its 16 KB blocks; 90 by 32
   characters, graphics on its 720 by 256, CP/M's discs through our own
-  routines, a RAM disc in the blocks left -- in the emulator so far, not
-  yet on a real PCW ([*On the Amstrad PCW*](#on-the-amstrad-pcw), below).
+  routines, a RAM disc in the blocks left -- in ZEsarUX and MiSTer's PCW
+  core so far, not yet on a real PCW ([*On the Amstrad PCW*](#on-the-amstrad-pcw), below).
 * **More Z80 machines are to come**, in this order: the NABU PC, the TA
   alphatronic PC and the Sharp MZ-700.
   Everything a machine provides is behind one interface
@@ -304,7 +304,7 @@ and a RAM disc `M:` of 399 KB in its free blocks -- which also holds
 far arrays (`make-far-array`, `far-ref`) and programs loaded with
 `(load "m:big" :lazy t)`, each function read in when first called.
 
-    CPC Lisp 1.2
+    CPC Lisp 1.2.1
     A Lisp machine for the Amstrad CPC, 512K
     library ROMs 1 2 3 4
     5521 cells free
@@ -313,7 +313,7 @@ far arrays (`make-far-array`, `far-ref`) and programs loaded with
 KB: everything but the compiler, without a RAM disc, and with about 2400
 cells.
 
-    CPC Lisp 1.2
+    CPC Lisp 1.2.1
     A Lisp machine for the Amstrad CPC, 128K
     library ROMs 1 2 3 4
     2430 cells free
@@ -355,7 +355,7 @@ through FutureOS's own routines -- from any of its drives. It needs a
     (reset)         back to FutureOS's desktop, the drives still read;
                     to start again: D, tag LISP.64K, X
 
-    CPC Lisp 1.2
+    CPC Lisp 1.2.1
     A Lisp machine for the Amstrad CPC on FutureOS
     library ROMs 1 2 3 4
     4713 cells free
@@ -397,7 +397,7 @@ esxDOS, floats, a RAM disc -- lives in the DivMMC's own RAM, two of its
 8 KB pages, mapped in only while one of its routines runs
 (`mach/spectrum/`).
 
-    CPC Lisp 1.2
+    CPC Lisp 1.2.1
     A Lisp machine for the ZX Spectrum
     library ROMs 1 2 3 4
     1811 cells free
@@ -417,7 +417,7 @@ esxDOS, floats, a RAM disc -- lives in the DivMMC's own RAM, two of its
 interface) with **128 KB of RAM** and **esxDOS** on its SD card.
 
 **The files**: [`discs/spectrum/`](discs/spectrum/), or
-`cpc-lisp-1.2-spectrum.zip` with each
+`cpc-lisp-1.2.1-spectrum.zip` with each
 [release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases)
 since 1.1 -- `LISP.TAP`, `HWTEST.LSP`, the Apfelmaennchen and the
 classics. Copy them to the SD
@@ -462,7 +462,7 @@ images and two of the MSX's own: the screen, the keys, graphics, sound,
 files through DOS, floats, a RAM disc -- and runs the images at &C000,
 where DOS keeps its own segment while Lisp runs (`mach/msx/`).
 
-    CPC Lisp 1.2
+    CPC Lisp 1.2.1
     A Lisp machine for the MSX
     library ROMs 1 2 3 4
     2899 cells free
@@ -486,7 +486,7 @@ is in the slot behind the keyboard:
 271 KB -- and **MSX-DOS 2 or Nextor**. The MSX SD Mapper & Megaram's
 switches: **ON** (its RAM) and **MP** (a mapper, not MegaRAM).
 
-**The files**: [`discs/msx/`](discs/msx/), or `cpc-lisp-1.2-msx.zip`
+**The files**: [`discs/msx/`](discs/msx/), or `cpc-lisp-1.2.1-msx.zip`
 with each [release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases)
 since 1.2 -- `LISP.COM`, `LISP.IMG`
 (the images, 128 KB), `HWTEST.LSP`, the Apfelmaennchen and the classics.
@@ -530,7 +530,7 @@ The same Lisp -- the six images, the compiler included -- runs on an
 of its own**: no CP/M, no ROM -- the machine is Lisp's from the boot
 sector on (`mach/pcw/`).
 
-    CPC Lisp 1.2
+    CPC Lisp 1.2.1
     A Lisp machine for the Amstrad PCW
     library ROMs 1 2 3 4
     6499 cells free
@@ -540,7 +540,7 @@ drive A -- a Gotek serves the image as it is.
 
 **The disc**: [`discs/pcw/`](discs/pcw/), or with each
 [release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases)
-since 1.2 (`cpc-lisp-1.2-pcw.dsk`, `-pcw-classics.dsk`) --
+since 1.2 (`cpc-lisp-1.2.1-pcw.dsk`, `-pcw-classics.dsk`) --
 `cpclisp-pcw.dsk`, the one that boots (`LISP.IMG`, `HWTEST.LSP`,
 `APFEL.LSP`), and `cpclisp-pcw-classics.dsk`, the examples. Or build them: `MACH=pcw
 tools/build.sh` makes both in `build/pcw/`. Switch on with the disc in
@@ -565,7 +565,9 @@ generator's AY if there is one. No speech, no MIDI, no colours.
 
 **It runs in ZEsarUX** (13.0, an emulated 8256 and 8512, headless:
 `tools/pcw/pcw.py` boots its disc and types a file at it, `test.sh` runs
-the regression tests -- 43 of 43 -- and `(hwtest)` says 10 yes on both).
+the regression tests -- 43 of 43 -- and `(hwtest)` says 10 yes on both),
+**and in MiSTer's PCW core** (an FPGA PCW: the disc in `games/Amstrad
+PCW/`, drive A, Reset; for the AY switch *DKTronics I/F* on in its menu).
 **It has not been tested on a real PCW yet**: the boot on a 3" drive,
 the disc routines' timing, the keyboard's layout (MAME's UK PCW) and the
 beeper are still to be seen on one. ZEsarUX runs its PCW's Z80 at 3.49
@@ -583,7 +585,7 @@ the cassette port, floats through the Level II ROM, files through LDOS,
 a RAM disc in X-MEM/80's spare pages, speech through Talker/80, MIDI
 through MIDI/80 -- is in `mach/trs80/`.
 
-    CPC Lisp 1.2
+    CPC Lisp 1.2.1
     A Lisp machine for the TRS-80
     library ROMs 3 4 5 6
     2315 cells free
@@ -603,7 +605,7 @@ The Model III Talker/80 needs nothing.
 
 **The disc**: ready to boot with each
 [release](https://github.com/lambdamikel/cpc-lisp-machine-os/releases) --
-`cpc-lisp-1.2-trs80-model1` and `-model3`, as `.dsk` for emulators and
+`cpc-lisp-1.2.1-trs80-model1` and `-model3`, as `.dsk` for emulators and
 `.hfe` for a Gotek (the `.dsk` files are in [`discs/`](discs/) too).
 X-MEM/80 must be in its 16 KB mode (X-MEM/80, not SuperMem) for all of
 the RAM disc. Or build it: `MACH=trs80 tools/build.sh` (rasm and Python 3, as for the
@@ -651,7 +653,7 @@ The **TRS-80 Model 4** with 128 KB runs it natively, in its own mode,
 under LS-DOS 6.3.1 -- no X-MEM/80: the six images in its three 32 KB
 banks.
 
-    CPC Lisp 1.2
+    CPC Lisp 1.2.1
     A Lisp machine for the TRS-80 Model 4
     library ROMs 2 4 5 6
     1897 cells free

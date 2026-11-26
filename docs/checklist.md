@@ -1,4 +1,4 @@
-# CPC Lisp 1.2 -- what is done, what is to come
+# CPC Lisp 1.2.1 -- what is done, what is to come
 
 *A Lisp machine for the Amstrad CPC*
 
@@ -601,6 +601,10 @@ compiled code (`docs/design.md` describes both)
           DKTronics AY), the RAM disc `M:` (47 KB on an 8256, 303 on an
           8512)
     - [x] The suite in ZEsarUX: 43 ok; `(hwtest)` 10 yes on both
+    - [x] MiSTer's PCW core (Mike's MiSTer, 2026-11-25): it boots and
+          runs; `(tune)` on its DKTronics AY (*DKTronics I/F* on in the
+          menu) with the beeper buzzing over it -- since 1.2.1 the
+          notes leave the beeper alone when the AY answers
     - [ ] **On a real PCW**: the boot from the 3" drive (or a Gotek), the
           FDC's polled transfers, the keyboard tables (from MAME's UK
           layout), the beeper, `(quit)`'s reboot; the 8512's drive B

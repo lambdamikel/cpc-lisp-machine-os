@@ -1,20 +1,25 @@
-# CPC Lisp 1.2 -- the ROM images
+# CPC Lisp 1.2.1 -- the ROM images
 
 *A Lisp machine for the Amstrad CPC*
 
 Ready to use: six 16 KB ROM images, built from this repository (build
-1200, version 1.2). You do not need to build anything to use them.
+1210, version 1.2.1). You do not need to build anything to use them.
 (No ROM board? CPC Lisp loads from disc too, with a 512K expansion or on
 a 6128, and under FutureOS: [`discs/`](../discs/). The TRS-80's, the
 Spectrum's, the MSX's and the PCW's are there and with the release: see
 the end.)
 
+**New in 1.2.1**: on the PCW, a DKTronics sound generator's AY now
+plays the notes alone -- the beeper's one loud pitch buzzed over them
+(found in MiSTer's PCW core, where the PCW version runs too). Everything
+else is 1.2 but for the version.
+
 **New in 1.2**: **the MSX** -- the same Lisp, the compiler and all, on
 an MSX1 or later with a memory mapper and MSX-DOS 2 or Nextor (an MSX SD
-Mapper & Megaram 512 KB has both): `cpc-lisp-1.2-msx.zip` (checked on a
+Mapper & Megaram 512 KB has both): `cpc-lisp-1.2.1-msx.zip` (checked on a
 real Toshiba HX-10 and Philips VG-8020); and **the Amstrad PCW** 8256
-and 8512, booted from a disc of its own: `cpc-lisp-1.2-pcw.dsk` -- so
-far in an emulator only, **not yet on a real PCW**. See the end. For
+and 8512, booted from a disc of its own: `cpc-lisp-1.2.1-pcw.dsk` -- so
+far in emulators only, **not yet on a real PCW**. See the end. For
 the CPC, the TRS-80s and the Spectrum, 1.2 is 1.1 but for the version.
 
 **New in 1.1**: **the ZX Spectrum** -- the same Lisp, the compiler and
@@ -111,7 +116,7 @@ LambdaSpeak card, below. The rules:
 
 When it starts, it says
 
-    CPC Lisp 1.2
+    CPC Lisp 1.2.1
     A Lisp machine for the Amstrad CPC
     library ROMs 4 5 6 3
     6402 cells free
@@ -158,8 +163,8 @@ boot, each as a `.dsk` for emulators and an `.hfe` for a Gotek or HxC
 
 | file | for |
 |---|---|
-| `cpc-lisp-1.2-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp (0.95 also on a real Model I with X-MEM/80 and MIDI/80) |
-| `cpc-lisp-1.2-trs80-model3.dsk` / `.hfe` | a Model III: LDOS 5.1.4, double density (JV3) -- tested on a real Model III with X-MEM/80, Talker/80 and MIDI/80 (0.96) |
+| `cpc-lisp-1.2.1-trs80-model1.dsk` / `.hfe` | a Model I: LDOS 5.3.1, single density (JV1) -- tested in trs80gp (0.95 also on a real Model I with X-MEM/80 and MIDI/80) |
+| `cpc-lisp-1.2.1-trs80-model3.dsk` / `.hfe` | a Model III: LDOS 5.1.4, double density (JV3) -- tested on a real Model III with X-MEM/80, Talker/80 and MIDI/80 (0.96) |
 
 Each has `HWTEST/LSP`, a test of the machine: `(load "hwtest")`,
 `(hwtest)`.
@@ -171,12 +176,12 @@ Boot it, give LDOS the date (and on a Model I the time), type `LISP`.
 
 | file | for |
 |---|---|
-| `cpc-lisp-1.2-trs80-model4.dsk` / `.hfe` | a floppy, or an HxC or Gotek: LS-DOS 6.3.1's system disc with `LISP`, `HWTEST/LSP` and `APFEL/LSP` -- boot, the date and time, `LISP` |
-| `cpc-lisp-1.2-trs80-model4-frehd` | a FreHD: a bootable LS-DOS 6.3.1 hard disc with the same. Copy it to the FreHD's SD card **as `cpclisp4`** (no extension); its boot menu lists it, ENTER, `LISP` |
+| `cpc-lisp-1.2.1-trs80-model4.dsk` / `.hfe` | a floppy, or an HxC or Gotek: LS-DOS 6.3.1's system disc with `LISP`, `HWTEST/LSP` and `APFEL/LSP` -- boot, the date and time, `LISP` |
+| `cpc-lisp-1.2.1-trs80-model4-frehd` | a FreHD: a bootable LS-DOS 6.3.1 hard disc with the same. Copy it to the FreHD's SD card **as `cpclisp4`** (no extension); its boot menu lists it, ENTER, `LISP` |
 
 **The classics** -- ELIZA, symbolic differentiation, the animal game,
 Lisp in Lisp, Life, tic-tac-toe, Huffman codes -- are on a data disc for
-each: `cpc-lisp-1.2-trs80-classics-model1`, `-model3`, `-model4` (`.dsk`
+each: `cpc-lisp-1.2.1-trs80-classics-model1`, `-model3`, `-model4` (`.dsk`
 and `.hfe`). Put it in drive 1 and `(load "classics")`. The CPC's is
 `cpclisp-classics.dsk`.
 
@@ -186,7 +191,7 @@ keys (SHIFT down-arrow for `[ ] { } ~`...) and the rest.
 
 ## On a ZX Spectrum
 
-`cpc-lisp-1.2-spectrum.zip` holds the files for a **DivMMC's SD card**
+`cpc-lisp-1.2.1-spectrum.zip` holds the files for a **DivMMC's SD card**
 (the same as [`discs/spectrum/`](../discs/spectrum/)): `LISP.TAP`,
 `HWTEST.LSP`, `APFEL.LSP` and the classics. The Spectrum is a 128K one
 -- a +2A, +2B or +3, or a 128 or grey +2 -- and the DivMMC needs 128 KB
@@ -198,7 +203,7 @@ has the keys (SYMBOL SHIFT and Y U F G for `[ ] { }`...) and the rest.
 
 ## On an MSX
 
-`cpc-lisp-1.2-msx.zip` holds the files for an **MSX's SD card** (the
+`cpc-lisp-1.2.1-msx.zip` holds the files for an **MSX's SD card** (the
 same as [`discs/msx/`](../discs/msx/)): `LISP.COM`, `LISP.IMG`,
 `HWTEST.LSP`, the Apfelmaennchen, the torus and the classics. The MSX
 is an MSX1 or later with a memory mapper (144 KB free) and MSX-DOS 2 or
@@ -211,14 +216,14 @@ has the keys and the rest.
 
 ## On an Amstrad PCW
 
-`cpc-lisp-1.2-pcw.dsk` is the disc that boots CPC Lisp on a **PCW 8256
+`cpc-lisp-1.2.1-pcw.dsk` is the disc that boots CPC Lisp on a **PCW 8256
 or 8512** (the Schneider Joyce) -- no CP/M: `LISP.IMG`, `HWTEST.LSP`,
 `APFEL.LSP` on a 180 KB disc of the 8256's format, which CP/M reads too.
 Put it in drive A -- on a Gotek, the image as it is -- and switch on.
-`cpc-lisp-1.2-pcw-classics.dsk` has the classics: swap it in once Lisp
+`cpc-lisp-1.2.1-pcw-classics.dsk` has the classics: swap it in once Lisp
 runs, `(load "classics")`. (The same as [`discs/pcw/`](../discs/pcw/).)
-**So far it has run in the ZEsarUX emulator only, not yet on a real
-PCW**; [`mach/pcw/README.md`](../mach/pcw/README.md) has the keys and
+**So far it has run in the ZEsarUX emulator and in MiSTer's PCW core
+(an FPGA), not yet on a real PCW**; [`mach/pcw/README.md`](../mach/pcw/README.md) has the keys and
 the rest.
 
 ## What next
