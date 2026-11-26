@@ -41,7 +41,9 @@ ay_have:    db 0                ; 1: a DKTronics AY answers -- notes leave the b
 ;; ay_init: the beeper off; is there an AY? Register 0 (8 bits) is written
 ;; twice and read back through &A9 -- without the card the port says &FF
 ;; (MiSTer's PCW core) or nothing of the kind. With the AY there, the
-;; beeper (one loud pitch of its own) stays out of the notes: the bell keeps it.
+;; beeper (one loud pitch of its own) stays out of the notes: the bell keeps
+;; it. ay_pcw asks again at every write of an 8-bit register (0, 2, 4, 7):
+;; MiSTer's card can be switched on and off while Lisp runs (Mike did).
 ay_init:
     xor a
     ld (ay_beep),a
@@ -68,8 +70,10 @@ ay_init:
     ret
 
 ;; ay_pcw: A = an AY register, C = a value -> to the DKTronics AY (ports
-;; &AA, &AB) and noted; the beeper on if a channel's tone is on (the
-;; mixer's bits 0-2 clear) with a volume, else off. B kept; AF lost.
+;; &AA, &AB) and noted; an 8-bit register read back (ay_have: the AY is
+;; there -- not for &FF, the port's answer without the card); with no AY
+;; the beeper on if a channel's tone is on (the mixer's bits 0-2 clear)
+;; with a volume, else off. B kept; AF lost.
 ay_pcw:
     and 15
     out (P_AYREG),a
@@ -79,6 +83,26 @@ ay_pcw:
     pop af
     push bc
     push hl
+    ld b,a
+    cp 7
+    jr z,.chk
+    cp 5
+    jr nc,.nochk
+    rra
+    jr c,.nochk                 ; 1, 3: four bits
+.chk:
+    ld a,c
+    inc a
+    jr z,.nochk                 ; &FF: says nothing
+    in a,(P_AYRD)
+    cp c
+    ld a,0
+    jr nz,.hv
+    inc a
+.hv:
+    ld (ay_have),a
+.nochk:
+    ld a,b
     ld hl,ay_regs
     add a,l
     ld l,a
@@ -86,14 +110,13 @@ ay_pcw:
     inc h
 .n:
     ld (hl),c
+    ld c,0                      ; C: the beeper wanted
     ld a,(ay_have)
     or a
-    jr nz,.same                 ; the AY sounds: the beeper stays quiet
+    jr nz,.set                  ; the AY sounds: the beeper off
     ld a,(ay_regs+7)            ; the mixer: a 0 bit is a tone on
     cpl
     ld b,a
-    xor a
-    ld c,a                      ; C: the beeper wanted
     ld hl,ay_regs+8
     bit 0,b
     jr z,.b

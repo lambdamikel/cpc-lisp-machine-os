@@ -1140,7 +1140,8 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     I/F* is switched on, and then the beeper buzzed over the tune ("awful,
     very loud"): `ay_init` writes register 0 twice and reads it back
     through &A9 (&FF without the card), and `ay_have` keeps the beeper
-    out of the notes. Its AY is a 2 MHz YM with SEL low -- a 1 MHz AY,
+    out of the notes; the card can be switched on while Lisp runs, so
+    `ay_pcw` reads back every write of registers 0, 2, 4, 7 too. Its AY is a 2 MHz YM with SEL low -- a 1 MHz AY,
     ZEsarUX's 1.77 (AY_MUL): tunes some seven semitones lower there; the
     real card's clock is unknown (John Elliott's guide has its joystick
     register only).

@@ -116,8 +116,9 @@ EXIT.
   (`fpfun.asm`, `tools/pcw/mkfpconst.py`) -- the float test prints what
   the CPC prints.
 * **Sound**: the CPC firmware's sound manager (the Spectrum's
-  `sound.asm`) on a DKTronics sound generator's AY, if there is one (at
-  start register 0 is written and read back through &A9); without one
+  `sound.asm`) on a DKTronics sound generator's AY, if there is one (an
+  8-bit register is read back through &A9 at start and at every note,
+  so the card may be switched on while Lisp runs); without one
   the beeper sounds while a note plays (one pitch, its own). In MiSTer's
   PCW core switch *DKTronics I/F* on in its menu; its AY runs as one at
   1 MHz, ZEsarUX's at 1.77 MHz (what the periods are made for): the
