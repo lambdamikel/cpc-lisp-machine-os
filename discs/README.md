@@ -197,5 +197,5 @@ yes. `mach/msx/README.md` has the details.
 8256 and 8512, booted from the disc as a real one boots): the regression
 tests, 43 of 43 (`tools/pcw/test.sh`), and `(hwtest)` 10 yes on both;
 and in MiSTer's PCW core (2026-11-25, Mike's MiSTer: it boots and runs,
-`(tune)` on its DKTronics AY -- with the beeper buzzing over it until
+`(hwtest)` passes, `(tune)` on its DKTronics AY -- with the beeper buzzing over it until
 1.2.1). Not yet on a real PCW. `mach/pcw/README.md` has the details.

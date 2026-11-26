@@ -1136,7 +1136,7 @@ What is built (`src/`, read `src/lisp.asm`'s header first):
     interrupts on.
   * **MiSTer's PCW core** (Stephen Eddy's, on Mike's MiSTer, 2026-11-25:
     the first run outside ZEsarUX, "works well!"): it boots our disc
-    after the menu's Reset. Its DKTronics AY is off until *DKTronics
+    after the menu's Reset; `(hwtest)` passed there (Mike: "worked fine"). Its DKTronics AY is off until *DKTronics
     I/F* is switched on, and then the beeper buzzed over the tune ("awful,
     very loud"): `ay_init` writes register 0 twice and reads it back
     through &A9 (&FF without the card), and `ay_have` keeps the beeper

@@ -602,7 +602,7 @@ compiled code (`docs/design.md` describes both)
           8512)
     - [x] The suite in ZEsarUX: 43 ok; `(hwtest)` 10 yes on both
     - [x] MiSTer's PCW core (Mike's MiSTer, 2026-11-25): it boots and
-          runs; `(tune)` on its DKTronics AY (*DKTronics I/F* on in the
+          runs, `(hwtest)` passes; `(tune)` on its DKTronics AY (*DKTronics I/F* on in the
           menu) with the beeper buzzing over it -- since 1.2.1 the
           notes leave the beeper alone when the AY answers
     - [ ] **On a real PCW**: the boot from the 3" drive (or a Gotek), the

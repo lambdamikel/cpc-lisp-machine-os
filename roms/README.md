@@ -223,7 +223,7 @@ Put it in drive A -- on a Gotek, the image as it is -- and switch on.
 `cpc-lisp-1.2.1-pcw-classics.dsk` has the classics: swap it in once Lisp
 runs, `(load "classics")`. (The same as [`discs/pcw/`](../discs/pcw/).)
 **So far it has run in the ZEsarUX emulator and in MiSTer's PCW core
-(an FPGA), not yet on a real PCW**; [`mach/pcw/README.md`](../mach/pcw/README.md) has the keys and
+(an FPGA; `(hwtest)` passes in both), not yet on a real PCW**; [`mach/pcw/README.md`](../mach/pcw/README.md) has the keys and
 the rest.
 
 ## What next

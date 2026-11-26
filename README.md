@@ -567,7 +567,8 @@ generator's AY if there is one. No speech, no MIDI, no colours.
 `tools/pcw/pcw.py` boots its disc and types a file at it, `test.sh` runs
 the regression tests -- 43 of 43 -- and `(hwtest)` says 10 yes on both),
 **and in MiSTer's PCW core** (an FPGA PCW: the disc in `games/Amstrad
-PCW/`, drive A, Reset; for the AY switch *DKTronics I/F* on in its menu).
+PCW/`, drive A, Reset; for the AY switch *DKTronics I/F* on in its menu),
+where `(hwtest)` passes too.
 **It has not been tested on a real PCW yet**: the boot on a 3" drive,
 the disc routines' timing, the keyboard's layout (MAME's UK PCW) and the
 beeper are still to be seen on one. ZEsarUX runs its PCW's Z80 at 3.49
