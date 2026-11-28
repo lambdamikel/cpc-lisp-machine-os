@@ -145,13 +145,16 @@ and LS AI ROMs keep theirs):
 
 (0.96 and before: the core in slot 4, Parados in 2.)
 
-Upload them with the card's ROM loader, with the CPC **switched off**.
-From this repository, `python3 tools/card.py lisp` uploads the images in
-`build/` to these slots (it uses the card's own loader, from the
-LambdaSpeak repository). **BASIC and back**: `(basic)` at `LISP>` resets
-the CPC into BASIC (the card silences slot 2), and `|BOOTLISP` in BASIC
-back into Lisp -- or, from the PC with the CPC off, `tools/card.py basic`
-and `tools/card.py number 2 0`.
+**The installer does it all**, with the CPC **switched off** and the card
+on USB: `python3 tools/install-card.py` from this repository (beside a
+clone of the LambdaSpeak 4 repository, whose loaders it uses). It puts
+these images on the card, keeps the card's own ROMs, adds the test, demo
+and classics discs as flash discs, and checks every checksum. It asks
+before writing anything; the main README's *Installing the ROMs* has the
+details. By hand, the card's ROM loader takes them too. **BASIC and back**:
+`(basic)` at `LISP>` resets the CPC into BASIC (the card silences slot 2),
+and `|BOOTLISP` in BASIC back into Lisp -- or, from the PC with the CPC
+off, `python3 tools/install-card.py --basic`, and the installer again.
 
 ## On a TRS-80
 

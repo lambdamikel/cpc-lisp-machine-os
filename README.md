@@ -226,8 +226,32 @@ Any ROM box or ROM board takes them, or the LambdaSpeak card (below).
 ([Hackaday](https://hackaday.io/project/206813-lambdaspeak-4-aka-lambdaspeak-ai)),
 which serves eight ROMs from flash, uploaded over USB, and does the
 speech, PlayCity and MIDI Lisp's `say`, `pc-tone` and `midi-note`
-use. CPC Lisp was
-developed on it; its own Parados and LS AI ROMs keep their slots:
+use. CPC Lisp was developed on it.
+
+**The installer does it all.** Clone this repository and the card's
+([lambdaspeak4](https://github.com/lambdamikel/lambdaspeak4)) side by
+side, install pyserial (`pip install pyserial`), plug the card into USB
+with the CPC **switched off**, and run:
+
+    python3 tools/install-card.py
+
+It shows what it will do and asks before writing anything. Then it:
+- puts the six ROMs from `roms/` on the card, with the core as ROM 0, so
+  the CPC starts in Lisp;
+- keeps the card's own Parados and LS AI ROMs, and any other ROM unless
+  you agree to let it go;
+- stores the ROM test, demo and classics discs as flash discs, without
+  ever writing over another disc;
+- puts the classics in the card's drive;
+- reads every checksum back.
+
+Run it again after a new release: it updates what changed and leaves the
+rest. `--dry-run` shows the plan only. `--basic` makes the core silent, so
+the CPC starts in BASIC again. `--help` lists the rest (`-p PORT` when two
+cards are on USB).
+
+Where the slots are free, it uses the same slots as the CPC Lisp
+developers' own card:
 
 | slot | ROM number | image |
 |---|---|---|
@@ -243,12 +267,10 @@ developed on it; its own Parados and LS AI ROMs keep their slots:
 (Until 0.96 the core was in slot 4 and Parados in 2: 0.97's `(basic)`
 and `|BOOTLISP` take slot 2 unless told another.)
 
-Upload the images with the card's ROM loader, with the CPC **switched
-off**. From this repository, `python3 tools/card.py lisp` uploads the six
-in `build/` (it checks that the CPC is off first, and refuses slots 4
-and 6);
-`tools/card.py slots` lists the slots. `card.py` drives the uploader of
-the LambdaSpeak 4 tools (`~/git/lambdaspeak4/tools`).
+By hand: the card's ROM loader (lambdaspeak4's `tools/romloader.py`)
+uploads any image to any slot, with the CPC switched off. For
+development, `tools/card.py lisp` uploads the six in `build/` to the
+slots above.
 
 **On a 664 or 6128 the card needs its 664/6128 firmware**, flashed while
 the card is still on the PC and before it goes in -- the 464 firmware's
@@ -256,9 +278,10 @@ disc drive at &FB7E and its disc ROM at 7 would fight the machine's own
 controller and AMSDOS for the data bus. That build never answers ROM 7
 (slot 4's Parados stays dark; the machine's AMSDOS is the disc ROM), and
 its drive is a Vortex controller at &FBF6. The LambdaSpeak 4's
-`docs/two-firmwares.md` has why and how to move the card. CPC Lisp's
-ROMs from the card's slots have not been tried on a real 6128 yet; its
-FutureOS version has (below).
+`docs/two-firmwares.md` has why and how to move the card. That firmware
+has no flash discs, so the installer puts on the ROMs only there. CPC
+Lisp's ROMs from the card's slots have not been tried on a real 6128 yet;
+its FutureOS version has (below).
 
 **BASIC and back**, with no PC: `(basic)` at `LISP>` makes the core's
 slot silent and resets -- the CPC comes up in BASIC; there, `|BOOTLISP`

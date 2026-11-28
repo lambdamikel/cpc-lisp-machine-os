@@ -1465,6 +1465,36 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   Board 1 is out of the CPC for now. The ROM Lisp under the card's fast
   ROM select (QS, build 40b0fc3) has not run on the CPC yet. Before that
   (below), board 1 served FutureOS.
+* **`tools/install-card.py`** (2026-11-27, Mike: "a simple 'all in one'
+  installer script") is the users' way onto a card. `card.py` stays the
+  development tool. The installer uses romloader.Card, dskloader and
+  kitloader only, and checks at import that the functions it calls
+  exist. It writes only to empty slots (header ff ff ff ff *and* sum32
+  &3FC000) and to slots whose sum32 is a known CPC Lisp ROM: KNOWN_LISP,
+  the git history of roms/, and the images being installed. Anything
+  else, LS AI included, stays unless the user says y or names it in
+  `--replace`. What the hardware session explained (2026-11-27):
+  * **LS AI has no stable fingerprint**: its name table moved (c0a5 to
+    c0ea) as RSXs were added, and its header 01 00 01 00 is any
+    background ROM v1.0. Its sum32s from lambdaspeak4's git history are
+    used for the plan's wording only.
+  * **Storing a flash disc leaves the drive alone**: the drive keeps the
+    old image, homed to that slot, changed flag and all. Loading the
+    *same* slot is safe (it writes back only when home != n). Anything
+    else first -- loading another slot, |LOADFLASHDISC, a save -- writes
+    the old copy back over the new store. So the installer loads the
+    drive's home slot again straight after storing into it, and asks
+    first if the CPC changed it.
+  * **The 664/6128 firmware has no flash disc library**: the listing says
+    "fd: library disabled" and every LS/LG/LL/LW/LX answers 8. It also
+    never answers ROM 7. The installer puts the ROMs on and skips the
+    discs there.
+  * Silent but non-empty slots are often deliberate (board 1's old VDOS,
+    a Parados kept silent for a ROMDIS test).
+  Tested 2026-11-27 on board 1: a dry run, "nothing to do", slot 3 made
+  silent and the drive swapped then repaired by `--yes`, `--basic` and
+  back. The planning was tested offline on a stock card, a FutureOS
+  card, an older Lisp, and a moved LS AI and Parados.
 * **Since 2026-11-17 the card runs FutureOS from its own slots** (the
   card session's firmware, lambdaspeak4 branch `fast-rom-select`: the ROM
   select in PIO + DMA, console `QS`; the LS3 clock getters answered in
@@ -1653,7 +1683,9 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   hw.lsp`: not in the release driver) 10 yes;
   `tools/card.py`'s `is_ours` takes headers 00 09, 01 00, 01 01 and
   01 02.
-  A new one: refresh `roms/` from one
+  A new one: add the outgoing `roms/` images' byte sums to
+  `tools/install-card.py`'s KNOWN_LISP (users without git need them to
+  replace the old ROMs), refresh `roms/` from one
   tested build, bump the version (banner, ROM headers, document
   titles), tag, `gh release create` with the same files.
 * Commit with the attribution lines the session gives you.
