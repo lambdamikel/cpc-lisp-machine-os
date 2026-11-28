@@ -1503,7 +1503,11 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   in flash disc 1. The installer put Lisp in slots 0-3, 5 and 7, the
   discs in flash discs 2-4 (the drive: 4), and left the rest alone; a
   second run found nothing to do. With Parados silent nothing answers
-  ROM 7, so the card's drive needs it at 7 again, or the DDI-3.
+  ROM 7, and `(load "classics")` said "Press PLAY then any key" (tape).
+  With Parados at 7 again, **Lisp ran on board A** (Mike, 2026-11-27:
+  "works now"): the banner, `(load "classics")` from the card's drive.
+  That is the ROM Lisp's first run on rev 3 (QS off). Before the DDI-3
+  goes in, Parados goes silent again (the hardware session's job).
 * **Since 2026-11-17 the card runs FutureOS from its own slots** (the
   card session's firmware, lambdaspeak4 branch `fast-rom-select`: the ROM
   select in PIO + DMA, console `QS`; the LS3 clock getters answered in
