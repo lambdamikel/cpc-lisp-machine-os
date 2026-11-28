@@ -1446,6 +1446,21 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   (255 = silent). `n` lists the slots. **Giving a slot ROM 0 means the CPC
   boots into it every time** -- to get BASIC back, set it to 255. Check `n`
   before Mike powers on after any change.
+* **Two cards since 2026-11-27** (Mike's decision): board 1 (rev 2) is
+  the CPC Lisp card; board A (rev 3) is the main LambdaSpeak 4, the
+  hardware session's -- never write to it. Both enumerate as 2e8a:0009:
+  tell them apart by the port's ID_SERIAL_SHORT (memory: card-boards)
+  and name the port (`card.py -p`, `dskloader.py --port`); one USB
+  cable, so one card at a time. **Board 1 boots CPC Lisp again**
+  (2026-11-27, Mike: "make sure cpc lisp boots straight away and has the
+  latest version and also has the classic lisp disk installed"): 1.2.1,
+  build 1210, by `card.py --force lisp` over FutureOS (slots 0, 1, 2, 3,
+  5, 7; Parados in 4 and LS AI in 6 kept), each slot's sum32 read back
+  equal to `roms/`; flash discs 3, 8, 14, 54 are the 1.2.1 discs and 53
+  the classics, read back equal to `discs/`, and the drive holds 53.
+  Board 1 is out of the CPC for now. The ROM Lisp under the card's fast
+  ROM select (QS, build 40b0fc3) has not run on the CPC yet. Before that
+  (below), board 1 served FutureOS.
 * **Since 2026-11-17 the card runs FutureOS from its own slots** (the
   card session's firmware, lambdaspeak4 branch `fast-rom-select`: the ROM
   select in PIO + DMA, console `QS`; the LS3 clock getters answered in
