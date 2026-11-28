@@ -1495,6 +1495,15 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   silent and the drive swapped then repaired by `--yes`, `--basic` and
   back. The planning was tested offline on a stock card, a FutureOS
   card, an older Lisp, and a moved LS AI and Parados.
+  **Board A (rev 3), the board for public release** (Mike: "the
+  installer needs to run with it"), was installed by it the same day,
+  timed with the hardware session, which loads that card too. Rev 3 runs
+  rev 2's firmware byte for byte; only the state differs (QS off). Board
+  A had LS AI in slot 6, a silent Parados in slot 4 and one non-Lisp disc
+  in flash disc 1. The installer put Lisp in slots 0-3, 5 and 7, the
+  discs in flash discs 2-4 (the drive: 4), and left the rest alone; a
+  second run found nothing to do. With Parados silent nothing answers
+  ROM 7, so the card's drive needs it at 7 again, or the DDI-3.
 * **Since 2026-11-17 the card runs FutureOS from its own slots** (the
   card session's firmware, lambdaspeak4 branch `fast-rom-select`: the ROM
   select in PIO + DMA, console `QS`; the LS3 clock getters answered in
