@@ -108,7 +108,7 @@
         (return)))))
 
 (defun eliza ()
-  (format t "I am ELIZA. Tell me your problem -- BYE ends it.~%")
+  (format t "I am ELIZA. Tell me your problem.~%BYE ends it.~%")
   (loop
     (princ "> ")
     (let ((in (e-words (read-line))))

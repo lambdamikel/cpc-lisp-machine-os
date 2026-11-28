@@ -1,7 +1,8 @@
 LISP> (load "eliza")
 T
 LISP> (eliza)
-I am ELIZA. Tell me your problem -- BYE ends it.
+I am ELIZA. Tell me your problem.
+BYE ends it.
 > Hello there
 How do you do -- please state your problem.
 > I am sad about my computer

@@ -1403,6 +1403,10 @@ should see.
   editor draws straight into the screen (`mach/cpc/fr.asm`, ten times the
   firmware's speed) but never reads it back: its cursor is the character
   drawn again in inverse. (XORing the cell put the ROM's code on screen.)
+* **A line of exactly 40 characters (mode 1) is one too many**: after
+  the 40th the cursor is on the next line, and the newline then leaves a
+  blank one. Fixed text for 40 columns is 39 characters a line at most
+  (the classics menu, ELIZA's greeting -- Mike's 464, 2026-11-27).
 * **The firmware's text output manages ~5 characters a frame** (TXT WR
   CHAR): fine for a line, far too slow to redraw a screen per key.
 * **MAME's CPC keys** (emulated keyboard): COPY is End, DEL is Insert, CLR

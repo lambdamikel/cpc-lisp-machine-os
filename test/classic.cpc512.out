@@ -6,10 +6,10 @@ Classic Lisp programs. Load one, then:
  animals  (animals)     it learns
  meval    (meval-demo)  Lisp in Lisp
  life     (life 8)      Conway's Life
- tictac   (tictac)      unbeaten minimax
+ tictac   (tictac)      unbeatable
  huffman  (huffman-demo) SICP's codes
 (load "eliza") loads ELIZA, and so on.
-Built in, no load: (hanoi 4), (queens 6)
+Built in: (hanoi 4), (queens 6)
 -- (demo) lists all the ROM's.
 T
 LISP> (load "deriv")
