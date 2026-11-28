@@ -440,8 +440,10 @@ def main():
             'silence': 'silent (an older CPC Lisp ROM)'}[act])
     if not any(r['rom'] == 7 for r in rows):
         print('  (No slot answers ROM 7: the card\'s drive needs a disc ROM '
-              'there, Parados -- unless the CPC has a disc interface of its '
-              'own, a DDI-1, a DDI-3 or a 6128\'s.)')
+              'there, Parados. Without one -- and no DDI-1, DDI-3 or 6128 '
+              'drive of its own -- the CPC has only tape: (load "classics") '
+              'says "Press PLAY then any key". Give Parados\'s slot ROM 7 '
+              'with the card\'s ROM loader.)')
     drive = None
     if nolib:
         print("\nFlash discs: none -- this card has its 664/6128 firmware, which "
