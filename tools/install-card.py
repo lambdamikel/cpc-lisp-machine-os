@@ -438,6 +438,10 @@ def main():
             'number': f'{name} there already, now as ROM {n}',
             'upload': f'{name} as ROM {n}',
             'silence': 'silent (an older CPC Lisp ROM)'}[act])
+    if not any(r['rom'] == 7 for r in rows):
+        print('  (No slot answers ROM 7: the card\'s drive needs a disc ROM '
+              'there, Parados -- unless the CPC has a disc interface of its '
+              'own, a DDI-1, a DDI-3 or a 6128\'s.)')
     drive = None
     if nolib:
         print("\nFlash discs: none -- this card has its 664/6128 firmware, which "
