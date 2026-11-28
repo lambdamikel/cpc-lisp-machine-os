@@ -1510,6 +1510,13 @@ Everything is in `~/git/lambdaspeak4` (README: *The USB console*,
   So the ROM Lisp has run under both ROM selects: board 1's QS, board A's
   bus interrupt. Before the DDI-3
   goes in, Parados goes silent again (the hardware session's job).
+  **The same evening board A became a FutureOS card** (the hardware
+  session, at Mike's request), for a 464 with a real DDI-1 (drive A
+  under FutureOS; the card's drive is E, on the Vortex ports): FOS A-D
+  in slots 1, 7, 5, 0 as ROMs 1, 3, 4, 5, LS AI as ROM 2, the Lisp core
+  silent in slot 2, a Vortex VDOS (silent) over LISPDEMO in slot 3,
+  Parados silent, QS on. It carries no CPC Lisp now. To install Lisp
+  there again, answer y for each FOS slot (they count as other ROMs).
 * **Since 2026-11-17 the card runs FutureOS from its own slots** (the
   card session's firmware, lambdaspeak4 branch `fast-rom-select`: the ROM
   select in PIO + DMA, console `QS`; the LS3 clock getters answered in
