@@ -30,6 +30,8 @@ With the CPC switched OFF and the card on USB, it:
   5. puts the classics in the card's drive, so drive A has them;
   6. reads back every checksum.
 
+docs/install-card.md is the guide (the 464, the 664 and 6128).
+
 It needs Python 3 with pyserial (pip install pyserial) and the LambdaSpeak
 4 tools: clone https://github.com/lambdamikel/lambdaspeak4 beside this
 repository. Their uploaders do the writing; this script sends no data of
@@ -438,7 +440,7 @@ def main():
             'number': f'{name} there already, now as ROM {n}',
             'upload': f'{name} as ROM {n}',
             'silence': 'silent (an older CPC Lisp ROM)'}[act])
-    if not any(r['rom'] == 7 for r in rows):
+    if not nolib and not any(r['rom'] == 7 for r in rows):
         print('  (No slot answers ROM 7: the card\'s drive needs a disc ROM '
               'there, Parados. Without one -- and no DDI-1, DDI-3 or 6128 '
               'drive of its own -- the CPC has only tape: (load "classics") '

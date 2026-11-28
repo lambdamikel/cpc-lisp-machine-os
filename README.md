@@ -228,7 +228,9 @@ which serves eight ROMs from flash, uploaded over USB, and does the
 speech, PlayCity and MIDI Lisp's `say`, `pc-tone` and `midi-note`
 use. CPC Lisp was developed on it.
 
-**The installer does it all.** Clone this repository and the card's
+**The installer does it all.**
+[`docs/install-card.md`](docs/install-card.md) is the guide, for the 464
+and for the 664 and 6128. In short: clone this repository and the card's
 ([lambdaspeak4](https://github.com/lambdamikel/lambdaspeak4)) side by
 side, install pyserial (`pip install pyserial`), plug the card into USB
 with the CPC **switched off**, and run:
@@ -787,6 +789,8 @@ KB, in six 16 KB ROMs. It covers:
 
 * [`roms/README.md`](roms/README.md): the ready-made ROM images -- what
   each is, and how to install them
+* [`docs/install-card.md`](docs/install-card.md): putting CPC Lisp on a
+  LambdaSpeak 4 card with `tools/install-card.py`, on a 464, 664 or 6128
 * [`discs/README.md`](discs/README.md): CPC Lisp from disc (512K, plain
   6128), the TRS-80 discs (Model I, III, 4 -- the Model 4's for a FreHD
   too), the ZX Spectrum's and the MSX's SD card files and the test discs

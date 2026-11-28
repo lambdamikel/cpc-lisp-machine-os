@@ -150,8 +150,8 @@ on USB: `python3 tools/install-card.py` from this repository (beside a
 clone of the LambdaSpeak 4 repository, whose loaders it uses). It puts
 these images on the card, keeps the card's own ROMs, adds the test, demo
 and classics discs as flash discs, and checks every checksum. It asks
-before writing anything; the main README's *Installing the ROMs* has the
-details. By hand, the card's ROM loader takes them too. **BASIC and back**:
+before writing anything; [`docs/install-card.md`](../docs/install-card.md)
+is the guide, for the 464, 664 and 6128. By hand, the card's ROM loader takes them too. **BASIC and back**:
 `(basic)` at `LISP>` resets the CPC into BASIC (the card silences slot 2),
 and `|BOOTLISP` in BASIC back into Lisp -- or, from the PC with the CPC
 off, `python3 tools/install-card.py --basic`, and the installer again.
